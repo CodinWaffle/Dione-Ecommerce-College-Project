@@ -1,9 +1,9 @@
 
-#🛒 Dione Ecommerce (College Project)
+🛒 Dione Ecommerce (College Project)
 
 Setup guide — not written by AI because AI kept acting dumb.
 
-#🧠 Prerequisites (aka “Don’t be Dumb”)
+🧠 Prerequisites (aka “Don’t be Dumb”)
 
 Python 3.8+
 
@@ -11,7 +11,7 @@ MySQL (like XAMPP) running
 
 Git installed
 
-#🚀 Setup in 5 Kinda-Simple Steps
+🚀 Setup in 5 Kinda-Simple Steps
 1. Clone this masterpiece
 git clone https://github.com/CodinWaffle/Dione-Ecommerce-College-Project.git
 cd "Dione Ecommerce (College Project)"
@@ -65,7 +65,7 @@ CREATE INDEX `idx_oauth_user_id` ON `oauth`(`user_id`);
 SELECT 'Database setup completed successfully!' as status;
 SELECT COUNT(*) as user_count FROM `user`;
 SELECT COUNT(*) as oauth_table_ready FROM `oauth` WHERE 1=0;
-
+```
 
 5. Make .env File (or cry later)
 FLASK_APP=app.py
