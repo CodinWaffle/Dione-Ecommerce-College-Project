@@ -1,137 +1,108 @@
-# Dione Ecommerce - Private Project
 
-A Flask-based e-commerce application with user authentication, social login, and email functionality.
+#🛒 Dione Ecommerce (College Project)
 
-## Quick Setup for Contributors
+Setup guide — not written by AI because AI kept acting dumb.
 
-### Prerequisites
-- Python 3.8 or higher
-- MySQL server running locally
-- Git
+#🧠 Prerequisites (aka “Don’t be Dumb”)
 
-### Setup Instructions
+Python 3.8+
 
-1. **Clone the repository**
-   ```bash
-   git clone <repo-url>
-   cd dione-ecommerce
-   ```
+MySQL (like XAMPP) running
 
-2. **Run the automated setup**
-   ```bash
-   python setup.py
-   ```
-   This will:
-   - Install all dependencies
-   - Create the .env file with project credentials
-   - Set up the MySQL database automatically
-   - Verify everything is working
+Git installed
 
-3. **Run the application**
-   ```bash
-   flask run
-   ```
+#🚀 Setup in 5 Kinda-Simple Steps
+1. Clone this masterpiece
+git clone https://github.com/CodinWaffle/Dione-Ecommerce-College-Project.git
+cd "Dione Ecommerce (College Project)"
 
-4. **Open your browser**
-   Navigate to `http://localhost:5000`
+2. Virtual Environment (be smart, use one)
+python -m venv env
+# Windows
+env\Scripts\activate.ps1
+# Run This if You Using Git comand prompt
+source env/bin/activate
 
-## What the Setup Does
 
-The `setup.py` script automates everything:
+If you don’t see (env) — activate your brain, too.
 
-- ✅ **Dependencies**: Installs all required packages from `requirements.txt`
-- ✅ **Environment**: Creates `.env` file with all necessary credentials
-- ✅ **Database**: Connects to MySQL and runs `database_setup.sql`
-- ✅ **Verification**: Tests that Flask app can start and connect to database
+3. Install Dependencies
+pip install --upgrade pip
+pip install -r requirements.txt
 
-## Manual Database Setup (if needed)
+4. Database Magic - Just Copy paste this
+```sql
 
-If the automated database setup fails, you can set it up manually:
+CREATE DATABASE IF NOT EXISTS dione_data;
+USE dione_data;
 
-### Using SQLyog
-1. Open SQLyog
-2. Connect to your MySQL server
-3. Run the `database_setup.sql` script
+CREATE TABLE IF NOT EXISTS `user` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `email` VARCHAR(100) UNIQUE,
+    `password` VARCHAR(255),
+    `username` VARCHAR(150),
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-### Using phpMyAdmin
-1. Open phpMyAdmin in your browser
-2. Create a database named `dione_data` (or change the name in the SQL script)
-3. Run the `database_setup.sql` script
+CREATE TABLE IF NOT EXISTS `oauth` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `provider` VARCHAR(50) NOT NULL,
+    `provider_user_id` VARCHAR(256) NOT NULL,
+    `provider_user_login` VARCHAR(256),
+    `user_id` INT NOT NULL,
+    `token` TEXT,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON DELETE CASCADE,
+    UNIQUE KEY `unique_provider_user` (`provider`, `provider_user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-## Project Structure
+CREATE INDEX `idx_user_email` ON `user`(`email`);
+CREATE INDEX `idx_user_username` ON `user`(`username`);
+CREATE INDEX `idx_oauth_provider` ON `oauth`(`provider`);
+CREATE INDEX `idx_oauth_user_id` ON `oauth`(`user_id`);
 
-```
-dione-ecommerce/
-├── app.py                    # Flask application entry point
-├── setup.py                  # Automated setup script
-├── database_setup.sql        # Database creation script
-├── requirements.txt          # Python dependencies
-├── .env                      # Environment variables (created by setup)
-├── project/                  # Main application code
-│   ├── routes/              # Route handlers
-│   ├── services/            # Business logic
-│   ├── utils/               # Utilities
-│   └── templates/           # HTML templates
-└── migrations/              # Database migrations
-```
+SELECT 'Database setup completed successfully!' as status;
+SELECT COUNT(*) as user_count FROM `user`;
+SELECT COUNT(*) as oauth_table_ready FROM `oauth` WHERE 1=0;
 
-## Development
 
-### Running Tests
-```bash
-python -m pytest project/tests.py -v
-```
+5. Make .env File (or cry later)
+FLASK_APP=app.py
+FLASK_ENV=development
+DATABASE_URL=mysql+pymysql://root:@localhost:3306/dione_data
+DB_USER=root
+DB_PASSWORD=
+DB_NAME=dione_data
+SECRET_KEY=some_secret_key
 
-### Running with Debug Mode
-```bash
-flask --debug run
-```
+6. Run It
+flask run
 
-### Database Migrations
-```bash
-flask db migrate -m "Description"
-flask db upgrade
-```
 
-## Features
+Then open http://127.0.0.1:5000
+ and pretend it’s production-ready.
 
-- 🔐 User authentication (login, signup, password reset)
-- 🌐 Social login (Google, Facebook OAuth)
-- 📧 Email functionality (password reset)
-- 🗄️ MySQL database with SQLAlchemy ORM
-- 🧪 Comprehensive test suite
-- 📱 Responsive Bootstrap design
+🧪 Git Cheat Sheet
+git pull origin main
+git add .
+git commit -m "I did something cool"
+git push origin main
 
-## Default Test Accounts
 
-After setup, you can use these test accounts:
+If push fails → it’s your fault. Run:
 
-- **Admin**: `admin@dione.com` / `admin123`
-- **Test User**: `test@dione.com` / `admin123`
+git pull --rebase origin main
+git push origin main
 
-## Troubleshooting
+🩺 Common Issues
 
-### MySQL Connection Issues
-- Ensure MySQL server is running
-- Check that you can connect with the credentials in `.env`
-- Verify the database `dione_data` exists
+❌ flask not found → activate the virtual env
 
-### Flask Import Errors
-- Make sure you're in the project directory
-- Verify all dependencies are installed: `pip install -r requirements.txt`
+❌ DB errors → open XAMPP, genius
 
-### Port Already in Use
-```bash
-flask run --port 5001
-```
+❌ Port busy → flask run --port 5001
 
-## Contributing
+❌ AI didn’t help → that’s why you’re reading this 😅
 
-1. Make your changes
-2. Run tests: `python -m pytest project/tests.py -v`
-3. Ensure `flask run` works without errors
-4. Submit your pull request
-
----
-
-**Ready to develop! 🚀**
+Now go run it. Don’t break it. 🚀

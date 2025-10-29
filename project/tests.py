@@ -12,8 +12,6 @@ warnings.filterwarnings("ignore", message="unclosed database", category=Resource
 
 
 
-
-
 # Test fixtures
 @pytest.fixture
 def app():
