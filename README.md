@@ -1,38 +1,61 @@
+<div align="center">
 
-🛒 Dione Ecommerce (College Project)
+# 🛒 **Dione Ecommerce (College Project)**  
+### *Setup Guide — not written by AI because AI kept acting dumb 😤*
 
-Setup guide — not written by AI because AI kept acting dumb.
+![Banner](https://github.com/user-attachments/assets/e7fef06d-ac46-4180-8d19-b797afaea016) <!-- Optional: Replace with your own banner -->
 
-🧠 Prerequisites (aka “Don’t be Dumb”)
+---
 
-Python 3.8+
+![Python](https://img.shields.io/badge/Python-3.8%2B-blue?logo=python&logoColor=white)
+![Flask](https://img.shields.io/badge/Flask-Framework-lightgrey?logo=flask)
+![MySQL](https://img.shields.io/badge/MySQL-Database-orange?logo=mysql)
+![License](https://img.shields.io/badge/License-GNU-green)
+![Status](https://img.shields.io/badge/Project-College%20Demo-yellow)
 
-MySQL (like XAMPP) running
+</div>
 
-Git installed
+---
 
-🚀 Setup in 5 Kinda-Simple Steps
-1. Clone this masterpiece
+## 🧠 Prerequisites (aka “Don’t be Dumb”)
+
+Before you start, make sure you have the following:
+
+- 🐍 **Python 3.8+**
+- 🧰 **MySQL (XAMPP recommended)**
+- 💾 **Git**
+
+---
+
+## 🚀 Setup in 5 Kinda-Simple Steps
+
+### **1️⃣ Clone this masterpiece**
+```bash
 git clone https://github.com/CodinWaffle/Dione-Ecommerce-College-Project.git
 cd "Dione Ecommerce (College Project)"
-
-2. Virtual Environment (be smart, use one)
+```
+2️⃣ Create & Activate Virtual Environment
+```bash
 python -m venv env
-# Windows
+```
+```bash
 env\Scripts\activate.ps1
-# Run This if You Using Git comand prompt
+```
+🐧 Git Bash 
+```bash
 source env/bin/activate
+```
+💡 If you don’t see (env) — activate your brain, too.
 
-
-If you don’t see (env) — activate your brain, too.
-
-3. Install Dependencies
+3️⃣ Install Dependencies
+```bash
 pip install --upgrade pip
 pip install -r requirements.txt
+```
+4️⃣ Database Magic ✨
+Open MySQL / phpMyAdmin and run this script:
 
-4. Database Magic - Just Copy paste this
 ```sql
-
 CREATE DATABASE IF NOT EXISTS dione_data;
 USE dione_data;
 
@@ -62,47 +85,27 @@ CREATE INDEX `idx_user_username` ON `user`(`username`);
 CREATE INDEX `idx_oauth_provider` ON `oauth`(`provider`);
 CREATE INDEX `idx_oauth_user_id` ON `oauth`(`user_id`);
 
-SELECT 'Database setup completed successfully!' as status;
-SELECT COUNT(*) as user_count FROM `user`;
-SELECT COUNT(*) as oauth_table_ready FROM `oauth` WHERE 1=0;
+SELECT 'Database setup completed successfully!' AS status;
+SELECT COUNT(*) AS user_count FROM `user`;
+SELECT COUNT(*) AS oauth_table_ready FROM `oauth` WHERE 1=0;
 ```
 
-5. Make .env File (or cry later)
-FLASK_APP=app.py
-FLASK_ENV=development
-DATABASE_URL=mysql+pymysql://root:@localhost:3306/dione_data
-DB_USER=root
-DB_PASSWORD=
-DB_NAME=dione_data
-SECRET_KEY=some_secret_key
-
-6. Run It
+5️⃣ Run It!
+```bash
 flask run
-
-
-Then open http://127.0.0.1:5000
- and pretend it’s production-ready.
+```
 
 🧪 Git Cheat Sheet
+```bash
+Copy code
 git pull origin main
 git add .
 git commit -m "I did something cool"
 git push origin main
+```
+If push fails → it’s your fault 😅 Run this:
 
-
-If push fails → it’s your fault. Run:
-
+```bash
 git pull --rebase origin main
 git push origin main
-
-🩺 Common Issues
-
-❌ flask not found → activate the virtual env
-
-❌ DB errors → open XAMPP, genius
-
-❌ Port busy → flask run --port 5001
-
-❌ AI didn’t help → that’s why you’re reading this 😅
-
-Now go run it. Don’t break it. 🚀
+```
