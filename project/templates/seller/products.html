@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-md-12">
+      <h4>Manage Products</h4>
+      <p>Welcome, {{ username }}. This is a placeholder page for managing your product listings.</p>
+      <div class="card mt-3">
+        <div class="card-body">
+          <ul>
+            <li>Create, edit, and remove products</li>
+            <li>Adjust stock and pricing</li>
+            <li>Track product performance</li>
+            <li>nakalimutan ko yung iba</li>
+          </ul>
+        </div>
+      </div>
+      <a class="btn btn-outline-secondary mt-3" href="{{ url_for('main.seller_dashboard') }}">Back to Seller Dashboard</a>
+    </div>
+  </div>
+  </div>
+{% endblock %}

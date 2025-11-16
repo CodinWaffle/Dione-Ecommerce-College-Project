@@ -1,0 +1,285 @@
+{% extends "admin/base_admin.html" %}
+
+{% block page_title %}Admin Profile{% endblock %}
+
+{% block admin_content %}
+<style>
+  .profile-container {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .profile-header {
+    margin-bottom: 32px;
+  }
+
+  .profile-title {
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 8px;
+  }
+
+  .profile-subtitle {
+    color: #6b7280;
+    font-size: 1rem;
+  }
+
+  .profile-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+
+  .profile-card-header {
+    padding: 24px;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .profile-card-title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #1f2937;
+  }
+
+  .profile-card-body {
+    padding: 24px;
+  }
+
+  .profile-info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+
+  .profile-info-item {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .profile-info-label {
+    color: #6b7280;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .profile-info-value {
+    color: #1f2937;
+    font-size: 1rem;
+    font-weight: 500;
+  }
+
+  .profile-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6A1B9A, #8c30ef);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 2rem;
+    margin-bottom: 16px;
+  }
+
+  .profile-section {
+    margin-bottom: 32px;
+  }
+
+  .profile-section-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 16px;
+  }
+
+  .button-group {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    background: #6A1B9A;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .btn-primary:hover {
+    background: #53127c;
+  }
+
+  .btn-secondary {
+    background: #f3f4f6;
+    color: #1f2937;
+    border: 1px solid #e5e7eb;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .btn-secondary:hover {
+    background: #e5e7eb;
+  }
+
+  .status-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    background: #dcfce7;
+    color: #166534;
+  }
+
+  .account-section {
+    border-top: 1px solid #e5e7eb;
+    padding-top: 24px;
+  }
+
+  @media (max-width: 768px) {
+    .profile-info-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .button-group {
+      flex-direction: column;
+    }
+
+    .btn-primary,
+    .btn-secondary {
+      width: 100%;
+    }
+  }
+</style>
+
+<div class="profile-container">
+  <div class="profile-header">
+    <h1 class="profile-title">Admin Profile</h1>
+    <p class="profile-subtitle">Manage your admin account settings and preferences</p>
+  </div>
+
+  <!-- Personal Information Card -->
+  <div class="profile-card">
+    <div class="profile-card-header">
+      <h2 class="profile-card-title">Personal Information</h2>
+    </div>
+    <div class="profile-card-body">
+      <div class="profile-avatar">
+        <i class="fas fa-user-tie"></i>
+      </div>
+      <div class="profile-info-grid">
+        <div class="profile-info-item">
+          <span class="profile-info-label">Full Name</span>
+          <span class="profile-info-value">{{ user.username }}</span>
+        </div>
+        <div class="profile-info-item">
+          <span class="profile-info-label">Email Address</span>
+          <span class="profile-info-value">{{ user.email }}</span>
+        </div>
+        <div class="profile-info-item">
+          <span class="profile-info-label">Role</span>
+          <span class="profile-info-value">
+            <span class="status-badge">Administrator</span>
+          </span>
+        </div>
+        <div class="profile-info-item">
+          <span class="profile-info-label">Account Status</span>
+          <span class="profile-info-value">
+            {% if not user.is_suspended %}
+              <span class="status-badge">Active</span>
+            {% else %}
+              <span style="display: inline-block; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; background: #fee2e2; color: #991b1b;">Suspended</span>
+            {% endif %}
+          </span>
+        </div>
+        <div class="profile-info-item">
+          <span class="profile-info-label">Member Since</span>
+          <span class="profile-info-value">{{ user.created_at.strftime('%B %d, %Y') if user.created_at else 'N/A' }}</span>
+        </div>
+      </div>
+
+      <div class="button-group" style="margin-top: 24px; padding-top: 24px; border-top: 1px solid #e5e7eb;">
+        <a href="{{ url_for('admin.settings') }}" class="btn-primary">Edit Settings</a>
+        <a href="{{ url_for('admin.logout') }}" class="btn-secondary">Logout</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Account Security Card -->
+  <div class="profile-card">
+    <div class="profile-card-header">
+      <h2 class="profile-card-title">Account Security</h2>
+    </div>
+    <div class="profile-card-body">
+      <div class="profile-section">
+        <h3 class="profile-section-title">Password</h3>
+        <p style="color: #6b7280; margin-bottom: 16px;">Last changed: Never</p>
+        <button class="btn-primary" onclick="alert('Password change feature coming soon')">Change Password</button>
+      </div>
+
+      <div class="profile-section account-section">
+        <h3 class="profile-section-title">Two-Factor Authentication</h3>
+        <p style="color: #6b7280; margin-bottom: 16px;">Add an extra layer of security to your account</p>
+        <button class="btn-secondary" onclick="alert('2FA setup coming soon')">Enable 2FA</button>
+      </div>
+
+      <div class="profile-section account-section">
+        <h3 class="profile-section-title">Active Sessions</h3>
+        <p style="color: #6b7280; margin-bottom: 16px;">You have 1 active session</p>
+        <div style="background: #f9fafb; border-radius: 8px; padding: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <p style="margin: 0 0 4px 0; font-weight: 600; color: #1f2937;">Current Browser</p>
+              <p style="margin: 0; color: #6b7280; font-size: 0.9rem;">Chrome on Windows • Active now</p>
+            </div>
+            <span style="background: #10b981; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;">Active</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Account Information Card -->
+  <div class="profile-card">
+    <div class="profile-card-header">
+      <h2 class="profile-card-title">Account Information</h2>
+    </div>
+    <div class="profile-card-body">
+      <div class="profile-info-grid">
+        <div class="profile-info-item">
+          <span class="profile-info-label">Account ID</span>
+          <span class="profile-info-value">#{{ user.id }}</span>
+        </div>
+        <div class="profile-info-item">
+          <span class="profile-info-label">Account Type</span>
+          <span class="profile-info-value">Administrator Account</span>
+        </div>
+        <div class="profile-info-item">
+          <span class="profile-info-label">Permissions</span>
+          <span class="profile-info-value">Full Access</span>
+        </div>
+        <div class="profile-info-item">
+          <span class="profile-info-label">Last Login</span>
+          <span class="profile-info-value">Just now</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

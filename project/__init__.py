@@ -18,8 +18,6 @@ def create_app(config_name='default'):
     # Load configuration
     from .config import config
     app.config.from_object(config[config_name])
-
-    # Initialize extensions
     db.init_app(app)
     jwt.init_app(app)
     mail.init_app(app)
@@ -40,11 +38,13 @@ def create_app(config_name='default'):
     from .routes.auth_routes import auth
     from .routes.main_routes import main
     from .routes.oauth_routes import google_blueprint, facebook_blueprint, debug_bp
+    from .routes.admin_routes import admin_bp
 
     app.register_blueprint(auth)
     app.register_blueprint(main)
     app.register_blueprint(google_blueprint, url_prefix="/login")
     app.register_blueprint(facebook_blueprint, url_prefix="/login")
     app.register_blueprint(debug_bp)
+    app.register_blueprint(admin_bp)
 
     return app

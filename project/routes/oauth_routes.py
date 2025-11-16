@@ -123,10 +123,21 @@ def google_logged_in(blueprint, token):
 
             login_user(user)
         except Exception as e:
+            from project import db
+            db.session.rollback()
             flash(f"Error during Google login: {str(e)}", category="error")
             return
 
-    return redirect(url_for("main.profile"))
+    # Role-aware redirect
+    try:
+        role = (getattr(current_user, 'role', '') or 'buyer').lower()
+        if role == 'seller':
+            return redirect(url_for('main.seller_dashboard'))
+        if role == 'rider':
+            return redirect(url_for('main.rider_dashboard'))
+        return redirect(url_for('main.index'))
+    except Exception:
+        return redirect(url_for("main.index"))
 
 @oauth_authorized.connect_via(facebook_blueprint)
 def facebook_logged_in(blueprint, token):
@@ -166,7 +177,15 @@ def facebook_logged_in(blueprint, token):
             flash(f"Error during Facebook login: {str(e)}", category="error")
             return
 
-    return redirect(url_for("main.profile"))
+    try:
+        role = (getattr(current_user, 'role', '') or 'buyer').lower()
+        if role == 'seller':
+            return redirect(url_for('main.seller_dashboard'))
+        if role == 'rider':
+            return redirect(url_for('main.rider_dashboard'))
+        return redirect(url_for('main.index'))
+    except Exception:
+        return redirect(url_for("main.index"))
 
 # OAuth error handlers
 @oauth_error.connect_via(google_blueprint)

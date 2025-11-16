@@ -1,15 +1,15 @@
 /* base.html */
 body{
-  background-color: #f0f8ff;
+  background-color: #ffffff;
 }
 
 .navbar{
-  background-color: #f0f8ff;
+  background-color: #ffffff;
 
 }
 
 .nav-link{
-  color: #8c30ef ;
+  color: #aa5aff ;
 }
 
 .container-fluid{
@@ -43,5 +43,6 @@ body{
 
 /* profile.html */
 .display-6{
-  padding-top: 150px; 
+  padding-top: 150px;
 }
+

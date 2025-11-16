@@ -71,6 +71,16 @@ class Validators:
         return len(errors) == 0, errors
 
     @staticmethod
+    def validate_role(role):
+        """Validate user role value"""
+        allowed = {'buyer', 'seller', 'rider'}
+        if not role:
+            return False, "Role is required"
+        if role.lower() not in allowed:
+            return False, "Invalid role selected"
+        return True, None
+
+    @staticmethod
     def validate_login_form(email, password):
         """Validate login form"""
         errors = []

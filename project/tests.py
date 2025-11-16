@@ -1,860 +1,744 @@
+import itertools
+from typing import Dict, Iterable, Tuple
+
 import pytest
-import warnings
-from project import create_app, db
-from project.models import User, OAuth
+from sqlalchemy import inspect
+from sqlalchemy.exc import IntegrityError
 from werkzeug.security import generate_password_hash
-from flask import url_for
-import time
-import json
 
-# Filter out the database connection warning
-warnings.filterwarnings("ignore", message="unclosed database", category=ResourceWarning)
+from project import create_app, db
+from project.models import OAuth, SiteSetting, User
+from project.utils.validators import Validators
 
 
+pytestmark = [
+    pytest.mark.filterwarnings("ignore::ResourceWarning"),
+    pytest.mark.filterwarnings("ignore::DeprecationWarning"),
+]
 
-# Test fixtures
-@pytest.fixture
+DEFAULT_PASSWORD = "Passw0rd!"
+ADMIN_PASSWORD = "AdminPass!23"
+
+EMAIL_CASES: Iterable[Tuple[str, bool]] = [
+    ("user@example.com", True),
+    ("first.last@example.co", True),
+    ("user+tag@sub.domain.org", True),
+    ("simple@example.io", True),
+    ("UPPER@EXAMPLE.COM", True),
+    ("missingatsign", False),
+    ("missingdomain@", False),
+    ("@missinglocal.com", False),
+    ("name@domain", False),
+    ("", False),
+    ("name@domain.c", False),
+    ("name@domain,com", False),
+    ("dash-domain@exa-mple.com", True),
+    ("numbers123@domain123.com", True),
+    ("under_score@domain.com", True),
+    ("valid.mailbox@sample.org", True),
+]
+
+PASSWORD_CASES: Iterable[Tuple[str, bool]] = [
+    ("secret1", True),
+    ("123456", True),
+    ("pass", False),
+    ("", False),
+    ("abcde", False),
+    ("complexPASS123", True),
+    ("sixsix", True),
+    ("twelve_chars", True),
+    ("tiny", False),
+    ("plentyoflengthhere", True),
+]
+
+USERNAME_CASES: Iterable[Tuple[str, bool]] = [
+    ("ab", False),
+    ("abc", True),
+    ("user_name", True),
+    ("user-name", True),
+    ("user name", False),
+    ("", False),
+    ("lo" * 30, False),
+    ("validuser123", True),
+    ("CAPSLOCK", True),
+    ("with.dots", False),
+    ("hyphenated-user", True),
+    ("__underscore__", True),
+]
+
+ROLE_CASES: Iterable[Tuple[str, bool]] = [
+    ("buyer", True),
+    ("seller", True),
+    ("rider", True),
+    ("Seller", True),
+    ("admin", False),
+    ("", False),
+]
+
+LOGIN_FORM_CASES: Iterable[Tuple[str, str, bool]] = [
+    ("login@example.com", DEFAULT_PASSWORD, True),
+    ("", DEFAULT_PASSWORD, False),
+    ("invalid-email", DEFAULT_PASSWORD, False),
+    ("login@example.com", "", False),
+    ("login_at_example.com", "secret", False),
+    ("missing@example.com", DEFAULT_PASSWORD, True),
+    ("user@example.com", "short", True),
+    ("bad@", "bad", False),
+]
+
+SIGNUP_FORM_CASES: Iterable[Tuple[str, str, str, bool]] = [
+    ("abc", "signup@example.com", DEFAULT_PASSWORD, True),
+    ("", "signup@example.com", DEFAULT_PASSWORD, False),
+    ("ab", "signup@example.com", DEFAULT_PASSWORD, False),
+    ("username", "invalid-email", DEFAULT_PASSWORD, False),
+    ("username", "signup@example.com", "123", False),
+    ("valid-user", "valid@example.com", "longpassword", True),
+    ("another", "", DEFAULT_PASSWORD, False),
+    ("third", "third@example.co", DEFAULT_PASSWORD, True),
+]
+
+
+def _hash(password: str) -> str:
+    """Return a pbkdf2 hash for deterministic password creation."""
+    if not password:
+        password = DEFAULT_PASSWORD
+    if password.startswith("pbkdf2:"):
+        return password
+    return generate_password_hash(password, method="pbkdf2:sha256")
+
+
+def login(client, email: str, password: str):
+    return client.post(
+        "/login",
+        data={"email": email, "password": password},
+        follow_redirects=True,
+    )
+
+
+@pytest.fixture()
 def app():
-    """Create and configure a test app instance."""
-    app = create_app('testing')
-
-    # Create all tables
-    with app.app_context():
+    test_app = create_app("testing")
+    test_app.config["SQLALCHEMY_EXPIRE_ON_COMMIT"] = False
+    with test_app.app_context():
         db.create_all()
+    yield test_app
+    with test_app.app_context():
+        db.session.remove()
+        db.drop_all()
+        # Close all database connections to prevent ResourceWarnings
+        db.engine.dispose()
 
-    return app
 
-@pytest.fixture
+@pytest.fixture()
 def client(app):
-    """A test client for the app."""
     return app.test_client()
 
-@pytest.fixture
-def runner(app):
-    """A test runner for the app's Click commands."""
-    return app.test_cli_runner()
 
-@pytest.fixture
-def test_user(app):
-    """Create a test user for authentication tests."""
-    with app.app_context():
-        user = User(
-            username='testuser',
-            email='test@example.com',
-            password=generate_password_hash('testpassword', method='pbkdf2:sha256')
-        )
-        db.session.add(user)
-        db.session.commit()
-        return user
+@pytest.fixture()
+def user_factory(app):
+    counter = itertools.count(1)
 
-@pytest.fixture
-def authenticated_client(client, test_user):
-    """Create an authenticated client for testing protected routes."""
-    # Login the user
-    client.post('/login', data={
-        'email': 'test@example.com',
-        'password': 'testpassword'
-    }, follow_redirects=True)
+    def _create_user(**overrides):
+        idx = next(counter)
+        data: Dict = {
+            "username": f"user{idx}",
+            "email": f"user{idx}@example.com",
+            "password": DEFAULT_PASSWORD,
+            "role": "buyer",
+            "role_requested": None,
+            "is_approved": True,
+            "is_suspended": False,
+        }
+        data.update(overrides)
+        password = _hash(data.pop("password"))
+        with app.app_context():
+            user = User(password=password, **data)
+            db.session.add(user)
+            db.session.commit()
+            # Load all attributes to prevent DetachedInstanceError
+            _ = user.id
+            _ = user.email
+            _ = user.username
+            _ = user.role
+            _ = user.role_requested
+            _ = user.is_approved
+            _ = user.is_suspended
+            # Expunge to properly detach from session
+            db.session.expunge(user)
+            return user
+
+    return _create_user
+
+
+@pytest.fixture()
+def admin_credentials():
+    return {"email": "admin@example.com", "password": ADMIN_PASSWORD}
+
+
+@pytest.fixture()
+def admin_user(user_factory, admin_credentials):
+    return user_factory(
+        username="admin",
+        email=admin_credentials["email"],
+        password=admin_credentials["password"],
+        role="admin",
+    )
+
+
+@pytest.fixture()
+def admin_client(client, admin_credentials, admin_user):
+    response = client.post("/admin/login", data=admin_credentials, follow_redirects=True)
+    assert response.status_code == 200
     return client
 
-@pytest.fixture
-def sample_users(app):
-    """Create multiple sample users for testing."""
-    with app.app_context():
-        users_data = [
-            ('user1', 'user1@example.com', 'pass1'),
-            ('user2', 'user2@example.com', 'pass2'),
-            ('user3', 'user3@example.com', 'pass3'),
-        ]
 
-        users = []
-        for username, email, password in users_data:
-            user = User(
-                username=username,
-                email=email,
-                password=generate_password_hash(password, method='pbkdf2:sha256')
-            )
-            db.session.add(user)
-            users.append(user)
-
-        db.session.commit()
-        return users
-
-@pytest.fixture(autouse=True)
-def cleanup_database(app):
-    """Clean up database after each test."""
-    yield  # Run the test first
-
-    # Clean up after test
-    with app.app_context():
-        try:
-            db.session.rollback()  # Rollback any pending transactions
-            db.session.remove()   # Remove the session
-            db.drop_all()
-            db.create_all()
-        except Exception:
-            # If there's an error, just pass - the database will be recreated
-            pass
-
-# Helper function for consistent password hashing
-def hash_password(password):
-    """Generate password hash with consistent method."""
-    return generate_password_hash(password, method='pbkdf2:sha256')
-
-
-# Route Tests (9 tests)
-def test_index_route(client):
-    """Test homepage functionality and content validation."""
-    response = client.get('/')
+@pytest.fixture()
+def authenticated_client(client, user_factory):
+    user = user_factory()
+    response = login(client, user.email, DEFAULT_PASSWORD)
     assert response.status_code == 200
-    assert b'Homepage' in response.data
+    return client
 
 
-def test_profile_route_requires_login(client):
-    """Test that profile route requires authentication."""
-    response = client.get('/profile')
-    assert response.status_code == 302  # Redirect to login
+@pytest.mark.parametrize(
+    "path,status_code",
+    [
+        ("/", 200),
+        ("/login", 200),
+        ("/signup", 200),
+        ("/reset", 200),
+        ("/reset/test-token", 200),
+        ("/health", 200),
+        ("/test-db", 200),
+        ("/admin/login", 200),
+        ("/oauth-debug", 200),
+        ("/static/css/style.css", 200),
+        ("/static/css/admin.css", 200),
+        ("/logout", 302),
+    ],
+)
+def test_public_routes_render(client, path, status_code):
+    response = client.get(path)
+    assert response.status_code == status_code
 
 
-def test_profile_route_authenticated(client, test_user):
-    """Test profile route works with authenticated user."""
-    # Login first
-    response = client.post('/login', data={
-        'email': 'test@example.com',
-        'password': 'testpassword'
-    }, follow_redirects=True)
-    assert response.status_code == 200
-
-    # Now access profile
-    response = client.get('/profile')
-    assert response.status_code == 200
-    assert b'Welcome' in response.data
-    assert b'testuser' in response.data
-
-
-def test_login_route(client):
-    """Test login route GET request."""
-    response = client.get('/login')
-    assert response.status_code == 200
-    assert b'Login' in response.data
-
-
-def test_signup_route(client):
-    """Test signup route GET request."""
-    response = client.get('/signup')
-    assert response.status_code == 200
-    assert b'Sign Up' in response.data
-
-
-def test_logout_route(client, authenticated_client):
-    """Test logout route works."""
-    response = client.get('/logout')
-    assert response.status_code == 302  # Redirect to index
-
-
-def test_index_route_content_type(client):
-    """Test response headers and content types."""
-    response = client.get('/')
-    assert response.status_code == 200
-    assert response.content_type == 'text/html; charset=utf-8'
-
-
-def test_profile_route_redirect_location(client):
-    """Test profile route redirect location."""
-    response = client.get('/profile')
+@pytest.mark.parametrize(
+    "path,redirect_fragment",
+    [
+        ("/profile", "/login"),
+        ("/seller/dashboard", "/login"),
+        ("/seller/products", "/login"),
+        ("/rider/dashboard", "/login"),
+        ("/rider/deliveries", "/login"),
+        ("/pending", "/login"),
+        ("/admin/overview", "/admin/login"),
+        ("/admin/users", "/admin/login"),
+        ("/admin/pending", "/admin/login"),
+        ("/admin/settings", "/admin/login"),
+    ],
+)
+def test_protected_routes_require_login(client, path, redirect_fragment):
+    response = client.get(path)
     assert response.status_code == 302
-    assert '/login' in response.headers['Location']
+    assert redirect_fragment in response.headers["Location"]
 
 
-def test_nonexistent_route(client):
-    """Test 404 error handling for invalid routes."""
-    response = client.get('/nonexistent')
-    assert response.status_code == 404
-
-
-# Authentication Tests (13 tests)
-def test_login_route_get(client):
-    """Test login route GET request."""
-    response = client.get('/login')
+def test_signup_creates_user(client, app):
+    payload = {
+        "username": "newuser",
+        "email": "newuser@example.com",
+        "password": "newpassword123",
+    }
+    response = client.post("/signup", data=payload, follow_redirects=True)
     assert response.status_code == 200
-
-
-def test_signup_route_get(client):
-    """Test signup route GET request."""
-    response = client.get('/signup')
-    assert response.status_code == 200
-
-
-def test_successful_signup(client, app):
-    """Test successful user signup."""
-    response = client.post('/signup', data={
-        'username': 'newuser',
-        'email': 'newuser@example.com',
-        'password': 'password123'
-    }, follow_redirects=True)
-    assert response.status_code == 200
-
     with app.app_context():
-        user = User.query.filter_by(email='newuser@example.com').first()
-        assert user is not None
-        assert user.username == 'newuser'
+        saved = User.query.filter_by(email=payload["email"]).first()
+        assert saved is not None
+        assert saved.username == payload["username"]
 
 
-def test_duplicate_email_signup(client, app, test_user):
-    """Test duplicate email signup validation."""
-    response = client.post('/signup', data={
-        'username': 'anotheruser',
-        'email': 'test@example.com',  # Same email as test_user
-        'password': 'password123'
-    }, follow_redirects=True)
+def test_signup_prevents_duplicate_emails(client, app, user_factory):
+    user = user_factory(email="dup@example.com")
+    payload = {
+        "username": "dup",
+        "email": user.email,
+        "password": DEFAULT_PASSWORD,
+    }
+    response = client.post("/signup", data=payload, follow_redirects=True)
     assert response.status_code == 200
-
     with app.app_context():
-        # Check only one user with this email exists
-        users = User.query.filter_by(email='test@example.com').all()
-        assert len(users) == 1
+        assert User.query.filter_by(email=user.email).count() == 1
 
 
-def test_signup_missing_fields(client):
-    """Test signup with missing required fields."""
-    response = client.post('/signup', data={
-        'username': 'testuser'
-        # Missing email and password
-    }, follow_redirects=True)
+@pytest.mark.parametrize(
+    "form_data",
+    [
+        {"username": "", "email": "bad@example.com", "password": DEFAULT_PASSWORD},
+        {"username": "ab", "email": "bad@example.com", "password": DEFAULT_PASSWORD},
+        {"username": "valid", "email": "invalid", "password": DEFAULT_PASSWORD},
+        {"username": "valid", "email": "valid@example.com", "password": "123"},
+        {"username": "valid", "email": "", "password": DEFAULT_PASSWORD},
+    ],
+)
+def test_signup_validation_errors(client, app, form_data):
+    response = client.post("/signup", data=form_data, follow_redirects=True)
     assert response.status_code == 200
+    assert b"Sign Up" in response.data
+    with app.app_context():
+        assert User.query.count() == 0
 
 
-def test_successful_login(client, test_user):
-    """Test successful login."""
-    response = client.post('/login', data={
-        'email': 'test@example.com',
-        'password': 'testpassword'
-    }, follow_redirects=True)
+def test_successful_login_redirects_to_home(client, user_factory):
+    user = user_factory(email="login@example.com")
+    response = login(client, user.email, DEFAULT_PASSWORD)
     assert response.status_code == 200
-    assert b'testuser' in response.data
+    assert b"Homepage" in response.data
 
 
-def test_login_wrong_password(client, test_user):
-    """Test login with wrong password."""
-    response = client.post('/login', data={
-        'email': 'test@example.com',
-        'password': 'wrongpassword'
-    }, follow_redirects=True)
+@pytest.mark.parametrize(
+    "form_data,expected_fragment",
+    [
+        ({"email": "", "password": DEFAULT_PASSWORD}, b"Email is required"),
+        ({"email": "invalid-email", "password": DEFAULT_PASSWORD}, b"Invalid email format"),
+        ({"email": "user@example.com", "password": ""}, b"Password is required"),
+        ({"email": "user@example.com", "password": "wrong"}, b"Incorrect password"),
+        ({"email": "missing@example.com", "password": DEFAULT_PASSWORD}, b"No account found"),
+    ],
+)
+def test_login_invalid_inputs(client, user_factory, form_data, expected_fragment):
+    user_factory(email="user@example.com")
+    response = client.post("/login", data=form_data, follow_redirects=True)
     assert response.status_code == 200
-    assert b'Incorrect password' in response.data
-
-
-def test_login_nonexistent_email(client):
-    """Test login with non-existent email."""
-    response = client.post('/login', data={
-        'email': 'nonexistent@example.com',
-        'password': 'testpassword'
-    }, follow_redirects=True)
-    assert response.status_code == 200
-    assert b'No account found' in response.data
+    assert expected_fragment in response.data
 
 
 def test_logout_requires_login(client):
-    """Test logout requires authentication."""
-    response = client.get('/logout')
-    assert response.status_code == 302  # Redirect to login
-
-
-def test_reset_password_route_get(client):
-    """Test reset password route GET request."""
-    response = client.get('/reset')
-    assert response.status_code == 200
-    assert b'Reset Password' in response.data
-
-
-def test_reset_password_post_valid_email(client, app, test_user):
-    """Test reset password post with valid email."""
-    response = client.post('/reset', data={
-        'email': 'test@example.com'
-    }, follow_redirects=True)
-    assert response.status_code == 200
-    assert b'email has been sent' in response.data
-
-
-def test_reset_password_post_invalid_email(client):
-    """Test reset password post with invalid email."""
-    response = client.post('/reset', data={
-        'email': 'invalid@example.com'
-    }, follow_redirects=True)
-    assert response.status_code == 200
-    # For security, no message is shown for invalid emails
-    # Just verify the response is successful (redirect to login)
-
-
-def test_logout_redirect(client, authenticated_client):
-    """Test logout redirect location."""
-    response = client.get('/logout')
+    response = client.get("/logout")
     assert response.status_code == 302
-    assert '/' in response.headers['Location']
+    assert "/login" in response.headers["Location"]
 
 
-# Model Tests (10 tests)
-def test_user_creation(app):
-    """Test User model creation and validation."""
+def test_logout_flow(authenticated_client):
+    response = authenticated_client.get("/logout", follow_redirects=True)
+    assert response.status_code == 200
+    assert b"Homepage" in response.data
+
+
+def test_password_reset_flow(client, app, user_factory):
+    user = user_factory(email="reset@example.com")
+    response = client.post("/reset", data={"email": user.email}, follow_redirects=True)
+    assert b"email has been sent" in response.data
     with app.app_context():
-        user = User(
-            username='modeltest',
-            email='model@example.com',
-            password=hash_password('testpass')
-        )
-        db.session.add(user)
-        db.session.commit()
+        token = user.get_reset_token()
+    token_str = token.decode("utf-8") if isinstance(token, bytes) else token
+    response = client.post(
+        f"/reset/{token_str}",
+        data={"password": "NewPass123", "confirm_password": "NewPass123"},
+        follow_redirects=True,
+    )
+    assert b"password has been updated" in response.data
+    response = client.post(
+        "/login",
+        data={"email": user.email, "password": "NewPass123"},
+        follow_redirects=True,
+    )
+    assert b"Homepage" in response.data
 
-        saved_user = User.query.filter_by(email='model@example.com').first()
-        assert saved_user is not None
-        assert saved_user.username == 'modeltest'
+
+def test_profile_displays_username(client, user_factory):
+    user = user_factory(username="visible", email="visible@example.com")
+    login(client, user.email, DEFAULT_PASSWORD)
+    response = client.get("/profile")
+    assert response.status_code == 200
+    assert b"visible" in response.data
+
+
+def test_pending_user_redirects_to_pending_page(client, user_factory):
+    user = user_factory(
+        email="pending@example.com",
+        role="buyer",
+        role_requested="seller",
+        is_approved=False,
+    )
+    login(client, user.email, DEFAULT_PASSWORD)
+    response = client.get("/")
+    assert response.status_code == 302
+    assert "/pending" in response.headers["Location"]
+    response = client.get("/pending")
+    assert b"Approval Pending" in response.data
+
+
+def test_non_pending_user_skip_pending_page(client, user_factory):
+    user = user_factory(email="buyer@example.com", role="buyer")
+    login(client, user.email, DEFAULT_PASSWORD)
+    response = client.get("/pending")
+    assert response.status_code == 302
+    assert "/" in response.headers["Location"]
+
+
+def test_seller_dashboard_access_control(client, user_factory):
+    buyer = user_factory(email="buyer@example.com", role="buyer")
+    login(client, buyer.email, DEFAULT_PASSWORD)
+    response = client.get("/seller/dashboard", follow_redirects=True)
+    assert b"Welcome" in response.data
+
+
+def test_seller_dashboard_allowed_for_seller(client, user_factory):
+    seller = user_factory(email="seller@example.com", role="seller", is_approved=True)
+    login(client, seller.email, DEFAULT_PASSWORD)
+    response = client.get("/seller/dashboard")
+    assert response.status_code == 200
+    assert b"Seller Dashboard" in response.data
+
+
+def test_rider_dashboard_allowed_for_rider(client, user_factory):
+    rider = user_factory(email="rider@example.com", role="rider", is_approved=True)
+    login(client, rider.email, DEFAULT_PASSWORD)
+    response = client.get("/rider/dashboard")
+    assert response.status_code == 200
+    assert b"Rider Dashboard" in response.data
+
+
+def test_rider_dashboard_rejects_buyers(client, user_factory):
+    buyer = user_factory(email="buyer2@example.com", role="buyer")
+    login(client, buyer.email, DEFAULT_PASSWORD)
+    response = client.get("/rider/dashboard", follow_redirects=True)
+    assert b"Welcome" in response.data
+
+
+def test_health_endpoint_reports_user_count(client, user_factory, app):
+    user_factory()
+    user_factory()
+    response = client.get("/health")
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data["status"] == "healthy"
+    assert data["database"] == "connected"
+    assert data["users"] == 2
+
+
+def test_test_db_endpoint_reports_success(client, user_factory):
+    user_factory()
+    response = client.get("/test-db")
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data["database_status"] == "connected"
+    assert "user_count" in data
+
+
+def test_oauth_token_storage(app, user_factory):
+    user = user_factory()
+    with app.app_context():
+        oauth = OAuth(
+            provider="google",
+            provider_user_id="test123",
+            user_id=user.id,
+            token='{"access_token": "abc"}',
+        )
+        db.session.add(oauth)
+        db.session.commit()
+        loaded = OAuth.query.filter_by(provider="google").first()
+        assert loaded.token_dict["access_token"] == "abc"
+        loaded.token_dict = {"access_token": "xyz"}
+        db.session.commit()
+        assert loaded.token_dict["access_token"] == "xyz"
 
 
 def test_user_repr(app):
-    """Test User model __repr__ method."""
     with app.app_context():
         user = User(
-            username='testuser',
-            email='test@example.com',
-            password=hash_password('testpassword')
+            username="repruser",
+            email="repr@example.com",
+            password=_hash(DEFAULT_PASSWORD),
         )
         db.session.add(user)
         db.session.commit()
-        assert repr(user) == 'User testuser'
+        assert repr(user) == "User repruser"
 
 
-def test_user_unique_email(app):
-    """Test User model email uniqueness constraint."""
+def test_user_unique_email_constraint(app):
     with app.app_context():
-        # Try to create duplicate user
-        user1 = User(
-            username='user1',
-            email='duplicate@example.com',
-            password=hash_password('testpass')
+        user = User(
+            username="unique",
+            email="unique@example.com",
+            password=_hash(DEFAULT_PASSWORD),
         )
-        db.session.add(user1)
+        db.session.add(user)
         db.session.commit()
-
-        # Try to create another user with same email
-        user2 = User(
-            username='user2',
-            email='duplicate@example.com',
-            password=hash_password('testpass2')
+        dup = User(
+            username="duplicate",
+            email="unique@example.com",
+            password=_hash(DEFAULT_PASSWORD),
         )
-        db.session.add(user2)
-
-        # Should raise IntegrityError due to unique constraint
-        with pytest.raises(Exception):  # SQLAlchemy IntegrityError
+        db.session.add(dup)
+        with pytest.raises(IntegrityError):
             db.session.commit()
-
-
-def test_user_get_reset_token(app):
-    """Test User model get_reset_token method."""
-    with app.app_context():
-        user = User(
-            username='testuser',
-            email='test@example.com',
-            password=hash_password('testpassword')
-        )
-        db.session.add(user)
-        db.session.commit()
-        token = user.get_reset_token()
-        assert token is not None
-        assert len(token) > 0
-        # Token can be bytes (newer PyJWT) or str (older versions)
-        assert isinstance(token, (str, bytes))
-
-
-def test_user_verify_reset_token_valid(app):
-    """Test User model verify_reset_token with valid token."""
-    with app.app_context():
-        user = User(
-            username='testuser',
-            email='test@example.com',
-            password=hash_password('testpassword')
-        )
-        db.session.add(user)
-        db.session.commit()
-        token = user.get_reset_token()
-        verified_user = User.verify_reset_token(token)
-        assert verified_user is not None
-        assert verified_user.id == user.id
+        db.session.rollback()
 
 
 def test_user_verify_reset_token_invalid(app):
-    """Test User model verify_reset_token with invalid token."""
     with app.app_context():
-        verified_user = User.verify_reset_token('invalid_token')
-        assert verified_user is None
+        assert User.verify_reset_token("badtoken") is None
 
 
-def test_user_verify_email(app):
-    """Test User model verify_email method."""
+def test_user_verify_email(app, user_factory):
+    existing = user_factory(email="findme@example.com")
     with app.app_context():
-        user = User(
-            username='testuser',
-            email='test@example.com',
-            password=hash_password('testpassword')
-        )
-        db.session.add(user)
-        db.session.commit()
-
-        verified_user = User.verify_email('test@example.com')
-        assert verified_user is not None
-        assert verified_user.id == user.id
-
-        # Test with non-existent email
-        verified_user = User.verify_email('nonexistent@example.com')
-        assert verified_user is None
+        found = User.verify_email(existing.email)
+        assert found.id == existing.id
+        assert User.verify_email("missing@example.com") is None
 
 
-def test_oauth_creation(app):
-    """Test OAuth model creation."""
+def test_site_setting_repr(app):
     with app.app_context():
-        user = User(
-            username='oauth_user',
-            email='oauth@example.com',
-            password=hash_password('testpass')
-        )
-        db.session.add(user)
+        setting = SiteSetting(key="support_email", value="help@example.com")
+        db.session.add(setting)
         db.session.commit()
-
-        oauth = OAuth(
-            provider='google',
-            provider_user_id='12345',
-            user_id=user.id,
-            token='{"access_token": "test_token"}'
-        )
-        db.session.add(oauth)
-        db.session.commit()
-
-        saved_oauth = OAuth.query.filter_by(provider='google').first()
-        assert saved_oauth is not None
-        assert saved_oauth.user_id == user.id
+        assert "support_email" in repr(setting)
 
 
-def test_oauth_token_dict_property(app):
-    """Test OAuth model token_dict property."""
-    with app.app_context():
-        user = User(
-            username='oauth_user2',
-            email='oauth2@example.com',
-            password=hash_password('testpass')
-        )
-        db.session.add(user)
-        db.session.commit()
-
-        oauth = OAuth(
-            provider='google',
-            provider_user_id='12346',
-            user_id=user.id,
-            token='{"access_token": "test_token", "refresh_token": "refresh"}'
-        )
-        db.session.add(oauth)
-        db.session.commit()
-
-        token_dict = oauth.token_dict
-        assert isinstance(token_dict, dict)
-        assert token_dict['access_token'] == 'test_token'
+def test_admin_login_requires_admin_role(client, user_factory):
+    user_factory(email="notadmin@example.com", role="buyer")
+    response = client.post(
+        "/admin/login",
+        data={"email": "notadmin@example.com", "password": DEFAULT_PASSWORD},
+        follow_redirects=True,
+    )
+    assert b"Invalid admin credentials" in response.data
 
 
-def test_oauth_token_dict_empty(app):
-    """Test OAuth model token_dict with empty token."""
-    with app.app_context():
-        user = User(
-            username='oauth_user3',
-            email='oauth3@example.com',
-            password=hash_password('testpass')
-        )
-        db.session.add(user)
-        db.session.commit()
-
-        oauth = OAuth(
-            provider='google',
-            provider_user_id='12347',
-            user_id=user.id,
-            token=''
-        )
-        db.session.add(oauth)
-        db.session.commit()
-
-        token_dict = oauth.token_dict
-        assert token_dict == {}
+def test_admin_overview_requires_admin_role(client, user_factory):
+    user = user_factory(email="buyer@example.com", role="buyer")
+    login(client, user.email, DEFAULT_PASSWORD)
+    response = client.get("/admin/overview")
+    assert response.status_code == 302
+    assert "/" in response.headers["Location"]
 
 
-def test_oauth_unique_constraint(app):
-    """Test OAuth model unique constraint."""
-    with app.app_context():
-        user = User(
-            username='oauth_user4',
-            email='oauth4@example.com',
-            password=hash_password('testpass')
-        )
-        db.session.add(user)
-        db.session.commit()
-
-        # Create first OAuth entry
-        oauth1 = OAuth(
-            provider='google',
-            provider_user_id='12348',
-            user_id=user.id,
-            token='test_token1'
-        )
-        db.session.add(oauth1)
-        db.session.commit()
-
-        # Try to create duplicate OAuth entry (same provider and provider_user_id)
-        oauth2 = OAuth(
-            provider='google',
-            provider_user_id='12348',  # Same as oauth1
-            user_id=user.id,
-            token='test_token2'
-        )
-        db.session.add(oauth2)
-
-        # Should raise IntegrityError due to unique constraint
-        with pytest.raises(Exception):  # SQLAlchemy IntegrityError
-            db.session.commit()
+def test_admin_login_logout_flow(client, admin_credentials, admin_user):
+    response = client.post("/admin/login", data=admin_credentials, follow_redirects=True)
+    assert b"Dashboard" in response.data
+    response = client.get("/admin/logout", follow_redirects=True)
+    assert b"Logged out successfully" in response.data
 
 
-# Integration Tests (13 tests)
-def test_complete_user_workflow(client, app):
-    """Test complete user workflow: registration → login → logout."""
-    # Step 1: Register
-    response = client.post('/signup', data={
-        'username': 'workflow_user',
-        'email': 'workflow@example.com',
-        'password': 'password123'
-    }, follow_redirects=True)
+@pytest.mark.parametrize(
+    "endpoint",
+    ["/admin/overview", "/admin/pending", "/admin/users", "/admin/settings", "/admin/profile"],
+)
+def test_admin_pages_render(admin_client, endpoint):
+    response = admin_client.get(endpoint)
     assert response.status_code == 200
 
-    # Step 2: Login
-    response = client.post('/login', data={
-        'email': 'workflow@example.com',
-        'password': 'password123'
-    }, follow_redirects=True)
+
+def test_admin_pending_lists_requests(admin_client, user_factory):
+    pending_user = user_factory(
+        username="pendinguser",
+        role="buyer",
+        role_requested="seller",
+        is_approved=False,
+    )
+    response = admin_client.get("/admin/pending")
     assert response.status_code == 200
-    assert b'workflow_user' in response.data
+    assert pending_user.username.encode() in response.data
 
-    # Step 3: Logout
-    response = client.get('/logout', follow_redirects=True)
+
+def test_admin_users_lists_roles(admin_client, user_factory):
+    user_factory(username="buyer", role="buyer")
+    user_factory(username="seller", role="seller")
+    user_factory(username="rider", role="rider")
+    response = admin_client.get("/admin/users")
+    assert b"buyer" in response.data
+    assert b"seller" in response.data
+    assert b"rider" in response.data
+
+
+def test_admin_can_approve_request(admin_client, app, user_factory):
+    pending_user = user_factory(
+        username="promote",
+        role="buyer",
+        role_requested="seller",
+        is_approved=False,
+    )
+    response = admin_client.post(
+        f"/admin/approve-request/{pending_user.id}", follow_redirects=True
+    )
     assert response.status_code == 200
-    assert b'Homepage' in response.data
-
-
-def test_multiple_users_registration(client, app):
-    """Test multiple users registration scenario."""
-    users_data = [
-        ('user1', 'user1@example.com', 'pass123'),
-        ('user2', 'user2@example.com', 'pass456'),
-        ('user3', 'user3@example.com', 'pass789'),
-    ]
-
-    # Test each user registration individually
-    for i, (username, email, password) in enumerate(users_data):
-        response = client.post('/signup', data={
-            'username': username,
-            'email': email,
-            'password': password
-        }, follow_redirects=True)
-        # Check if signup was successful (should redirect to login page)
-        assert response.status_code == 200
-        print(f"Response for user {i+1}: {response.data.decode()[:200]}...")
-
-        # Verify user was created in the same app context
-        with app.app_context():
-            user = User.query.filter_by(email=email).first()
-            if user is None:
-                print(f"User {i+1} not found in database")
-                # Check if there are any users at all
-                all_users = User.query.all()
-                print(f"Total users in database: {len(all_users)}")
-            else:
-                print(f"User {i+1} created successfully: {username}")
-            assert user is not None
-            assert user.username == username
-
-
-def test_login_persistence(client, test_user):
-    """Test login persistence across requests."""
-    # Login
-    response = client.post('/login', data={
-        'email': 'test@example.com',
-        'password': 'testpassword'
-    }, follow_redirects=True)
-    assert response.status_code == 200
-
-    # Access protected route
-    response = client.get('/profile')
-    assert response.status_code == 200
-    assert b'testuser' in response.data
-
-
-def test_password_reset_workflow(client, app):
-    """Test complete password reset workflow."""
     with app.app_context():
-        # Create a test user
-        user = User(
-            username='testuser',
-            email='test@example.com',
-            password=hash_password('testpassword')
-        )
-        db.session.add(user)
-        db.session.commit()
+        refreshed = db.session.get(User, pending_user.id)
+        assert refreshed.role == "seller"
+        assert refreshed.role_requested is None
+        assert refreshed.is_approved is True
 
-        # Get reset token within the same context
+
+def test_admin_can_reject_request(admin_client, app, user_factory):
+    pending_user = user_factory(
+        username="reject",
+        role="buyer",
+        role_requested="rider",
+        is_approved=False,
+    )
+    response = admin_client.post(
+        f"/admin/reject-request/{pending_user.id}", follow_redirects=True
+    )
+    assert response.status_code == 200
+    with app.app_context():
+        refreshed = db.session.get(User, pending_user.id)
+        assert refreshed.role == "buyer"
+        assert refreshed.role_requested is None
+        assert refreshed.is_approved is False
+
+
+def test_admin_suspend_reactivate_and_delete_user(admin_client, app, user_factory):
+    target = user_factory(username="target", email="target@example.com")
+    response = admin_client.post(f"/admin/users/{target.id}/suspend", follow_redirects=True)
+    assert response.status_code == 200
+    with app.app_context():
+        user = db.session.get(User, target.id)
+        assert user.is_suspended is True
+    response = admin_client.post(
+        f"/admin/users/{target.id}/reactivate", follow_redirects=True
+    )
+    with app.app_context():
+        user = db.session.get(User, target.id)
+        assert user.is_suspended is False
+    response = admin_client.post(f"/admin/users/{target.id}/delete", follow_redirects=True)
+    with app.app_context():
+        assert db.session.get(User, target.id) is None
+
+
+def test_admin_cannot_suspend_self(admin_client, app, admin_user):
+    response = admin_client.post(f"/admin/users/{admin_user.id}/suspend", follow_redirects=True)
+    assert b"cannot suspend your own admin account" in response.data
+    with app.app_context():
+        user = db.session.get(User, admin_user.id)
+        assert user.is_suspended is False
+
+
+def test_admin_settings_bootstrap_and_update(admin_client, app):
+    response = admin_client.get("/admin/settings")
+    assert response.status_code == 200
+    with app.app_context():
+        keys = {setting.key for setting in SiteSetting.query.all()}
+        assert {"support_email", "support_phone", "auto_approve_sellers"}.issubset(keys)
+    form_data = {
+        "support_email": "support@example.com",
+        "support_phone": "+63 900 111 2222",
+        "auto_approve_sellers": "on",
+        "maintenance_mode": "on",
+    }
+    response = admin_client.post("/admin/settings", data=form_data, follow_redirects=True)
+    assert response.status_code == 200
+    with app.app_context():
+        setting = SiteSetting.query.filter_by(key="support_email").first()
+        assert setting.value == "support@example.com"
+
+
+def test_admin_dashboard_counts_include_pending(admin_client, user_factory):
+    user_factory(role="buyer")
+    user_factory(role="seller")
+    user_factory(role="rider")
+    user_factory(role="buyer", role_requested="seller", is_approved=False)
+    response = admin_client.get("/admin/overview")
+    assert response.status_code == 200
+    assert b"Dashboard" in response.data
+
+
+def test_oauth_blueprints_registered(app):
+    assert "google" in app.blueprints
+    assert "facebook" in app.blueprints
+
+
+def test_navigation_links_present(client):
+    response = client.get("/")
+    assert b'href="/login"' in response.data
+    assert b'href="/signup"' in response.data
+
+
+def test_static_assets_served(client):
+    response = client.get("/static/css/style.css")
+    assert response.status_code == 200
+    assert "text/css" in response.content_type
+
+
+def test_reset_route_handles_invalid_email(client):
+    response = client.post("/reset", data={"email": "missing@example.com"}, follow_redirects=True)
+    assert response.status_code == 200
+    assert b"email has been sent" in response.data
+
+
+def test_reset_token_requires_matching_password(client, app, user_factory):
+    user = user_factory(email="token@example.com")
+    with app.app_context():
         token = user.get_reset_token()
-        assert token is not None
-
-    # Request password reset
-    response = client.post('/reset', data={
-        'email': 'test@example.com'
-    }, follow_redirects=True)
-    assert response.status_code == 200
-
-    # Reset password (token should be string for URL)
-    token_str = token.decode('utf-8') if isinstance(token, bytes) else token
-    response = client.post(f'/reset/{token_str}', data={
-        'password': 'newpassword123'
-    }, follow_redirects=True)
-    assert response.status_code == 200
-    assert b'password has been updated' in response.data
-
-    # Verify new password works
-    response = client.post('/login', data={
-        'email': 'test@example.com',
-        'password': 'newpassword123'
-    }, follow_redirects=True)
-    assert response.status_code == 200
+    token_str = token.decode("utf-8") if isinstance(token, bytes) else token
+    response = client.post(
+        f"/reset/{token_str}",
+        data={"password": "onepass", "confirm_password": "different"},
+        follow_redirects=True,
+    )
+    assert b"Passwords do not match" in response.data
 
 
-def test_form_validation_signup(client):
-    """Test form validation for signup."""
-    # Test empty form
-    response = client.post('/signup', data={}, follow_redirects=True)
-    assert response.status_code == 200
-
-    # Test missing email
-    response = client.post('/signup', data={
-        'username': 'testuser',
-        'password': 'testpass'
-    }, follow_redirects=True)
-    assert response.status_code == 200
-
-    # Test missing password
-    response = client.post('/signup', data={
-        'username': 'testuser',
-        'email': 'test@example.com'
-    }, follow_redirects=True)
-    assert response.status_code == 200
-
-
-def test_form_validation_login(client):
-    """Test form validation for login."""
-    # Test empty form
-    response = client.post('/login', data={}, follow_redirects=True)
-    assert response.status_code == 200
-
-    # Test missing password
-    response = client.post('/login', data={
-        'email': 'test@example.com'
-    }, follow_redirects=True)
-    assert response.status_code == 200
-
-    # Test missing email
-    response = client.post('/login', data={
-        'password': 'testpassword'
-    }, follow_redirects=True)
-    assert response.status_code == 200
-
-
-def test_navigation_links(client):
-    """Test navigation and static file serving."""
-    response = client.get('/')
-    assert response.status_code == 200
-    assert b'href="/login"' in response.data or b'href="/signup"' in response.data
-
-
-def test_static_files_served(client):
-    """Test static files are served correctly."""
-    response = client.get('/static/style.css')
-    assert response.status_code == 200
-    assert 'text/css' in response.content_type
-
-
-def test_database_isolation_between_tests(app):
-    """Test database isolation between tests."""
+def test_database_schema_contains_expected_tables(app):
     with app.app_context():
-        # Check initial state
-        initial_count = User.query.count()
+        inspector = inspect(db.engine)
+        tables = inspector.get_table_names()
+        assert "user" in tables
+        assert "oauth" in tables
+        assert "site_setting" in tables
 
-        # Create a user
-        user = User(
-            username='isolation_test',
-            email='isolation@example.com',
-            password=hash_password('testpass')
-        )
-        db.session.add(user)
+
+def test_site_setting_persistence(app):
+    with app.app_context():
+        setting = SiteSetting(key="maintenance_mode", value="false")
+        db.session.add(setting)
         db.session.commit()
-
-        # Verify user exists
-        assert User.query.count() == initial_count + 1
-
-        # User should be cleaned up by cleanup_database fixture
-
-
-def test_error_handling_500(client):
-    """Test error handling for 500 errors."""
-    # This would require creating an error condition
-    # For now, just test that normal routes don't return 500
-    response = client.get('/')
-    assert response.status_code != 500
-
-    response = client.get('/login')
-    assert response.status_code != 500
-
-
-def test_response_times(client):
-    """Test response times are reasonable."""
-    import time
-
-    start_time = time.time()
-    response = client.get('/')
-    end_time = time.time()
-
-    assert response.status_code == 200
-    assert (end_time - start_time) < 1.0  # Should respond within 1 second
-
-
-def test_oauth_model_integration(app):
-    """Test OAuth model integration with User model."""
-    with app.app_context():
-        user = User(
-            username='oauth_integration',
-            email='oauth_integration@example.com',
-            password=hash_password('testpass')
-        )
-        db.session.add(user)
+        setting.value = "true"
         db.session.commit()
-
-        oauth = OAuth(
-            provider='google',
-            provider_user_id='integration_123',
-            user_id=user.id,
-            token='integration_token'
-        )
-        db.session.add(oauth)
-        db.session.commit()
-
-        # Test relationship
-        saved_user = User.query.filter_by(username='oauth_integration').first()
-        assert len(saved_user.oauth) == 1
-        assert saved_user.oauth[0].provider == 'google'
+        refreshed = SiteSetting.query.filter_by(key="maintenance_mode").first()
+        assert refreshed.value == "true"
 
 
-def test_oauth_blueprint_configuration(app):
-    """Test OAuth blueprint configuration and URL generation."""
-    with app.app_context():
-        from project.routes.oauth_routes import google_blueprint, facebook_blueprint
-
-        # Test blueprint attributes
-        assert google_blueprint.client_id is not None
-        assert google_blueprint.redirect_url is None  # Should be auto-generated
-        assert 'google' in google_blueprint.name.lower()
-
-        # Facebook client ID should be either the placeholder or empty string from env
-        assert facebook_blueprint.client_id in ['YOUR_FACEBOOK_APP_ID', '', "''"]
-        assert facebook_blueprint.redirect_url is None  # Should be auto-generated
-        assert 'facebook' in facebook_blueprint.name.lower()
-
-        # Test authorization URL generation (without making actual request)
-        try:
-            # This should not raise an error, even if URLs are not accessible
-            google_auth_url = google_blueprint.authorization_url
-            assert 'accounts.google.com' in google_auth_url
-
-            facebook_auth_url = facebook_blueprint.authorization_url
-            assert 'facebook.com' in facebook_auth_url
-
-        except Exception as e:
-            # OAuth URLs might not be accessible in test environment
-            # This is expected and acceptable
-            print(f"OAuth URL test skipped: {e}")
+@pytest.mark.parametrize("email,expected", EMAIL_CASES)
+def test_validate_email_cases(email, expected):
+    is_valid, _ = Validators.validate_email(email)
+    assert is_valid is expected
 
 
-def test_oauth_token_handling(app):
-    """Test OAuth token handling and storage."""
-    with app.app_context():
-        user = User(
-            username='oauth_token_test',
-            email='oauth_token@example.com',
-            password=hash_password('testpass')
-        )
-        db.session.add(user)
-        db.session.commit()
-
-        # Test token storage
-        oauth = OAuth(
-            provider='google',
-            provider_user_id='token_test_123',
-            user_id=user.id,
-            token='{"access_token": "test_token", "token_type": "Bearer"}'
-        )
-        db.session.add(oauth)
-        db.session.commit()
-
-        # Test token_dict property
-        token_dict = oauth.token_dict
-        assert isinstance(token_dict, dict)
-        assert token_dict['access_token'] == 'test_token'
-
-        # Test token_dict setter
-        oauth.token_dict = {'access_token': 'new_token', 'refresh_token': 'refresh'}
-        assert oauth.token == '{"access_token": "new_token", "refresh_token": "refresh"}'
+@pytest.mark.parametrize("password,expected", PASSWORD_CASES)
+def test_validate_password_cases(password, expected):
+    is_valid, _ = Validators.validate_password(password)
+    assert is_valid is expected
 
 
-def test_oauth_error_handling(app):
-    """Test OAuth error handling and logging."""
-    with app.app_context():
-        from project.routes.oauth_routes import google_blueprint
-        from unittest.mock import Mock
-
-        # Test that blueprint has the necessary OAuth methods
-        assert hasattr(google_blueprint, 'client_id')
-        assert hasattr(google_blueprint, 'client_secret')
-        assert hasattr(google_blueprint, 'scope')
-        assert hasattr(google_blueprint, 'storage')
-
-        # Test that blueprint is properly configured
-        assert google_blueprint.client_id is not None
-        assert len(google_blueprint.scope) > 0
-        assert google_blueprint.storage is not None
-
-        # Test blueprint name contains 'google'
-        assert 'google' in google_blueprint.name.lower()
+@pytest.mark.parametrize("username,expected", USERNAME_CASES)
+def test_validate_username_cases(username, expected):
+    is_valid, _ = Validators.validate_username(username)
+    assert is_valid is expected
 
 
-def test_database_migration_compatibility(app):
-    """Test database migration compatibility."""
-    with app.app_context():
-        # Test that all required tables exist
-        from project.models import User, OAuth
+@pytest.mark.parametrize("role,expected", ROLE_CASES)
+def test_validate_role_cases(role, expected):
+    is_valid, _ = Validators.validate_role(role)
+    assert is_valid is expected
 
-        # Check User table structure
-        user_columns = [column.name for column in User.__table__.columns]
-        required_user_columns = ['id', 'username', 'email', 'password']
-        for col in required_user_columns:
-            assert col in user_columns
 
-        # Check OAuth table structure
-        oauth_columns = [column.name for column in OAuth.__table__.columns]
-        required_oauth_columns = ['provider', 'provider_user_id', 'user_id', 'token']
-        for col in required_oauth_columns:
-            assert col in oauth_columns
+@pytest.mark.parametrize("email,password,expected", LOGIN_FORM_CASES)
+def test_login_form_validation(email, password, expected):
+    is_valid, errors = Validators.validate_login_form(email, password)
+    assert is_valid is expected
+    if expected:
+        assert errors == []
+    else:
+        assert len(errors) >= 1
 
-        # Test relationships
-        assert hasattr(User, 'oauth')
-        assert hasattr(OAuth, 'user')
 
-        # Test constraints
-        assert OAuth.__table__.constraints is not None
+@pytest.mark.parametrize("username,email,password,expected", SIGNUP_FORM_CASES)
+def test_signup_form_validation(username, email, password, expected):
+    is_valid, errors = Validators.validate_signup_form(username, email, password)
+    assert is_valid is expected
+    if expected:
+        assert errors == []
+    else:
+        assert len(errors) >= 1

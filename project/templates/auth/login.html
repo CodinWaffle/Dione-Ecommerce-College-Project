@@ -16,20 +16,6 @@
 		<a class="btn btn-block btn-outline-primary" href="{{ url_for('facebook.login') }}">  <i class="fab fa-facebook-f"></i>  Login with Facebook</a>
   </p>
   <hr>
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
-            {% if category == 'message' %}
-              <div class="alert alert-danger" role="alert">
-            {% else %}
-              <div class="alert alert-{{ category }}" role="alert">
-            {% endif %}
-              {{ message }}
-            </div>
-        {% endfor %}
-      {% endif %}
-  {% endwith %}
-
     <form method="POST" action="/login">
       <div class="form-group">
         <input name="email" class="form-control" placeholder="user@user.com" type="email" autofocus="">

@@ -11,7 +11,7 @@ class AuthService:
     """Service class for authentication operations"""
 
     @staticmethod
-    def create_user(username, email, password):
+    def create_user(username, email, password, role='buyer'):
         """Create a new user"""
         # Validate required fields
         if not username or not email or not password:
@@ -22,13 +22,29 @@ class AuthService:
         if existing_user:
             return None, "Email address already exists"
 
-        # Create new user
+        desired_role = (role or 'buyer').lower()
         hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
-        new_user = User(
-            username=username,
-            email=email,
-            password=hashed_password
-        )
+
+        # If user applies for seller/rider, create a pending request, otherwise normal creation
+        if desired_role in {'seller', 'rider'}:
+            new_user = User(
+                username=username,
+                email=email,
+                password=hashed_password,
+                role='buyer',
+                role_requested=desired_role,
+                is_approved=False
+            )
+        else:
+            # For buyer/admin: set active role immediately (admin creation should be restricted in production)
+            new_user = User(
+                username=username,
+                email=email,
+                password=hashed_password,
+                role=desired_role if desired_role in {'buyer', 'admin'} else 'buyer',
+                role_requested=None,
+                is_approved=True
+            )
 
         try:
             db.session.add(new_user)
@@ -66,7 +82,7 @@ class AuthService:
             msg.subject = "Login System: Password Reset Request"
             msg.sender = 'dnxncpcx@gmail.com'
             msg.recipients = [user.email]
-            msg.html = render_template('reset_pwd.html', user=user, token=token)
+            msg.html = render_template('auth/reset_pwd.html', user=user, token=token)
 
             mail.send(msg)
             return True, None

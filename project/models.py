@@ -10,10 +10,17 @@ from time import time
 class User(UserMixin, db.Model):
   id = db.Column(db.Integer, primary_key=True)
   email = db.Column(db.String(100), unique=True, nullable=True)  # Allow NULL for OAuth users
-  password = db.Column(db.String(255))  # Increased to 255 for pbkdf2:sha256 hashes
+  password = db.Column(db.String(255))
   username = db.Column(db.String(150))
 
-  # OAuth relationship
+  role = db.Column(db.String(20), nullable=False, default='buyer')
+
+  role_requested = db.Column(db.String(20))
+  is_approved = db.Column(db.Boolean, nullable=False, default=True)
+  created_at = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
+  is_suspended = db.Column(db.Boolean, nullable=False, default=False)
+
+
   oauth = db.relationship('OAuth', back_populates='user')
 
   def __repr__(self):
@@ -28,14 +35,14 @@ class User(UserMixin, db.Model):
   @staticmethod
   def verify_reset_token(token):
     try:
-      # Handle both bytes and string tokens
+
       if isinstance(token, bytes):
         token = token.decode('utf-8')
       username = jwt.decode(token, current_app.config.get('SECRET_KEY', 'random_key'),
                               algorithms=['HS256'])['reset_password']
     except:
       return
-    return User.query.filter_by(username = username).first()    
+    return User.query.filter_by(username = username).first()
 
   @staticmethod
   def verify_email(email):
@@ -44,11 +51,11 @@ class User(UserMixin, db.Model):
 
 
 class OAuth(OAuthConsumerMixin, db.Model):
-  __tablename__ = 'oauth'  # Explicitly set table name
+  __tablename__ = 'oauth'
   __table_args__ = (db.UniqueConstraint("provider", "provider_user_id"),)
   provider = db.Column(db.String(50), nullable=False)
   created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
-  token = db.Column(db.Text)  # Store as JSON string
+  token = db.Column(db.Text)
   provider_user_id = db.Column(db.String(256), nullable=False)
   provider_user_login = db.Column(db.String(256))
   user_id = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
@@ -73,5 +80,15 @@ class OAuth(OAuthConsumerMixin, db.Model):
       self.token = value
     else:
       self.token = str(value)
+
+
+class SiteSetting(db.Model):
+  id = db.Column(db.Integer, primary_key=True)
+  key = db.Column(db.String(64), unique=True, nullable=False)
+  value = db.Column(db.Text, nullable=False, default='')
+  updated_at = db.Column(db.DateTime, nullable=False, server_default=db.func.now(), onupdate=db.func.now())
+
+  def __repr__(self):
+    return f"<SiteSetting {self.key}={self.value}>"
 
 

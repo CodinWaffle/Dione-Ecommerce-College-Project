@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block flash_messages %}{% endblock %}
+
+{% block content %}
+<style>
+/* Hide the global top navbar on admin panel */
+  .navbar { display: none; }
+
+</style>
+<div class="container" style="max-width: 720px; padding-top: 60px;">
+  <div class="card">
+    <div class="card-body text-center">
+      <h4 class="mb-3">Approval Pending</h4>
+      <p class="lead">Hi {{ username }}, your request to become a <strong>{{ requested }}</strong> is pending admin approval.</p>
+      <p class="text-muted mb-4">
+        You will receive an email when your request is approved. Until then, access to the {{ requested }} dashboard is locked.
+      </p>
+      <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-secondary">Logout</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+

@@ -3,6 +3,8 @@ OAuth service for social login integration
 """
 from project.models import User, OAuth
 from project import db
+from sqlalchemy import func
+from sqlalchemy.exc import IntegrityError
 
 class OAuthService:
     """Service class for OAuth operations"""
@@ -19,10 +21,24 @@ class OAuthService:
         if oauth and oauth.user:
             return oauth.user, False  # User exists, not new
 
-        # Create new user
-        user = User(username=name, email=email)
-        db.session.add(user)
-        db.session.flush()  # Get the user.id
+        # Try to find existing user by email to link accounts
+        user = None
+        if email:
+            email_normalized = email.strip().lower()
+            user = User.query.filter(func.lower(func.trim(User.email)) == email_normalized).first()
+
+        # Create new user if none exists
+        if not user:
+            user = User(username=name, email=email_normalized if email else None)
+            db.session.add(user)
+            try:
+                db.session.flush()  # Get the user.id
+            except IntegrityError:
+                # Another process created this user first; fetch and reuse
+                db.session.rollback()
+                user = User.query.filter(func.lower(func.trim(User.email)) == email_normalized).first()
+                if not user:
+                    raise
 
         # Create or update OAuth record
         if not oauth:
