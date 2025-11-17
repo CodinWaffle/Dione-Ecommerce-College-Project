@@ -140,13 +140,13 @@ def approve_request(user_id):
             user,
             subject=f"Your {new_role} request has been approved",
             body=(
-                f"Hi {user.username},\n\n"
+                f"Hi {user.email},\n\n"
                 f"Good news! Your request to become a {new_role} has been approved. "
                 "You may now log in and use the new dashboard.\n\n"
                 "Thanks,\nDione Admin Team"
             )
         )
-        flash(f"{user.username}'s request approved as {new_role}.", 'success')
+        flash(f"{user.email}'s request approved as {new_role}.", 'success')
     except Exception as exc:
         db.session.rollback()
         flash(f"Error approving request: {exc}", 'danger')
@@ -173,13 +173,13 @@ def reject_request(user_id):
             user,
             subject=f"Your {rejected_role} request was declined",
             body=(
-                f"Hi {user.username},\n\n"
+                f"Hi {user.email},\n\n"
                 f"We reviewed your request to become a {rejected_role} but had to decline it at this time. "
                 "Feel free to update your profile and try again.\n\n"
                 "Thanks,\nDione Admin Team"
             )
         )
-        flash(f"{user.username}'s request declined.", 'info')
+        flash(f"{user.email}'s request declined.", 'info')
     except Exception as exc:
         db.session.rollback()
         flash(f"Error declining request: {exc}", 'danger')
@@ -336,7 +336,7 @@ def user_suspend(user_id):
     try:
         user.is_suspended = True
         db.session.commit()
-        flash(f"{user.username} has been suspended.", 'info')
+        flash(f"{user.email} has been suspended.", 'info')
     except Exception as exc:
         db.session.rollback()
         flash(f"Error suspending user: {exc}", 'danger')
@@ -350,7 +350,7 @@ def user_reactivate(user_id):
     try:
         user.is_suspended = False
         db.session.commit()
-        flash(f"{user.username} has been reactivated.", 'success')
+        flash(f"{user.email} has been reactivated.", 'success')
     except Exception as exc:
         db.session.rollback()
         flash(f"Error reactivating user: {exc}", 'danger')
@@ -366,14 +366,14 @@ def user_delete(user_id):
         flash("You cannot delete your own admin account.", 'warning')
         return redirect(url_for('admin.users'))
     try:
-        username = user.username
+        user_email = user.email
         # Delete OAuth records first to avoid foreign key constraint issues
         for oauth in user.oauth:
             db.session.delete(oauth)
         db.session.flush()  # Ensure OAuth records are deleted before user
         db.session.delete(user)
         db.session.commit()
-        flash(f"User '{username}' and all associated data have been permanently deleted.", 'success')
+        flash(f"User '{user_email}' and all associated data have been permanently deleted.", 'success')
     except Exception as exc:
         db.session.rollback()
         flash(f"Error deleting user: {str(exc)}", 'danger')

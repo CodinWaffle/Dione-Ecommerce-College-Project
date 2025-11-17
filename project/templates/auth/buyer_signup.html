@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DIONE - Buyer Signup</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", "Arial", sans-serif;
+        min-height: 100vh;
+        position: relative;
+        overflow-x: hidden;
+        background: #000;
+      }
+
+      /* White Background */
+      body {
+        background: #fff;
+      }
+
+      /* Minimal Navigation from Index */
+      .minimal-navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: transparent;
+        z-index: 1000;
+        padding: 1.5rem 0;
+        transition: all 0.3s ease;
+      }
+
+      .nav-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 2rem;
+      }
+
+      .nav-right {
+        display: flex;
+        gap: 1.5rem;
+        align-items: center;
+      }
+
+      .nav-icon-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 8px 12px;
+        color: rgba(0, 0, 0, 0.85);
+        transition: all 0.3s ease;
+        border-radius: 25px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-family: "Montserrat", sans-serif;
+        font-size: 0.9rem;
+        font-weight: 500;
+      }
+
+      .nav-icon-btn:hover {
+        color: rgba(0, 0, 0, 1);
+        background: rgba(0, 0, 0, 0.06);
+        transform: translateY(-2px);
+      }
+
+      .nav-text {
+        font-size: 0.85rem;
+        font-weight: 500;
+        letter-spacing: 0.3px;
+      }
+
+      .main-content {
+        position: relative;
+        z-index: 5;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 120px 40px 40px;
+      }
+
+      .signup-container {
+        display: flex;
+        width: 100%;
+        max-width: 1000px;
+        height: 700px;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+        border-radius: 12px;
+        overflow: hidden;
+        background: #ffffff;
+      }
+
+      .signup-sidebar {
+        flex: 0 0 300px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 40px 30px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        color: white;
+      }
+
+      .signup-sidebar h2 {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 15px;
+        line-height: 1.2;
+      }
+
+      .signup-sidebar p {
+        font-size: 14px;
+        opacity: 0.9;
+        line-height: 1.5;
+        margin-bottom: 25px;
+      }
+
+      .step-indicator {
+        margin-bottom: 30px;
+      }
+
+      .step {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+        opacity: 0.5;
+        transition: opacity 0.3s ease;
+      }
+
+      .step.active {
+        opacity: 1;
+      }
+
+      .step.completed {
+        opacity: 0.8;
+      }
+
+      .step-number {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 14px;
+        margin-right: 12px;
+      }
+
+      .step.active .step-number {
+        background: rgba(255, 255, 255, 0.9);
+        color: #ac5aa4;
+      }
+
+      .step.completed .step-number {
+        background: rgba(255, 255, 255, 0.9);
+        color: #ac5aa4;
+      }
+
+      .step.completed .step-number::before {
+        content: "✓";
+      }
+
+      .step-text {
+        font-size: 14px;
+        font-weight: 500;
+      }
+
+      .signup-card {
+        flex: 1;
+        padding: 40px;
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
+
+      .signup-header {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      .signup-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #3c3c3c;
+        margin-bottom: 8px;
+      }
+
+      .signup-subtitle {
+        color: #ac5aa4;
+        font-size: 15px;
+        font-weight: 500;
+      }
+
+      .form-row {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+        flex: 1;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        color: #3c3c3c;
+        font-weight: 500;
+        font-size: 14px;
+      }
+
+      .form-group input,
+      .form-group select {
+        width: 100%;
+        padding: 14px;
+        border: 2px solid #f0f0f0;
+        border-radius: 4px;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        background: white;
+        font-family: "Montserrat", sans-serif;
+      }
+
+      .form-group input:focus,
+      .form-group select:focus {
+        outline: none;
+        border-color: #ac5aa4;
+        box-shadow: 0 0 0 3px rgba(172, 90, 164, 0.1);
+      }
+
+      .checkbox-group {
+        margin-bottom: 20px;
+      }
+
+      .checkbox-group label {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        cursor: pointer;
+        color: #666;
+        font-size: 14px;
+        line-height: 1.4;
+      }
+
+      .checkbox-group input[type="checkbox"] {
+        width: auto;
+        margin: 0;
+        margin-top: 2px;
+      }
+
+      .checkbox-group a {
+        color: #ac5aa4;
+        text-decoration: none;
+      }
+
+      .checkbox-group a:hover {
+        color: #ef5ed6;
+      }
+
+      .signup-btn {
+        flex: 1;
+        padding: 16px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-bottom: 20px;
+        font-family: "Montserrat", sans-serif;
+        height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .signup-btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(172, 90, 164, 0.3);
+      }
+
+      .signup-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .signup-btn:disabled:hover {
+        box-shadow: none;
+      }
+
+      /* Multi-step form styles */
+      .form-step {
+        display: none;
+      }
+
+      .form-step.active {
+        display: block;
+      }
+
+      .step-buttons {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 30px;
+        gap: 15px;
+      }
+
+      .btn-secondary {
+        flex: 1;
+        background: #f8f9fa;
+        color: #666;
+        border: 2px solid #e9ecef;
+        padding: 16px 16px;
+        border-radius: 4px;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-family: "Montserrat", sans-serif;
+        height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .btn-secondary:hover {
+        background: #e9ecef;
+        border-color: #ac5aa4;
+      }
+
+      .progress-bar {
+        width: 100%;
+        height: 4px;
+        background: #f0f0f0;
+        border-radius: 2px;
+        margin-bottom: 25px;
+        overflow: hidden;
+      }
+
+      .progress-fill {
+        height: 100%;
+        background: linear-gradient(135deg, #ac5aa4, #ef5ed6);
+        border-radius: 2px;
+        transition: width 0.3s ease;
+        width: 33.33%;
+      }
+
+      .divider {
+        text-align: center;
+        margin: 20px 0;
+        position: relative;
+        color: #666;
+        font-size: 14px;
+      }
+
+      .divider::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: #e0e0e0;
+        z-index: 1;
+      }
+
+      .divider span {
+        background: #ffffff;
+        padding: 0 20px;
+        position: relative;
+        z-index: 2;
+      }
+
+      .social-buttons {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+
+      .social-btn {
+        flex: 1;
+        padding: 12px;
+        border: 2px solid #f0f0f0;
+        border-radius: 4px;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: #333;
+        font-family: "Montserrat", sans-serif;
+      }
+
+      .social-btn:hover {
+        border-color: #ac5aa4;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .login-link {
+        text-align: center;
+        padding-top: 20px;
+        border-top: 1px solid #f0f0f0;
+      }
+
+      .login-link p {
+        color: #666;
+        font-size: 14px;
+      }
+
+      .login-link a {
+        color: #ac5aa4;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.3s ease;
+      }
+
+      .login-link a:hover {
+        color: #ef5ed6;
+      }
+
+      .back-link {
+        margin-bottom: 20px;
+      }
+
+      .back-link a {
+        color: #ac5aa4;
+        text-decoration: none;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        transition: color 0.3s ease;
+      }
+
+      .back-link a:hover {
+        color: #ef5ed6;
+      }
+
+      @media (max-width: 768px) {
+        .main-content {
+          padding: 100px 20px 40px;
+        }
+
+        .signup-container {
+          flex-direction: column;
+          max-width: 500px;
+        }
+
+        .signup-sidebar {
+          flex: none;
+          padding: 25px 20px;
+        }
+
+        .signup-sidebar h2 {
+          font-size: 24px;
+          margin-bottom: 10px;
+        }
+
+        .signup-sidebar p {
+          font-size: 13px;
+          margin-bottom: 20px;
+        }
+
+        .step-indicator {
+          margin-bottom: 20px;
+        }
+
+        .step {
+          margin-bottom: 10px;
+        }
+
+        .signup-card {
+          padding: 25px 20px;
+        }
+
+        .form-row {
+          flex-direction: column;
+          gap: 0;
+        }
+
+        .social-buttons {
+          flex-direction: column;
+        }
+
+        .step-buttons {
+          flex-direction: column;
+          gap: 10px;
+        }
+
+        .nav-text {
+          display: none;
+        }
+      }
+
+      .main-content {
+        animation: fadeIn 1s ease forwards;
+        opacity: 0;
+      }
+
+      @keyframes fadeIn {
+        to {
+          opacity: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!--Minimal Navigation -->
+    <nav class="minimal-navbar">
+      <div class="nav-container">
+        <div class="nav-left">
+          <a
+            href="{{ url_for('main.index') }}"
+            style="
+              color: rgba(0, 0, 0, 0.9);
+              text-decoration: none;
+              font-weight: 600;
+              font-size: 1.2rem;
+            "
+            >DIONE</a
+          >
+        </div>
+        <div class="nav-right">
+          <button class="nav-icon-btn" id="loginBtn">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+            <span class="nav-text">Login</span>
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <div class="main-content">
+      <div class="signup-container">
+        <!-- Left Sidebar -->
+        <div class="signup-sidebar">
+          <h2>Create Buyer Account</h2>
+          <p>
+            Join DIONE to discover amazing fashion trends and enjoy exclusive
+            shopping experience.
+          </p>
+
+          <div class="step-indicator">
+            <div class="step active" id="step-indicator-1">
+              <div class="step-number">1</div>
+              <div class="step-text">Personal Info</div>
+            </div>
+            <div class="step" id="step-indicator-2">
+              <div class="step-number">2</div>
+              <div class="step-text">Shipping Address</div>
+            </div>
+            <div class="step" id="step-indicator-3">
+              <div class="step-number">3</div>
+              <div class="step-text">Account Security</div>
+            </div>
+            <div class="step" id="step-indicator-4">
+              <div class="step-number">4</div>
+              <div class="step-text">Preferences</div>
+            </div>
+          </div>
+
+          <div class="back-link">
+            <a href="{{ url_for('auth.signup') }}" style="color: white">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <polyline points="15,18 9,12 15,6"></polyline>
+              </svg>
+              Back to role selection
+            </a>
+          </div>
+        </div>
+
+        <!-- Right Content Area -->
+        <div class="signup-card">
+          <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+          </div>
+
+          <form
+            id="buyerSignupForm"
+            method="POST"
+            action="{{ url_for('auth.signup_post') }}"
+          >
+            <!-- Step 1: Personal Information -->
+            <div class="form-step active" id="step-1">
+              <div class="signup-header">
+                <div class="signup-title">Personal Information</div>
+                <div class="signup-subtitle">Tell us about yourself</div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="firstName">First Name</label>
+                  <input
+                    type="text"
+                    id="firstName"
+                    name="firstName"
+                    required
+                    placeholder="Enter your first name"
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="lastName">Last Name</label>
+                  <input
+                    type="text"
+                    id="lastName"
+                    name="lastName"
+                    required
+                    placeholder="Enter your last name"
+                  />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="email">Email Address</label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  required
+                  placeholder="Enter your email address"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input
+                  type="tel"
+                  id="phone"
+                  name="phone"
+                  required
+                  placeholder="Enter your phone number"
+                />
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="birthdate">Date of Birth</label>
+                  <input type="date" id="birthdate" name="birthdate" required />
+                </div>
+                <div class="form-group">
+                  <label for="gender">Gender</label>
+                  <select id="gender" name="gender" required>
+                    <option value="">Select Gender</option>
+                    <option value="female">Female</option>
+                    <option value="male">Male</option>
+                    <option value="other">Other</option>
+                    <option value="prefer-not-to-say">Prefer not to say</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="step-buttons">
+                <div></div>
+                <button type="button" class="signup-btn" onclick="nextStep(2)">
+                  Next Step
+                </button>
+              </div>
+            </div>
+
+            <!-- Step 2: Shipping Address -->
+            <div class="form-step" id="step-2">
+              <div class="signup-header">
+                <div class="signup-title">Shipping Address</div>
+                <div class="signup-subtitle">
+                  Where should we deliver your orders?
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="region">Region</label>
+                <select
+                  id="region"
+                  name="region"
+                  required
+                  onchange="loadProvinces()"
+                >
+                  <option value="">Select Region</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="province">Province</label>
+                <select
+                  id="province"
+                  name="province"
+                  required
+                  onchange="loadCities()"
+                >
+                  <option value="">Select Province</option>
+                </select>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="city">City / Municipality</label>
+                  <select
+                    id="city"
+                    name="city"
+                    required
+                    onchange="loadBarangays()"
+                  >
+                    <option value="">Select City / Municipality</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="barangay">Barangay</label>
+                  <select id="barangay" name="barangay" required>
+                    <option value="">Select Barangay</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="streetAddress">Street Address</label>
+                <input
+                  type="text"
+                  id="streetAddress"
+                  name="streetAddress"
+                  required
+                  placeholder="House number, street name, building"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="landmark">Near Landmark (Optional)</label>
+                <input
+                  type="text"
+                  id="landmark"
+                  name="landmark"
+                  placeholder="e.g., near the market, beside the school"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="zipCode">Zip Code</label>
+                <input
+                  type="text"
+                  id="zipCode"
+                  name="zipCode"
+                  placeholder="Zip Code"
+                />
+              </div>
+
+              <div class="step-buttons">
+                <button
+                  type="button"
+                  class="btn-secondary"
+                  onclick="previousStep(1)"
+                >
+                  Previous
+                </button>
+                <button type="button" class="signup-btn" onclick="nextStep(3)">
+                  Next Step
+                </button>
+              </div>
+            </div>
+
+            <!-- Step 3: Account Security -->
+            <div class="form-step" id="step-3">
+              <div class="signup-header">
+                <div class="signup-title">Account Security</div>
+                <div class="signup-subtitle">Set up your password</div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="password">Password</label>
+                  <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    required
+                    placeholder="Create a password"
+                    oninput="validatePasswordStep3()"
+                  />
+                  <div
+                    id="passwordLengthError"
+                    style="
+                      color: #e74c3c;
+                      font-size: 13px;
+                      margin-top: 5px;
+                      display: none;
+                    "
+                  >
+                    Password must be at least 6 characters long
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="confirmPassword">Confirm Password</label>
+                  <input
+                    type="password"
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    required
+                    placeholder="Confirm your password"
+                    oninput="validatePasswordStep3()"
+                  />
+                  <div
+                    id="passwordMismatchError"
+                    style="
+                      color: #e74c3c;
+                      font-size: 13px;
+                      margin-top: 5px;
+                      display: none;
+                    "
+                  >
+                    Passwords do not match
+                  </div>
+                </div>
+              </div>
+
+              <div class="step-buttons">
+                <button
+                  type="button"
+                  class="btn-secondary"
+                  onclick="previousStep(2)"
+                >
+                  Previous
+                </button>
+                <button
+                  type="button"
+                  class="signup-btn"
+                  id="step3NextBtn"
+                  onclick="nextStep(4)"
+                  disabled
+                  style="opacity: 0.5; cursor: not-allowed"
+                >
+                  Next Step
+                </button>
+              </div>
+            </div>
+
+            <!-- Step 4: Preferences -->
+            <div class="form-step" id="step-4">
+              <div class="signup-header">
+                <div class="signup-title">Shopping Preferences</div>
+                <div class="signup-subtitle">Customize your experience</div>
+              </div>
+
+              <div class="checkbox-group">
+                <label>
+                  <input type="checkbox" id="newsletter" name="newsletter" />
+                  <span
+                    >Subscribe to our newsletter for latest fashion updates and
+                    exclusive offers</span
+                  >
+                </label>
+              </div>
+
+              <div class="checkbox-group">
+                <label>
+                  <input
+                    type="checkbox"
+                    id="terms"
+                    name="terms"
+                    oninput="validateTermsCheckbox()"
+                  />
+                  <span
+                    >I agree to the <a href="#">Terms & Conditions</a> and
+                    <a href="#">Privacy Policy</a></span
+                  >
+                </label>
+                <div
+                  id="termsError"
+                  style="
+                    color: #e74c3c;
+                    font-size: 13px;
+                    margin-top: 5px;
+                    display: none;
+                    margin-left: 0;
+                  "
+                >
+                  Please agree to the Terms & Conditions and Privacy Policy
+                </div>
+              </div>
+
+              <div class="step-buttons">
+                <button
+                  type="button"
+                  class="btn-secondary"
+                  onclick="previousStep(3)"
+                >
+                  Previous
+                </button>
+                <button
+                  type="submit"
+                  class="signup-btn"
+                  id="createAccountBtn"
+                  disabled
+                  style="opacity: 0.5; cursor: not-allowed"
+                >
+                  Create Account
+                </button>
+              </div>
+
+              <div class="login-link">
+                <p>
+                  Already have an account?
+                  <a href="{{ url_for('auth.login') }}">Sign in here</a>
+                </p>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let currentStep = 1;
+      const totalSteps = 4;
+
+      // Multi-step navigation functions
+      function nextStep(step) {
+        if (validateCurrentStep()) {
+          showStep(step);
+        }
+      }
+
+      function previousStep(step) {
+        showStep(step);
+      }
+
+      function showStep(step) {
+        // Hide all steps
+        document.querySelectorAll(".form-step").forEach((stepEl) => {
+          stepEl.classList.remove("active");
+        });
+
+        // Show current step
+        document.getElementById(`step-${step}`).classList.add("active");
+
+        // Update step indicators
+        document.querySelectorAll(".step").forEach((stepEl, index) => {
+          stepEl.classList.remove("active", "completed");
+          if (index + 1 === step) {
+            stepEl.classList.add("active");
+          } else if (index + 1 < step) {
+            stepEl.classList.add("completed");
+          }
+        });
+
+        // Update progress bar
+        const progressPercent = (step / totalSteps) * 100;
+        document.getElementById("progress-fill").style.width =
+          progressPercent + "%";
+
+        currentStep = step;
+      }
+
+      function validateCurrentStep() {
+        const currentStepEl = document.getElementById(`step-${currentStep}`);
+        const requiredFields = currentStepEl.querySelectorAll(
+          "input[required], select[required]"
+        );
+
+        for (let field of requiredFields) {
+          if (!field.value.trim()) {
+            alert(
+              `Please fill in the ${field.previousElementSibling.textContent} field`
+            );
+            field.focus();
+            return false;
+          }
+        }
+
+        // Additional validation for step 3 (password validation)
+        if (currentStep === 3) {
+          const password = document.getElementById("password").value;
+          const confirmPassword =
+            document.getElementById("confirmPassword").value;
+
+          // Check password length (minimum 6 characters)
+          if (password.length < 6) {
+            alert("Password must be at least 6 characters long");
+            document.getElementById("password").focus();
+            return false;
+          }
+
+          if (password !== confirmPassword) {
+            alert("Passwords do not match");
+            document.getElementById("confirmPassword").focus();
+            return false;
+          }
+        }
+
+        // Additional validation for step 4 (terms checkbox)
+        if (currentStep === 4) {
+          const termsCheckbox = document.getElementById("terms");
+          if (!termsCheckbox.checked) {
+            alert(
+              "Please agree to the Terms & Conditions and Privacy Policy to continue"
+            );
+            termsCheckbox.focus();
+            return false;
+          }
+        }
+
+        return true;
+      }
+
+      // Real-time password validation for step 3
+      function validatePasswordStep3() {
+        const password = document.getElementById("password").value;
+        const confirmPassword =
+          document.getElementById("confirmPassword").value;
+        const passwordLengthError = document.getElementById(
+          "passwordLengthError"
+        );
+        const passwordMismatchError = document.getElementById(
+          "passwordMismatchError"
+        );
+        const nextBtn = document.getElementById("step3NextBtn");
+
+        let isValid = true;
+
+        // Check password length
+        if (password.length > 0 && password.length < 6) {
+          passwordLengthError.style.display = "block";
+          isValid = false;
+        } else {
+          passwordLengthError.style.display = "none";
+        }
+
+        // Check if passwords match (only if both fields have values)
+        if (
+          password.length > 0 &&
+          confirmPassword.length > 0 &&
+          password !== confirmPassword
+        ) {
+          passwordMismatchError.style.display = "block";
+          isValid = false;
+        } else {
+          passwordMismatchError.style.display = "none";
+        }
+
+        // Enable/disable next button based on validation
+        if (
+          password.length >= 6 &&
+          confirmPassword.length >= 6 &&
+          password === confirmPassword
+        ) {
+          nextBtn.disabled = false;
+          nextBtn.style.opacity = "1";
+          nextBtn.style.cursor = "pointer";
+        } else {
+          nextBtn.disabled = true;
+          nextBtn.style.opacity = "0.5";
+          nextBtn.style.cursor = "not-allowed";
+        }
+      }
+
+      // Real-time validation for terms checkbox on step 4
+      function validateTermsCheckbox() {
+        const termsCheckbox = document.getElementById("terms");
+        const termsError = document.getElementById("termsError");
+        const createBtn = document.getElementById("createAccountBtn");
+
+        if (termsCheckbox.checked) {
+          termsError.style.display = "none";
+          createBtn.disabled = false;
+          createBtn.style.opacity = "1";
+          createBtn.style.cursor = "pointer";
+        } else {
+          termsError.style.display = "block";
+          createBtn.disabled = true;
+          createBtn.style.opacity = "0.5";
+          createBtn.style.cursor = "not-allowed";
+        }
+      }
+
+      // Form submission
+      document
+        .getElementById("buyerSignupForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          if (!validateCurrentStep()) {
+            return;
+          }
+
+          const button = document.querySelector('button[type="submit"]');
+          button.textContent = "Creating Account...";
+          button.style.opacity = "0.7";
+          button.disabled = true;
+
+          // Add role field
+          const roleInput = document.createElement("input");
+          roleInput.type = "hidden";
+          roleInput.name = "role";
+          roleInput.value = "buyer";
+          this.appendChild(roleInput);
+
+          // Submit the form
+          setTimeout(() => {
+            this.submit();
+          }, 500);
+        });
+
+      function signupWithGoogle() {
+        alert("Google signup would be implemented here");
+      }
+
+      function signupWithFacebook() {
+        alert("Facebook signup would be implemented here");
+      }
+
+      // Philippine Address API with Region -> Province -> City/Municipality -> Barangay cascading dropdowns
+      // Using Philippines Geographic Code (PSGC) API which includes all municipalities
+      let regionsData = [];
+      let provincesData = {};
+      let municipalitiesData = {};
+      let barangaysData = {};
+
+      // Initialize: Load all regions on page load
+      async function initializeAddressDropdowns() {
+        try {
+          const response = await fetch("https://psgc.gitlab.io/api/regions/");
+          regionsData = await response.json();
+
+          const regionSelect = document.getElementById("region");
+          regionsData.forEach((region) => {
+            const option = document.createElement("option");
+            option.value = region.code;
+            option.textContent = region.name;
+            regionSelect.appendChild(option);
+          });
+        } catch (error) {
+          console.error("Error loading regions:", error);
+          alert("Failed to load regions. Please refresh the page.");
+        }
+      }
+
+      // Load provinces when region is selected
+      async function loadProvinces() {
+        const regionCode = document.getElementById("region").value;
+        const provinceSelect = document.getElementById("province");
+        const citySelect = document.getElementById("city");
+        const barangaySelect = document.getElementById("barangay");
+
+        // Reset dependent dropdowns
+        citySelect.innerHTML =
+          '<option value="">Select City/Municipality</option>';
+        barangaySelect.innerHTML = '<option value="">Select Barangay</option>';
+        provinceSelect.innerHTML = '<option value="">Loading...</option>';
+
+        if (!regionCode) {
+          provinceSelect.innerHTML =
+            '<option value="">Select Province</option>';
+          return;
+        }
+
+        try {
+          const response = await fetch(
+            `https://psgc.gitlab.io/api/regions/${regionCode}/provinces/`
+          );
+          const provinces = await response.json();
+          provincesData[regionCode] = provinces;
+
+          provinceSelect.innerHTML =
+            '<option value="">Select Province</option>';
+          provinces.forEach((province) => {
+            const option = document.createElement("option");
+            option.value = province.code;
+            option.textContent = province.name;
+            provinceSelect.appendChild(option);
+          });
+        } catch (error) {
+          console.error("Error loading provinces:", error);
+          provinceSelect.innerHTML =
+            '<option value="">Error loading provinces</option>';
+        }
+      }
+
+      // Load cities and municipalities when province is selected
+      async function loadCities() {
+        const provinceCode = document.getElementById("province").value;
+        const citySelect = document.getElementById("city");
+        const barangaySelect = document.getElementById("barangay");
+
+        // Reset barangay dropdown
+        barangaySelect.innerHTML = '<option value="">Select Barangay</option>';
+        citySelect.innerHTML = '<option value="">Loading...</option>';
+
+        if (!provinceCode) {
+          citySelect.innerHTML =
+            '<option value="">Select City/Municipality</option>';
+          return;
+        }
+
+        try {
+          // Fetch both cities and municipalities
+          const response = await fetch(
+            `https://psgc.gitlab.io/api/provinces/${provinceCode}/municipalities/`
+          );
+          let municipalities = await response.json();
+
+          // Also try to fetch cities
+          try {
+            const citiesResponse = await fetch(
+              `https://psgc.gitlab.io/api/provinces/${provinceCode}/cities/`
+            );
+            const cities = await citiesResponse.json();
+            // Combine both cities and municipalities
+            municipalities = [...cities, ...municipalities];
+          } catch (e) {
+            console.log("No separate cities endpoint, using municipalities");
+          }
+
+          municipalitiesData[provinceCode] = municipalities;
+
+          citySelect.innerHTML =
+            '<option value="">Select City/Municipality</option>';
+          municipalities.forEach((mun) => {
+            const option = document.createElement("option");
+            option.value = mun.code;
+            option.textContent = mun.name;
+            citySelect.appendChild(option);
+          });
+        } catch (error) {
+          console.error("Error loading cities/municipalities:", error);
+          citySelect.innerHTML =
+            '<option value="">Error loading cities/municipalities</option>';
+        }
+      }
+
+      // Load barangays when city/municipality is selected
+      async function loadBarangays() {
+        const cityCode = document.getElementById("city").value;
+        const barangaySelect = document.getElementById("barangay");
+
+        barangaySelect.innerHTML = '<option value="">Loading...</option>';
+
+        if (!cityCode) {
+          barangaySelect.innerHTML =
+            '<option value="">Select Barangay</option>';
+          return;
+        }
+
+        try {
+          const response = await fetch(
+            `https://psgc.gitlab.io/api/cities/${cityCode}/barangays/`
+          );
+
+          if (!response.ok) {
+            // Try municipalities endpoint if cities fails
+            const munResponse = await fetch(
+              `https://psgc.gitlab.io/api/municipalities/${cityCode}/barangays/`
+            );
+            if (!munResponse.ok) throw new Error("Both endpoints failed");
+
+            const barangays = await munResponse.json();
+            barangaysData[cityCode] = barangays;
+            populateBarangays(barangaySelect, barangays);
+            return;
+          }
+
+          const barangays = await response.json();
+          barangaysData[cityCode] = barangays;
+          populateBarangays(barangaySelect, barangays);
+        } catch (error) {
+          console.error("Error loading barangays:", error);
+          barangaySelect.innerHTML =
+            '<option value="">Error loading barangays</option>';
+        }
+      }
+
+      // Helper function to populate barangay options
+      function populateBarangays(select, barangays) {
+        select.innerHTML = '<option value="">Select Barangay</option>';
+
+        if (!barangays || barangays.length === 0) {
+          select.innerHTML = '<option value="">No barangays found</option>';
+          return;
+        }
+
+        barangays.forEach((barangay) => {
+          const option = document.createElement("option");
+          option.value = barangay.code;
+          option.textContent = barangay.name;
+          select.appendChild(option);
+        });
+      }
+
+      // Initialize address dropdowns when page loads
+      document.addEventListener("DOMContentLoaded", function () {
+        initializeAddressDropdowns();
+      });
+
+      // Navigation handler
+      document
+        .getElementById("loginBtn")
+        .addEventListener("click", function () {
+          window.location.href = '{{ url_for("auth.login") }}';
+        });
+
+      // Initialize
+      showStep(1);
+    </script>
+  </body>
+</html>

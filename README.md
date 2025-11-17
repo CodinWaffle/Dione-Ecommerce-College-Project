@@ -1,7 +1,8 @@
 <div align="center">
 
 # 🛒 **Dione Ecommerce (College Project)**
-### *Setup Guide — not written by AI because AI kept acting dumb 😤*
+
+### _Setup Guide — not written by AI because AI kept acting dumb 😤_
 
 ![Banner](https://github.com/user-attachments/assets/e7fef06d-ac46-4180-8d19-b797afaea016) <!-- Optional: Replace with your own banner -->
 
@@ -30,28 +31,37 @@ Before you start, make sure you have the following:
 ## 🚀 Setup in 5 Kinda-Simple Steps
 
 ### **1️⃣ Clone this masterpiece**
+
 ```bash
 git clone https://github.com/CodinWaffle/Dione-Ecommerce-College-Project.git
 cd "Dione Ecommerce (College Project)"
 ```
+
 2️⃣ Create & Activate Virtual Environment
+
 ```bash
 python -m venv env
 ```
+
 ```bash
 env\Scripts\activate.ps1
 ```
+
 🐧 Git Bash
+
 ```bash
 source env/bin/activate
 ```
+
 💡 If you don’t see (env) — activate your brain, too.
 
 3️⃣ Install Dependencies
+
 ```bash
 pip install --upgrade pip
 pip install -r requirements.txt
 ```
+
 4️⃣ Database (Updated)
 Open MySQL / phpMyAdmin and run this script:
 
@@ -94,7 +104,9 @@ SELECT 'Database setup completed successfully!' AS status;
 SELECT COUNT(*) AS user_count FROM `user`;
 SELECT COUNT(*) AS oauth_count FROM `oauth` WHERE 1=0;
 ```
+
 5️ Create Admin User
+
 ```sql
 USE dione_data;
 
@@ -112,36 +124,50 @@ VALUES (
 -- Verify admin was created
 SELECT * FROM `user` WHERE `email` = 'admin.nigger@gmail.com';
 ```
+
 ```
 • Email - admin.nigger@gmail.com
 • Password - admin_123
 ```
 
+env\Scripts\activate.ps1
+PATH--
+cd "C:\Users\Precious Rondilla\Documents\VSCODE\Dione\Dione-Ecommerce-College-Project"
+
 6️⃣ Run It!
-```bash
+
+```bash2
 flask run
 ```
+
 🧪Test command
+
 ```bash
 pytest project/tests.py -v --tb=no
 ```
+
 🧪 Git Cheat Sheet
+
 ```bash
 # this command is to update you current codebase so use this before ypu start working because this can Get the latest changes from GitHub
 git pull origin main
 ```
+
 ```bash
 # Stages all modified, deleted, or new files in your project for commit.
 git add .
 ```
+
 ```bash
 # This saves your work with a message describing what you did.
 git commit -m "I did something cool"
 ```
+
 ```bash
 # Updates the main branch on GitHub with your latest changes.
 git push origin main
 ```
+
 If push fails → it’s your fault 😅 Run this:
 
 ```bash

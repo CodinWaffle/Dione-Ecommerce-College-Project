@@ -39,15 +39,24 @@ def profile():
         return redirect(url_for('main.seller_dashboard'))
     if role == 'rider':
         return redirect(url_for('main.rider_dashboard'))
-    return render_template('main/profile.html', username=current_user.username)
+    return render_template('main/profile.html', username=current_user.email)
 
 @main.route('/seller/dashboard')
 @login_required
 def seller_dashboard():
-    if (getattr(current_user, 'role', '') or '').lower() != 'seller' or not getattr(current_user, 'is_approved', False):
+    role = (getattr(current_user, 'role', '') or '').lower()
+    is_approved = getattr(current_user, 'is_approved', False)
+    
+    # If user has requested seller role but not approved yet, show pending page
+    if getattr(current_user, 'role_requested', None) == 'seller' and not is_approved:
+        return redirect(url_for('main.pending'))
+    
+    # If user is not a seller, deny access
+    if role != 'seller' or not is_approved:
         flash("You don't have access to the seller dashboard.", 'warning')
         return redirect(url_for('main.profile'))
-    return render_template('seller/dashboard.html', username=current_user.username)
+    
+    return render_template('seller/dashboard.html', username=current_user.email)
 
 
 @main.route('/seller/products')
@@ -56,7 +65,7 @@ def seller_products():
     if (getattr(current_user, 'role', '') or '').lower() != 'seller' or not getattr(current_user, 'is_approved', False):
         flash("You don't have access to seller tools.", 'warning')
         return redirect(url_for('main.profile'))
-    return render_template('seller/products.html', username=current_user.username)
+    return render_template('seller/products.html', username=current_user.email)
 
 @main.route('/rider/dashboard')
 @login_required
@@ -64,7 +73,7 @@ def rider_dashboard():
     if (getattr(current_user, 'role', '') or '').lower() != 'rider' or not getattr(current_user, 'is_approved', False):
         flash("You don't have access to the rider dashboard.", 'warning')
         return redirect(url_for('main.profile'))
-    return render_template('rider/dashboard.html', username=current_user.username)
+    return render_template('rider/dashboard.html', username=current_user.email)
 
 @main.route('/rider/deliveries')
 @login_required
@@ -73,14 +82,14 @@ def rider_deliveries():
         flash("You don't have access to rider tools.", 'warning')
         return redirect(url_for('main.profile'))
     # Placeholder deliveries page - replace with real delivery management later
-    return render_template('rider/deliveries.html', username=current_user.username)
+    return render_template('rider/deliveries.html', username=current_user.email)
 
 @main.route('/pending')
 @login_required
 def pending():
     """Show pending approval page for users awaiting role upgrade."""
     if getattr(current_user, 'role_requested', None) and not getattr(current_user, 'is_approved', True):
-        return render_template('main/pending.html', username=current_user.username, requested=current_user.role_requested)
+        return render_template('main/pending.html', username=current_user.email, requested=current_user.role_requested)
     # If not pending anymore, route to appropriate place
     role = (getattr(current_user, 'role', '') or 'buyer').lower()
     if role == 'seller':

@@ -1,28 +1,27 @@
 /* base.html */
-body{
+body {
   background-color: #ffffff;
 }
 
-.navbar{
+.navbar {
   background-color: #ffffff;
-
 }
 
-.nav-link{
-  color: #aa5aff ;
+.nav-link {
+  color: #aa5aff;
 }
 
-.container-fluid{
-  padding-top: 130px;
+.container-fluid {
+  padding-top: 10px;
 }
 
 /* index.html */
-.index{
+.index {
   padding-top: 150px;
 }
 
 /* login.html, reset_password.html, reset.html and signup.html */
-.container{
+.container {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -32,17 +31,16 @@ body{
   font-size: small;
 }
 
-.check1{
+.check1 {
   width: 10px;
   height: 10px;
 }
 
-.col-md-12{
+.col-md-12 {
   padding-top: 10px;
 }
 
 /* profile.html */
-.display-6{
+.display-6 {
   padding-top: 150px;
 }
-

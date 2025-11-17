@@ -31,32 +31,9 @@ class Validators:
         return True, None
 
     @staticmethod
-    def validate_username(username):
-        """Validate username format"""
-        if not username:
-            return False, "Username is required"
-
-        if len(username) < 3:
-            return False, "Username must be at least 3 characters long"
-
-        if len(username) > 50:
-            return False, "Username must be less than 50 characters"
-
-        # Allow alphanumeric characters, underscores, and hyphens
-        if not re.match(r'^[a-zA-Z0-9_-]+$', username):
-            return False, "Username can only contain letters, numbers, underscores, and hyphens"
-
-        return True, None
-
-    @staticmethod
-    def validate_signup_form(username, email, password):
+    def validate_signup_form(email, password):
         """Validate complete signup form"""
         errors = []
-
-        # Validate username
-        is_valid, error = Validators.validate_username(username)
-        if not is_valid:
-            errors.append(error)
 
         # Validate email
         is_valid, error = Validators.validate_email(email)

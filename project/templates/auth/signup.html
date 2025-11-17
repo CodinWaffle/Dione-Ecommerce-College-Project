@@ -1,36 +1,511 @@
-{% extends "base.html" %}
+{% extends "base.html" %} {% block extra_head %}
+<link
+  href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined"
+  rel="stylesheet"
+/>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
 
-{% block content %}
+  body {
+    font-family: "Montserrat", "Arial", sans-serif;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+    background: #fff;
+  }
 
-<div class="container">
+  /* Minimal Navigation from Index */
+  .minimal-navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: transparent;
+    z-index: 1000;
+    padding: 1.5rem 0;
+    transition: all 0.3s ease;
+  }
 
-  <aside class="col col-sm-5">
-    <div class="card">
-      <article class="card-body">
-        <h4 class="card-title mb-4 mt-1 text-center">Sign Up</h4>
-        <form method="POST" action="/signup">
-          <div class="form-group">
-              <input name="username" class="form-control" placeholder="Name" type="text" autofocus="">
-          </div>
-          <div class="form-group">
-              <input name="email" class="form-control" placeholder="user@user.com" type="email" autofocus="">
-          </div>
-          <div class="form-group">
-              <input name="password" class="form-control" placeholder="********" type="password">
-          </div>
-          <div class="form-group">
-              <select name="role" class="form-control">
-                  <option value="" disabled selected>Select Role</option>
-                  <option value="buyer">Buyer</option>
-                  <option value="seller">Seller</option>
-                  <option value="rider">Rider</option>
-              </select>
-          </div>
-          <button type="submit" class="btn btn-info btn-block">Sign Up</button>
-        </form>
+  .nav-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 2rem;
+  }
+
+  /* Hamburger Menu Button */
+  .menu-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition: all 0.3s ease;
+  }
+
+  .menu-line {
+    width: 32px;
+    height: 3px;
+    background: rgba(0, 0, 0, 0.85);
+    transition: all 0.3s ease;
+    border-radius: 3px;
+  }
+
+  .menu-toggle:hover .menu-line {
+    background: rgba(0, 0, 0, 1);
+    transform: scaleX(1.1);
+  }
+
+  .menu-toggle:active {
+    transform: scale(0.95);
+  }
+
+  /* Navigation Right Side */
+  .nav-right {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+  }
+
+  .nav-icon-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px 12px;
+    color: rgba(0, 0, 0, 0.85);
+    transition: all 0.3s ease;
+    border-radius: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: "Montserrat", sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+
+  .nav-icon-btn:hover {
+    color: rgba(0, 0, 0, 1);
+    background: rgba(0, 0, 0, 0.06);
+    transform: translateY(-2px);
+  }
+
+  .nav-icon-btn:active {
+    transform: translateY(0) scale(0.98);
+  }
+
+  .nav-text {
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+  }
+
+  .main-content {
+    position: relative;
+    z-index: 5;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 40px;
+  }
+
+  .signup-container {
+    display: flex;
+    width: 100%;
+    max-width: 1000px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+    overflow: hidden;
+    background: #ffffff;
+  }
+
+  .signup-sidebar {
+    flex: 0 0 300px;
+    /* Updated gradient to match the provided design (purple -> blue) */
+    background: linear-gradient(135deg, #8e54ff 0%, #6b8df6 45%, #4fb0e6 100%);
+    padding: 50px 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    color: white;
+    /* subtle inset glow to mimic the soft highlight in the reference */
+    box-shadow: inset 0 30px 60px rgba(255, 255, 255, 0.04);
+    /* ensure the left side keeps rounded corners when the container clips */
+    border-radius: 12px 0 0 12px;
+  }
+
+  .signup-sidebar h2 {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    line-height: 1.2;
+  }
+
+  .signup-sidebar p {
+    font-size: 16px;
+    opacity: 0.9;
+    line-height: 1.6;
+    margin-bottom: 30px;
+  }
+
+  .signup-features {
+    list-style: none;
+    padding: 0;
+  }
+
+  .signup-features li {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    font-size: 14px;
+    opacity: 0.9;
+  }
+
+  .signup-features li::before {
+    content: "✓";
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    text-align: center;
+    line-height: 20px;
+    margin-right: 12px;
+    font-weight: bold;
+  }
+
+  .signup-card {
+    flex: 1;
+    padding: 50px;
+  }
+
+  .signup-header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .signup-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: #3c3c3c;
+    margin-bottom: 12px;
+  }
+
+  .signup-subtitle {
+    color: #ac5aa4;
+    font-size: 16px;
+    font-weight: 500;
+  }
+
+  .role-selection {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 20px;
+    margin-bottom: 40px;
+  }
+
+  .role-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 35px 25px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    color: #333;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .role-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.3),
+      transparent
+    );
+    transition: left 0.3s ease;
+  }
+
+  .role-card:hover {
+    border-color: #ac5aa4;
+    background: linear-gradient(135deg, #ffffff 0%, #f5f7ff 100%);
+    transform: translateY(-8px);
+    box-shadow: 0 20px 45px rgba(172, 90, 164, 0.25);
+  }
+
+  .role-card:hover::before {
+    left: 100%;
+  }
+
+  .role-card.selected {
+    border-color: #ac5aa4;
+    background: linear-gradient(135deg, #f5f7ff 0%, #ffffff 100%);
+    box-shadow: 0 20px 45px rgba(172, 90, 164, 0.25);
+  }
+
+  .role-icon {
+    width: 70px;
+    height: 70px;
+    margin: 0 auto 18px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 36px;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 20px rgba(172, 90, 164, 0.2);
+  }
+
+  .role-card:hover .role-icon {
+    transform: scale(1.12) rotateZ(-5deg);
+    box-shadow: 0 12px 30px rgba(172, 90, 164, 0.35);
+  }
+
+  .role-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #2c2c2c;
+    transition: color 0.3s ease;
+  }
+
+  .role-card:hover .role-title {
+    color: #ac5aa4;
+  }
+
+  .role-description {
+    font-size: 14px;
+    color: #888;
+    line-height: 1.5;
+    transition: color 0.3s ease;
+  }
+
+  .role-card:hover .role-description {
+    color: #ac5aa4;
+  }
+
+  .login-link {
+    text-align: center;
+    margin-top: 30px;
+    padding-top: 30px;
+    border-top: 1px solid #e9ecef;
+  }
+
+  .login-link p {
+    color: #666;
+    font-size: 14px;
+  }
+
+  .login-link a {
+    color: #ac5aa4;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+  }
+
+  .login-link a:hover {
+    color: #ef5ed6;
+  }
+
+  @media (max-width: 768px) {
+    .minimal-navbar {
+      padding: 1rem 0;
+    }
+
+    .nav-container {
+      padding: 0 1rem;
+    }
+
+    .nav-text {
+      display: none;
+    }
+
+    .main-content {
+      padding: 100px 20px 40px;
+    }
+
+    .signup-container {
+      flex-direction: column;
+      max-width: 500px;
+    }
+
+    .signup-sidebar {
+      flex: none;
+      padding: 30px 25px;
+      text-align: center;
+    }
+
+    .signup-sidebar h2 {
+      font-size: 24px;
+    }
+
+    .signup-card {
+      padding: 30px 25px;
+    }
+
+    .role-selection {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .main-content {
+    animation: fadeIn 1s ease forwards;
+    opacity: 0;
+  }
+
+  @keyframes fadeIn {
+    to {
+      opacity: 1;
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+
+<div class="main-content">
+  <div class="signup-container">
+    <!-- Left Sidebar -->
+    <div class="signup-sidebar">
+      <h2>Welcome to Dione</h2>
+      <p>
+        Join our community of buyers, sellers, and delivery riders. Experience
+        seamless e-commerce like never before.
+      </p>
+      <ul class="signup-features">
+        <li>Fast and secure transactions</li>
+        <li>Multiple role options</li>
+        <li>Easy to use platform</li>
+      </ul>
+    </div>
+
+    <!-- Right Card -->
+    <div class="signup-card">
+      <div class="signup-header">
+        <h1 class="signup-title">Sign Up</h1>
+        <p class="signup-subtitle">Create your account to get started</p>
       </div>
 
+      <form method="POST" action="/signup">
+        <div class="role-selection">
+          <label
+            class="role-card"
+            onclick="selectRole('buyer', this); redirectToBuyerSignup()"
+          >
+            <div class="role-icon">
+              <span class="material-icons-outlined">person_outline</span>
+            </div>
+            <div class="role-title">Buyer</div>
+            <div class="role-description">Shop & purchase</div>
+            <input
+              type="radio"
+              name="role"
+              value="buyer"
+              style="display: none"
+            />
+          </label>
+          <label
+            class="role-card"
+            onclick="selectRole('seller', this); redirectToSellerSignup()"
+          >
+            <div class="role-icon">
+              <span class="material-icons-outlined">storefront</span>
+            </div>
+            <div class="role-title">Seller</div>
+            <div class="role-description">Sell products</div>
+            <input
+              type="radio"
+              name="role"
+              value="seller"
+              style="display: none"
+            />
+          </label>
+          <label
+            class="role-card"
+            onclick="selectRole('rider', this); redirectToRiderSignup()"
+          >
+            <div class="role-icon">
+              <span class="material-icons-outlined">two_wheeler</span>
+            </div>
+            <div class="role-title">Rider</div>
+            <div class="role-description">Deliver orders</div>
+            <input
+              type="radio"
+              name="role"
+              value="rider"
+              style="display: none"
+            />
+          </label>
+        </div>
+
+        <p
+          style="
+            text-align: center;
+            color: #999;
+            font-size: 14px;
+            margin-top: 20px;
+          "
+        >
+          Select a role above to continue
+        </p>
+      </form>
+
+      <div class="login-link">
+        <p>
+          Already have an account?
+          <a href="{{ url_for('auth.login') }}">Log in here</a>
+        </p>
+      </div>
     </div>
-      </article>
-  </aside>
+  </div>
+</div>
+
+<script>
+  function selectRole(role, element) {
+    // Remove selected state from all role cards
+    document.querySelectorAll(".role-card").forEach((card) => {
+      card.classList.remove("selected");
+    });
+
+    // Add selected state to clicked card
+    element.classList.add("selected");
+    element.querySelector('input[type="radio"]').checked = true;
+  }
+
+  function redirectToSellerSignup() {
+    setTimeout(() => {
+      window.location.href = "{{ url_for('auth.seller_signup') }}";
+    }, 300);
+  }
+
+  function redirectToBuyerSignup() {
+    setTimeout(() => {
+      window.location.href = "{{ url_for('auth.buyer_signup') }}";
+    }, 300);
+  }
+
+  function redirectToRiderSignup() {
+    setTimeout(() => {
+      window.location.href = "{{ url_for('auth.rider_signup') }}";
+    }, 300);
+  }
+</script>
 {% endblock %}
