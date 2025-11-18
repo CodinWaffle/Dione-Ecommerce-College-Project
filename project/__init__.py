@@ -1,6 +1,6 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager
+from flask_login import LoginManager, current_user
 from flask_jwt_extended import JWTManager
 from flask_mail import Mail
 import os
@@ -33,6 +33,12 @@ def create_app(config_name='default'):
     @login_manager.user_loader
     def load_user(user_id):
         return db.session.get(User, int(user_id))
+
+    # Context processor to make current_user available in all templates
+    @app.context_processor
+    def inject_current_user():
+        """Make current_user available in all Jinja2 templates"""
+        return {'current_user': current_user}
 
     # Register blueprints
     from .routes.auth_routes import auth

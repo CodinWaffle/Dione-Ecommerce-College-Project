@@ -1,13 +1,18 @@
-{% extends "base.html" %}
-
-{% block extra_head %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
-{% endblock %}
-
-{% block content %}
+{% extends "base.html" %} {% block header %}{% endblock %} {% block extra_head
+%}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/admin.css') }}"
+/>
+{% endblock %} {% block content %}
 <style>
-  .navbar{display:none;}
-  .container-fluid{padding:0 !important; margin:0 !important;}
+  .navbar {
+    display: none;
+  }
+  .container-fluid {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
 </style>
 <div class="admin-shell">
   <aside class="admin-sidebar-simple">
@@ -15,20 +20,58 @@
       <strong>Admin Panel</strong>
     </div>
     <div class="list-group list-group-flush">
-      <a class="list-group-item list-group-item-action {% if request.endpoint == 'admin.overview' %}active{% endif %}" href="{{ url_for('admin.overview') }}">Dashboard</a>
-      <a class="list-group-item list-group-item-action {% if request.endpoint == 'admin.users' %}active{% endif %}" href="{{ url_for('admin.users') }}">Users Management</a>
-      <a class="list-group-item list-group-item-action {% if request.endpoint == 'admin.products' %}active{% endif %}" href="{{ url_for('admin.products') }}">Product Management</a>
-      <a class="list-group-item list-group-item-action {% if request.endpoint == 'admin.sellers' %}active{% endif %}" href="{{ url_for('admin.sellers') }}">Sellers Management</a>
-      <a class="list-group-item list-group-item-action {% if request.endpoint == 'admin.riders' %}active{% endif %}" href="{{ url_for('admin.riders') }}">Riders Management</a>
-      <a class="list-group-item list-group-item-action {% if request.endpoint == 'admin.commission' %}active{% endif %}" href="{{ url_for('admin.commission') }}">Commission &amp; Payouts</a>
-      <a class="list-group-item list-group-item-action {% if request.endpoint == 'admin.website_settings_page' %}active{% endif %}" href="{{ url_for('admin.website_settings_page') }}">Website Settings</a>
-      <a class="list-group-item list-group-item-action {% if request.endpoint == 'admin.settings' %}active{% endif %}" href="{{ url_for('admin.settings') }}">Settings</a>
-      <a class="list-group-item list-group-item-action {% if request.endpoint == 'admin.support_center' %}active{% endif %}" href="{{ url_for('admin.support_center') }}">Support Center</a>
-      <a class="list-group-item list-group-item-action text-danger" href="{{ url_for('admin.logout') }}">Logout</a>
+      <a
+        class="list-group-item list-group-item-action {% if request.endpoint == 'admin.overview' %}active{% endif %}"
+        href="{{ url_for('admin.overview') }}"
+        >Dashboard</a
+      >
+      <a
+        class="list-group-item list-group-item-action {% if request.endpoint == 'admin.users' %}active{% endif %}"
+        href="{{ url_for('admin.users') }}"
+        >Users Management</a
+      >
+      <a
+        class="list-group-item list-group-item-action {% if request.endpoint == 'admin.products' %}active{% endif %}"
+        href="{{ url_for('admin.products') }}"
+        >Product Management</a
+      >
+      <a
+        class="list-group-item list-group-item-action {% if request.endpoint == 'admin.sellers' %}active{% endif %}"
+        href="{{ url_for('admin.sellers') }}"
+        >Sellers Management</a
+      >
+      <a
+        class="list-group-item list-group-item-action {% if request.endpoint == 'admin.riders' %}active{% endif %}"
+        href="{{ url_for('admin.riders') }}"
+        >Riders Management</a
+      >
+      <a
+        class="list-group-item list-group-item-action {% if request.endpoint == 'admin.commission' %}active{% endif %}"
+        href="{{ url_for('admin.commission') }}"
+        >Commission &amp; Payouts</a
+      >
+      <a
+        class="list-group-item list-group-item-action {% if request.endpoint == 'admin.website_settings_page' %}active{% endif %}"
+        href="{{ url_for('admin.website_settings_page') }}"
+        >Website Settings</a
+      >
+      <a
+        class="list-group-item list-group-item-action {% if request.endpoint == 'admin.settings' %}active{% endif %}"
+        href="{{ url_for('admin.settings') }}"
+        >Settings</a
+      >
+      <a
+        class="list-group-item list-group-item-action {% if request.endpoint == 'admin.support_center' %}active{% endif %}"
+        href="{{ url_for('admin.support_center') }}"
+        >Support Center</a
+      >
+      <a
+        class="list-group-item list-group-item-action text-danger"
+        href="{{ url_for('admin.logout') }}"
+        >Logout</a
+      >
     </div>
   </aside>
-  <main class="admin-main-simple">
-    {% block admin_content %}{% endblock %}
-  </main>
+  <main class="admin-main-simple">{% block admin_content %}{% endblock %}</main>
 </div>
 {% endblock %}

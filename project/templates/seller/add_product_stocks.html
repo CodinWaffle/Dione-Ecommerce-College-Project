@@ -1,0 +1,88 @@
+{% set active_page = 'products' %}
+{% extends 'seller/seller_base.html' %}
+
+{% block title %}Inventory Management{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/add_product_stocks.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/product_preview.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/progress_bar.css') }}" />
+{% endblock %}
+
+{% block page_content %}
+  <div class="container">
+    
+      {% set progress_step = 3 %}{% include 'partials/_progress_bar.html' %}
+    <div class="form-container" style="display: block">
+      <!-- Full Width Form -->
+      <form id="productStocksForm" class="form-main" style="width: 100%; max-width: none">
+        <div class="form-page" id="page3">
+          <div class="page-header">
+            <div class="page-header-left">
+              <h2>Inventory Management</h2>
+              <p class="page-subtext">Manage inventory for your product</p>
+            </div>
+          </div>
+          <div class="form-grid"></div>
+          <div class="form-group full-width">
+            <div style="overflow-x: auto">
+              <button type="button" id="addVariantBtn" class="btn btn-purple" style="margin-bottom: 1rem; font-weight: 700; display: inline-flex; align-items: center; gap: 0.5rem;">
+                <i class="ri-add-line" style="font-size: 1.1rem"></i> Add Variant
+              </button>
+              <div style="overflow-x: auto">
+                <table class="variant-table" style="width: 100%; border-collapse: collapse">
+                  <thead>
+                    <tr style="border-bottom: 1px solid #e0e0e0;">
+                      <th>No.</th>
+                      <th>Photo</th>
+                      <th>SKU</th>
+                      <th>Color</th>
+                      <th>Size</th>
+                      <th>Stock</th>
+                      <th>Low Stock</th>
+                    </tr>
+                  </thead>
+                  <tbody id="variantTableBody">
+                    <tr>
+                      <td style="padding: 8px; border: 1px solid #e5e7eb; text-align: center; font-weight: 600; color: #6b7280; width: 36px;">1</td>
+                      <td style="padding: 8px; border: 1px solid #e5e7eb; text-align: center; width: 60px;">
+                        <label class="photo-upload-box grey" style="margin: 0 auto">
+                          <input type="file" style="display: none" />
+                          <div class="photo-upload-content">
+                            <i class="ri-image-add-line" style="font-size:1.2rem;color:#a259f7"></i>
+                          </div>
+                        </label>
+                      </td>
+                      <td style="padding: 8px; border: 1px solid #e5e7eb; width: 180px;"><input type="text" name="sku_1" placeholder="SKU" class="variant-input compact" /></td>
+                      <td style="padding: 8px; border: 1px solid #e5e7eb; width: 140px;"><select name="color_1" class="variant-input compact"><option value="">Select</option><option value="Black">Black</option><option value="White">White</option></select></td>
+                      <td style="padding: 8px; border: 1px solid #e5e7eb; width: 140px;"><select name="size_1" class="variant-input compact"><option value="">Select</option><option value="S">S</option><option value="M">M</option></select></td>
+                      <td style="padding: 8px; border: 1px solid #e5e7eb; width: 140px;"><input type="number" min="0" placeholder="Stock" class="variant-input compact" /></td>
+                      <td style="padding: 8px; border: 1px solid #e5e7eb; width: 140px;"><input type="number" min="0" placeholder="Low Stock" class="variant-input compact" /></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 1rem;">
+                <button type="reset" class="btn btn-secondary btn-clear" style="font-weight: 700; display: flex; align-items: center; gap: 0.5rem; background-color: #ffffff;">
+                  <i class="ri-refresh-line" style="font-size: 1.1rem"></i> Clear
+                </button>
+                <button type="submit" class="btn btn-purple btn-save" style="font-weight: 700; display: flex; align-items: center; gap: 0.5rem;">
+                  <i class="ri-save-3-line" style="font-size: 1.1rem"></i> Save
+                </button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+  <script src="{{ url_for('static', filename='js/product_preview.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/variant_table.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/add_product_stocks.js') }}"></script>
+  <!-- Fallback/patch script to ensure submit handler and redirect work reliably -->
+  <script src="{{ url_for('static', filename='js/add_product_stocks_fix.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/progress_bar.js') }}"></script>
+{% endblock %}

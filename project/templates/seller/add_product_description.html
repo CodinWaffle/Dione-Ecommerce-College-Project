@@ -1,0 +1,177 @@
+{% set active_page = 'products' %} {% extends 'seller/seller_base.html' %} {%
+block title %}Product Details Description{% endblock %} {% block extra_css %}
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css"
+/>
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/add_product_description.css') }}"
+/>
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/progress_bar.css') }}"
+/>
+{% endblock %} {% block page_content %}
+<div class="container">
+  {% set progress_step = 2 %} {% include 'partials/_progress_bar.html' %}
+  <form id="productDescriptionForm" class="form-main">
+    <div class="form-page" id="page2">
+      <div class="page-header">
+        <div class="page-header-left">
+          <h2>Product Details</h2>
+          <p class="page-subtext">
+            Add detailed information about your product
+          </p>
+        </div>
+      </div>
+      <div class="form-grid">
+        <!-- Size Guide (dynamic up to 5) -->
+        <div class="form-group full-width">
+          <label for="sizeGuide">Size Guide Photo</label>
+          <p
+            style="margin: 0; color: var(--text-secondary); font-size: 0.95rem"
+          >
+            Upload 1–5 size guide photos
+          </p>
+          <div class="sizeguide-container" id="sizeguideContainer">
+            <label class="sizeguide-box">
+              <input
+                type="file"
+                name="sizeGuide[]"
+                accept="image/*"
+                required
+                aria-required="true"
+              />
+              <div class="sizeguide-placeholder">
+                <i class="ri-image-line"></i>
+                <small>Upload photo</small>
+              </div>
+            </label>
+            <button
+              type="button"
+              class="sizeguide-add-box"
+              id="sizeguideAddBtn"
+              aria-label="Add size guide photo"
+            >
+              <i class="ri-add-line"></i>
+            </button>
+          </div>
+        </div>
+        <!-- Description -->
+        <div class="form-group full-width">
+          <label for="description">Description</label>
+          <textarea
+            id="description"
+            name="description"
+            placeholder="Describe your product in detail..."
+            required
+            aria-required="true"
+          ></textarea>
+        </div>
+        <!-- Materials and Care -->
+        <div class="form-group full-width">
+          <label for="materials">Materials and Care</label>
+          <textarea
+            id="materials"
+            name="materials"
+            placeholder="e.g., 100% Cotton\nMachine wash cold\nTumble dry low"
+            required
+            aria-required="true"
+          ></textarea>
+        </div>
+        <!-- Details & Fit -->
+        <div class="form-group full-width">
+          <label for="detailsFit">Details & Fit</label>
+          <textarea
+            id="detailsFit"
+            name="detailsFit"
+            placeholder="e.g., Relaxed fit\nCrew neckline\nShort sleeves\nLength: 26 inches"
+            required
+            aria-required="true"
+          ></textarea>
+        </div>
+        <!-- Certifications (dynamic add up to 5) -->
+        <div class="form-group full-width">
+          <label>Certifications (Sustainability)</label>
+          <p
+            style="margin: 0; color: var(--text-secondary); font-size: 0.95rem"
+          >
+            You may upload up to 5 certification photos
+          </p>
+          <div class="certifications-container" id="certificationsContainer">
+            <label class="cert-upload-box">
+              <input type="file" name="certifications[]" accept="image/*" />
+              <div class="cert-upload-placeholder">
+                <i class="ri-image-line"></i>
+                <small>Upload photo</small>
+              </div>
+            </label>
+            <button
+              type="button"
+              class="cert-add-box"
+              id="certAddBtn"
+              aria-label="Add certification photo"
+            >
+              <i class="ri-add-line"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="form-navigation">
+      <button type="button" class="btn btn-secondary" id="backBtn">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        Back
+      </button>
+      <div class="nav-spacer"></div>
+      <button type="button" class="btn btn-primary" id="nextBtn">
+        Next
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+          <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
+      </button>
+      <button
+        type="submit"
+        class="btn btn-success"
+        id="submitBtn"
+        style="display: none"
+      >
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+        Add Product
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %} {% block extra_js %}
+<script src="{{ url_for('static', filename='js/product_preview.js') }}"></script>
+<script src="{{ url_for('static', filename='js/add_product_description.js') }}"></script>
+<script src="{{ url_for('static', filename='js/progress_bar.js') }}"></script>
+{% endblock %}

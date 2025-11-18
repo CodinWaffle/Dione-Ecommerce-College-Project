@@ -1,0 +1,157 @@
+{% set active_page = 'products' %} {% extends 'seller/seller_base.html' %} {%
+block title %}Product Preview{% endblock %} {% block extra_css %} <link
+rel="stylesheet" href="{{ url_for('static',
+filename='css/add_product_preview.css') }}" / >
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/progress_bar.css') }}"
+/>
+{% endblock %} {% block page_content %} {% set progress_step = 4 %} {% include
+'partials/_progress_bar.html' %}
+<div class="container-fluid preview-page">
+  <div class="preview-section">
+    <div class="page-header">
+      <div class="page-header-left">
+        <h2>Product Preview</h2>
+        <p class="page-subtext">Summary of your product details</p>
+      </div>
+    </div>
+
+    <!-- Basic Info Preview -->
+    <div class="preview-group">
+      <h3>Basic Information</h3>
+      <div class="preview-content" id="basicInfoPreview">
+        <div class="preview-item">
+          <label>Product Name:</label>
+          <span id="previewProductName">-</span>
+        </div>
+        <div class="preview-item">
+          <label>Category:</label>
+          <span id="previewCategory">-</span>
+        </div>
+        <div class="preview-item">
+          <label>Sub Category:</label>
+          <span id="previewSubCategory">-</span>
+        </div>
+        <div class="preview-item">
+          <label>Sub-items:</label>
+          <span id="previewSubItems">-</span>
+        </div>
+        <div class="preview-item">
+          <label>Model Information:</label>
+          <span id="previewModelInfo">-</span>
+        </div>
+        <div class="preview-item">
+          <label>Product Filters Applied:</label>
+          <span id="previewProductFilters">-</span>
+        </div>
+        <div class="preview-item">
+          <label>Price:</label>
+          <span id="previewPrice">-</span>
+        </div>
+        <div class="preview-item">
+          <label>Discount Percentage:</label>
+          <span id="previewDiscountPercent">-</span>
+        </div>
+        <div class="preview-item">
+          <label>Discount Type:</label>
+          <span id="previewDiscountType">-</span>
+        </div>
+        <div class="preview-item">
+          <label>Voucher Type:</label>
+          <span id="previewVoucherType">-</span>
+        </div>
+        <div class="preview-images">
+          <label>Product Images:</label>
+          <div id="previewImages" class="image-grid">
+            <!-- Images will be inserted here -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Description Preview -->
+    <div class="preview-group">
+      <h3>Product Details</h3>
+      <div class="preview-content" id="descriptionPreview">
+        <div class="preview-item">
+          <label>Description:</label>
+          <p id="previewDescription">-</p>
+        </div>
+        <div class="preview-item">
+          <label>Materials & Care:</label>
+          <p id="previewMaterials">-</p>
+        </div>
+        <div class="preview-item">
+          <label>Details & Fit:</label>
+          <p id="previewDetailsFit">-</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stock Preview -->
+    <div class="preview-group">
+      <h3>Stock Information</h3>
+      <div class="preview-content" id="stockPreview">
+        <div class="preview-item">
+          <label>SKU:</label>
+          <span id="previewSKU">-</span>
+        </div>
+        <div class="preview-item">
+          <label>Total Stock:</label>
+          <span id="previewTotalStock">-</span>
+        </div>
+        <div class="preview-item full-width">
+          <label>Variants:</label>
+          <ul id="previewVariants" class="variants-list">
+            <!-- Variants will be inserted here as <li class="variant-item"> elements -->
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Product and Back buttons at bottom of preview -->
+    <div
+      class="preview-navigation"
+      style="
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-top: 2rem;
+      "
+    >
+      <button type="button" class="btn btn-secondary" id="backBtn">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        Back
+      </button>
+      <div class="nav-spacer"></div>
+      <button type="button" class="btn btn-success" id="submitBtn">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+        Add Product
+      </button>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script src="{{ url_for('static', filename='js/add_product_preview.js') }}"></script>
+<script src="{{ url_for('static', filename='js/progress_bar.js') }}"></script>
+{% endblock %}

@@ -1,8 +1,5 @@
-{% extends "admin/base_admin.html" %}
-
-{% block page_title %}User Management{% endblock %}
-
-{% block admin_content %}
+{% extends "admin/base_admin.html" %} {% block page_title %}User Management{%
+endblock %} {% block admin_content %}
 <section>
   <h2 class="section-title">
     <i class="fas fa-users"></i>
@@ -11,7 +8,10 @@
 
   <!-- Pending Requests Section -->
   <div class="mb-4">
-    <h5 class="mb-3"><i class="fas fa-hourglass-half text-warning"></i> Pending Seller & Rider Requests</h5>
+    <h5 class="mb-3">
+      <i class="fas fa-hourglass-half text-warning"></i> Pending Seller & Rider
+      Requests
+    </h5>
     <div class="modern-table">
       <div class="table-responsive">
         <table class="table table-sm">
@@ -29,17 +29,52 @@
             <tr>
               <td><strong>{{ req.username }}</strong></td>
               <td>{{ req.email }}</td>
-              <td><span class="badge badge-primary">{{ req.role_requested.capitalize() }}</span></td>
-              <td><small class="text-muted">{{ req.created_at.strftime('%b %d, %Y') if req.created_at else 'N/A' }}</small></td>
+              <td>
+                <span class="badge badge-primary"
+                  >{{ req.role_requested.capitalize() }}</span
+                >
+              </td>
+              <td>
+                <small class="text-muted"
+                  >{{ req.created_at.strftime('%b %d, %Y') if req.created_at
+                  else 'N/A' }}</small
+                >
+              </td>
               <td>
                 <div class="btn-group btn-group-sm" role="group">
-                  <form method="post" action="{{ url_for('admin.approve_request', user_id=req.id) }}" class="d-inline" style="display: inline;">
-                    <button class="btn btn-success" type="submit" title="Approve Request">
+                  <button
+                    class="btn btn-info"
+                    type="button"
+                    title="View Details"
+                    onclick="showSellerDetails({{ req.id }})"
+                  >
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <form
+                    method="post"
+                    action="{{ url_for('admin.approve_request', user_id=req.id) }}"
+                    class="d-inline"
+                    style="display: inline"
+                  >
+                    <button
+                      class="btn btn-success"
+                      type="submit"
+                      title="Approve Request"
+                    >
                       <i class="fas fa-check"></i>
                     </button>
                   </form>
-                  <form method="post" action="{{ url_for('admin.reject_request', user_id=req.id) }}" class="d-inline" style="display: inline;">
-                    <button class="btn btn-danger" type="submit" title="Reject Request">
+                  <form
+                    method="post"
+                    action="{{ url_for('admin.reject_request', user_id=req.id) }}"
+                    class="d-inline"
+                    style="display: inline"
+                  >
+                    <button
+                      class="btn btn-danger"
+                      type="submit"
+                      title="Reject Request"
+                    >
                       <i class="fas fa-times"></i>
                     </button>
                   </form>
@@ -48,7 +83,9 @@
             </tr>
             {% else %}
             <tr>
-              <td colspan="5" class="text-center text-muted py-3">No pending requests</td>
+              <td colspan="5" class="text-center text-muted py-3">
+                No pending requests
+              </td>
             </tr>
             {% endfor %}
           </tbody>
@@ -59,7 +96,9 @@
 
   <div class="row">
     <div class="col-md-4 mb-4">
-      <h5 class="mb-3"><i class="fas fa-shopping-bag text-success"></i> Buyers</h5>
+      <h5 class="mb-3">
+        <i class="fas fa-shopping-bag text-success"></i> Buyers
+      </h5>
       <div class="modern-table">
         <div class="table-responsive">
           <table class="table table-sm">
@@ -77,7 +116,9 @@
               </tr>
               {% else %}
               <tr>
-                <td colspan="2" class="text-center text-muted">No buyers found</td>
+                <td colspan="2" class="text-center text-muted">
+                  No buyers found
+                </td>
               </tr>
               {% endfor %}
             </tbody>
@@ -113,20 +154,45 @@
                 <td>
                   <div class="btn-group" role="group">
                     {% if not u.is_suspended %}
-                    <form method="post" action="{{ url_for('admin.user_suspend', user_id=u.id) }}" class="d-inline">
-                      <button class="btn btn-modern btn-warning btn-sm" type="submit" title="Suspend">
+                    <form
+                      method="post"
+                      action="{{ url_for('admin.user_suspend', user_id=u.id) }}"
+                      class="d-inline"
+                    >
+                      <button
+                        class="btn btn-modern btn-warning btn-sm"
+                        type="submit"
+                        title="Suspend"
+                      >
                         <i class="fas fa-ban"></i>
                       </button>
                     </form>
                     {% else %}
-                    <form method="post" action="{{ url_for('admin.user_reactivate', user_id=u.id) }}" class="d-inline">
-                      <button class="btn btn-modern btn-info btn-sm" type="submit" title="Reactivate">
+                    <form
+                      method="post"
+                      action="{{ url_for('admin.user_reactivate', user_id=u.id) }}"
+                      class="d-inline"
+                    >
+                      <button
+                        class="btn btn-modern btn-info btn-sm"
+                        type="submit"
+                        title="Reactivate"
+                      >
                         <i class="fas fa-check-circle"></i>
                       </button>
                     </form>
                     {% endif %}
-                    <form method="post" action="{{ url_for('admin.user_delete', user_id=u.id) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this user?');">
-                      <button class="btn btn-modern btn-danger btn-sm" type="submit" title="Delete">
+                    <form
+                      method="post"
+                      action="{{ url_for('admin.user_delete', user_id=u.id) }}"
+                      class="d-inline"
+                      onsubmit="return confirm('Are you sure you want to delete this user?');"
+                    >
+                      <button
+                        class="btn btn-modern btn-danger btn-sm"
+                        type="submit"
+                        title="Delete"
+                      >
                         <i class="fas fa-trash"></i>
                       </button>
                     </form>
@@ -135,7 +201,9 @@
               </tr>
               {% else %}
               <tr>
-                <td colspan="4" class="text-center text-muted">No sellers found</td>
+                <td colspan="4" class="text-center text-muted">
+                  No sellers found
+                </td>
               </tr>
               {% endfor %}
             </tbody>
@@ -171,20 +239,45 @@
                 <td>
                   <div class="btn-group" role="group">
                     {% if not u.is_suspended %}
-                    <form method="post" action="{{ url_for('admin.user_suspend', user_id=u.id) }}" class="d-inline">
-                      <button class="btn btn-modern btn-warning btn-sm" type="submit" title="Suspend">
+                    <form
+                      method="post"
+                      action="{{ url_for('admin.user_suspend', user_id=u.id) }}"
+                      class="d-inline"
+                    >
+                      <button
+                        class="btn btn-modern btn-warning btn-sm"
+                        type="submit"
+                        title="Suspend"
+                      >
                         <i class="fas fa-ban"></i>
                       </button>
                     </form>
                     {% else %}
-                    <form method="post" action="{{ url_for('admin.user_reactivate', user_id=u.id) }}" class="d-inline">
-                      <button class="btn btn-modern btn-info btn-sm" type="submit" title="Reactivate">
+                    <form
+                      method="post"
+                      action="{{ url_for('admin.user_reactivate', user_id=u.id) }}"
+                      class="d-inline"
+                    >
+                      <button
+                        class="btn btn-modern btn-info btn-sm"
+                        type="submit"
+                        title="Reactivate"
+                      >
                         <i class="fas fa-check-circle"></i>
                       </button>
                     </form>
                     {% endif %}
-                    <form method="post" action="{{ url_for('admin.user_delete', user_id=u.id) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this user?');">
-                      <button class="btn btn-modern btn-danger btn-sm" type="submit" title="Delete">
+                    <form
+                      method="post"
+                      action="{{ url_for('admin.user_delete', user_id=u.id) }}"
+                      class="d-inline"
+                      onsubmit="return confirm('Are you sure you want to delete this user?');"
+                    >
+                      <button
+                        class="btn btn-modern btn-danger btn-sm"
+                        type="submit"
+                        title="Delete"
+                      >
                         <i class="fas fa-trash"></i>
                       </button>
                     </form>
@@ -193,7 +286,9 @@
               </tr>
               {% else %}
               <tr>
-                <td colspan="4" class="text-center text-muted">No riders found</td>
+                <td colspan="4" class="text-center text-muted">
+                  No riders found
+                </td>
               </tr>
               {% endfor %}
             </tbody>
@@ -203,5 +298,296 @@
     </div>
   </div>
 </section>
-{% endblock %}
 
+<!-- Seller Details Modal -->
+<div
+  class="modal fade"
+  id="sellerDetailsModal"
+  tabindex="-1"
+  role="dialog"
+  aria-labelledby="sellerDetailsModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="sellerDetailsModalLabel">
+          <i class="fas fa-store"></i> Seller Application Details
+        </h5>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body" id="sellerDetailsContent">
+        <div class="text-center py-4">
+          <div class="spinner-border text-primary" role="status">
+            <span class="sr-only">Loading...</span>
+          </div>
+          <p class="mt-2">Loading seller details...</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .detail-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .detail-group h6 {
+    color: #6c5ce7;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #f3f4f6;
+  }
+
+  .detail-row {
+    display: flex;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f9fafb;
+  }
+
+  .detail-row:last-child {
+    border-bottom: none;
+  }
+
+  .detail-label {
+    font-weight: 600;
+    color: #4b5563;
+    width: 200px;
+    flex-shrink: 0;
+  }
+
+  .detail-value {
+    color: #1f2937;
+    flex: 1;
+  }
+
+  .detail-value.empty {
+    color: #9ca3af;
+    font-style: italic;
+  }
+
+  .modal-lg {
+    max-width: 800px;
+  }
+</style>
+
+<script>
+  function showSellerDetails(userId) {
+    const modal = $("#sellerDetailsModal");
+    const contentDiv = $("#sellerDetailsContent");
+
+    // Show modal and reset content
+    modal.modal("show");
+    contentDiv.html(`
+    <div class="text-center py-4">
+      <div class="spinner-border text-primary" role="status">
+        <span class="sr-only">Loading...</span>
+      </div>
+      <p class="mt-2">Loading seller details...</p>
+    </div>
+  `);
+
+    // Fetch seller details
+    fetch(`/admin/get-seller-details/${userId}`)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to fetch seller details");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        if (data.error) {
+          contentDiv.html(`
+          <div class="alert alert-danger">
+            <i class="fas fa-exclamation-triangle"></i> ${data.error}
+          </div>
+        `);
+          return;
+        }
+
+        // Build the details HTML
+        let html = "";
+
+        // User Information
+        html += `
+        <div class="detail-group">
+          <h6><i class="fas fa-user"></i> User Information</h6>
+          <div class="detail-row">
+            <div class="detail-label">Email:</div>
+            <div class="detail-value">${
+              data.email || '<span class="empty">Not provided</span>'
+            }</div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-label">Role Requested:</div>
+            <div class="detail-value"><span class="badge badge-primary">${
+              data.role_requested || "N/A"
+            }</span></div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-label">Registration Date:</div>
+            <div class="detail-value">${
+              data.created_at || '<span class="empty">N/A</span>'
+            }</div>
+          </div>
+        </div>
+      `;
+
+        // Business Information (only if seller)
+        if (data.role_requested === "seller" && data.seller_profile) {
+          const seller = data.seller_profile;
+          html += `
+          <div class="detail-group">
+            <h6><i class="fas fa-store"></i> Business Information</h6>
+            <div class="detail-row">
+              <div class="detail-label">Business Name:</div>
+              <div class="detail-value">${
+                seller.business_name ||
+                '<span class="empty">Not provided</span>'
+              }</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Business Type:</div>
+              <div class="detail-value">${
+                seller.business_type ||
+                '<span class="empty">Not provided</span>'
+              }</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Tax ID:</div>
+              <div class="detail-value">${
+                seller.tax_id || '<span class="empty">Not provided</span>'
+              }</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Store Description:</div>
+              <div class="detail-value">${
+                seller.store_description ||
+                '<span class="empty">Not provided</span>'
+              }</div>
+            </div>
+          </div>
+          
+          <div class="detail-group">
+            <h6><i class="fas fa-map-marker-alt"></i> Business Address</h6>
+            <div class="detail-row">
+              <div class="detail-label">Address:</div>
+              <div class="detail-value">${
+                seller.business_address ||
+                '<span class="empty">Not provided</span>'
+              }</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">City:</div>
+              <div class="detail-value">${
+                seller.business_city ||
+                '<span class="empty">Not provided</span>'
+              }</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">ZIP Code:</div>
+              <div class="detail-value">${
+                seller.business_zip || '<span class="empty">Not provided</span>'
+              }</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Country:</div>
+              <div class="detail-value">${
+                seller.business_country ||
+                '<span class="empty">Not provided</span>'
+              }</div>
+            </div>
+          </div>
+          
+          <div class="detail-group">
+            <h6><i class="fas fa-university"></i> Banking Information</h6>
+            <div class="detail-row">
+              <div class="detail-label">Bank Type:</div>
+              <div class="detail-value">${
+                seller.bank_type || '<span class="empty">Not provided</span>'
+              }</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Bank Name:</div>
+              <div class="detail-value">${
+                seller.bank_name || '<span class="empty">Not provided</span>'
+              }</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Account Number:</div>
+              <div class="detail-value">${
+                seller.bank_account || '<span class="empty">Not provided</span>'
+              }</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Account Holder:</div>
+              <div class="detail-value">${
+                seller.bank_holder_name ||
+                '<span class="empty">Not provided</span>'
+              }</div>
+            </div>
+          </div>
+        `;
+        } else if (data.role_requested === "rider" && data.rider_profile) {
+          const rider = data.rider_profile;
+          html += `
+          <div class="detail-group">
+            <h6><i class="fas fa-motorcycle"></i> Rider Information</h6>
+            <div class="detail-row">
+              <div class="detail-label">Phone:</div>
+              <div class="detail-value">${
+                rider.phone || '<span class="empty">Not provided</span>'
+              }</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">License Number:</div>
+              <div class="detail-value">${
+                rider.license_number ||
+                '<span class="empty">Not provided</span>'
+              }</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Vehicle Type:</div>
+              <div class="detail-value">${
+                rider.vehicle_type || '<span class="empty">Not provided</span>'
+              }</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Vehicle Number:</div>
+              <div class="detail-value">${
+                rider.vehicle_number ||
+                '<span class="empty">Not provided</span>'
+              }</div>
+            </div>
+          </div>
+        `;
+        }
+
+        contentDiv.html(html);
+      })
+      .catch((error) => {
+        console.error("Error fetching seller details:", error);
+        contentDiv.html(`
+        <div class="alert alert-danger">
+          <i class="fas fa-exclamation-triangle"></i> Failed to load seller details. Please try again.
+        </div>
+      `);
+      });
+  }
+</script>
+
+{% endblock %}

@@ -1,4 +1,5 @@
-{% extends "base.html" %} {% block extra_css %}
+{% extends 'buyer/base_buyer.html' %} {% block title %}DIONE — Home{% endblock
+%} {% block extra_css %}
 <link
   rel="stylesheet"
   href="{{ url_for('static', filename='css/buyer_styles/homepage.css') }}"
@@ -10,40 +11,43 @@
 {% endblock %} {% block content %}
 <!-- Hero Banner -->
 <section class="hero-banner">
-  <img
-    src="{{ url_for('static', filename='image/banner.png') }}"
-    alt="Hero Banner"
-  />
+  <img src="/placeholder.svg?height=500&width=1200" alt="Hero Banner" />
+  <div class="hero-content">
+    <h1 class="hero-title">New Collection 2025</h1>
+    <p class="hero-subtitle">Discover our latest sustainable fashion</p>
+    <div class="hero-buttons">
+      <button class="btn btn-primary">Shop Women</button>
+      <button class="btn btn-secondary">Shop Accessories</button>
+    </div>
+  </div>
 </section>
 
 <!-- Shop by Category -->
 <section class="shop-by-category" id="shop">
-  <div class="section-container">
-    <div class="section-header">
-      <h2 class="section-title">Shop by Category</h2>
+  <div class="section-header">
+    <h2 class="section-title">Shop by Category</h2>
+  </div>
+  <div class="category-grid">
+    <div class="category-card category-large">
+      <img src="/placeholder.svg?height=400&width=500" alt="Clothing" />
+      <div class="category-overlay">
+        <h3 class="category-name">Clothing</h3>
+        <button class="btn btn-white">Shop Now</button>
+      </div>
     </div>
-    <div class="category-grid">
-      <div class="category-card category-large">
-        <img src="/placeholder.svg?height=400&width=500" alt="Clothing" />
+    <div class="category-column">
+      <div class="category-card category-small">
+        <img src="/placeholder.svg?height=190&width=240" alt="Shoes" />
         <div class="category-overlay">
-          <h3 class="category-name">Clothing</h3>
-          <button class="btn btn-white">Shop Now</button>
+          <h3 class="category-name">Shoes</h3>
+          <button class="btn btn-white btn-small">Shop</button>
         </div>
       </div>
-      <div class="category-column">
-        <div class="category-card category-small">
-          <img src="/placeholder.svg?height=190&width=240" alt="Shoes" />
-          <div class="category-overlay">
-            <h3 class="category-name">Shoes</h3>
-            <button class="btn btn-white btn-small">Shop</button>
-          </div>
-        </div>
-        <div class="category-card category-small">
-          <img src="/placeholder.svg?height=190&width=240" alt="Accessories" />
-          <div class="category-overlay">
-            <h3 class="category-name">Accessories</h3>
-            <button class="btn btn-white btn-small">Shop</button>
-          </div>
+      <div class="category-card category-small">
+        <img src="/placeholder.svg?height=190&width=240" alt="Accessories" />
+        <div class="category-overlay">
+          <h3 class="category-name">Accessories</h3>
+          <button class="btn btn-white btn-small">Shop</button>
         </div>
       </div>
     </div>

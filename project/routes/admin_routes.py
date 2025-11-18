@@ -1,12 +1,12 @@
 """
 Admin routes for managing user approvals and viewing admin dashboard
 """
-from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
+from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, jsonify
 from flask_login import login_required, current_user, login_user, logout_user
 from werkzeug.security import check_password_hash
 from flask_mail import Message
 from project import db, mail
-from project.models import User, SiteSetting
+from project.models import User, SiteSetting, Seller, Rider
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -118,6 +118,58 @@ def users():
         riders=riders,
         pending_requests=pending_requests
     )
+
+
+@admin_bp.get('/get-seller-details/<int:user_id>')
+@login_required
+def get_seller_details(user_id):
+    """Get seller/rider details for the modal"""
+    user = User.query.get_or_404(user_id)
+    
+    if not user.role_requested:
+        return jsonify({'error': 'No role request found for this user'}), 404
+    
+    response_data = {
+        'email': user.email,
+        'role_requested': user.role_requested,
+        'created_at': user.created_at.strftime('%B %d, %Y at %I:%M %p') if user.created_at else None,
+    }
+    
+    # Add seller profile data if exists
+    if user.role_requested == 'seller':
+        seller = Seller.query.filter_by(user_id=user.id).first()
+        if seller:
+            response_data['seller_profile'] = {
+                'business_name': seller.business_name,
+                'business_type': seller.business_type,
+                'business_address': seller.business_address,
+                'business_city': seller.business_city,
+                'business_zip': seller.business_zip,
+                'business_country': seller.business_country,
+                'bank_type': seller.bank_type,
+                'bank_name': seller.bank_name,
+                'bank_account': seller.bank_account,
+                'bank_holder_name': seller.bank_holder_name,
+                'tax_id': seller.tax_id,
+                'store_description': seller.store_description,
+            }
+        else:
+            response_data['seller_profile'] = None
+    
+    # Add rider profile data if exists
+    elif user.role_requested == 'rider':
+        rider = Rider.query.filter_by(user_id=user.id).first()
+        if rider:
+            response_data['rider_profile'] = {
+                'phone': rider.phone,
+                'license_number': rider.license_number,
+                'vehicle_type': rider.vehicle_type,
+                'vehicle_number': rider.vehicle_number,
+            }
+        else:
+            response_data['rider_profile'] = None
+    
+    return jsonify(response_data)
 
 
 @admin_bp.post('/approve-request/<int:user_id>')

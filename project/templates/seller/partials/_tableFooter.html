@@ -1,0 +1,204 @@
+<!-- Reusable table footer component-->
+
+<div class="table-footer component-table-footer">
+  <div class="pagination-info">
+    Showing <span class="tf-showing">0</span> of
+    <span class="tf-total">0</span>
+  </div>
+  <div class="pagination">
+    <button class="pagination-btn tf-prev" disabled>Previous</button>
+    <div class="pagination-numbers tf-numbers"></div>
+    <button class="pagination-btn tf-next" disabled>Next</button>
+  </div>
+</div>
+
+<style>
+  /* Scoped styles for component-table-footer (based on seller_revenue_analytics.css) */
+  .component-table-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-top: 1px solid #f1f5f9;
+    background-color: #ffffff;
+    border-radius: 0 0 8px 8px;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .component-table-footer .pagination-info {
+    font-size: 14px;
+    color: #6b7280;
+    font-weight: 500;
+  }
+  .component-table-footer .pagination {
+    display: flex;
+    gap: 0.375rem;
+    align-items: center;
+  }
+  .component-table-footer .pagination-btn,
+  .component-table-footer .page-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    background-color: #fff;
+    color: #6b7280;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    padding: 0 8px;
+  }
+  .component-table-footer .pagination-btn:hover:not(:disabled),
+  .component-table-footer .page-number:hover {
+    background-color: #f3f4f6;
+    color: #4f46e5;
+    border-color: #c7d2fe;
+  }
+  .component-table-footer .page-number.active {
+    background-color: #6d28d9;
+    color: #fff;
+    border-color: #6d28d9;
+    font-weight: 600;
+  }
+
+  /* responsive */
+  @media (max-width: 800px) {
+    .component-table-footer {
+      flex-direction: column;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .component-table-footer .pagination {
+      width: 100%;
+      display: flex;
+      justify-content: flex-start;
+      gap: 8px;
+    }
+  }
+</style>
+
+<script>
+  /* TableFooter: a small reusable pagination widget
+   API:
+     TableFooter.create(containerElement, options)
+       options: { itemsPerPage: number (default 10), maxPageButtons: number (default 5), onPageChange: function(page) }
+     Returns an object: { update(totalItems), goTo(page), destroy() }
+*/
+  (function (global) {
+    function create(container, options) {
+      if (!container) return null;
+      const opts = Object.assign(
+        { itemsPerPage: 10, maxPageButtons: 5, onPageChange: function () {} },
+        options || {}
+      );
+
+      const showingEl = container.querySelector(".tf-showing");
+      const totalEl = container.querySelector(".tf-total");
+      const prevBtn = container.querySelector(".tf-prev");
+      const nextBtn = container.querySelector(".tf-next");
+      const numbersEl = container.querySelector(".tf-numbers");
+
+      let totalItems = 0;
+      let currentPage = 1;
+
+      function renderPageButtons() {
+        numbersEl.innerHTML = "";
+        const totalPages = Math.max(
+          1,
+          Math.ceil(totalItems / opts.itemsPerPage)
+        );
+
+        for (let i = 1; i <= totalPages; i++) {
+          const btn = document.createElement("button");
+          btn.className = "page-number" + (i === currentPage ? " active" : "");
+          btn.textContent = i;
+          btn.addEventListener("click", () => goTo(i));
+          numbersEl.appendChild(btn);
+        }
+      }
+
+      function updateControls() {
+        const totalPages = Math.max(
+          1,
+          Math.ceil(totalItems / opts.itemsPerPage)
+        );
+        prevBtn.disabled = currentPage === 1;
+        nextBtn.disabled = currentPage === totalPages || totalItems === 0;
+
+        const start =
+          totalItems === 0 ? 0 : (currentPage - 1) * opts.itemsPerPage + 1;
+        const end = Math.min(currentPage * opts.itemsPerPage, totalItems);
+        if (showingEl)
+          showingEl.textContent = start && end ? start + "-" + end : "0";
+        if (totalEl) totalEl.textContent = totalItems;
+
+        // update active class on numbers
+        const pageBtns = numbersEl.querySelectorAll(".page-number");
+        pageBtns.forEach((p, idx) => {
+          if (idx + 1 === currentPage) p.classList.add("active");
+          else p.classList.remove("active");
+        });
+      }
+
+      function goTo(page) {
+        const totalPages = Math.max(
+          1,
+          Math.ceil(totalItems / opts.itemsPerPage)
+        );
+        const newPage = Math.max(1, Math.min(page, totalPages));
+        if (newPage === currentPage) return;
+        currentPage = newPage;
+        updateControls();
+        opts.onPageChange(currentPage);
+      }
+
+      prevBtn.addEventListener("click", () => {
+        if (currentPage > 1) {
+          currentPage -= 1;
+          updateControls();
+          opts.onPageChange(currentPage);
+        }
+      });
+
+      nextBtn.addEventListener("click", () => {
+        const totalPages = Math.max(
+          1,
+          Math.ceil(totalItems / opts.itemsPerPage)
+        );
+        if (currentPage < totalPages) {
+          currentPage += 1;
+          updateControls();
+          opts.onPageChange(currentPage);
+        }
+      });
+
+      function update(newTotal) {
+        totalItems = Math.max(0, parseInt(newTotal) || 0);
+        const totalPages = Math.max(
+          1,
+          Math.ceil(totalItems / opts.itemsPerPage)
+        );
+        if (currentPage > totalPages) currentPage = totalPages;
+        renderPageButtons();
+        updateControls();
+      }
+
+      function destroy() {
+        prevBtn.removeEventListener("click");
+        nextBtn.removeEventListener("click");
+        numbersEl.innerHTML = "";
+      }
+
+      // initial render
+      renderPageButtons();
+      updateControls();
+
+      return { update: update, goTo: goTo, destroy: destroy };
+    }
+
+    global.TableFooter = { create: create };
+  })(window);
+</script>

@@ -27,7 +27,92 @@ def index():
             return redirect(url_for('main.seller_dashboard'))
         if role == 'rider':
             return redirect(url_for('main.rider_dashboard'))
-    return render_template('main/index.html')
+    
+    # Navigation items for header
+    nav_items = [
+        {
+            'name': 'Clothing',
+            'bold': False,
+            'active': True,
+            'dropdown': {
+                'categories': ['Tops', 'Bottoms', 'Dresses', 'Outwear', 'Activewear', 'Sleepwear', 'Undergarments', 'Swimwear', 'Occasionwear'],
+                'sections': [
+                    {
+                        'title': 'Women Tops',
+                        'subitems': ['T-Shirts', 'Blouses', 'Button-downs', 'Tank Tops', 'Crop Tops', 'Tube Tops', 'Tunics', 'Wrap Tops', 'Peplum Tops', 'Bodysuits', 'Sweaters', 'Cardigans', 'Sweatshirts & Hoodies']
+                    }
+                ],
+                'promo': {
+                    'title': 'Spring Collection',
+                    'subtitle': 'Fresh Styles Await',
+                    'description': 'Discover the latest trends with our new spring collection.',
+                    'button': 'Explore'
+                }
+            }
+        },
+        {
+            'name': 'Shoes',
+            'bold': False,
+            'active': False,
+            'dropdown': {
+                'categories': ['Heels', 'Flats', 'Sandals', 'Sneakers', 'Boots', 'Slippers & Comfort', 'Occasion Shoes'],
+                'sections': [
+                    {
+                        'title': 'Heels',
+                        'subitems': ['Stilettos', 'Pumps', 'Block Heels', 'Wedge Heels', 'Kitten Heels', 'Platform Heels', 'Ankle Strap Heels', 'Mules', 'Peep Toe Heels', 'Slingbacks']
+                    }
+                ],
+                'promo': {
+                    'title': 'Step Up',
+                    'subtitle': 'New Shoe Collection',
+                    'description': 'Walk in style with our curated shoe selection.',
+                    'button': 'Shop Now'
+                }
+            }
+        },
+        {
+            'name': 'Accessories',
+            'bold': False,
+            'active': False,
+            'dropdown': {
+                'categories': ['Bags', 'Jewelry', 'Hair Accessories', 'Belts', 'Scarves & Wraps', 'Hats & Caps', 'Eyewear', 'Watches', 'Gloves', 'Others'],
+                'sections': [
+                    {
+                        'title': 'Accessories',
+                        'subitems': ['Handbags', 'Shoulder Bags', 'Tote Bags', 'Crossbody Bags', 'Clutches', 'Backpacks', 'Wallets & Pouches', 'Necklaces', 'Earrings', 'Bracelets']
+                    }
+                ],
+                'promo': {
+                    'title': 'Complete Your Look',
+                    'subtitle': 'Accessory Essentials',
+                    'description': 'Find the perfect finishing touch for any outfit.',
+                    'button': 'Browse'
+                }
+            }
+        },
+        {
+            'name': "What's New",
+            'bold': True,
+            'active': False,
+            'dropdown': {
+                'categories': ['New Arrivals', 'Best Sellers', 'Trending', 'Limited Edition', 'Seasonal'],
+                'sections': [
+                    {
+                        'title': 'Latest Drops',
+                        'subitems': ['This Week', 'This Month', 'Last 30 Days', 'Coming Soon']
+                    }
+                ],
+                'promo': {
+                    'title': 'Exclusive Launch',
+                    'subtitle': 'Be First to Know',
+                    'description': 'Get early access to our newest collections and exclusive drops.',
+                    'button': 'Join Now'
+                }
+            }
+        }
+    ]
+    
+    return render_template('main/index.html', nav_items=nav_items)
 
 @main.route('/profile')
 @login_required
@@ -56,7 +141,13 @@ def seller_dashboard():
         flash("You don't have access to the seller dashboard.", 'warning')
         return redirect(url_for('main.profile'))
     
-    return render_template('seller/dashboard.html', username=current_user.email)
+    # Get seller profile data
+    seller_profile = current_user.seller_profile[0] if hasattr(current_user, 'seller_profile') and current_user.seller_profile else None
+    
+    return render_template('seller/dashboard.html', 
+                         username=current_user.email, 
+                         seller=seller_profile,
+                         active_page='dashboard')
 
 
 @main.route('/seller/products')
@@ -65,7 +156,14 @@ def seller_products():
     if (getattr(current_user, 'role', '') or '').lower() != 'seller' or not getattr(current_user, 'is_approved', False):
         flash("You don't have access to seller tools.", 'warning')
         return redirect(url_for('main.profile'))
-    return render_template('seller/products.html', username=current_user.email)
+    
+    # Get seller profile data
+    seller_profile = current_user.seller_profile[0] if hasattr(current_user, 'seller_profile') and current_user.seller_profile else None
+    
+    return render_template('seller/seller_product_management.html', 
+                         username=current_user.email, 
+                         seller=seller_profile,
+                         active_page='products')
 
 @main.route('/rider/dashboard')
 @login_required

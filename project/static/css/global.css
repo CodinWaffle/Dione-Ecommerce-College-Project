@@ -1,0 +1,83 @@
+:root {
+  /* === BRAND COLORS === */
+  --color-primary: #667eea; /* Indigo blue */
+  --color-secondary: #764ba2; /* Violet purple */
+  --color-accent: #ff7eb3; /* Pink accent */
+  --gradient-main: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+  /* === BUTTON COLORS === */
+  --btn-primary-bg: var(--color-primary);
+  --btn-primary-hover: #5564d8; /* Deeper indigo */
+  --btn-primary-active: #4450c4;
+
+  --btn-secondary-bg: var(--color-secondary);
+  --btn-secondary-hover: #653c93; /* Deeper violet */
+  --btn-secondary-active: #573382;
+
+  --btn-accent-bg: var(--color-accent);
+  --btn-accent-hover: #ff5f9f; /* Deeper pink */
+  --btn-accent-active: #e94d8d;
+
+  --btn-disabled-bg: #d1d5db;
+  --btn-disabled-text: #9ca3af;
+
+  /* === BUTTON TEXT COLORS === */
+  --btn-text-light: #ffffff;
+  --btn-text-dark: #0a0a0a;
+
+  /* === OPTIONAL: Gradient Buttons === */
+  --btn-gradient-bg: var(--gradient-main);
+  --btn-gradient-hover: linear-gradient(135deg, #5564d8 0%, #653c93 100%);
+
+  /* === BORDER COLORS === */
+  --color-border: var(--gray-200);
+  --color-border-dark: var(--gray-400);
+
+  /* === GRAYSCALE PALETTE === */
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
+
+  /* === ICON & UI COLORS === */
+  --color-icon: var(--gray-500);
+  --color-icon-hover: var(--gray-700);
+
+  /* === TYPOGRAPHY === */
+  --font-heading: "Montserrat", sans-serif;
+  --font-sub: "Poppins", sans-serif;
+  --font-body: "Roboto", "Helvetica Neue", Arial, sans-serif;
+
+  /* Font Sizes */
+  --fs-xs: 0.75rem; /* 12px */
+  --fs-sm: 0.875rem; /* 14px */
+  --fs-base: 1rem; /* 16px */
+  --fs-lg: 1.125rem; /* 18px */
+  --fs-xl: 1.25rem; /* 20px */
+  --fs-2xl: 1.5rem; /* 24px */
+  --fs-3xl: 1.875rem; /* 30px */
+  --fs-4xl: 2.25rem; /* 36px */
+
+  /* Font Weights */
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+
+  /* === SPACING === */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+
+  /* === TRANSITIONS === */
+  --transition-fast: 0.2s ease;
+  --transition-base: 0.3s ease;
+}

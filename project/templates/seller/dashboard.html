@@ -1,10 +1,8 @@
-{% extends "base.html" %}
-
-{% block content %}
+{% extends "seller/base_seller.html" %} {% block title %}Seller Dashboard -
+Dione Ecommerce{% endblock %} {% block content %}
 <div class="container mt-4">
   <div class="row">
     <div class="col-md-12">
-      <div class="alert alert-warning mb-3"><strong>Status:</strong> You are in <strong>Seller</strong> dashboard.</div>
       <h3>Seller Dashboard</h3>
       <p>Welcome, {{ username }}. Manage your products and orders here.</p>
       <div class="card mt-3">
@@ -14,12 +12,14 @@
             <li>See recent orders</li>
             <li>Track sales performance</li>
           </ul>
-          <a href="{{ url_for('main.seller_products') }}" class="btn btn-sm btn-primary">Manage Products</a>
+          <a
+            href="{{ url_for('main.seller_products') }}"
+            class="btn btn-sm btn-primary"
+            >Manage Products</a
+          >
         </div>
       </div>
     </div>
   </div>
 </div>
 {% endblock %}
-
-

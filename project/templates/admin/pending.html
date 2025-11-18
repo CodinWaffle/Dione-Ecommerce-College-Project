@@ -1,8 +1,5 @@
-{% extends "admin/base_admin.html" %}
-
-{% block page_title %}Pending Approvals{% endblock %}
-
-{% block admin_content %}
+{% extends "admin/base_admin.html" %} {% block page_title %}Pending Approvals{%
+endblock %} {% block admin_content %}
 <section>
   <h2 class="section-title">
     <i class="fas fa-clock"></i>
@@ -27,18 +24,38 @@
             <td><strong>{{ user.username }}</strong></td>
             <td>{{ user.email }}</td>
             <td>
-              <span class="badge badge-modern badge-{{ 'warning' if user.role_requested == 'seller' else 'info' }}">
+              <span
+                class="badge badge-modern badge-{{ 'warning' if user.role_requested == 'seller' else 'info' }}"
+              >
                 {{ user.role_requested|capitalize }}
               </span>
             </td>
-            <td>{{ user.created_at.strftime('%Y-%m-%d %H:%M') if user.created_at else 'N/A' }}</td>
             <td>
-              <form method="post" action="{{ url_for('admin.approve_request', user_id=user.id) }}" class="d-inline">
+              {{ user.created_at.strftime('%Y-%m-%d %H:%M') if user.created_at
+              else 'N/A' }}
+            </td>
+            <td>
+              <button
+                class="btn btn-modern btn-info"
+                type="button"
+                onclick="showSellerDetails({{ user.id }})"
+              >
+                <i class="fas fa-eye"></i> View
+              </button>
+              <form
+                method="post"
+                action="{{ url_for('admin.approve_request', user_id=user.id) }}"
+                class="d-inline"
+              >
                 <button class="btn btn-modern btn-success" type="submit">
                   <i class="fas fa-check"></i> Approve
                 </button>
               </form>
-              <form method="post" action="{{ url_for('admin.reject_request', user_id=user.id) }}" class="d-inline">
+              <form
+                method="post"
+                action="{{ url_for('admin.reject_request', user_id=user.id) }}"
+                class="d-inline"
+              >
                 <button class="btn btn-modern btn-danger" type="submit">
                   <i class="fas fa-times"></i> Decline
                 </button>
@@ -57,5 +74,296 @@
   </div>
   {% endif %}
 </section>
-{% endblock %}
 
+<!-- Seller Details Modal -->
+<div
+  class="modal fade"
+  id="sellerDetailsModal"
+  tabindex="-1"
+  role="dialog"
+  aria-labelledby="sellerDetailsModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="sellerDetailsModalLabel">
+          <i class="fas fa-store"></i> Application Details
+        </h5>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body" id="sellerDetailsContent">
+        <div class="text-center py-4">
+          <div class="spinner-border text-primary" role="status">
+            <span class="sr-only">Loading...</span>
+          </div>
+          <p class="mt-2">Loading details...</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .detail-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .detail-group h6 {
+    color: #6c5ce7;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #f3f4f6;
+  }
+
+  .detail-row {
+    display: flex;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f9fafb;
+  }
+
+  .detail-row:last-child {
+    border-bottom: none;
+  }
+
+  .detail-label {
+    font-weight: 600;
+    color: #4b5563;
+    width: 200px;
+    flex-shrink: 0;
+  }
+
+  .detail-value {
+    color: #1f2937;
+    flex: 1;
+  }
+
+  .detail-value.empty {
+    color: #9ca3af;
+    font-style: italic;
+  }
+
+  .modal-lg {
+    max-width: 800px;
+  }
+</style>
+
+<script>
+  function showSellerDetails(userId) {
+    const modal = $("#sellerDetailsModal");
+    const contentDiv = $("#sellerDetailsContent");
+
+    // Show modal and reset content
+    modal.modal("show");
+    contentDiv.html(`
+    <div class="text-center py-4">
+      <div class="spinner-border text-primary" role="status">
+        <span class="sr-only">Loading...</span>
+      </div>
+      <p class="mt-2">Loading details...</p>
+    </div>
+  `);
+
+    // Fetch seller details
+    fetch(`/admin/get-seller-details/${userId}`)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to fetch details");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        if (data.error) {
+          contentDiv.html(`
+          <div class="alert alert-danger">
+            <i class="fas fa-exclamation-triangle"></i> ${data.error}
+          </div>
+        `);
+          return;
+        }
+
+        // Build the details HTML
+        let html = "";
+
+        // User Information
+        html += `
+        <div class="detail-group">
+          <h6><i class="fas fa-user"></i> User Information</h6>
+          <div class="detail-row">
+            <div class="detail-label">Email:</div>
+            <div class="detail-value">${
+              data.email || '<span class="empty">Not provided</span>'
+            }</div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-label">Role Requested:</div>
+            <div class="detail-value"><span class="badge badge-primary">${
+              data.role_requested || "N/A"
+            }</span></div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-label">Registration Date:</div>
+            <div class="detail-value">${
+              data.created_at || '<span class="empty">N/A</span>'
+            }</div>
+          </div>
+        </div>
+      `;
+
+        // Business Information (only if seller)
+        if (data.role_requested === "seller" && data.seller_profile) {
+          const seller = data.seller_profile;
+          html += `
+          <div class="detail-group">
+            <h6><i class="fas fa-store"></i> Business Information</h6>
+            <div class="detail-row">
+              <div class="detail-label">Business Name:</div>
+              <div class="detail-value">${
+                seller.business_name ||
+                '<span class="empty">Not provided</span>'
+              }</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Business Type:</div>
+              <div class="detail-value">${
+                seller.business_type ||
+                '<span class="empty">Not provided</span>'
+              }</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Tax ID:</div>
+              <div class="detail-value">${
+                seller.tax_id || '<span class="empty">Not provided</span>'
+              }</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Store Description:</div>
+              <div class="detail-value">${
+                seller.store_description ||
+                '<span class="empty">Not provided</span>'
+              }</div>
+            </div>
+          </div>
+          
+          <div class="detail-group">
+            <h6><i class="fas fa-map-marker-alt"></i> Business Address</h6>
+            <div class="detail-row">
+              <div class="detail-label">Address:</div>
+              <div class="detail-value">${
+                seller.business_address ||
+                '<span class="empty">Not provided</span>'
+              }</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">City:</div>
+              <div class="detail-value">${
+                seller.business_city ||
+                '<span class="empty">Not provided</span>'
+              }</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">ZIP Code:</div>
+              <div class="detail-value">${
+                seller.business_zip || '<span class="empty">Not provided</span>'
+              }</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Country:</div>
+              <div class="detail-value">${
+                seller.business_country ||
+                '<span class="empty">Not provided</span>'
+              }</div>
+            </div>
+          </div>
+          
+          <div class="detail-group">
+            <h6><i class="fas fa-university"></i> Banking Information</h6>
+            <div class="detail-row">
+              <div class="detail-label">Bank Type:</div>
+              <div class="detail-value">${
+                seller.bank_type || '<span class="empty">Not provided</span>'
+              }</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Bank Name:</div>
+              <div class="detail-value">${
+                seller.bank_name || '<span class="empty">Not provided</span>'
+              }</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Account Number:</div>
+              <div class="detail-value">${
+                seller.bank_account || '<span class="empty">Not provided</span>'
+              }</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Account Holder:</div>
+              <div class="detail-value">${
+                seller.bank_holder_name ||
+                '<span class="empty">Not provided</span>'
+              }</div>
+            </div>
+          </div>
+        `;
+        } else if (data.role_requested === "rider" && data.rider_profile) {
+          const rider = data.rider_profile;
+          html += `
+          <div class="detail-group">
+            <h6><i class="fas fa-motorcycle"></i> Rider Information</h6>
+            <div class="detail-row">
+              <div class="detail-label">Phone:</div>
+              <div class="detail-value">${
+                rider.phone || '<span class="empty">Not provided</span>'
+              }</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">License Number:</div>
+              <div class="detail-value">${
+                rider.license_number ||
+                '<span class="empty">Not provided</span>'
+              }</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Vehicle Type:</div>
+              <div class="detail-value">${
+                rider.vehicle_type || '<span class="empty">Not provided</span>'
+              }</div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Vehicle Number:</div>
+              <div class="detail-value">${
+                rider.vehicle_number ||
+                '<span class="empty">Not provided</span>'
+              }</div>
+            </div>
+          </div>
+        `;
+        }
+
+        contentDiv.html(html);
+      })
+      .catch((error) => {
+        console.error("Error fetching details:", error);
+        contentDiv.html(`
+        <div class="alert alert-danger">
+          <i class="fas fa-exclamation-triangle"></i> Failed to load details. Please try again.
+        </div>
+      `);
+      });
+  }
+</script>
+
+{% endblock %}

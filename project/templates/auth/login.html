@@ -1,4 +1,4 @@
-{% extends "base.html" %} {% block content %}
+{% extends "base.html" %} {% block header %}{% endblock %} {% block content %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -54,29 +54,6 @@
         display: flex;
         gap: 1.5rem;
         align-items: center;
-      }
-
-      .nav-icon-btn {
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: 8px 12px;
-        color: rgba(0, 0, 0, 0.85);
-        transition: all 0.3s ease;
-        border-radius: 25px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        font-family: "Montserrat", sans-serif;
-        font-size: 0.9rem;
-        font-weight: 500;
-      }
-
-      .nav-icon-btn:hover {
-        color: rgba(0, 0, 0, 1);
-        background: rgba(0, 0, 0, 0.06);
-        transform: translateY(-2px);
       }
 
       .nav-text {
@@ -422,22 +399,6 @@
             "
             >DIONE</a
           >
-        </div>
-        <div class="nav-right">
-          <a href="{{ url_for('auth.signup') }}" class="nav-icon-btn">
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
-            <span class="nav-text">Sign Up</span>
-          </a>
         </div>
       </div>
     </nav>

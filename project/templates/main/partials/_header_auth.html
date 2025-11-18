@@ -1,0 +1,252 @@
+{# Simple header for login/signup pages #}
+
+<!--Top Banner-->
+<div class="top-banner">
+  Get 20% Cash Back <a href="#" onclick="return false;">Click Here</a>
+</div>
+
+<!--Header-->
+<header class="header-auth">
+  <div class="header-container-auth">
+    <a href="{{ url_for('main.index') }}" class="logo">DIONE</a>
+
+    <!-- Navigation Links -->
+    <nav class="nav-links-auth">
+      <a href="#" class="nav-link-auth" onclick="return false;">Clothing</a>
+      <a href="#" class="nav-link-auth" onclick="return false;">Shoes</a>
+      <a href="#" class="nav-link-auth" onclick="return false;">Accessories</a>
+      <a href="#" class="nav-link-auth nav-link-bold" onclick="return false;"
+        >What's New</a
+      >
+    </nav>
+
+    <!-- Search Bar -->
+    <div class="search-container-auth">
+      <input type="text" class="search-input-auth" placeholder="Search..." />
+      <span class="search-icon-auth">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+      </span>
+    </div>
+
+    <!-- Auth Navigation -->
+    <nav class="auth-nav">
+      <a href="{{ url_for('main.index') }}" class="auth-nav-link">Home</a>
+      <a href="{{ url_for('auth.login') }}" class="auth-nav-link">Login</a>
+      <a href="{{ url_for('auth.signup') }}" class="auth-nav-link">Signup</a>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .top-banner {
+    background-color: #000;
+    color: #fff;
+    padding: 10px;
+    text-align: center;
+    font-size: 14px;
+  }
+
+  .top-banner a {
+    color: #fff;
+    text-decoration: underline;
+    margin-left: 5px;
+  }
+
+  .header-auth {
+    background: #fff;
+    border-bottom: 1px solid #eee;
+    padding: 1rem 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-container-auth {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    gap: 2rem;
+  }
+
+  .logo {
+    font-size: 24px;
+    font-weight: 700;
+    text-decoration: none;
+    color: #000;
+    white-space: nowrap;
+  }
+
+  .nav-links-auth {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+  }
+
+  .nav-link-auth {
+    text-decoration: none;
+    color: #000;
+    font-weight: 400;
+    font-size: 14px;
+    transition: color 0.3s ease;
+    white-space: nowrap;
+  }
+
+  .nav-link-auth:hover {
+    color: #666;
+  }
+
+  .nav-link-bold {
+    font-weight: 700;
+  }
+
+  .search-container-auth {
+    position: relative;
+    flex: 1;
+    max-width: 400px;
+  }
+
+  .search-input-auth {
+    width: 100%;
+    padding: 0.5rem 2.5rem 0.5rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+  }
+
+  .search-input-auth:focus {
+    outline: none;
+    border-color: #000;
+  }
+
+  .search-icon-auth {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #666;
+  }
+
+  .auth-nav {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+  }
+
+  .auth-nav-link {
+    text-decoration: none;
+    color: #000;
+    font-weight: 500;
+    font-size: 14px;
+    transition: color 0.3s ease;
+    white-space: nowrap;
+  }
+
+  .auth-nav-link:hover {
+    color: #666;
+  }
+
+  @media (max-width: 1200px) {
+    .nav-links-auth {
+      gap: 1rem;
+    }
+
+    .search-container-auth {
+      max-width: 300px;
+    }
+
+    .auth-nav {
+      gap: 1rem;
+    }
+  }
+
+  @media (max-width: 992px) {
+    .header-container-auth {
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .logo {
+      font-size: 20px;
+    }
+
+    .nav-links-auth {
+      order: 3;
+      width: 100%;
+      justify-content: center;
+      gap: 1.5rem;
+    }
+
+    .search-container-auth {
+      order: 2;
+      flex: 1;
+      max-width: none;
+    }
+
+    .auth-nav {
+      order: 1;
+      margin-left: auto;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .header-container-auth {
+      padding: 0 1rem;
+    }
+
+    .logo {
+      font-size: 18px;
+    }
+
+    .nav-links-auth {
+      gap: 1rem;
+      font-size: 13px;
+    }
+
+    .nav-link-auth {
+      font-size: 13px;
+    }
+
+    .auth-nav {
+      gap: 0.75rem;
+    }
+
+    .auth-nav-link {
+      font-size: 13px;
+    }
+
+    .search-input-auth {
+      font-size: 13px;
+      padding: 0.4rem 2rem 0.4rem 0.75rem;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .nav-links-auth {
+      gap: 0.5rem;
+    }
+
+    .nav-link-auth {
+      font-size: 12px;
+    }
+
+    .auth-nav-link {
+      font-size: 12px;
+    }
+  }
+</style>

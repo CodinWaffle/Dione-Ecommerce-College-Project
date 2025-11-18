@@ -1,0 +1,543 @@
+/* Settings dropdown: make font color purple on hover */
+.dropdown-item {
+  transition: color 0.3s ease, background-color 0.3s ease;
+}
+
+.dropdown-item:hover {
+  color: var(--purple-primary) !important;
+}
+
+:root {
+  /* Sidebar defaults in case global theme variables aren't defined */
+  --sidebar-width: 280px;
+  --white: #ffffff;
+  --purple-lightest: #f5f3ff;
+  --purple-primary: #6c5ce7;
+  --gray-200: #e5e7eb;
+  --gray-600: #6b7280;
+}
+.sidebar {
+  width: var(--sidebar-width);
+  background: linear-gradient(
+    180deg,
+    var(--white) 0%,
+    var(--purple-lightest) 100%
+  );
+  box-shadow: 2px 0 20px rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  left: 0;
+  /* anchor to the top of the viewport so it's always available */
+  top: 0;
+  height: 100vh;
+  max-height: 100vh;
+  z-index: 100001; /* ensure it's above other elements */
+  transition: transform 0.3s ease;
+  pointer-events: auto; /* ensure clickable */
+  overflow-y: auto; /* Allow vertical scrolling */
+  overflow-x: hidden; /* Hide horizontal overflow */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.sidebar::-webkit-scrollbar {
+  display: none;
+}
+
+.sidebar-header-seller {
+  padding: 28px 20px;
+  border-bottom: 1px solid var(--gray-200);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--purple-primary);
+}
+
+/* Logo image sizing: ensure the image fits within the header without overflowing */
+.logo img {
+  display: block;
+  max-height: 56px; /* increased size */
+  max-width: 220px; /* increased width for a larger logo */
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+/* If you want the logo text to be hidden when using an image-only logo, uncomment:
+.logo span { display: none; }
+*/
+
+.logo i {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Text-based logo styles */
+.logo-text {
+  display: flex;
+  align-items: center;
+  gap: 4px; /* reduced gap so Seller and Panel sit closer */
+}
+
+.logo-icon {
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #000; /* ensure icon renders black */
+}
+
+.logo-text .seller {
+  font-family: "Montserrat", sans-serif;
+  font-size: 1.3rem; /* requested size */
+  font-weight: 700; /* heavy */
+  margin-bottom: 0;
+  color: #000 !important; /* make Seller black */
+}
+
+.logo-text .panel {
+  font-family: "Montserrat", sans-serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #6c5ce7; /* requested purple */
+}
+
+.sidebar-toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  color: var(--gray-600);
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 20px 0;
+  position: relative; /* Allow content to flow naturally */
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  color: var(--gray-600);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 8px;
+  margin: 4px 12px;
+}
+
+.nav-item:hover {
+  background-color: var(--purple-lightest);
+  color: var(--purple-primary);
+}
+
+.nav-item.active {
+  background-color: var(--purple-lightest);
+  color: var(--purple-primary);
+  font-weight: 600;
+}
+
+.nav-item i {
+  width: 20px;
+  height: 20px;
+}
+
+.sidebar-footer {
+  padding: 20px 0;
+  border-top: 1px solid var(--gray-200);
+}
+
+/* Ensure sidebar and its links stay above page content to remain clickable */
+.sidebar {
+  z-index: 100001; /* higher than most page elements */
+}
+
+.sidebar .nav-item {
+  position: relative;
+  z-index: 100002; /* bring links above potential overlays */
+}
+
+/* We now handle scrollbar hiding at the .sidebar level */
+
+/* In case content overflows, ensure we can still access all menu items */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Responsive: reduce logo size on small screens so it doesn't collide with the toggle */
+@media (max-width: 480px) {
+  .logo img {
+    max-height: 36px;
+    max-width: 140px;
+  }
+}
+
+/* — Visual overrides to match Seller Panel design (screenshot) — */
+/* Make icons inherit text color and sit in a small inset for the active state */
+.nav-item i {
+  color: inherit; /* match the text color */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  min-height: 28px;
+  border-radius: 8px;
+  transition: background-color 0.15s ease, color 0.15s ease,
+    transform 0.12s ease;
+}
+
+/* Slightly larger spacing for logo text to match image */
+.logo-text {
+  gap: 8px;
+}
+
+/* Make the active item look like a rounded card with stronger purple */
+.nav-item.active {
+  background-color: var(--purple-lightest);
+  color: var(--purple-primary);
+  font-weight: 600;
+  border-radius: 12px;
+  padding: 12px 18px;
+  margin: 6px 12px;
+  box-shadow: 0 6px 18px rgba(108, 92, 231, 0.06);
+}
+
+/* Give the active icon a soft white background so the purple icon stands out */
+.nav-item.active i {
+  background: #fff;
+  color: var(--purple-primary);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+/* Hover state: subtle lift */
+.nav-item:hover {
+  transform: translateY(-1px);
+}
+
+/* Footer items smaller and slightly muted like the screenshot */
+.sidebar-footer {
+  padding: 18px 16px;
+  margin-top: auto; /* push to bottom */
+}
+.sidebar-footer .nav-item {
+  margin: 6px 12px;
+  padding: 10px 14px;
+  font-size: 14px;
+  color: var(--gray-600);
+}
+
+/* Ensure lucide / SVG icons inherit color when inserted inline */
+.nav-item svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+}
+
+/* =================================
+   Standardized Action Buttons
+==================================== */
+.btn-primary {
+  background-color: #6d28d9; /* Standard purple */
+  color: var(--white);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-family: "Poppins", sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  box-shadow: 0 2px 5px rgba(109, 40, 217, 0.15);
+}
+
+.btn-primary:hover {
+  background-color: #5b21b6; /* Darker purple on hover */
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(93, 23, 205, 0.25);
+}
+
+.btn-primary svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* =================================
+   Standardized Pagination
+==================================== */
+.table-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.pagination-info {
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pagination-btn {
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #374151;
+  font-weight: 500;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: #f5f3ff;
+  color: #6d28d9;
+  border-color: #c4b5fd;
+}
+
+.pagination-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+  background: #f9fafb;
+}
+
+.pagination-numbers {
+  display: flex;
+  gap: 4px;
+}
+
+.page-number {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.page-number:hover {
+  background: #f1f5f9;
+}
+
+.page-number.active {
+  background-color: #6d28d9;
+  color: #fff;
+  border-color: #6d28d9;
+}
+
+/* Additional styles for sidebar dropdowns */
+.nav-group {
+  position: relative;
+  width: 100%;
+}
+
+.dropdown-toggle {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  position: relative;
+}
+
+.dropdown-icon {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: transform 0.2s ease;
+}
+
+.dropdown-toggle.active .dropdown-icon {
+  transform: translateY(-50%) rotate(180deg);
+}
+
+.dropdown-menu {
+  max-height: 0;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  background-color: rgba(0, 0, 0, 0.03);
+  opacity: 0;
+  pointer-events: none; /* Disable clicks when menu is hidden */
+}
+
+.dropdown-menu.show {
+  max-height: 500px; /* Set a high value that will accommodate most dropdown contents */
+  opacity: 1;
+  pointer-events: auto; /* Enable clicks when menu is shown */
+}
+
+.dropdown-item {
+  padding: 10px 16px 10px 46px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.9em;
+  color: inherit;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  border-left: 3px solid transparent;
+  position: relative;
+  z-index: 2; /* Ensure it's above other elements */
+  cursor: pointer;
+}
+
+.dropdown-item:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.dropdown-item.active {
+  background-color: rgba(79, 70, 229, 0.08);
+  color: #4f46e5;
+  font-weight: 500;
+  border-left: 3px solid #4f46e5;
+}
+
+.dropdown-item i {
+  font-size: 0.9em;
+  opacity: 0.8;
+}
+
+.dropdown-item.active i {
+  opacity: 1;
+}
+
+/* Optimized sidebar animations */
+.nav-item {
+  position: relative;
+  transform: translateZ(0); /* Hardware acceleration */
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.nav-item a {
+  transition: color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+
+.nav-item:hover,
+.nav-item:hover a {
+  transform: translateX(5px);
+}
+
+/* Active state animation */
+.nav-item.active {
+  background-color: var(--purple-lightest);
+}
+
+.nav-item.active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 3px;
+  background-color: var(--purple-primary);
+  transform: scaleY(1);
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+
+.nav-item.active::before {
+  transform: scaleY(1);
+}
+
+/* Icon animations */
+.nav-item i,
+.nav-item svg {
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+
+.nav-item:hover i,
+.nav-item:hover svg {
+  transform: translateX(3px);
+}
+
+/* Dropdown animations */
+.dropdown-content {
+  transition: max-height 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  will-change: max-height, opacity;
+}
+
+.dropdown.open .dropdown-content {
+  max-height: 400px;
+  opacity: 1;
+}
+
+/* Dropdown arrow rotation */
+.dropdown-toggle::after {
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+
+.dropdown.open .dropdown-toggle::after {
+  transform: rotate(180deg);
+}
+
+/* Smooth hover effects for interactive elements */
+.sidebar button,
+.sidebar a {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, background-color;
+}
+
+/* Hover effect for dropdown items */
+.dropdown-item {
+  position: relative;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+
+.dropdown-item:hover {
+  transform: translateX(3px);
+  background-color: var(--purple-lightest);
+}
+
+/* Sidebar scroll animation */
+.sidebar {
+  scroll-behavior: smooth;
+}

@@ -1,0 +1,85 @@
+{# Product Card Template Component #} {# This is a reusable product card
+component #} {# Usage: Include in the page where you want to use product cards
+#}
+
+<!-- Product Card Template (hidden) -->
+<template id="productCardTemplate">
+  <div class="product-card">
+    <div class="card-wrapper">
+      <div class="image-container">
+        <!-- Primary Image -->
+        <img
+          src="/placeholder.svg"
+          alt=""
+          class="product-image primary-image"
+        />
+
+        <!-- Secondary Image -->
+        <img
+          src="/placeholder.svg"
+          alt=""
+          class="product-image secondary-image"
+        />
+
+        <!-- Hover Actions -->
+        <div class="hover-actions">
+          <!-- Wishlist Button -->
+          <button
+            class="action-button wishlist-btn"
+            aria-label="Save to Wishlist"
+          >
+            <svg
+              class="icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+              ></path>
+            </svg>
+            <div class="tooltip">Save Item</div>
+          </button>
+
+          <!-- Cart Button -->
+          <button class="action-button cart-btn" aria-label="Add to cart">
+            <svg
+              class="icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="9" cy="21" r="1"></circle>
+              <circle cx="20" cy="21" r="1"></circle>
+              <path
+                d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"
+              ></path>
+            </svg>
+            <div class="tooltip">Add to Cart</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Content Container -->
+      <div class="card-content">
+        <div>
+          <h3 class="product-name"></h3>
+
+          <!-- Material Badge -->
+          <div class="material-badge-wrapper">
+            <span class="material-label">Material:</span>
+            <span class="material-badge"></span>
+          </div>
+        </div>
+
+        <!-- Price Container -->
+        <div class="price-container">
+          <span class="current-price">₱</span>
+          <span class="original-price"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
