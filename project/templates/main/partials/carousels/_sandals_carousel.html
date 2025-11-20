@@ -1,0 +1,57 @@
+{# Jinja2 template for sandals category carousel #}
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&display=swap" rel="stylesheet">
+<!-- Connect sandals carousel CSS -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/_sandals_carousel.css') }}">
+
+<div class="carousel-container">
+    <div class="carousel-breadcrumb">
+        <a href="{{ url_for('index') }}" class="breadcrumb-link">Home</a>
+        <span class="breadcrumb-separator">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle;"><path d="M6 12L10 8L6 4" stroke="#bbb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <a href="{{ url_for('shop_all_shoes') }}" class="breadcrumb-link">Shoes</a>
+        <span class="breadcrumb-separator">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle;"><path d="M6 12L10 8L6 4" stroke="#bbb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <span class="breadcrumb-link current" style="text-decoration: underline;">Sandals</span>
+    </div>
+    <button class="nav-button prev" id="prevBtn">
+        <svg viewBox="0 0 24 24">
+            <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+        </svg>
+    </button>
+    <div class="carousel-wrapper" id="carouselWrapper">
+        <div class="card" data-category="strappy-sandals">
+            <div class="card-image">Strappy Sandals</div>
+            <div class="card-overlay">
+                <div class="card-title">Strappy Sandals</div>
+            </div>
+        </div>
+        <div class="card" data-category="gladiator-sandals">
+            <div class="card-image">Gladiator Sandals</div>
+            <div class="card-overlay">
+                <div class="card-title">Gladiator Sandals</div>
+            </div>
+        </div>
+        <div class="card" data-category="slide-sandals">
+            <div class="card-image">Slide Sandals</div>
+            <div class="card-overlay">
+                <div class="card-title">Slide Sandals</div>
+            </div>
+        </div>
+        <div class="card" data-category="slingback-sandals">
+            <div class="card-image">Slingback Sandals</div>
+            <div class="card-overlay">
+                <div class="card-title">Slingback Sandals</div>
+            </div>
+        </div>
+    </div>
+    <button class="nav-button next" id="nextBtn">
+        <svg viewBox="0 0 24 24">
+            <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+        </svg>
+    </button>
+</div>
+
+<!-- Connect sandals carousel JS -->
+<script src="{{ url_for('static', filename='js/_sandals_carousel.js') }}"></script>

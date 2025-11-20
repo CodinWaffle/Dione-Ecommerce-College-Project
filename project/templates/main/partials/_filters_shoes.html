@@ -1,12 +1,13 @@
 <!-- Connect filters shoes CSS -->
 <link
   rel="stylesheet"
-  href="{{ url_for('static', filename='css/_filters_shoes.css') }}"
-/>
+  href="{{ url_for('static', filename='css/buyer_styles/partials/_filters_shoes.css') }}"
+  />
 <link
   rel="stylesheet"
-  href="{{ url_for('static', filename='css/_product_card.css') }}"
-/>
+  href="{{ url_for('static', filename='css/buyer_styles/components/product_card.css') }}"
+  />
+<body class="add-volunteer-page">
 
 <div class="container">
   <div class="sidebar-filter">
@@ -1184,7 +1185,7 @@
 </div>
 
 <!-- Connect filters shoes JS -->
-<script src="{{ url_for('static', filename='js/_filters_shoes.js') }}"></script>
+<script src="{{ url_for('static', filename='js/buyer_scripts/partials/_filters_shoes.js') }}"></script>
 <script src="{{ url_for('static', filename='js/_product_card.js') }}"></script>
 
 <script>
@@ -1203,3 +1204,4 @@
     });
   });
 </script>
+</body>

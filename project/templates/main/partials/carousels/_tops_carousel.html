@@ -1,0 +1,120 @@
+{# Jinja2 block for tops category carousel #}
+{% block tops_carousel %}
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&display=swap" rel="stylesheet">
+<!-- Connect tops carousel CSS -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/_tops_carousel.css') }}">
+
+<div class="carousel-container">
+    <div class="carousel-breadcrumb">
+        <a href="{{ url_for('index') }}" class="breadcrumb-link">Home</a>
+        <span class="breadcrumb-separator">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle;"><path d="M6 12L10 8L6 4" stroke="#bbb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <a href="{{ url_for('shop_all_clothing') }}" class="breadcrumb-link">Clothing</a>
+        <span class="breadcrumb-separator">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle;"><path d="M6 12L10 8L6 4" stroke="#bbb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <span class="breadcrumb-link current" style="text-decoration: underline;">Tops</span>
+    </div>
+    <button class="nav-button prev" id="prevBtn">
+        <svg viewBox="0 0 24 24">
+            <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+        </svg>
+    </button>
+    <div class="carousel-wrapper" id="carouselWrapper">
+        <div class="card" data-category="t-shirts">
+            <img src="{{ url_for('static', filename='images/T-Shirts.png') }}" alt="T-Shirts">
+            <div class="card-overlay">
+                <div class="card-title">T-Shirts</div>
+            </div>
+        </div>
+        <div class="card" data-category="blouses">
+            <img src="{{ url_for('static', filename='images/Blouses.png') }}" alt="Blouses">
+            <div class="card-overlay">
+                <div class="card-title">Blouses</div>
+            </div>
+        </div>
+        <div class="card" data-category="button-downs">
+            <img src="{{ url_for('static', filename='images/Button-Downs.png') }}" alt="Button-Downs">
+            <div class="card-overlay">
+                <div class="card-title">Button-downs</div>
+            </div>
+        </div>
+        <div class="card" data-category="tank-tops">
+            <img src="{{ url_for('static', filename='images/Tank Tops.png') }}" alt="Tank Tops">
+            <div class="card-overlay">
+                <div class="card-title">Tank Tops</div>
+            </div>
+        </div>
+        <div class="card" data-category="crop-tops">
+            <img src="{{ url_for('static', filename='images/Crop Top.png') }}" alt="Crop Tops">
+            <div class="card-overlay">
+                <div class="card-title">Crop Tops</div>
+            </div>
+        </div>
+        <div class="card" data-category="tube-tops">
+            <img src="{{ url_for('static', filename='images/Tube Tops.png') }}" alt="Tube Tops">
+            <div class="card-overlay">
+                <div class="card-title">Tube Tops</div>
+            </div>
+        </div>
+        <div class="card" data-category="tunics">
+            <img src="{{ url_for('static', filename='images/Tunics.png') }}" alt="Tunics">
+            <div class="card-overlay">
+                <div class="card-title">Tunics</div>
+            </div>
+        </div>
+        <div class="card" data-category="wrap-tops">
+            <img src="{{ url_for('static', filename='images/Wrap Tops.png') }}" alt="Wrap Tops">
+            <div class="card-overlay">
+                <div class="card-title">Wrap Tops</div>
+            </div>
+        </div>
+        <div class="card" data-category="peplum-tops">
+            <div class="card-image">Peplum Tops</div>
+            <div class="card-overlay">
+                <div class="card-title">Peplum Tops</div>
+            </div>
+        </div>
+        <div class="card" data-category="bodysuits">
+            <div class="card-image">Bodysuits</div>
+            <div class="card-overlay">
+                <div class="card-title">Bodysuits</div>
+            </div>
+        </div>
+        <div class="card" data-category="sweaters">
+            <div class="card-image">Sweaters</div>
+            <div class="card-overlay">
+                <div class="card-title">Sweaters</div>
+            </div>
+        </div>
+        <div class="card" data-category="cardigans">
+            <div class="card-image">Cardigans</div>
+            <div class="card-overlay">
+                <div class="card-title">Cardigans</div>
+            </div>
+        </div>
+        <div class="card" data-category="sweatshirts">
+            <div class="card-image">Sweatshirts</div>
+            <div class="card-overlay">
+                <div class="card-title">Sweatshirts</div>
+            </div>
+        </div>
+        <div class="card" data-category="hoodies">
+            <div class="card-image">Hoodies</div>
+            <div class="card-overlay">
+                <div class="card-title">Hoodies</div>
+            </div>
+        </div>
+    </div>
+    <button class="nav-button next" id="nextBtn">
+        <svg viewBox="0 0 24 24">
+            <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+        </svg>
+    </button>
+</div>
+
+<!-- Connect tops carousel JS -->
+<script src="{{ url_for('static', filename='js/_tops_carousel.js') }}"></script>
+
+{% endblock %}

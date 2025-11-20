@@ -129,6 +129,15 @@ body {
   background-color: #fafafa;
 }
 
+/* Remove default focus outline/black border when clicking buttons */
+.filter-header:focus,
+.filter-header:active,
+.filter-header:focus-visible {
+  outline: none;
+  box-shadow: none;
+  border-color: transparent;
+}
+
 .filter-title {
   font-size: 12px;
   font-weight: 600;
@@ -140,7 +149,7 @@ body {
 .dropdown-arrow {
   font-size: 10px;
   color: #888;
-  transition: transform 0.2s ease;
+  transition: transform 0.12s ease;
 }
 
 .filter-section.active .dropdown-arrow {
@@ -150,7 +159,7 @@ body {
 .filter-content {
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.3s ease;
+  transition: max-height 0.12s ease;
   background: white;
 }
 
