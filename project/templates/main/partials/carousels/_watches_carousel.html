@@ -11,7 +11,7 @@
 
 <div class="carousel-container">
   <div class="carousel-breadcrumb">
-    <a href="{{ url_for('index') }}" class="breadcrumb-link">Home</a>
+    <a href="{{ url_for('main.index') }}" class="breadcrumb-link">Home</a>
     <span class="breadcrumb-separator">
       <svg
         width="16"
@@ -30,7 +30,7 @@
         />
       </svg>
     </span>
-    <a href="{{ url_for('shop_all_accessories') }}" class="breadcrumb-link"
+    <a href="{{ url_for('main.shop_all_accessories') }}" class="breadcrumb-link"
       >Accessories</a
     >
     <span class="breadcrumb-separator">
@@ -80,6 +80,11 @@
       </div>
     </div>
   </div>
+  <button class="nav-button back" id="backToMain" style="display: none; position: absolute; left: 10px; top: 10px; z-index: 20;">
+    <svg viewBox="0 0 24 24">
+      <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+    </svg>
+  </button>
   <button class="nav-button next" id="nextBtn">
     <svg viewBox="0 0 24 24">
       <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
@@ -91,3 +96,4 @@
 <script src="{{ url_for('static', filename='js/buyer_scripts/partials/carousels/_watches_carousel.js') }}"></script>
 
 {% endblock %}
+

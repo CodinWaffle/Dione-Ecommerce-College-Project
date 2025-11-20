@@ -31,8 +31,8 @@ category_carousel %}
         />
       </svg>
     </span>
-    <span class="breadcrumb-link" style="text-decoration: underline"
-      >Accessories</span
+    <a href="{{ url_for('main.shop_all_accessories') }}" class="breadcrumb-link"
+      >Accessories</a
     >
     {%- if subitem %}
     <span class="breadcrumb-separator">
@@ -53,7 +53,7 @@ category_carousel %}
         />
       </svg>
     </span>
-    <span class="active">{{ subitem }}</span>
+    <span class="breadcrumb-link current">{{ subitem }}</span>
     {%- endif %}
   </div>
   <button class="nav-button prev" id="prevBtn">
@@ -130,7 +130,46 @@ category_carousel %}
   </button>
 </div>
 
+<!-- Subcategory carousels -->
+<div id="subcarousels">
+  <div class="subcarousel" data-category="bags" style="display: none">
+    {% include 'main/partials/carousels/_bags_carousel.html' %}
+  </div>
+  <div class="subcarousel" data-category="jewelry" style="display: none">
+    {% include 'main/partials/carousels/_jewelry_carousel.html' %}
+  </div>
+  <div
+    class="subcarousel"
+    data-category="hair-accessories"
+    style="display: none"
+  >
+    {% include 'main/partials/carousels/_hair_carousel.html' %}
+  </div>
+  <div class="subcarousel" data-category="belts" style="display: none">
+    {% include 'main/partials/carousels/_belts_carousel.html' %}
+  </div>
+  <div class="subcarousel" data-category="scarves-wraps" style="display: none">
+    {% include 'main/partials/carousels/_scarves_carousel.html' %}
+  </div>
+  <div class="subcarousel" data-category="hats-caps" style="display: none">
+    {% include 'main/partials/carousels/_hats_carousel.html' %}
+  </div>
+  <div class="subcarousel" data-category="eyewear" style="display: none">
+    {% include 'main/partials/carousels/_eyeglasses_carousel.html' %}
+  </div>
+  <div class="subcarousel" data-category="watches" style="display: none">
+    {% include 'main/partials/carousels/_watches_carousel.html' %}
+  </div>
+  <div class="subcarousel" data-category="gloves" style="display: none">
+    {% include 'main/partials/carousels/_gloves_carousel.html' %}
+  </div>
+  <div class="subcarousel" data-category="others" style="display: none">
+    {% include 'main/partials/carousels/_others_carousel.html' %}
+  </div>
+</div>
+
 <!-- Connect carousel JS -->
-<script src="{{ url_for('static', filename='js/_accessories_carousel.js') }}"></script>
+<script src="{{ url_for('static', filename='js/buyer_scripts/carousel_helpers.js') }}"></script>
+<script src="{{ url_for('static', filename='js/buyer_scripts/accessories_carousel.js') }}"></script>
 
 {% endblock %}

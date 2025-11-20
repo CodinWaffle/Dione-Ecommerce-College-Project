@@ -53,10 +53,16 @@
   color: #8b5cf6;
   font-weight: 600;
 }
+/* Current breadcrumb (appended dynamically) - purple + underline */
+.breadcrumb-link.current {
+  color: #8b5cf6;
+  text-decoration: underline;
+  font-weight: 600;
+}
 
 .carousel-wrapper {
   display: flex;
-  transition: transform 0.3s ease-in-out;
+  transition: transform 0.12s ease-in-out;
   gap: 10px;
   justify-content: flex-start;
   width: 100%;
@@ -73,11 +79,29 @@
   border-radius: 12px;
   overflow: hidden;
   cursor: pointer;
-  transition: transform 0.3s ease;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  transition: box-shadow 0.08s ease;
+  will-change: box-shadow;
 }
 
 .card:hover {
-  transform: translateY(-5px);
+  /* remove pop-up translate; use subtle shadow */
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+}
+
+.card:active {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.card:hover .card-image {
+  filter: brightness(0.9);
+  transition: filter 0.08s ease;
+}
+
+.card:hover .card-overlay {
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.75));
+  transition: background 0.15s ease;
 }
 
 .card-image {
@@ -127,7 +151,7 @@
   align-items: center;
   justify-content: center;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  transition: all 0.3s ease;
+  transition: background 0.12s ease, transform 0.12s ease;
   z-index: 10;
 }
 
@@ -195,4 +219,43 @@
     width: calc(100% - 20px); /* Smallest margins on mobile */
     padding: 0;
   }
+}
+
+/* Subcarousel transition helpers */
+#subcarousels {
+  position: relative;
+  display: none;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+#subcarousels.is-visible {
+  display: block;
+}
+
+#subcarousels .subcarousel {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(6px);
+  transition: opacity 0.16s ease, transform 0.16s ease;
+  will-change: opacity, transform;
+  display: none;
+}
+
+#subcarousels .subcarousel.is-visible {
+  display: block;
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.is-hidden {
+  pointer-events: none;
+  opacity: 0;
+  display: none !important;
+}
+
+.is-visible {
+  pointer-events: auto;
 }

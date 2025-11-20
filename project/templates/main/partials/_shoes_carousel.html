@@ -31,8 +31,8 @@ category_carousel %}
         />
       </svg>
     </span>
-    <span class="breadcrumb-link" style="text-decoration: underline"
-      >Shoes</span
+    <a href="{{ url_for('main.shop_all_shoes') }}" class="breadcrumb-link"
+      >Shoes</a
     >
     {%- if subitem %}
     <span class="breadcrumb-separator">
@@ -53,7 +53,7 @@ category_carousel %}
         />
       </svg>
     </span>
-    <span class="active">{{ subitem }}</span>
+    <span class="breadcrumb-link current">{{ subitem }}</span>
     {%- endif %}
   </div>
   <button class="nav-button prev" id="prevBtn">
@@ -112,7 +112,33 @@ category_carousel %}
   </button>
 </div>
 
+<!-- Subcategory carousels -->
+<div id="subcarousels">
+  <div class="subcarousel" data-category="heels" style="display: none">
+    {% include 'main/partials/carousels/_heels_carousel.html' %}
+  </div>
+  <div class="subcarousel" data-category="flats" style="display: none">
+    {% include 'main/partials/carousels/_flats_carousel.html' %}
+  </div>
+  <div class="subcarousel" data-category="sandals" style="display: none">
+    {% include 'main/partials/carousels/_sandals_carousel.html' %}
+  </div>
+  <div class="subcarousel" data-category="sneakers" style="display: none">
+    {% include 'main/partials/carousels/_sneakers_carousel.html' %}
+  </div>
+  <div class="subcarousel" data-category="boots" style="display: none">
+    {% include 'main/partials/carousels/_boots_carousel.html' %}
+  </div>
+  <div class="subcarousel" data-category="slippers" style="display: none">
+    {% include 'main/partials/carousels/_slippers_carousel.html' %}
+  </div>
+  <div class="subcarousel" data-category="occasion-shoes" style="display: none">
+    {% include 'main/partials/carousels/_dress_shoes_carousel.html' %}
+  </div>
+</div>
+
 <!-- Connect carousel JS -->
-<script src="{{ url_for('static', filename='js/_shoes_carousel.js') }}"></script>
+<script src="{{ url_for('static', filename='js/buyer_scripts/carousel_helpers.js') }}"></script>
+<script src="{{ url_for('static', filename='js/buyer_scripts/shoes_carousel.js') }}"></script>
 
 {% endblock %}

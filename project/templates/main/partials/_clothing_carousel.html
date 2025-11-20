@@ -31,8 +31,8 @@ category_carousel %}
         />
       </svg>
     </span>
-    <span class="breadcrumb-link" style="text-decoration: underline"
-      >Clothing</span
+    <a href="{{ url_for('main.shop_all_clothing') }}" class="breadcrumb-link"
+      >Clothing</a
     >
     {%- if subitem %}
     <span class="breadcrumb-separator">
@@ -53,7 +53,7 @@ category_carousel %}
         />
       </svg>
     </span>
-    <span class="active">{{ subitem }}</span>
+    <span class="breadcrumb-link current">{{ subitem }}</span>
     {%- endif %}
   </div>
   <button class="nav-button prev" id="prevBtn">
@@ -124,7 +124,39 @@ category_carousel %}
   </button>
 </div>
 
+<!-- Subcategory carousels (included, hidden by default) -->
+<div id="subcarousels">
+  <div class="subcarousel" data-category="tops" style="display: none">
+    {% include 'main/partials/carousels/_tops_carousel.html' %}
+  </div>
+  <div class="subcarousel" data-category="bottoms" style="display: none">
+    {% include 'main/partials/carousels/_bottoms_carousel.html' %}
+  </div>
+  <div class="subcarousel" data-category="dresses" style="display: none">
+    {% include 'main/partials/carousels/_dress_carousel.html' %}
+  </div>
+  <div class="subcarousel" data-category="outerwear" style="display: none">
+    {% include 'main/partials/carousels/_outwear_carousel.html' %}
+  </div>
+  <div class="subcarousel" data-category="activewear" style="display: none">
+    {% include 'main/partials/carousels/_activewear_carousel.html' %}
+  </div>
+  <div class="subcarousel" data-category="sleepwear" style="display: none">
+    {% include 'main/partials/carousels/_sleepwear_carousel.html' %}
+  </div>
+  <div class="subcarousel" data-category="undergarments" style="display: none">
+    {% include 'main/partials/carousels/_undergarments_carousel.html' %}
+  </div>
+  <div class="subcarousel" data-category="swimwear" style="display: none">
+    {% include 'main/partials/carousels/_swimwear_carousel.html' %}
+  </div>
+  <div class="subcarousel" data-category="occasionwear" style="display: none">
+    {% include 'main/partials/carousels/_occasionwear_carousel.html' %}
+  </div>
+</div>
+
 <!-- Connect carousel JS -->
-<script src="{{ url_for('static', filename='js/_clothing_carousel.js') }}"></script>
+<script src="{{ url_for('static', filename='js/buyer_scripts/carousel_helpers.js') }}"></script>
+<script src="{{ url_for('static', filename='js/buyer_scripts/partials/_clothing_carousel.js') }}"></script>
 
 {% endblock %}
