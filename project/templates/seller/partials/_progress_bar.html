@@ -1,0 +1,149 @@
+{% set progress_step = progress_step|default(1) %} {% set progress_title =
+progress_title|default('Add New Product') %} {% set progress_subtext =
+progress_subtext|default('Fill out the form to list a new product') %}
+
+<!-- Header for progress and page title -->
+<div class="progress-header-wrap">
+  <div class="progress-header">
+    <h1 class="progress-title">{{ progress_title }}</h1>
+    <p class="progress-subtext">{{ progress_subtext }}</p>
+  </div>
+</div>
+
+<!-- Progress bar card wrapper with discard button -->
+<div class="progress-card-wrap">
+  <!-- Discard Changes button -->
+  <button id="discardProgressBtn" type="button" aria-label="Discard changes">
+    Discard Changes
+  </button>
+
+  <!-- Progress card -->
+  <div class="progress-card">
+    <div
+      class="progress-container"
+      id="productProgress"
+      data-current-step="{{ progress_step }}"
+    >
+      <div class="progress-line-bg">
+        <div class="progress-line-fill" id="progressFill"></div>
+      </div>
+
+      <div class="steps" id="stepsContainer">
+        <div
+          class="step{% if progress_step >= 1 %} completed{% endif %}{% if progress_step == 1 %} active{% endif %}"
+          data-step="1"
+        >
+          <div class="step-circle">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+          </div>
+          <div class="step-label">Product Details</div>
+        </div>
+
+        <div
+          class="step{% if progress_step >= 2 %} completed{% endif %}{% if progress_step == 2 %} active{% endif %}"
+          data-step="2"
+        >
+          <div class="step-circle">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+              />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="16" y1="13" x2="8" y2="13" />
+              <line x1="16" y1="17" x2="8" y2="17" />
+              <polyline points="10 9 9 9 8 9" />
+            </svg>
+          </div>
+          <div class="step-label">Description</div>
+        </div>
+
+        <div
+          class="step{% if progress_step >= 3 %} completed{% endif %}{% if progress_step == 3 %} active{% endif %}"
+          data-step="3"
+        >
+          <div class="step-circle">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect x="3" y="3" width="7" height="7" />
+              <rect x="14" y="3" width="7" height="7" />
+              <rect x="14" y="14" width="7" height="7" />
+              <rect x="3" y="14" width="7" height="7" />
+            </svg>
+          </div>
+          <div class="step-label">Variation</div>
+        </div>
+
+        <div
+          class="step{% if progress_step >= 4 %} completed{% endif %}{% if progress_step == 4 %} active{% endif %}"
+          data-step="4"
+        >
+          <div class="step-circle">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+          </div>
+          <div class="step-label">Preview/Overview</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Inline script to handle discard behavior -->
+    <script>
+      (function () {
+        var btn = document.getElementById("discardProgressBtn");
+        if (!btn) return;
+        btn.addEventListener("click", function () {
+          var confirmed = confirm(
+            "Discard changes and go back to product management?\nAll unsaved changes will be lost."
+          );
+          if (confirmed) {
+            try {
+              localStorage.removeItem("productForm");
+              localStorage.removeItem("productDescriptionForm");
+              localStorage.removeItem("productStocksForm");
+              sessionStorage.removeItem("productForm");
+              sessionStorage.removeItem("productDescriptionForm");
+              sessionStorage.removeItem("productStocksForm");
+            } catch (e) {
+              console.warn("Could not clear product draft storage", e);
+            }
+            window.location.href = "{{ url_for('seller.seller_products') }}";
+          }
+        });
+      })();
+    </script>
+  </div>
+</div>

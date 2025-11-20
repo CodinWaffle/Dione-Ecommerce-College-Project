@@ -1,0 +1,13 @@
+/* Shoes-specific carousel styles */
+
+.shoes-carousel .carousel-item {
+  /* Add shoes-specific styling */
+}
+
+.shoes-carousel .product-card {
+  border-color: #d5e8f2;
+}
+
+.shoes-carousel .product-card:hover {
+  border-color: #b3d9e8;
+}

@@ -422,20 +422,33 @@ function setupRequiredUI() {
   ];
 
   controls.forEach((el) => {
-    if (skipIds.includes(el.id)) return;
+    // For fields in skip list, ensure they don't have required attribute
+    if (skipIds.includes(el.id)) {
+      el.removeAttribute("required");
+      return;
+    }
+
     if (el.type === "checkbox" || el.type === "radio") return;
 
-    // Mark required so native validation knows about it
-    el.setAttribute("required", "");
+    // Only mark as required if not in skip list
+    if (!el.hasAttribute("required")) {
+      el.setAttribute("required", "");
+    }
 
-    // Add red asterisk to label if present
+    // Add red asterisk to label if present and not already there
     if (el.id) {
       const lbl = form.querySelector(`label[for="${el.id}"]`);
-      if (lbl && !lbl.querySelector(".required-asterisk")) {
-        const span = document.createElement("span");
-        span.className = "required-asterisk";
-        span.textContent = " *";
-        lbl.appendChild(span);
+      if (lbl) {
+        // Check if asterisk already exists (either as span or in text)
+        const hasAsteriskSpan = lbl.querySelector(".required-asterisk");
+        const hasAsteriskText = lbl.textContent.trim().endsWith("*");
+
+        if (!hasAsteriskSpan && !hasAsteriskText) {
+          const span = document.createElement("span");
+          span.className = "required-asterisk";
+          span.textContent = " *";
+          lbl.appendChild(span);
+        }
       }
     }
 
@@ -717,22 +730,43 @@ function setupCategoryChange() {
     if (category && subcategory) {
       loadFilters(category, subcategory);
 
-      if (subItemsContainer && subItems[subcategory]) {
-        subItemsContainer.style.display = "block";
-        // Hide all sub-items divs and show matching one
+      // Map subcategories to their actual HTML div IDs
+      // The HTML has specific IDs that don't follow a simple pattern
+      const subItemsDivMap = {
+        Occasionwear: "occasionwear-items",
+        "Slippers & Comfort Wear": "slippers-items",
+        "Occasion / Dress Shoes": "dress-shoes-items",
+        Others: "others-accessories-items",
+      };
+
+      // Check if this subcategory has a sub-items div
+      const divId = subItemsDivMap[subcategory];
+
+      if (divId) {
+        // Show the sub-items container
+        if (subItemsContainer) {
+          subItemsContainer.style.display = "block";
+        }
+
+        // Hide all sub-items divs first
         document.querySelectorAll("[id$='-items']").forEach((el) => {
           el.style.display = "none";
         });
-        const subItemsDiv = document.getElementById(
-          subcategory.toLowerCase().replace(/\s+/g, "-") + "-items"
-        );
+
+        // Show the matching sub-items div
+        const subItemsDiv = document.getElementById(divId);
         console.log(
           "[v0] Looking for sub-items div:",
-          subcategory.toLowerCase().replace(/\s+/g, "-") + "-items"
+          divId,
+          "Found:",
+          !!subItemsDiv
         );
         if (subItemsDiv) {
           subItemsDiv.style.display = "block";
         }
+      } else {
+        // No sub-items div for this subcategory, hide container
+        if (subItemsContainer) subItemsContainer.style.display = "none";
       }
     } else {
       if (filtersSection) filtersSection.style.display = "none";
@@ -1060,7 +1094,7 @@ window.validateAndRedirect = function (redirectUrl) {
           let labelText = "";
           if (el.id) {
             const lbl = form.querySelector(`label[for="${el.id}"]`);
-            if (lbl) labelText = lbl.textContent.replace("*", "").trim();
+            if (lbl) labelText = lbl.textContent.replace("", "").trim();
           }
           err.textContent = labelText
             ? `Please input ${labelText}`

@@ -1,0 +1,280 @@
+{% extends "base.html" %} {% block extra_css %}
+<!-- Category Shop Styles -->
+<link
+  rel="stylesheet"
+  type="text/css"
+  href="{{ url_for('static', filename='css/buyer_styles/shop_category.css') }}?v={{ range(1, 1000) | random }}"
+/>
+<link
+  rel="stylesheet"
+  type="text/css"
+  href="{{ url_for('static', filename='css/buyer_styles/carousel.css') }}?v={{ range(1, 1000) | random }}"
+/>
+<link
+  rel="stylesheet"
+  type="text/css"
+  href="{{ url_for('static', filename='css/buyer_styles/filter.css') }}?v={{ range(1, 1000) | random }}"
+/>
+
+{% if category == 'clothing' %}
+<link
+  rel="stylesheet"
+  type="text/css"
+  href="{{ url_for('static', filename='css/buyer_styles/clothing_carousel.css') }}?v={{ range(1, 1000) | random }}"
+/>
+<link
+  rel="stylesheet"
+  type="text/css"
+  href="{{ url_for('static', filename='css/buyer_styles/clothing_filter.css') }}?v={{ range(1, 1000) | random }}"
+/>
+{% elif category == 'shoes' %}
+<link
+  rel="stylesheet"
+  type="text/css"
+  href="{{ url_for('static', filename='css/buyer_styles/shoes_carousel.css') }}?v={{ range(1, 1000) | random }}"
+/>
+<link
+  rel="stylesheet"
+  type="text/css"
+  href="{{ url_for('static', filename='css/buyer_styles/shoes_filter.css') }}?v={{ range(1, 1000) | random }}"
+/>
+{% elif category == 'accessories' %}
+<link
+  rel="stylesheet"
+  type="text/css"
+  href="{{ url_for('static', filename='css/buyer_styles/accessories_carousel.css') }}?v={{ range(1, 1000) | random }}"
+/>
+<link
+  rel="stylesheet"
+  type="text/css"
+  href="{{ url_for('static', filename='css/buyer_styles/accessories_filter.css') }}?v={{ range(1, 1000) | random }}"
+/>
+{% endif %} {% endblock %} {% block content %}
+<div class="shop-container">
+  <!-- Breadcrumb -->
+  <nav aria-label="breadcrumb" class="breadcrumb-nav">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item">
+        <a href="{{ url_for('main.index') }}">Home</a>
+      </li>
+      <li class="breadcrumb-item">
+        <a href="{{ url_for('shop_all_' + category) }}">{{ category|title }}</a>
+      </li>
+      {% if subcategory %}
+      <li class="breadcrumb-item active" aria-current="page">
+        {{ subcategory|replace('-', ' ')|title }}
+      </li>
+      {% endif %}
+    </ol>
+  </nav>
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <h1>
+      {{ subcategory|replace('-', ' ')|title if subcategory else category|title
+      }}
+    </h1>
+    <p class="subtitle">Discover our curated collection</p>
+  </div>
+
+  <div class="shop-content">
+    <!-- Sidebar Filters -->
+    <aside class="filters-sidebar">
+      <div class="filter-section">
+        <h3>Filters</h3>
+
+        <!-- Price Range -->
+        <div class="filter-group">
+          <h4>Price Range</h4>
+          <div class="price-inputs">
+            <input
+              type="number"
+              placeholder="Min"
+              class="price-input"
+              id="minPrice"
+            />
+            <span>-</span>
+            <input
+              type="number"
+              placeholder="Max"
+              class="price-input"
+              id="maxPrice"
+            />
+          </div>
+        </div>
+
+        <!-- Size -->
+        <div class="filter-group">
+          <h4>Size</h4>
+          <div class="size-options">
+            <label><input type="checkbox" value="XS" /> XS</label>
+            <label><input type="checkbox" value="S" /> S</label>
+            <label><input type="checkbox" value="M" /> M</label>
+            <label><input type="checkbox" value="L" /> L</label>
+            <label><input type="checkbox" value="XL" /> XL</label>
+          </div>
+        </div>
+
+        <!-- Color -->
+        <div class="filter-group">
+          <h4>Color</h4>
+          <div class="color-options">
+            <span
+              class="color-swatch"
+              data-color="black"
+              style="background: #000"
+            ></span>
+            <span
+              class="color-swatch"
+              data-color="white"
+              style="background: #fff; border: 1px solid #ddd"
+            ></span>
+            <span
+              class="color-swatch"
+              data-color="red"
+              style="background: #e74c3c"
+            ></span>
+            <span
+              class="color-swatch"
+              data-color="blue"
+              style="background: #3498db"
+            ></span>
+            <span
+              class="color-swatch"
+              data-color="green"
+              style="background: #2ecc71"
+            ></span>
+          </div>
+        </div>
+
+        <!-- Brand -->
+        <div class="filter-group">
+          <h4>Brand</h4>
+          <div class="brand-options">
+            <label><input type="checkbox" value="brand1" /> Brand 1</label>
+            <label><input type="checkbox" value="brand2" /> Brand 2</label>
+            <label><input type="checkbox" value="brand3" /> Brand 3</label>
+          </div>
+        </div>
+
+        <button class="btn-apply-filters">Apply Filters</button>
+        <button class="btn-clear-filters">Clear All</button>
+      </div>
+    </aside>
+
+    <!-- Products Grid -->
+    <main class="products-main">
+      <!-- Sort Options -->
+      <div class="sort-bar">
+        <div class="results-count">
+          <span id="productCount">{{ products|length }}</span> products found
+        </div>
+        <div class="sort-options">
+          <label for="sortBy">Sort by:</label>
+          <select id="sortBy" class="sort-select">
+            <option value="featured">Featured</option>
+            <option value="price-low">Price: Low to High</option>
+            <option value="price-high">Price: High to Low</option>
+            <option value="newest">Newest</option>
+            <option value="popular">Most Popular</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Featured Carousel -->
+      <section class="featured-carousel">
+        <h2>Featured Items</h2>
+        <div class="carousel-container" id="featuredCarousel">
+          <!-- Carousel items will be dynamically loaded -->
+          <div class="carousel-track">
+            {% for i in range(6) %}
+            <div class="carousel-item">
+              <div class="product-card">
+                <div class="product-image">
+                  <img
+                    src="{{ url_for('static', filename='image/banner.png') }}"
+                    alt="Product"
+                  />
+                  <span class="badge">New</span>
+                </div>
+                <div class="product-info">
+                  <h3>Product Name {{ i + 1 }}</h3>
+                  <p class="price">$99.99</p>
+                  <button class="btn-add-cart">Add to Cart</button>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          <button class="carousel-btn prev" data-carousel="featured">
+            &lt;
+          </button>
+          <button class="carousel-btn next" data-carousel="featured">
+            &gt;
+          </button>
+        </div>
+      </section>
+
+      <!-- Products Grid -->
+      <section class="products-grid" id="productsGrid">
+        {% if products %} {% for product in products %}
+        <div class="product-card">
+          <div class="product-image">
+            <img
+              src="{{ product.image_url or url_for('static', filename='image/banner.png') }}"
+              alt="{{ product.name }}"
+            />
+            {% if product.is_new %}
+            <span class="badge">New</span>
+            {% endif %}
+          </div>
+          <div class="product-info">
+            <h3>{{ product.name }}</h3>
+            <p class="price">${{ product.price }}</p>
+            <div class="product-rating">
+              <span class="stars">★★★★☆</span>
+              <span class="reviews">({{ product.reviews or 0 }})</span>
+            </div>
+            <button class="btn-add-cart" data-product-id="{{ product.id }}">
+              Add to Cart
+            </button>
+          </div>
+        </div>
+        {% endfor %} {% else %}
+        <div class="no-products">
+          <i class="fas fa-shopping-bag"></i>
+          <h3>No products found</h3>
+          <p>
+            Try adjusting your filters or check back later for new arrivals!
+          </p>
+        </div>
+        {% endif %}
+      </section>
+
+      <!-- Pagination -->
+      <div class="pagination">
+        <button class="page-btn" disabled>&lt;</button>
+        <button class="page-btn active">1</button>
+        <button class="page-btn">2</button>
+        <button class="page-btn">3</button>
+        <button class="page-btn">&gt;</button>
+      </div>
+    </main>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<!-- Category Shop Scripts -->
+<script src="{{ url_for('static', filename='js/buyer_scripts/shop_category.js') }}?v={{ range(1, 1000) | random }}"></script>
+<script src="{{ url_for('static', filename='js/buyer_scripts/carousel.js') }}?v={{ range(1, 1000) | random }}"></script>
+<script src="{{ url_for('static', filename='js/buyer_scripts/filter.js') }}?v={{ range(1, 1000) | random }}"></script>
+
+{% if category == 'clothing' %}
+<script src="{{ url_for('static', filename='js/buyer_scripts/clothing_carousel.js') }}?v={{ range(1, 1000) | random }}"></script>
+<script src="{{ url_for('static', filename='js/buyer_scripts/clothing_filter.js') }}?v={{ range(1, 1000) | random }}"></script>
+{% elif category == 'shoes' %}
+<script src="{{ url_for('static', filename='js/buyer_scripts/shoes_carousel.js') }}?v={{ range(1, 1000) | random }}"></script>
+<script src="{{ url_for('static', filename='js/buyer_scripts/shoes_filter.js') }}?v={{ range(1, 1000) | random }}"></script>
+{% elif category == 'accessories' %}
+<script src="{{ url_for('static', filename='js/buyer_scripts/accessories_carousel.js') }}?v={{ range(1, 1000) | random }}"></script>
+<script src="{{ url_for('static', filename='js/buyer_scripts/accessories_filter.js') }}?v={{ range(1, 1000) | random }}"></script>
+{% endif %} {% endblock %}

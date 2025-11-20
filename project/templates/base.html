@@ -128,7 +128,8 @@
       </div>
       {% endif %} {% endwith %} {% endblock %} {% block content %}{% endblock %}
     </div>
-    {% endif %}
+
+    {% include 'main/partials/_footer.html' %} {% endif %}
 
     <!-- Seller Panel Scripts -->
     {% if current_user.is_authenticated and current_user.role == 'seller' %}

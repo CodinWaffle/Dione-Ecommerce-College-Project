@@ -45,6 +45,7 @@ def create_app(config_name='default'):
     from .routes.main_routes import main
     from .routes.oauth_routes import google_blueprint, facebook_blueprint, debug_bp
     from .routes.admin_routes import admin_bp
+    from .routes.seller_routes import seller_bp
 
     app.register_blueprint(auth)
     app.register_blueprint(main)
@@ -52,5 +53,6 @@ def create_app(config_name='default'):
     app.register_blueprint(facebook_blueprint, url_prefix="/login")
     app.register_blueprint(debug_bp)
     app.register_blueprint(admin_bp)
+    app.register_blueprint(seller_bp)
 
     return app

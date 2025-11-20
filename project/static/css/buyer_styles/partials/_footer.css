@@ -1,0 +1,368 @@
+/* Footer Styles with Montserrat Font */
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap");
+
+/* Footer Styles */
+.footer {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  color: #495057;
+  font-family: "Montserrat", sans-serif;
+  margin-top: 60px;
+  border-top: 1px solid #dee2e6;
+}
+
+.footer-container {
+  width: 100%;
+  margin: 0;
+  padding: 60px 0 40px;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+  gap: 60px;
+}
+
+.footer-section {
+  padding: 0;
+}
+
+.footer-section h3 {
+  color: #495057;
+  font-size: 16px;
+  margin-bottom: 24px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.footer-section p {
+  margin-bottom: 20px;
+  color: #495057;
+  line-height: 1.6;
+  font-size: 16px;
+}
+
+.footer-section ul {
+  list-style: none;
+}
+
+.footer-section ul li {
+  margin-bottom: 16px;
+}
+
+.footer-section ul li a {
+  color: #6c757d;
+  text-decoration: none;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  display: inline-block;
+  line-height: 1.5;
+}
+
+.footer-section ul li a:hover {
+  color: #8b5cf6;
+}
+
+/* Brand Section */
+.footer-brand .brand-name {
+  color: #495057;
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  letter-spacing: 1px;
+}
+
+/* Social Links */
+.social-links {
+  display: flex;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.social-links a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: #495057;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.social-links a:hover {
+  background: #8b5cf6;
+  transform: translateY(-1px);
+}
+
+/* Seller CTA Button */
+.seller-cta {
+  margin-top: 20px;
+}
+
+.cta-button {
+  display: inline-block;
+  background: linear-gradient(135deg, #8b5cf6, #a855f7);
+  color: #fff;
+  padding: 12px 24px;
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.cta-button:hover {
+  background: linear-gradient(135deg, #7c3aed, #9333ea);
+  transform: translateY(-1px);
+}
+
+/* Payment Section */
+.payment-section {
+  background: #edf0f2;
+  padding: 40px 0;
+  border-top: 1px solid #dee2e6;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.payment-container {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+}
+
+.payment-container h4 {
+  color: #343a40;
+  font-size: 20px;
+  margin-bottom: 25px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.payment-methods {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.payment-method {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  min-width: 90px;
+  border: 1px solid #dee2e6;
+}
+
+.payment-method:hover {
+  background: #fff;
+  transform: translateY(-2px);
+  border-color: #8b5cf6;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.15);
+}
+
+.payment-method i {
+  font-size: 28px;
+  color: #6c757d;
+  margin-bottom: 8px;
+  transition: color 0.2s ease;
+}
+
+.payment-method:hover i {
+  color: #8b5cf6;
+}
+
+.payment-method span {
+  font-size: 13px;
+  color: #495057;
+  font-weight: 500;
+}
+
+/* Newsletter Section */
+.newsletter-section {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 50px 0;
+}
+
+.newsletter-section::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  animation: shimmer 5s infinite;
+}
+
+.newsletter-container {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+}
+
+.newsletter-container h4 {
+  color: #fff;
+  font-size: 28px;
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+
+.newsletter-container p {
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 30px;
+  font-size: 16px;
+}
+
+.newsletter-form {
+  display: flex;
+  gap: 10px;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.newsletter-form input {
+  flex: 1;
+  padding: 14px 24px;
+  border: none;
+  border-radius: 25px;
+  background: rgba(255, 255, 255, 0.95);
+  color: #495057;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.newsletter-form input::placeholder {
+  color: #6c757d;
+}
+
+.newsletter-form input:focus {
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+}
+
+.newsletter-form button {
+  padding: 14px 28px;
+  background: #fff;
+  color: #8b5cf6;
+  border: none;
+  border-radius: 25px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.newsletter-form button:hover {
+  background: #f8f9fa;
+  transform: translateY(-1px);
+}
+
+/* Footer Bottom */
+.footer-bottom {
+  background: #e9ecef;
+  padding: 25px 0;
+}
+
+.footer-bottom-container {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+}
+
+.copyright p {
+  color: #495057;
+  font-size: 15px;
+}
+
+.legal-links {
+  display: flex;
+  gap: 25px;
+  flex-wrap: wrap;
+}
+
+.legal-links a {
+  color: #495057;
+  text-decoration: none;
+  font-size: 15px;
+  transition: color 0.2s ease;
+}
+
+.legal-links a:hover {
+  color: #8b5cf6;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .footer-container {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    padding: 40px 0;
+  }
+
+  .footer-section {
+    text-align: left;
+  }
+
+  .footer-brand {
+    text-align: center;
+  }
+
+  .payment-methods {
+    gap: 15px;
+  }
+
+  .payment-method {
+    min-width: 70px;
+    padding: 12px;
+  }
+
+  .newsletter-form {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .social-links {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer {
+    padding-top: 40px;
+  }
+
+  .footer-section h3 {
+    font-size: 1.2rem;
+  }
+
+  .payment-method {
+    min-width: 60px;
+    padding: 10px;
+  }
+
+  .payment-method i {
+    font-size: 1.5rem;
+  }
+
+  .social-links {
+    justify-content: center;
+  }
+}

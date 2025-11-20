@@ -1,0 +1,13 @@
+/* Clothing-specific carousel styles */
+
+.clothing-carousel .carousel-item {
+  /* Add clothing-specific styling */
+}
+
+.clothing-carousel .product-card {
+  border-color: #e8d5f2;
+}
+
+.clothing-carousel .product-card:hover {
+  border-color: #d5b3e8;
+}

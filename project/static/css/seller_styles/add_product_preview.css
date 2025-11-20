@@ -1,14 +1,28 @@
 /* Preview section styles */
+.main-content {
+  padding: 2rem 3rem;
+}
+
+.progress-header {
+  padding-top: 2rem;
+}
+
 .preview-section {
-  position: relative;
-  background: #ffffff;
-  padding-top: 0;
-  padding: 1.25rem;
+  box-sizing: border-box; /* include padding in width calculation */
+  width: 100%; /* fluid to viewport */
+  margin: 0 auto; /* center on large screens */
+  padding: 20px; /* fixed padding in px */
   border-radius: 10px;
+  background: #fff;
   box-shadow: 0 6px 18px rgba(12, 12, 12, 0.06);
-  /* make the preview container wider and center it on large screens */
-  max-width: 1500px !important;
+}
+
+/* inner content stretches to fill the remaining width */
+.preview-section .inner {
   width: 100%;
+  /* make layout easier with flex/grid as needed */
+  display: block; /* or display:flex; gap: etc. depending on design */
+  box-sizing: border-box;
 }
 
 .preview-group {
@@ -54,6 +68,22 @@
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   gap: 10px;
   margin-top: 8px;
+}
+
+.preview-images .image-grid {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.preview-images {
+  grid-column: 1 / -1;
+}
+
+.preview-images label {
+  font-weight: 700;
+  color: #4b5563;
+  font-size: 0.95rem;
+  display: block;
+  margin-bottom: 0.5rem;
 }
 
 .variants-list {

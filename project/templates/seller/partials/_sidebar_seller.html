@@ -12,7 +12,7 @@
 
   <nav class="sidebar-nav">
     <a
-      href="{{ url_for('main.seller_dashboard') }}"
+      href="{{ url_for('seller.dashboard') }}"
       class="nav-item {{ 'active' if active_page == 'dashboard' }}"
       data-page="dashboard"
     >
@@ -28,7 +28,7 @@
       <span>Order Management</span>
     </a>
     <a
-      href="{{ url_for('main.seller_products') }}"
+      href="{{ url_for('seller.seller_products') }}"
       class="nav-item {{ 'active' if active_page == 'products' }}"
       data-page="products"
     >

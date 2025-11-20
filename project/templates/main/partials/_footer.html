@@ -1,0 +1,135 @@
+<!-- Footer partial with Jinja2 templating -->
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/buyer_styles/partials/_footer.css') }}"
+/>
+<link
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+  rel="stylesheet"
+/>
+<footer class="footer">
+  <!-- Newsletter Signup -->
+  <div class="newsletter-section">
+    <div class="newsletter-container">
+      <h4>Stay in Style</h4>
+      <p>
+        Subscribe to get special offers, free giveaways, and exclusive deals.
+      </p>
+      <form class="newsletter-form">
+        <input type="email" placeholder="Enter your email address" required />
+        <button type="submit">Subscribe</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="footer-container">
+    <!-- Brand Section -->
+    <div class="footer-section footer-brand">
+      <h2 class="brand-name">DIONE</h2>
+      <p>
+        We have clothes that suits your style and which you're proud to wear.
+        From women to men.
+      </p>
+      <div class="social-links">
+        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+        <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+        <a href="#" aria-label="Pinterest"><i class="fab fa-pinterest"></i></a>
+      </div>
+    </div>
+
+    <!-- Company Section -->
+    <div class="footer-section">
+      <h3>COMPANY</h3>
+      <ul>
+        <li><a href="#about">About</a></li>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#works">Works</a></li>
+        <li><a href="#career">Career</a></li>
+      </ul>
+    </div>
+
+    <!-- Help Section -->
+    <div class="footer-section">
+      <h3>HELP</h3>
+      <ul>
+        <li><a href="#customer-support">Customer Support</a></li>
+        <li><a href="#delivery-details">Delivery Details</a></li>
+        <li><a href="#terms-conditions">Terms & Conditions</a></li>
+        <li><a href="#privacy-policy">Privacy Policy</a></li>
+      </ul>
+    </div>
+
+    <!-- FAQ Section -->
+    <div class="footer-section">
+      <h3>FAQ</h3>
+      <ul>
+        <li><a href="#account">Account</a></li>
+        <li><a href="#manage-deliveries">Manage Deliveries</a></li>
+        <li><a href="#orders">Orders</a></li>
+        <li><a href="#payments">Payments</a></li>
+      </ul>
+    </div>
+
+    <!-- Resources Section -->
+    <div class="footer-section">
+      <h3>RESOURCES</h3>
+      <ul>
+        <li><a href="#free-ebooks">Free eBooks</a></li>
+        <li><a href="#development-tutorial">Development Tutorial</a></li>
+        <li><a href="#how-to-blog">How to - Blog</a></li>
+        <li><a href="#youtube-playlist">Youtube Playlist</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Payment Methods Section -->
+  <div class="payment-section">
+    <div class="payment-container">
+      <h4>We Accept</h4>
+      <div class="payment-methods">
+        <div class="payment-method">
+          <i class="fab fa-cc-visa"></i>
+          <span>Visa</span>
+        </div>
+        <div class="payment-method">
+          <i class="fab fa-cc-mastercard"></i>
+          <span>Mastercard</span>
+        </div>
+        <div class="payment-method">
+          <i class="fab fa-cc-amex"></i>
+          <span>American Express</span>
+        </div>
+        <div class="payment-method">
+          <i class="fab fa-cc-discover"></i>
+          <span>Discover</span>
+        </div>
+        <div class="payment-method">
+          <i class="fab fa-cc-paypal"></i>
+          <span>PayPal</span>
+        </div>
+        <div class="payment-method">
+          <i class="fab fa-apple-pay"></i>
+          <span>Apple Pay</span>
+        </div>
+        <div class="payment-method">
+          <i class="fab fa-google-pay"></i>
+          <span>Google Pay</span>
+        </div>
+        <div class="payment-method">
+          <i class="fas fa-credit-card"></i>
+          <span>Shop Pay</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Footer -->
+  <div class="footer-bottom">
+    <div class="footer-bottom-container">
+      <div class="copyright">
+        <p>DIONE © {{ current_year or 2025 }}, All Rights Reserved</p>
+      </div>
+    </div>
+  </div>
+</footer>

@@ -1,4 +1,4 @@
-{% set active_page = 'products' %} {% extends 'seller/seller_base.html' %} {%
+{% set active_page = 'products' %} {% extends 'seller/base_seller.html' %} {%
 block title %}Add New Product{% endblock %} {% block extra_css %}
 <link
   rel="stylesheet"
@@ -6,905 +6,920 @@ block title %}Add New Product{% endblock %} {% block extra_css %}
 />
 <link
   rel="stylesheet"
-  href="{{ url_for('static', filename='css/add_product.css') }}"
+  href="{{ url_for('static', filename='css/seller_styles/add_product.css') }}"
 />
 <link
   rel="stylesheet"
-  href="{{ url_for('static', filename='css/progress_bar.css') }}"
+  href="{{ url_for('static', filename='css/seller_styles/progress_bar.css') }}"
 />
-{% endblock %} {% block page_content %}
-<div class="container">
-  {% set progress_step = 1 %} {% include 'partials/_progress_bar.html' %}
+{% endblock %} {% block content %}
+<div class="add-product-page">
+  <div class="container">
+    {% set progress_step = 1 %} {% include 'seller/partials/_progress_bar.html'
+    %}
 
-  <!-- Restructured: form-container now explicitly separates left (form) and right (sidebar) sections -->
-  <div class="form-container">
-    <!-- LEFT COLUMN: Main Product Form -->
-    <form id="productForm" class="form-main">
-      <!-- Main Form Section -->
-      <div class="form-section">
-        <div class="page-header">
-          <div class="section-icon">
-            <i class="ri-shopping-bag-line"></i>
-          </div>
-          <div class="page-header-left">
-            <h2>Product Details</h2>
-            <p class="page-subtext">
-              Enter the essential details of your product
-            </p>
-          </div>
-        </div>
-
-        <div class="form-grid">
-          <div class="form-group full-width">
-            <label for="productName">Product Name</label>
-            <input
-              type="text"
-              id="productName"
-              name="productName"
-              required
-              placeholder="Enter product name"
-            />
-          </div>
-
-          <!-- Product Media -->
-          <div class="form-group full-width">
-            <label
-              >Product Photos (Other photos can be added on the Variation
-              Section)</label
-            >
-            <div class="photo-upload-container">
-              <div class="photo-upload-box" data-index="0">
-                <input type="file" class="photo-input" accept="image/*" />
-                <label class="photo-label">
-                  <i class="ri-image-add-line"></i>
-                  <span>Main Photo</span>
-                </label>
-                <div class="photo-preview">
-                  <img src="#" alt="Preview" />
-                  <button type="button" class="remove-photo">
-                    <i class="ri-close-line"></i>
-                  </button>
-                </div>
-              </div>
-              <div class="photo-upload-box" data-index="1">
-                <input type="file" class="photo-input" accept="image/*" />
-                <label class="photo-label">
-                  <i class="ri-image-add-line"></i>
-                  <span>Product Photo</span>
-                </label>
-                <div class="photo-preview">
-                  <img src="#" alt="Preview" />
-                  <button type="button" class="remove-photo">
-                    <i class="ri-close-line"></i>
-                  </button>
-                </div>
-              </div>
+    <!-- Restructured: form-container now explicitly separates left (form) and right (sidebar) sections -->
+    <div class="form-container">
+      <!-- LEFT COLUMN: Main Product Form -->
+      <form id="productForm" class="form-main">
+        <!-- Main Form Section -->
+        <div class="form-section">
+          <div class="page-header">
+            <div class="section-icon">
+              <i class="ri-shopping-bag-line"></i>
             </div>
-          </div>
-
-          <!-- Pricing Container -->
-          <div class="form-container-section">
-            <div class="section-header">
-              <div class="section-icon">
-                <i class="ri-money-php-circle-line"></i>
-              </div>
-              <h3>Pricing</h3>
-            </div>
-            <div class="section-content">
-              <div class="form-group">
-                <label for="price">Base Price </label>
-                <div class="input-with-prefix">
-                  <span class="prefix">₱</span>
-                  <input
-                    type="number"
-                    id="price"
-                    name="price"
-                    required
-                    placeholder="0.00"
-                    step="0.01"
-                    min="0"
-                  />
-                </div>
-              </div>
-              <div class="form-group">
-                <label for="discountPercentage">Discount Percentage</label>
-                <div class="input-with-suffix">
-                  <input
-                    type="number"
-                    id="discountPercentage"
-                    name="discountPercentage"
-                    placeholder="0"
-                    min="0"
-                    max="100"
-                  />
-                  <span class="suffix">%</span>
-                </div>
-              </div>
-              <div class="form-group">
-                <label for="discountType">Discount Type</label>
-                <select id="discountType" name="discountType">
-                  <option value="">Select discount type</option>
-                  <option value="percentage">Percentage Off</option>
-                  <option value="fixed">Fixed Amount</option>
-                  <option value="bogo">Buy One Get One</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label for="voucherType">Voucher Type</label>
-                <select id="voucherType" name="voucherType">
-                  <option value="">Select voucher type</option>
-                  <option value="new_customer">New Customer</option>
-                  <option value="seasonal">Seasonal</option>
-                  <option value="clearance">Clearance</option>
-                  <option value="loyalty">Loyalty Reward</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <!-- Category Container -->
-          <div class="form-container-section">
-            <div class="section-header">
-              <i class="ri-folder-line"></i>
-              <h3>Category</h3>
-            </div>
-            <div class="section-content">
-              <div class="form-group">
-                <label for="category">Category </label>
-                <select id="category" name="category" required>
-                  <option value="">Select Category</option>
-                  <option value="clothing">Clothing</option>
-                  <option value="shoes">Shoes</option>
-                  <option value="accessories">Accessories</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label for="subcategory">Subcategory </label>
-                <select id="subcategory" name="subcategory" required>
-                  <option value="">Select Subcategory</option>
-                </select>
-              </div>
-              <div
-                class="form-group full-width"
-                id="subItemsContainer"
-                style="display: none"
-              >
-                <label>Sub-Items (Select multiple)</label>
-                <div class="sub-items-grid">
-                  <!-- Occasionwear Sub-items -->
-                  <div id="occasionwear-items" style="display: none">
-                    <div class="sub-item-option">
-                      <input
-                        type="checkbox"
-                        id="formal-dresses"
-                        name="subitem"
-                      />
-                      <label for="formal-dresses">Formal Dresses</label>
-                    </div>
-                    <div class="sub-item-option">
-                      <input
-                        type="checkbox"
-                        id="cocktail-dresses"
-                        name="subitem"
-                      />
-                      <label for="cocktail-dresses">Cocktail Dresses</label>
-                    </div>
-                    <div class="sub-item-option">
-                      <input
-                        type="checkbox"
-                        id="evening-gowns"
-                        name="subitem"
-                      />
-                      <label for="evening-gowns">Evening Gowns</label>
-                    </div>
-                    <div class="sub-item-option">
-                      <input
-                        type="checkbox"
-                        id="party-dresses"
-                        name="subitem"
-                      />
-                      <label for="party-dresses">Party Dresses</label>
-                    </div>
-                    <div class="sub-item-option">
-                      <input
-                        type="checkbox"
-                        id="wedding-dresses"
-                        name="subitem"
-                      />
-                      <label for="wedding-dresses">Wedding Dresses</label>
-                    </div>
-                  </div>
-
-                  <!-- Slippers & Comfort Wear Sub-items -->
-                  <div id="slippers-items" style="display: none">
-                    <div class="sub-item-option">
-                      <input
-                        type="checkbox"
-                        id="house-slippers"
-                        name="subitem"
-                      />
-                      <label for="house-slippers">House Slippers</label>
-                    </div>
-                    <div class="sub-item-option">
-                      <input
-                        type="checkbox"
-                        id="slide-sandals"
-                        name="subitem"
-                      />
-                      <label for="slide-sandals">Slide Sandals</label>
-                    </div>
-                    <div class="sub-item-option">
-                      <input type="checkbox" id="moccasins" name="subitem" />
-                      <label for="moccasins">Moccasins</label>
-                    </div>
-                    <div class="sub-item-option">
-                      <input
-                        type="checkbox"
-                        id="comfort-clogs"
-                        name="subitem"
-                      />
-                      <label for="comfort-clogs">Comfort Clogs</label>
-                    </div>
-                  </div>
-
-                  <!-- Occasion/Dress Shoes Sub-items -->
-                  <div id="dress-shoes-items" style="display: none">
-                    <div class="sub-item-option">
-                      <input type="checkbox" id="pumps" name="subitem" />
-                      <label for="pumps">Pumps</label>
-                    </div>
-                    <div class="sub-item-option">
-                      <input type="checkbox" id="stilettos" name="subitem" />
-                      <label for="stilettos">Stilettos</label>
-                    </div>
-                    <div class="sub-item-option">
-                      <input
-                        type="checkbox"
-                        id="dress-sandals"
-                        name="subitem"
-                      />
-                      <label for="dress-sandals">Dress Sandals</label>
-                    </div>
-                    <div class="sub-item-option">
-                      <input
-                        type="checkbox"
-                        id="wedding-shoes"
-                        name="subitem"
-                      />
-                      <label for="wedding-shoes">Wedding Shoes</label>
-                    </div>
-                    <div class="sub-item-option">
-                      <input type="checkbox" id="kitten-heels" name="subitem" />
-                      <label for="kitten-heels">Kitten Heels</label>
-                    </div>
-                  </div>
-
-                  <!-- Others (Accessories) Sub-items -->
-                  <div id="others-accessories-items" style="display: none">
-                    <div class="sub-item-option">
-                      <input
-                        type="checkbox"
-                        id="hair-accessories"
-                        name="subitem"
-                      />
-                      <label for="hair-accessories">Hair Accessories</label>
-                    </div>
-                    <div class="sub-item-option">
-                      <input type="checkbox" id="phone-cases" name="subitem" />
-                      <label for="phone-cases">Phone Cases</label>
-                    </div>
-                    <div class="sub-item-option">
-                      <input type="checkbox" id="keychains" name="subitem" />
-                      <label for="keychains">Keychains</label>
-                    </div>
-                    <div class="sub-item-option">
-                      <input
-                        type="checkbox"
-                        id="cosmetic-bags"
-                        name="subitem"
-                      />
-                      <label for="cosmetic-bags">Cosmetic Bags</label>
-                    </div>
-                    <div class="sub-item-option">
-                      <input
-                        type="checkbox"
-                        id="tech-accessories"
-                        name="subitem"
-                      />
-                      <label for="tech-accessories">Tech Accessories</label>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Page 2: Product Details -->
-      <div class="form-page" id="page2">
-        <div class="form-grid">
-          Size Guide
-          <div class="form-group full-width">
-            <label for="sizeGuide">Size Guide Photo</label>
-            <p
-              style="
-                margin: 0;
-                color: var(--text-secondary);
-                font-size: 0.95rem;
-              "
-            >
-              Upload 1–5 size guide photos
-            </p>
-            <div class="sizeguide-container" id="sizeguideContainer">
-              <label class="sizeguide-box">
-                <input
-                  type="file"
-                  name="sizeGuide[]"
-                  accept="image/*"
-                  required
-                />
-                <div class="sizeguide-placeholder">
-                  <svg
-                    width="36"
-                    height="36"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <rect
-                      x="3"
-                      y="3"
-                      width="18"
-                      height="18"
-                      rx="2"
-                      ry="2"
-                    ></rect>
-                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                    <polyline points="21 15 16 10 5 21"></polyline>
-                  </svg>
-                  <small>Click to upload</small>
-                </div>
-              </label>
-              <button
-                type="button"
-                class="sizeguide-add-box"
-                id="sizeguideAddBtn"
-                aria-label="Add size guide photo"
-              >
-                <i class="ri-add-line"></i>
-              </button>
-            </div>
-          </div>
-
-          Description
-          <div class="form-group full-width">
-            <label for="description">Description</label>
-            <textarea
-              id="description"
-              name="description"
-              rows="5"
-              required
-              placeholder="Describe your product in detail..."
-            ></textarea>
-          </div>
-
-          Materials and Care
-          <div class="form-group full-width">
-            <label for="materials">Materials and Care</label>
-            <textarea
-              id="materials"
-              name="materials"
-              rows="4"
-              required
-              placeholder="e.g., 100% Cotton&#10;Machine wash cold&#10;Tumble dry low"
-            ></textarea>
-          </div>
-
-          Details & Fit
-          <div class="form-group full-width">
-            <label for="detailsFit">Details & Fit</label>
-            <textarea
-              id="detailsFit"
-              name="detailsFit"
-              rows="4"
-              placeholder="e.g., Relaxed fit&#10;Crew neckline&#10;Short sleeves&#10;Length: 26 inches"
-            ></textarea>
-          </div>
-
-          Certifications
-          <div class="form-group full-width">
-            <label>Certifications (Sustainability)</label>
-            <div class="certifications-container">
-              <div class="certification-item">
-                <input
-                  type="checkbox"
-                  id="cert-organic"
-                  name="certifications"
-                  value="organic"
-                />
-                <label for="cert-organic">
-                  <span class="cert-name">Organic Cotton</span>
-                </label>
-                <div class="cert-upload">
-                  <input
-                    type="file"
-                    id="cert-organic-file"
-                    accept="image/*"
-                    class="cert-file-input"
-                  />
-                  <label for="cert-organic-file" class="cert-upload-btn"
-                    >Upload Badge</label
-                  >
-                </div>
-              </div>
-              <div class="certification-item">
-                <input
-                  type="checkbox"
-                  id="cert-fairtrade"
-                  name="certifications"
-                  value="fairtrade"
-                />
-                <label for="cert-fairtrade">
-                  <span class="cert-name">Fair Trade</span>
-                </label>
-                <div class="cert-upload">
-                  <input
-                    type="file"
-                    id="cert-fairtrade-file"
-                    accept="image/*"
-                    class="cert-file-input"
-                  />
-                  <label for="cert-fairtrade-file" class="cert-upload-btn"
-                    >Upload Badge</label
-                  >
-                </div>
-              </div>
-              <div class="certification-item">
-                <input
-                  type="checkbox"
-                  id="cert-recycled"
-                  name="certifications"
-                  value="recycled"
-                />
-                <label for="cert-recycled">
-                  <span class="cert-name">Recycled Materials</span>
-                </label>
-                <div class="cert-upload">
-                  <input
-                    type="file"
-                    id="cert-recycled-file"
-                    accept="image/*"
-                    class="cert-file-input"
-                  />
-                  <label for="cert-recycled-file" class="cert-upload-btn"
-                    >Upload Badge</label
-                  >
-                </div>
-              </div>
-              <div class="certification-item">
-                <input
-                  type="checkbox"
-                  id="cert-gots"
-                  name="certifications"
-                  value="gots"
-                />
-                <label for="cert-gots">
-                  <span class="cert-name">GOTS Certified</span>
-                </label>
-                <div class="cert-upload">
-                  <input
-                    type="file"
-                    id="cert-gots-file"
-                    accept="image/*"
-                    class="cert-file-input"
-                  />
-                  <label for="cert-gots-file" class="cert-upload-btn"
-                    >Upload Badge</label
-                  >
-                </div>
-              </div>
-              <div class="certification-item">
-                <input
-                  type="checkbox"
-                  id="cert-vegan"
-                  name="certifications"
-                  value="vegan"
-                />
-                <label for="cert-vegan">
-                  <span class="cert-name">Vegan</span>
-                </label>
-                <div class="cert-upload">
-                  <input
-                    type="file"
-                    id="cert-vegan-file"
-                    accept="image/*"
-                    class="cert-file-input"
-                  />
-                  <label for="cert-vegan-file" class="cert-upload-btn"
-                    >Upload Badge</label
-                  >
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Page 3: Stocks -->
-      <div class="form-page" id="page3">
-        <div class="page-header">
-          <div class="page-header-left">
-            <h2>Stock Management</h2>
-            <p class="page-subtext">Manage inventory for your product</p>
-          </div>
-        </div>
-
-        <div class="form-grid">
-          <div class="form-group">
-            <label for="sku">SKU (Stock Keeping Unit)</label>
-            <input
-              type="text"
-              id="sku"
-              name="sku"
-              required
-              placeholder="e.g., TSH-BLK-M-001"
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="barcode">Barcode/UPC</label>
-            <input
-              type="text"
-              id="barcode"
-              name="barcode"
-              placeholder="Enter barcode number"
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="totalStock">Total Stock Quantity</label>
-            <input
-              type="number"
-              id="totalStock"
-              name="totalStock"
-              required
-              placeholder="0"
-              min="0"
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="lowStockThreshold">Low Stock Alert Threshold</label>
-            <input
-              type="number"
-              id="lowStockThreshold"
-              name="lowStockThreshold"
-              placeholder="10"
-              min="0"
-            />
-          </div>
-
-          <div class="form-group full-width">
-            <label>
-              <input
-                type="checkbox"
-                id="trackInventory"
-                name="trackInventory"
-                checked
-              />
-              Track inventory for this product
-            </label>
-          </div>
-
-          <div class="form-group full-width">
-            <label>
-              <input
-                type="checkbox"
-                id="allowBackorder"
-                name="allowBackorder"
-              />
-              Allow customers to purchase when out of stock
-            </label>
-          </div>
-
-          Stock by Variant
-          <div class="form-group full-width">
-            <label>Stock by Size & Color</label>
-            <div class="stock-variant-container" id="stockVariantContainer">
-              <p class="info-text">
-                Select sizes and colors in Product Information to manage stock
-                by variant
+            <div class="page-header-left">
+              <h2>Product Details</h2>
+              <p class="page-subtext">
+                Enter the essential details of your product
               </p>
             </div>
           </div>
 
-          <div class="form-group">
-            <label for="supplier">Supplier</label>
-            <input
-              type="text"
-              id="supplier"
-              name="supplier"
-              placeholder="Supplier name"
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="leadTime">Lead Time (days)</label>
-            <input
-              type="number"
-              id="leadTime"
-              name="leadTime"
-              placeholder="7"
-              min="0"
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="warehouseLocation">Warehouse Location</label>
-            <input
-              type="text"
-              id="warehouseLocation"
-              name="warehouseLocation"
-              placeholder="e.g., Warehouse A, Shelf 12"
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="reorderPoint">Reorder Point</label>
-            <input
-              type="number"
-              id="reorderPoint"
-              name="reorderPoint"
-              placeholder="20"
-              min="0"
-            />
-          </div>
-        </div>
-      </div>
-
-      <!-- Navigation Buttons -->
-      <div class="form-navigation">
-        <button
-          type="button"
-          class="btn btn-secondary"
-          id="backBtn"
-          style="display: none"
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path d="M19 12H5M12 19l-7-7 7-7" />
-          </svg>
-          Back
-        </button>
-        <div class="nav-spacer"></div>
-        <button type="button" class="btn btn-primary" id="nextBtn">
-          Next
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path d="M5 12h14M12 5l7 7-7 7" />
-          </svg>
-        </button>
-        <button
-          type="submit"
-          class="btn btn-success"
-          id="submitBtn"
-          style="display: none"
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <polyline points="20 6 9 17 4 12"></polyline>
-          </svg>
-          Add Product
-        </button>
-      </div>
-    </form>
-
-    <!-- RIGHT COLUMN: Sidebar with Model Information & Product Filters -->
-    <div class="form-section-right">
-      <!-- Model Information -->
-      <div class="side-section">
-        <div class="page-header">
-          <div class="section-icon">
-            <i class="ri-user-line"></i>
-          </div>
-          <div class="page-header-left">
-            <h2>Model Information</h2>
-            <p class="page-subtext">
-              Add details about the model wearing the product
-            </p>
-          </div>
-        </div>
-        <div class="form-grid">
-          <div class="form-group">
-            <label for="modelHeight">
-              <i class="ri-height-line"></i>
-              Model Height
-            </label>
-            <div class="input-with-suffix">
+          <div class="form-grid">
+            <div class="form-group full-width">
+              <label for="productName">Product Name</label>
               <input
                 type="text"
-                id="modelHeight"
-                name="modelHeight"
-                placeholder="e.g., 5'9&quot;"
+                id="productName"
+                name="productName"
+                required
+                placeholder="Enter product name"
               />
-              <span class="suffix">ft</span>
             </div>
-          </div>
 
-          <div class="form-group">
-            <label for="wearingSize">
-              <i class="ri-t-shirt-line"></i>
-              Wearing Size
-            </label>
-            <select id="wearingSize" name="wearingSize">
-              <option value="">Select size</option>
-              <option value="xs">XS</option>
-              <option value="s">S</option>
-              <option value="m">M</option>
-              <option value="l">L</option>
-              <option value="xl">XL</option>
-              <option value="xxl">XXL</option>
-              <option value="xxxl">XXXL</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <!-- Product Filters -->
-      <div class="side-section" id="filtersSection">
-        <div class="page-header">
-          <div class="section-icon">
-            <i class="ri-filter-3-line"></i>
-          </div>
-          <div class="page-header-left">
-            <h2>Product Filters</h2>
-            <p class="page-subtext">
-              Select applicable filters for your product
-            </p>
-          </div>
-        </div>
-
-        <!-- Dynamic Filters Container -->
-        <div id="dynamicFiltersContainer">
-          <!-- Filters will be dynamically inserted here based on selected subcategory -->
-        </div>
-        <div
-          id="noFiltersMessage"
-          style="
-            display: none;
-            text-align: center;
-            padding: 1rem;
-            color: #6b7280;
-          "
-        >
-          <i
-            class="ri-filter-off-line"
-            style="font-size: 2rem; margin-bottom: 0.5rem"
-          ></i>
-          <p>Select a subcategory to view available filters</p>
-        </div>
-
-        <!-- Activewear Filters -->
-        <div
-          id="activewearFilters"
-          class="filter-type-container"
-          style="display: none"
-        >
-          <!-- Support Level -->
-          <div class="filter-group">
-            <button class="filter-header" type="button">
-              <div class="filter-title">Support Level (Bras)</div>
-              <i class="ri-arrow-down-s-line"></i>
-            </button>
-            <div class="filter-content">
-              <div class="filter-options">
-                <div class="filter-option">
-                  <input type="checkbox" name="support" value="Low" />
-                  <span>Low</span>
+            <!-- Product Media -->
+            <div class="form-group full-width">
+              <label
+                >Product Photos (Other photos can be added on the Variation
+                Section)</label
+              >
+              <div class="photo-upload-container">
+                <div class="photo-upload-box" data-index="0">
+                  <input type="file" class="photo-input" accept="image/*" />
+                  <label class="photo-label">
+                    <i class="ri-image-add-line"></i>
+                    <span>Main Photo</span>
+                  </label>
+                  <div class="photo-preview">
+                    <img src="#" alt="Preview" />
+                    <button type="button" class="remove-photo">
+                      <i class="ri-close-line"></i>
+                    </button>
+                  </div>
                 </div>
-                <div class="filter-option">
-                  <input type="checkbox" name="support" value="Medium" />
-                  <span>Medium</span>
+                <div class="photo-upload-box" data-index="1">
+                  <input type="file" class="photo-input" accept="image/*" />
+                  <label class="photo-label">
+                    <i class="ri-image-add-line"></i>
+                    <span>Product Photo</span>
+                  </label>
+                  <div class="photo-preview">
+                    <img src="#" alt="Preview" />
+                    <button type="button" class="remove-photo">
+                      <i class="ri-close-line"></i>
+                    </button>
+                  </div>
                 </div>
-                <div class="filter-option">
-                  <input type="checkbox" name="support" value="High" />
-                  <span>High</span>
+              </div>
+            </div>
+
+            <!-- Pricing Container -->
+            <div class="form-container-section">
+              <div class="section-header">
+                <div class="section-icon">
+                  <i class="ri-money-php-circle-line"></i>
+                </div>
+                <h3>Pricing</h3>
+              </div>
+              <div class="section-content">
+                <div class="form-group">
+                  <label for="price">Base Price</label>
+                  <div class="input-with-prefix">
+                    <span class="prefix">₱</span>
+                    <input
+                      type="number"
+                      id="price"
+                      name="price"
+                      required
+                      placeholder="0.00"
+                      step="0.01"
+                      min="0"
+                    />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="discountPercentage">Discount Percentage</label>
+                  <div class="input-with-suffix">
+                    <input
+                      type="number"
+                      id="discountPercentage"
+                      name="discountPercentage"
+                      placeholder="0"
+                      min="0"
+                      max="100"
+                    />
+                    <span class="suffix">%</span>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="discountType">Discount Type</label>
+                  <select id="discountType" name="discountType">
+                    <option value="">Select discount type</option>
+                    <option value="percentage">Percentage Off</option>
+                    <option value="fixed">Fixed Amount</option>
+                    <option value="bogo">Buy One Get One</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="voucherType">Voucher Type</label>
+                  <select id="voucherType" name="voucherType">
+                    <option value="">Select voucher type</option>
+                    <option value="new_customer">New Customer</option>
+                    <option value="seasonal">Seasonal</option>
+                    <option value="clearance">Clearance</option>
+                    <option value="loyalty">Loyalty Reward</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Category Container -->
+            <div class="form-container-section">
+              <div class="section-header">
+                <i class="ri-folder-line"></i>
+                <h3>Category</h3>
+              </div>
+              <div class="section-content">
+                <div class="form-group">
+                  <label for="category">Category</label>
+                  <select id="category" name="category" required>
+                    <option value="">Select Category</option>
+                    <option value="clothing">Clothing</option>
+                    <option value="shoes">Shoes</option>
+                    <option value="accessories">Accessories</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="subcategory">Subcategory</label>
+                  <select id="subcategory" name="subcategory" required>
+                    <option value="">Select Subcategory</option>
+                  </select>
+                </div>
+                <div
+                  class="form-group full-width"
+                  id="subItemsContainer"
+                  style="display: none"
+                >
+                  <label>Sub-Items (Select multiple)</label>
+                  <div class="sub-items-grid">
+                    <!-- Occasionwear Sub-items -->
+                    <div id="occasionwear-items" style="display: none">
+                      <div class="sub-item-option">
+                        <input
+                          type="checkbox"
+                          id="formal-dresses"
+                          name="subitem"
+                        />
+                        <label for="formal-dresses">Formal Dresses</label>
+                      </div>
+                      <div class="sub-item-option">
+                        <input
+                          type="checkbox"
+                          id="cocktail-dresses"
+                          name="subitem"
+                        />
+                        <label for="cocktail-dresses">Cocktail Dresses</label>
+                      </div>
+                      <div class="sub-item-option">
+                        <input
+                          type="checkbox"
+                          id="evening-gowns"
+                          name="subitem"
+                        />
+                        <label for="evening-gowns">Evening Gowns</label>
+                      </div>
+                      <div class="sub-item-option">
+                        <input
+                          type="checkbox"
+                          id="party-dresses"
+                          name="subitem"
+                        />
+                        <label for="party-dresses">Party Dresses</label>
+                      </div>
+                      <div class="sub-item-option">
+                        <input
+                          type="checkbox"
+                          id="wedding-dresses"
+                          name="subitem"
+                        />
+                        <label for="wedding-dresses">Wedding Dresses</label>
+                      </div>
+                    </div>
+
+                    <!-- Slippers & Comfort Wear Sub-items -->
+                    <div id="slippers-items" style="display: none">
+                      <div class="sub-item-option">
+                        <input
+                          type="checkbox"
+                          id="house-slippers"
+                          name="subitem"
+                        />
+                        <label for="house-slippers">House Slippers</label>
+                      </div>
+                      <div class="sub-item-option">
+                        <input
+                          type="checkbox"
+                          id="slide-sandals"
+                          name="subitem"
+                        />
+                        <label for="slide-sandals">Slide Sandals</label>
+                      </div>
+                      <div class="sub-item-option">
+                        <input type="checkbox" id="moccasins" name="subitem" />
+                        <label for="moccasins">Moccasins</label>
+                      </div>
+                      <div class="sub-item-option">
+                        <input
+                          type="checkbox"
+                          id="comfort-clogs"
+                          name="subitem"
+                        />
+                        <label for="comfort-clogs">Comfort Clogs</label>
+                      </div>
+                    </div>
+
+                    <!-- Occasion/Dress Shoes Sub-items -->
+                    <div id="dress-shoes-items" style="display: none">
+                      <div class="sub-item-option">
+                        <input type="checkbox" id="pumps" name="subitem" />
+                        <label for="pumps">Pumps</label>
+                      </div>
+                      <div class="sub-item-option">
+                        <input type="checkbox" id="stilettos" name="subitem" />
+                        <label for="stilettos">Stilettos</label>
+                      </div>
+                      <div class="sub-item-option">
+                        <input
+                          type="checkbox"
+                          id="dress-sandals"
+                          name="subitem"
+                        />
+                        <label for="dress-sandals">Dress Sandals</label>
+                      </div>
+                      <div class="sub-item-option">
+                        <input
+                          type="checkbox"
+                          id="wedding-shoes"
+                          name="subitem"
+                        />
+                        <label for="wedding-shoes">Wedding Shoes</label>
+                      </div>
+                      <div class="sub-item-option">
+                        <input
+                          type="checkbox"
+                          id="kitten-heels"
+                          name="subitem"
+                        />
+                        <label for="kitten-heels">Kitten Heels</label>
+                      </div>
+                    </div>
+
+                    <!-- Others (Accessories) Sub-items -->
+                    <div id="others-accessories-items" style="display: none">
+                      <div class="sub-item-option">
+                        <input
+                          type="checkbox"
+                          id="hair-accessories"
+                          name="subitem"
+                        />
+                        <label for="hair-accessories">Hair Accessories</label>
+                      </div>
+                      <div class="sub-item-option">
+                        <input
+                          type="checkbox"
+                          id="phone-cases"
+                          name="subitem"
+                        />
+                        <label for="phone-cases">Phone Cases</label>
+                      </div>
+                      <div class="sub-item-option">
+                        <input type="checkbox" id="keychains" name="subitem" />
+                        <label for="keychains">Keychains</label>
+                      </div>
+                      <div class="sub-item-option">
+                        <input
+                          type="checkbox"
+                          id="cosmetic-bags"
+                          name="subitem"
+                        />
+                        <label for="cosmetic-bags">Cosmetic Bags</label>
+                      </div>
+                      <div class="sub-item-option">
+                        <input
+                          type="checkbox"
+                          id="tech-accessories"
+                          name="subitem"
+                        />
+                        <label for="tech-accessories">Tech Accessories</label>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
+        </div>
 
-          <!-- Fit -->
-          <div class="filter-group">
-            <button class="filter-header" type="button">
-              <div class="filter-title">Fit</div>
-              <i class="ri-arrow-down-s-line"></i>
-            </button>
-            <div class="filter-content">
-              <div class="filter-options">
-                <div class="filter-option">
-                  <input type="checkbox" name="fit" value="Slim" />
-                  <span>Slim</span>
+        <!-- Page 2: Product Details -->
+        <div class="form-page" id="page2">
+          <div class="form-grid">
+            Size Guide
+            <div class="form-group full-width">
+              <label for="sizeGuide">Size Guide Photo</label>
+              <p
+                style="
+                  margin: 0;
+                  color: var(--text-secondary);
+                  font-size: 0.95rem;
+                "
+              >
+                Upload 1–5 size guide photos
+              </p>
+              <div class="sizeguide-container" id="sizeguideContainer">
+                <label class="sizeguide-box">
+                  <input
+                    type="file"
+                    name="sizeGuide[]"
+                    accept="image/*"
+                    required
+                  />
+                  <div class="sizeguide-placeholder">
+                    <svg
+                      width="36"
+                      height="36"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <rect
+                        x="3"
+                        y="3"
+                        width="18"
+                        height="18"
+                        rx="2"
+                        ry="2"
+                      ></rect>
+                      <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                      <polyline points="21 15 16 10 5 21"></polyline>
+                    </svg>
+                    <small>Click to upload</small>
+                  </div>
+                </label>
+                <button
+                  type="button"
+                  class="sizeguide-add-box"
+                  id="sizeguideAddBtn"
+                  aria-label="Add size guide photo"
+                >
+                  <i class="ri-add-line"></i>
+                </button>
+              </div>
+            </div>
+
+            Description
+            <div class="form-group full-width">
+              <label for="description">Description</label>
+              <textarea
+                id="description"
+                name="description"
+                rows="5"
+                required
+                placeholder="Describe your product in detail..."
+              ></textarea>
+            </div>
+
+            Materials and Care
+            <div class="form-group full-width">
+              <label for="materials">Materials and Care</label>
+              <textarea
+                id="materials"
+                name="materials"
+                rows="4"
+                required
+                placeholder="e.g., 100% Cotton&#10;Machine wash cold&#10;Tumble dry low"
+              ></textarea>
+            </div>
+
+            Details & Fit
+            <div class="form-group full-width">
+              <label for="detailsFit">Details & Fit</label>
+              <textarea
+                id="detailsFit"
+                name="detailsFit"
+                rows="4"
+                placeholder="e.g., Relaxed fit&#10;Crew neckline&#10;Short sleeves&#10;Length: 26 inches"
+              ></textarea>
+            </div>
+
+            Certifications
+            <div class="form-group full-width">
+              <label>Certifications (Sustainability)</label>
+              <div class="certifications-container">
+                <div class="certification-item">
+                  <input
+                    type="checkbox"
+                    id="cert-organic"
+                    name="certifications"
+                    value="organic"
+                  />
+                  <label for="cert-organic">
+                    <span class="cert-name">Organic Cotton</span>
+                  </label>
+                  <div class="cert-upload">
+                    <input
+                      type="file"
+                      id="cert-organic-file"
+                      accept="image/*"
+                      class="cert-file-input"
+                    />
+                    <label for="cert-organic-file" class="cert-upload-btn"
+                      >Upload Badge</label
+                    >
+                  </div>
                 </div>
-                <div class="filter-option">
-                  <input type="checkbox" name="fit" value="Relaxed" />
-                  <span>Relaxed</span>
+                <div class="certification-item">
+                  <input
+                    type="checkbox"
+                    id="cert-fairtrade"
+                    name="certifications"
+                    value="fairtrade"
+                  />
+                  <label for="cert-fairtrade">
+                    <span class="cert-name">Fair Trade</span>
+                  </label>
+                  <div class="cert-upload">
+                    <input
+                      type="file"
+                      id="cert-fairtrade-file"
+                      accept="image/*"
+                      class="cert-file-input"
+                    />
+                    <label for="cert-fairtrade-file" class="cert-upload-btn"
+                      >Upload Badge</label
+                    >
+                  </div>
                 </div>
-                <div class="filter-option">
-                  <input type="checkbox" name="fit" value="Compression" />
-                  <span>Compression</span>
+                <div class="certification-item">
+                  <input
+                    type="checkbox"
+                    id="cert-recycled"
+                    name="certifications"
+                    value="recycled"
+                  />
+                  <label for="cert-recycled">
+                    <span class="cert-name">Recycled Materials</span>
+                  </label>
+                  <div class="cert-upload">
+                    <input
+                      type="file"
+                      id="cert-recycled-file"
+                      accept="image/*"
+                      class="cert-file-input"
+                    />
+                    <label for="cert-recycled-file" class="cert-upload-btn"
+                      >Upload Badge</label
+                    >
+                  </div>
+                </div>
+                <div class="certification-item">
+                  <input
+                    type="checkbox"
+                    id="cert-gots"
+                    name="certifications"
+                    value="gots"
+                  />
+                  <label for="cert-gots">
+                    <span class="cert-name">GOTS Certified</span>
+                  </label>
+                  <div class="cert-upload">
+                    <input
+                      type="file"
+                      id="cert-gots-file"
+                      accept="image/*"
+                      class="cert-file-input"
+                    />
+                    <label for="cert-gots-file" class="cert-upload-btn"
+                      >Upload Badge</label
+                    >
+                  </div>
+                </div>
+                <div class="certification-item">
+                  <input
+                    type="checkbox"
+                    id="cert-vegan"
+                    name="certifications"
+                    value="vegan"
+                  />
+                  <label for="cert-vegan">
+                    <span class="cert-name">Vegan</span>
+                  </label>
+                  <div class="cert-upload">
+                    <input
+                      type="file"
+                      id="cert-vegan-file"
+                      accept="image/*"
+                      class="cert-file-input"
+                    />
+                    <label for="cert-vegan-file" class="cert-upload-btn"
+                      >Upload Badge</label
+                    >
+                  </div>
                 </div>
               </div>
             </div>
           </div>
+        </div>
 
-          <!-- Material -->
-          <div class="filter-group">
-            <button class="filter-header" type="button">
-              <div class="filter-title">Material</div>
-              <i class="ri-arrow-down-s-line"></i>
-            </button>
-            <div class="filter-content">
-              <div class="filter-options">
-                <div class="filter-option">
-                  <input type="checkbox" name="material" value="Spandex" />
-                  <span>Spandex</span>
-                </div>
-                <div class="filter-option">
-                  <input type="checkbox" name="material" value="Nylon" />
-                  <span>Nylon</span>
-                </div>
-                <div class="filter-option">
-                  <input type="checkbox" name="material" value="Cotton blend" />
-                  <span>Cotton blend</span>
-                </div>
-              </div>
+        <!-- Page 3: Stocks -->
+        <div class="form-page" id="page3">
+          <div class="page-header">
+            <div class="page-header-left">
+              <h2>Stock Management</h2>
+              <p class="page-subtext">Manage inventory for your product</p>
             </div>
           </div>
 
-          <!-- Activity -->
-          <div class="filter-group">
-            <button class="filter-header" type="button">
-              <div class="filter-title">Activity</div>
-              <i class="ri-arrow-down-s-line"></i>
-            </button>
-            <div class="filter-content">
-              <div class="filter-options">
-                <div class="filter-option">
-                  <input type="checkbox" name="activity" value="Yoga" />
-                  <span>Yoga</span>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="sku">SKU (Stock Keeping Unit)</label>
+              <input
+                type="text"
+                id="sku"
+                name="sku"
+                required
+                placeholder="e.g., TSH-BLK-M-001"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="barcode">Barcode/UPC</label>
+              <input
+                type="text"
+                id="barcode"
+                name="barcode"
+                placeholder="Enter barcode number"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="totalStock">Total Stock Quantity</label>
+              <input
+                type="number"
+                id="totalStock"
+                name="totalStock"
+                required
+                placeholder="0"
+                min="0"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="lowStockThreshold">Low Stock Alert Threshold</label>
+              <input
+                type="number"
+                id="lowStockThreshold"
+                name="lowStockThreshold"
+                placeholder="10"
+                min="0"
+              />
+            </div>
+
+            <div class="form-group full-width">
+              <label>
+                <input
+                  type="checkbox"
+                  id="trackInventory"
+                  name="trackInventory"
+                  checked
+                />
+                Track inventory for this product
+              </label>
+            </div>
+
+            <div class="form-group full-width">
+              <label>
+                <input
+                  type="checkbox"
+                  id="allowBackorder"
+                  name="allowBackorder"
+                />
+                Allow customers to purchase when out of stock
+              </label>
+            </div>
+
+            Stock by Variant
+            <div class="form-group full-width">
+              <label>Stock by Size & Color</label>
+              <div class="stock-variant-container" id="stockVariantContainer">
+                <p class="info-text">
+                  Select sizes and colors in Product Information to manage stock
+                  by variant
+                </p>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="supplier">Supplier</label>
+              <input
+                type="text"
+                id="supplier"
+                name="supplier"
+                placeholder="Supplier name"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="leadTime">Lead Time (days)</label>
+              <input
+                type="number"
+                id="leadTime"
+                name="leadTime"
+                placeholder="7"
+                min="0"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="warehouseLocation">Warehouse Location</label>
+              <input
+                type="text"
+                id="warehouseLocation"
+                name="warehouseLocation"
+                placeholder="e.g., Warehouse A, Shelf 12"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="reorderPoint">Reorder Point</label>
+              <input
+                type="number"
+                id="reorderPoint"
+                name="reorderPoint"
+                placeholder="20"
+                min="0"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="form-navigation">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            id="backBtn"
+            style="display: none"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+            Back
+          </button>
+          <div class="nav-spacer"></div>
+          <button type="button" class="btn btn-primary" id="nextBtn">
+            Next
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </button>
+          <button
+            type="submit"
+            class="btn btn-success"
+            id="submitBtn"
+            style="display: none"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            Add Product
+          </button>
+        </div>
+      </form>
+
+      <!-- RIGHT COLUMN: Sidebar with Model Information & Product Filters -->
+      <div class="form-section-right">
+        <!-- Model Information -->
+        <div class="side-section">
+          <div class="page-header">
+            <div class="section-icon">
+              <i class="ri-user-line"></i>
+            </div>
+            <div class="page-header-left">
+              <h2>Model Information</h2>
+              <p class="page-subtext">
+                Add details about the model wearing the product
+              </p>
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="modelHeight">
+                <i class="ri-height-line"></i>
+                Model Height
+              </label>
+              <div class="input-with-suffix">
+                <input
+                  type="text"
+                  id="modelHeight"
+                  name="modelHeight"
+                  placeholder="e.g., 5'9&quot;"
+                />
+                <span class="suffix">ft</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="wearingSize">
+                <i class="ri-t-shirt-line"></i>
+                Wearing Size
+              </label>
+              <select id="wearingSize" name="wearingSize">
+                <option value="">Select size</option>
+                <option value="xs">XS</option>
+                <option value="s">S</option>
+                <option value="m">M</option>
+                <option value="l">L</option>
+                <option value="xl">XL</option>
+                <option value="xxl">XXL</option>
+                <option value="xxxl">XXXL</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Product Filters -->
+        <div class="side-section" id="filtersSection">
+          <div class="page-header">
+            <div class="section-icon">
+              <i class="ri-filter-3-line"></i>
+            </div>
+            <div class="page-header-left">
+              <h2>Product Filters</h2>
+              <p class="page-subtext">
+                Select applicable filters for your product
+              </p>
+            </div>
+          </div>
+
+          <!-- Dynamic Filters Container -->
+          <div id="dynamicFiltersContainer">
+            <!-- Filters will be dynamically inserted here based on selected subcategory -->
+          </div>
+          <div
+            id="noFiltersMessage"
+            style="
+              display: none;
+              text-align: center;
+              padding: 1rem;
+              color: #6b7280;
+            "
+          >
+            <i
+              class="ri-filter-off-line"
+              style="font-size: 2rem; margin-bottom: 0.5rem"
+            ></i>
+            <p>Select a subcategory to view available filters</p>
+          </div>
+
+          <!-- Activewear Filters -->
+          <div
+            id="activewearFilters"
+            class="filter-type-container"
+            style="display: none"
+          >
+            <!-- Support Level -->
+            <div class="filter-group">
+              <button class="filter-header" type="button">
+                <div class="filter-title">Support Level (Bras)</div>
+                <i class="ri-arrow-down-s-line"></i>
+              </button>
+              <div class="filter-content">
+                <div class="filter-options">
+                  <div class="filter-option">
+                    <input type="checkbox" name="support" value="Low" />
+                    <span>Low</span>
+                  </div>
+                  <div class="filter-option">
+                    <input type="checkbox" name="support" value="Medium" />
+                    <span>Medium</span>
+                  </div>
+                  <div class="filter-option">
+                    <input type="checkbox" name="support" value="High" />
+                    <span>High</span>
+                  </div>
                 </div>
-                <div class="filter-option">
-                  <input type="checkbox" name="activity" value="Gym" />
-                  <span>Gym</span>
+              </div>
+            </div>
+
+            <!-- Fit -->
+            <div class="filter-group">
+              <button class="filter-header" type="button">
+                <div class="filter-title">Fit</div>
+                <i class="ri-arrow-down-s-line"></i>
+              </button>
+              <div class="filter-content">
+                <div class="filter-options">
+                  <div class="filter-option">
+                    <input type="checkbox" name="fit" value="Slim" />
+                    <span>Slim</span>
+                  </div>
+                  <div class="filter-option">
+                    <input type="checkbox" name="fit" value="Relaxed" />
+                    <span>Relaxed</span>
+                  </div>
+                  <div class="filter-option">
+                    <input type="checkbox" name="fit" value="Compression" />
+                    <span>Compression</span>
+                  </div>
                 </div>
-                <div class="filter-option">
-                  <input type="checkbox" name="activity" value="Running" />
-                  <span>Running</span>
+              </div>
+            </div>
+
+            <!-- Material -->
+            <div class="filter-group">
+              <button class="filter-header" type="button">
+                <div class="filter-title">Material</div>
+                <i class="ri-arrow-down-s-line"></i>
+              </button>
+              <div class="filter-content">
+                <div class="filter-options">
+                  <div class="filter-option">
+                    <input type="checkbox" name="material" value="Spandex" />
+                    <span>Spandex</span>
+                  </div>
+                  <div class="filter-option">
+                    <input type="checkbox" name="material" value="Nylon" />
+                    <span>Nylon</span>
+                  </div>
+                  <div class="filter-option">
+                    <input
+                      type="checkbox"
+                      name="material"
+                      value="Cotton blend"
+                    />
+                    <span>Cotton blend</span>
+                  </div>
                 </div>
-                <div class="filter-option">
-                  <input type="checkbox" name="activity" value="Casual" />
-                  <span>Casual</span>
+              </div>
+            </div>
+
+            <!-- Activity -->
+            <div class="filter-group">
+              <button class="filter-header" type="button">
+                <div class="filter-title">Activity</div>
+                <i class="ri-arrow-down-s-line"></i>
+              </button>
+              <div class="filter-content">
+                <div class="filter-options">
+                  <div class="filter-option">
+                    <input type="checkbox" name="activity" value="Yoga" />
+                    <span>Yoga</span>
+                  </div>
+                  <div class="filter-option">
+                    <input type="checkbox" name="activity" value="Gym" />
+                    <span>Gym</span>
+                  </div>
+                  <div class="filter-option">
+                    <input type="checkbox" name="activity" value="Running" />
+                    <span>Running</span>
+                  </div>
+                  <div class="filter-option">
+                    <input type="checkbox" name="activity" value="Casual" />
+                    <span>Casual</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -916,22 +931,6 @@ block title %}Add New Product{% endblock %} {% block extra_css %}
 </div>
 
 {% endblock %} {% block extra_js %}
-<script src="{{ url_for('static', filename='js/product_preview.js') }}"></script>
-<script src="{{ url_for('static', filename='js/add_product_form.js') }}"></script>
-<script src="{{ url_for('static', filename='js/add_product.js') }}"></script>
-<script src="{{ url_for('static', filename='js/filters.js') }}"></script>
-<script src="{{ url_for('static', filename='js/subitems.js') }}"></script>
-<script src="{{ url_for('static', filename='js/progress_bar.js') }}"></script>
-<script src="{{ url_for('static', filename='js/add_product_description.js') }}"></script>
-<script>
-  document.getElementById("nextBtn").addEventListener("click", function () {
-    // Validate required fields (except model info) before navigating
-    if (typeof validateAndRedirect === "function") {
-      validateAndRedirect("{{ url_for('add_product_description') }}");
-    } else {
-      // fallback
-      window.location.href = "{{ url_for('add_product_description') }}";
-    }
-  });
-</script>
+<script src="{{ url_for('static', filename='js/seller_scripts/add_product_flow.js') }}"></script>
+<script src="{{ url_for('static', filename='js/seller_scripts/add_product.js') }}"></script>
 {% endblock %}

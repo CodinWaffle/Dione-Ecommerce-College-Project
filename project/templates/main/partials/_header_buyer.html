@@ -37,9 +37,16 @@ current_user.is_authenticated and (current_user.role|default('buyer') ==
           </label>
           {% endif %}
           <a
-            href="#"
+            href="{% if item.url %}{{ item.url }}{% else %}#{% endif %}"
             class="nav-link{% if item.bold %} nav-link-bold{% endif %}{% if item.active %} active{% endif %} nav-link-desktop"
-            onclick="return false;"
+            {%
+            if
+            not
+            item.url
+            %}onclick="return false;"
+            {%
+            endif
+            %}
           >
             {{ item.name }}
           </a>
@@ -64,7 +71,17 @@ current_user.is_authenticated and (current_user.role|default('buyer') ==
                 </div>
                 {% endfor %}
                 <div class="shop-all-link">
-                  <a href="#" onclick="return false;">
+                  <a
+                    href="{% if item.url %}{{ item.url }}{% else %}#{% endif %}"
+                    {%
+                    if
+                    not
+                    item.url
+                    %}onclick="return false;"
+                    {%
+                    endif
+                    %}
+                  >
                     SHOP ALL {{ item.name|upper }}
                     <span>→</span>
                   </a>
@@ -124,7 +141,17 @@ current_user.is_authenticated and (current_user.role|default('buyer') ==
                 </div>
                 {% endfor %}
                 <div class="shop-all-link">
-                  <a href="#" onclick="return false;">
+                  <a
+                    href="{% if item.url %}{{ item.url }}{% else %}#{% endif %}"
+                    {%
+                    if
+                    not
+                    item.url
+                    %}onclick="return false;"
+                    {%
+                    endif
+                    %}
+                  >
                     SHOP ALL {{ item.name|upper }}
                     <span>→</span>
                   </a>

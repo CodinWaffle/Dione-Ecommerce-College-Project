@@ -1,0 +1,26 @@
+/* Filter Styles */
+
+/* Additional filter-specific styles if needed */
+.filter-section {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.filter-group input[type="checkbox"] {
+  cursor: pointer;
+  accent-color: #333;
+}
+
+.filter-group input[type="checkbox"]:checked + label {
+  font-weight: 500;
+}

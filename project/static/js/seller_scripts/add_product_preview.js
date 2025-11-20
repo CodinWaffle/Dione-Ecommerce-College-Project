@@ -13,10 +13,8 @@ function getFormData(key) {
 function generateImagePreviews(images) {
   if (!images || !images.length) {
     return `
-      <div class="preview-image-box">Product Image 1</div>
-      <div class="preview-image-box">Product Image 2</div>
-      <div class="preview-image-box">Product Image 3</div>
-      <div class="preview-image-box">Product Image 4</div>
+      <div class="preview-image-box">Main Photo</div>
+      <div class="preview-image-box">Product Photo</div>
     `;
   }
   return images
@@ -26,7 +24,7 @@ function generateImagePreviews(images) {
         ${
           image
             ? `<img src="${image}" alt="Product ${i + 1}">`
-            : `Product Image ${i + 1}`
+            : `${i === 0 ? "Main Photo" : "Product Photo"}`
         }
       </div>
     `
@@ -34,33 +32,19 @@ function generateImagePreviews(images) {
     .join("");
 }
 
-function generateFilterPreviews(filters) {
-  if (!filters) return "";
-  return Object.entries(filters)
+function generateGalleryPreviews(images, label) {
+  if (!images || !images.length) {
+    return `<div style="color: #999; padding: 1rem; text-align: center;">No ${label}</div>`;
+  }
+  return images
     .map(
-      ([k, v]) => `
-      <div class="filter-category">
-        <span class="filter-category-name">${k}:</span>
-        <span class="filter-values">${
-          Array.isArray(v) ? v.join(", ") : v
-        }</span>
-      </div>
-    `
-    )
-    .join("");
-}
-
-function generateVariationPreviews(variations) {
-  if (!variations || !variations.length) return "";
-  return variations
-    .map(
-      (v) => `
-      <div class="variation-item">
-        ${Object.entries(v)
-          .map(
-            ([k, val]) => `<span class="variation-detail">${k}: ${val}</span>`
-          )
-          .join(" ")}
+      (image, i) => `
+      <div class="preview-image-box" data-image="${image}">
+        ${
+          image
+            ? `<img src="${image}" alt="${label} ${i + 1}">`
+            : `${label} ${i + 1}`
+        }
       </div>
     `
     )
@@ -114,59 +98,40 @@ function updatePreview() {
   const description = getFormData("productDescriptionForm") || {};
   const stock = getFormData("productStocksForm") || {};
 
-  // Basic fields (defensive: only set if element exists)
+  // Basic fields from productForm
   setText("previewProductName", basicInfo.productName);
   setText("previewCategory", basicInfo.category);
   setText("previewSubCategory", basicInfo.subcategory);
   setText("previewSubItems", basicInfo.subitem);
-  setText("previewModelInfo", basicInfo.brand || basicInfo.model);
   setText("previewPrice", basicInfo.price, (v) => (v ? `₱${v}` : "-"));
-  setText("previewDiscountPercent", basicInfo.discountPercent);
+  setText("previewDiscountPercent", basicInfo.discountPercentage);
   setText("previewDiscountType", basicInfo.discountType);
   setText("previewVoucherType", basicInfo.voucherType);
 
-  // Images
+  // Model Information (brand or model from basicInfo)
+  setText("previewModelInfo", basicInfo.brand || basicInfo.model || "-");
+
+  // Product Filters
+  const filtersContainer = document.getElementById("previewProductFilters");
+  if (filtersContainer) {
+    if (basicInfo.filters && Object.keys(basicInfo.filters).length > 0) {
+      const filterParts = Object.entries(basicInfo.filters)
+        .map(([key, value]) => {
+          const displayValue = Array.isArray(value) ? value.join(", ") : value;
+          return `<div style="display: inline-block; background: #f0f0f0; padding: 4px 8px; border-radius: 4px; margin-right: 8px; margin-bottom: 4px; font-size: 0.9rem;">${key}: ${displayValue}</div>`;
+        })
+        .join("");
+      filtersContainer.innerHTML = filterParts;
+    } else {
+      filtersContainer.textContent = "-";
+    }
+  }
+
+  // Images (2 photos max from basic info)
   const imagesContainer = document.getElementById("previewImages");
   if (imagesContainer) {
     imagesContainer.innerHTML = generateImagePreviews(basicInfo.images || []);
     addImagePreviewHandlers();
-  }
-
-  // Filters
-  const filtersContainer = document.getElementById("previewProductFilters");
-  if (filtersContainer) {
-    // Combine filter objects and explicit category-like fields from all steps
-    const parts = [];
-    if (basicInfo.filters)
-      parts.push(generateFilterPreviews(basicInfo.filters));
-
-    const collectCategoryParts = (obj) => {
-      if (!obj) return;
-      if (obj.category)
-        parts.push(
-          `<div class="filter-category"><span class="filter-category-name">Category:</span> <span class="filter-values">${obj.category}</span></div>`
-        );
-      if (obj.subcategory)
-        parts.push(
-          `<div class="filter-category"><span class="filter-category-name">Sub Category:</span> <span class="filter-values">${obj.subcategory}</span></div>`
-        );
-      if (obj.subitem)
-        parts.push(
-          `<div class="filter-category"><span class="filter-category-name">Sub-items:</span> <span class="filter-values">${obj.subitem}</span></div>`
-        );
-      if (obj.categories && Array.isArray(obj.categories))
-        parts.push(
-          `<div class="filter-category"><span class="filter-category-name">Categories:</span> <span class="filter-values">${obj.categories.join(
-            ", "
-          )}</span></div>`
-        );
-    };
-
-    collectCategoryParts(basicInfo);
-    collectCategoryParts(description);
-    collectCategoryParts(stock);
-
-    filtersContainer.innerHTML = parts.length ? parts.join("") : "-";
   }
 
   // Description
@@ -174,27 +139,70 @@ function updatePreview() {
   setText("previewMaterials", description.materials);
   setText("previewDetailsFit", description.detailsFit);
 
+  // Size Guide Photos
+  const sizeGuideContainer = document.getElementById("previewSizeGuide");
+  if (sizeGuideContainer) {
+    sizeGuideContainer.innerHTML = generateGalleryPreviews(
+      description.sizeGuide || [],
+      "Size Guide Photo"
+    );
+    addImagePreviewHandlers();
+  }
+
+  // Certifications
+  const certificationsContainer = document.getElementById(
+    "previewCertifications"
+  );
+  if (certificationsContainer) {
+    certificationsContainer.innerHTML = generateGalleryPreviews(
+      description.certifications || [],
+      "Certification"
+    );
+    addImagePreviewHandlers();
+  }
+
   // Stock
-  setText("previewSKU", stock.sku);
   setText("previewTotalStock", stock.totalStock);
 
-  const previewVariants = document.getElementById("previewVariants");
-  if (previewVariants) {
-    if (stock.variants && Array.isArray(stock.variants)) {
-      previewVariants.innerHTML = stock.variants
+  const previewVariantsList = document.getElementById("previewVariantsList");
+      stock.variants &&
+      Array.isArray(stock.variants) &&
+      stock.variants.length > 0
+    ) {
+      previewVariantsList.innerHTML = stock.variants
         .map(
           (v) => `
-        <div class="variant-item">
-          <div>${v.sku || ""} ${v.color ? " / " + v.color : ""} ${
-            v.size ? " / " + v.size : ""
-          }</div>
-          <div class="stock-count">${v.stock ?? 0}</div>
-        </div>
+        <tr style="border-bottom: 1px solid #e5e7eb;">
+          <td style="padding: 10px; border-right: 1px solid #e5e7eb;">${
+            v.sku || "-"
+          }</td>
+          <td style="padding: 10px; border-right: 1px solid #e5e7eb;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span>${v.color || "-"}</span>
+              ${
+                v.colorHex
+                  ? `<div style="width: 24px; height: 24px; background-color: ${v.colorHex}; border: 1px solid #ccc; border-radius: 4px;"></div>`
+                  : ""
+              }
+            </div>
+          </td>
+          <td style="padding: 10px; border-right: 1px solid #e5e7eb;">${
+            v.size || "-"
+          }</td>
+          <td style="padding: 10px; text-align: center; border-right: 1px solid #e5e7eb; font-weight: 600;">${
+            v.stock ?? 0
+          }</td>
+          <td style="padding: 10px; text-align: center;">${v.lowStock ?? 0}</td>
+        </tr>
       `
         )
         .join("");
     } else {
-      previewVariants.innerHTML = "-";
+      previewVariantsList.innerHTML = `
+        <tr>
+          <td colspan="5" style="padding: 10px; text-align: center; color: #999;">No variants added</td>
+        </tr>
+      `;
     }
   }
 }
@@ -248,7 +256,6 @@ if (document.readyState === "loading") {
         description.category ||
         stock.category ||
         "Uncategorized",
-      sku: stock.sku || basicInfo.sku || "",
       // store full payload for preview/details modal
       _full: {
         basicInfo: basicInfo,

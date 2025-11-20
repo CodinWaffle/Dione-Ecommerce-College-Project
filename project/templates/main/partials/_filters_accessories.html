@@ -1,0 +1,709 @@
+
+    <!-- Connect filters accessories CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/_filters_accessories.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/_product_card.css') }}">
+  
+
+    <div class="container">
+        <div class="sidebar-filter">
+            <div class="filter-header-title">
+                <h2>
+                    <!-- Lucide Filter Icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46" />
+                    </svg>
+                    Filter By
+                </h2>
+            </div>
+            
+            <!-- Priority Filters -->
+            <div class="filter-section">
+                <button class="filter-header" onclick="toggleDropdown(this)">
+                    <h3 class="filter-title">COLORS</h3>
+                    <span class="dropdown-arrow">▼</span>
+                </button>
+                <div class="filter-content">
+                    <div class="color-options-with-names">
+                        <div class="color-option-item" data-color="black" onclick="selectColor(this, 'Black')">
+                            <div class="color-swatch-large" style="background-color: #000000"></div>
+                            <span class="color-name">Black</span>
+                        </div>
+                        <div class="color-option-item" data-color="white" onclick="selectColor(this, 'White')">
+                            <div class="color-swatch-large" style="background-color: #ffffff; border-color: #ccc"></div>
+                            <span class="color-name">White</span>
+                        </div>
+                        <div class="color-option-item" data-color="brown" onclick="selectColor(this, 'Brown')">
+                            <div class="color-swatch-large" style="background-color: #92400e"></div>
+                            <span class="color-name">Brown</span>
+                        </div>
+                        <div class="color-option-item" data-color="red" onclick="selectColor(this, 'Red')">
+                            <div class="color-swatch-large" style="background-color: #ef4444"></div>
+                            <span class="color-name">Red</span>
+                        </div>
+                        <div class="color-option-item" data-color="blue" onclick="selectColor(this, 'Blue')">
+                            <div class="color-swatch-large" style="background-color: #3b82f6"></div>
+                            <span class="color-name">Blue</span>
+                        </div>
+                        <div class="color-option-item" data-color="green" onclick="selectColor(this, 'Green')">
+                            <div class="color-swatch-large" style="background-color: #10b981"></div>
+                            <span class="color-name">Green</span>
+                        </div>
+                        <div class="color-option-item" data-color="gold" onclick="selectColor(this, 'Gold')">
+                            <div class="color-swatch-large" style="background-color: #f59e0b"></div>
+                            <span class="color-name">Gold</span>
+                        </div>
+                        <div class="color-option-item" data-color="silver" onclick="selectColor(this, 'Silver')">
+                            <div class="color-swatch-large" style="background-color: #6b7280"></div>
+                            <span class="color-name">Silver</span>
+                        </div>
+                        <div class="color-option-item" data-color="pink" onclick="selectColor(this, 'Pink')">
+                            <div class="color-swatch-large" style="background-color: #ec4899"></div>
+                            <span class="color-name">Pink</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <button class="filter-header" onclick="toggleDropdown(this)">
+                    <h3 class="filter-title">PRICE</h3>
+                    <span class="dropdown-arrow">▼</span>
+                </button>
+                <div class="filter-content">
+                    <div class="price-range">
+                        <input type="number" class="price-input" placeholder="Min ₱" id="minPrice">
+                        <span class="price-separator">-</span>
+                        <input type="number" class="price-input" placeholder="Max ₱" id="maxPrice">
+                    </div>
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <button class="filter-header" onclick="toggleDropdown(this)">
+                    <h3 class="filter-title">RATINGS</h3>
+                    <span class="dropdown-arrow">▼</span>
+                </button>
+                <div class="filter-content">
+                    <div class="filter-options">
+                        <div class="filter-option">
+                            <input type="checkbox" id="rating-5" onchange="updateFilter('rating', '5 Stars', this.checked)">
+                            <label for="rating-5">★★★★★ (5 Stars)</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="rating-4" onchange="updateFilter('rating', '4+ Stars', this.checked)">
+                            <label for="rating-4">★★★★☆ (4+ Stars)</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="rating-3" onchange="updateFilter('rating', '3+ Stars', this.checked)">
+                            <label for="rating-3">★★★☆☆ (3+ Stars)</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="rating-2" onchange="updateFilter('rating', '2+ Stars', this.checked)">
+                            <label for="rating-2">★★☆☆☆ (2+ Stars)</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="rating-1" onchange="updateFilter('rating', '1+ Stars', this.checked)">
+                            <label for="rating-1">★☆☆☆☆ (1+ Stars)</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!--Reorganizing categories to nest subcategories under parent categories-->
+            <div class="filter-section">
+                <button class="filter-header" onclick="toggleDropdown(this)">
+                    <h3 class="filter-title">BAGS</h3>
+                    <span class="dropdown-arrow">▼</span>
+                </button>
+                <div class="filter-content">
+                    <div class="filter-options">
+                        <div class="filter-option">
+                            <input type="checkbox" id="cat-bags" onchange="updateFilter('category', 'Bags', this.checked)">
+                            <label for="cat-bags">All Bags</label>
+                        </div>
+                        <hr style="margin: 10px 0; border: none; border-top: 1px solid #f0f0f0;">
+                        <div style="font-size: 11px; color: #888; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Size</div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="size-mini" onchange="updateFilter('bagsize', 'Mini', this.checked)">
+                            <label for="size-mini">Mini</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="size-small" onchange="updateFilter('bagsize', 'Small', this.checked)">
+                            <label for="size-small">Small</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="size-medium" onchange="updateFilter('bagsize', 'Medium', this.checked)">
+                            <label for="size-medium">Medium</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="size-large" onchange="updateFilter('bagsize', 'Large', this.checked)">
+                            <label for="size-large">Large</label>
+                        </div>
+                        <div style="font-size: 11px; color: #888; margin: 12px 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;">Strap Style</div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="strap-shoulder" onchange="updateFilter('strapstyle', 'Shoulder', this.checked)">
+                            <label for="strap-shoulder">Shoulder</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="strap-crossbody" onchange="updateFilter('strapstyle', 'Crossbody', this.checked)">
+                            <label for="strap-crossbody">Crossbody</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="strap-handheld" onchange="updateFilter('strapstyle', 'Handheld', this.checked)">
+                            <label for="strap-handheld">Handheld</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="strap-backpack" onchange="updateFilter('strapstyle', 'Backpack', this.checked)">
+                            <label for="strap-backpack">Backpack</label>
+                        </div>
+                        <div style="font-size: 11px; color: #888; margin: 12px 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;">Closure</div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="closure-zip" onchange="updateFilter('closure', 'Zip', this.checked)">
+                            <label for="closure-zip">Zip</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="closure-magnetic" onchange="updateFilter('closure', 'Magnetic', this.checked)">
+                            <label for="closure-magnetic">Magnetic</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="closure-open" onchange="updateFilter('closure', 'Open', this.checked)">
+                            <label for="closure-open">Open</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="closure-drawstring" onchange="updateFilter('closure', 'Drawstring', this.checked)">
+                            <label for="closure-drawstring">Drawstring</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <button class="filter-header" onclick="toggleDropdown(this)">
+                    <h3 class="filter-title">JEWELRY</h3>
+                    <span class="dropdown-arrow">▼</span>
+                </button>
+                <div class="filter-content">
+                    <div class="filter-options">
+                        <div class="filter-option">
+                            <input type="checkbox" id="cat-jewelry" onchange="updateFilter('category', 'Jewelry', this.checked)">
+                            <label for="cat-jewelry">All Jewelry</label>
+                        </div>
+                        <hr style="margin: 10px 0; border: none; border-top: 1px solid #f0f0f0;">
+                        <div style="font-size: 11px; color: #888; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Metal Type</div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="metal-gold" onchange="updateFilter('metaltype', 'Gold', this.checked)">
+                            <label for="metal-gold">Gold</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="metal-silver" onchange="updateFilter('metaltype', 'Silver', this.checked)">
+                            <label for="metal-silver">Silver</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="metal-platinum" onchange="updateFilter('metaltype', 'Platinum', this.checked)">
+                            <label for="metal-platinum">Platinum</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="metal-stainless" onchange="updateFilter('metaltype', 'Stainless', this.checked)">
+                            <label for="metal-stainless">Stainless</label>
+                        </div>
+                        <div style="font-size: 11px; color: #888; margin: 12px 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;">Gemstone</div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="gem-diamond" onchange="updateFilter('gemstone', 'Diamond', this.checked)">
+                            <label for="gem-diamond">Diamond</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="gem-pearl" onchange="updateFilter('gemstone', 'Pearl', this.checked)">
+                            <label for="gem-pearl">Pearl</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="gem-crystal" onchange="updateFilter('gemstone', 'Crystal', this.checked)">
+                            <label for="gem-crystal">Crystal</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="gem-semiprecious" onchange="updateFilter('gemstone', 'Semi-precious', this.checked)">
+                            <label for="gem-semiprecious">Semi-precious</label>
+                        </div>
+                        <div style="font-size: 11px; color: #888; margin: 12px 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;">Style</div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="style-minimalist" onchange="updateFilter('jewelrystyle', 'Minimalist', this.checked)">
+                            <label for="style-minimalist">Minimalist</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="style-statement" onchange="updateFilter('jewelrystyle', 'Statement', this.checked)">
+                            <label for="style-statement">Statement</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="style-vintage" onchange="updateFilter('jewelrystyle', 'Vintage', this.checked)">
+                            <label for="style-vintage">Vintage</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="style-modern" onchange="updateFilter('jewelrystyle', 'Modern', this.checked)">
+                            <label for="style-modern">Modern</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <button class="filter-header" onclick="toggleDropdown(this)">
+                    <h3 class="filter-title">HAIR ACCESSORIES</h3>
+                    <span class="dropdown-arrow">▼</span>
+                </button>
+                <div class="filter-content">
+                    <div class="filter-options">
+                        <div class="filter-option">
+                            <input type="checkbox" id="cat-hair" onchange="updateFilter('category', 'Hair Accessories', this.checked)">
+                            <label for="cat-hair">All Hair Accessories</label>
+                        </div>
+                        <hr style="margin: 10px 0; border: none; border-top: 1px solid #f0f0f0;">
+                        <div style="font-size: 11px; color: #888; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Type</div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="hair-clips" onchange="updateFilter('hairtype', 'Clips', this.checked)">
+                            <label for="hair-clips">Clips</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="hair-bands" onchange="updateFilter('hairtype', 'Bands', this.checked)">
+                            <label for="hair-bands">Bands</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="hair-scrunchies" onchange="updateFilter('hairtype', 'Scrunchies', this.checked)">
+                            <label for="hair-scrunchies">Scrunchies</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="hair-scarves" onchange="updateFilter('hairtype', 'Scarves', this.checked)">
+                            <label for="hair-scarves">Scarves</label>
+                        </div>
+                        <div style="font-size: 11px; color: #888; margin: 12px 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;">Style</div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="hairstyle-casual" onchange="updateFilter('hairstyle', 'Casual', this.checked)">
+                            <label for="hairstyle-casual">Casual</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="hairstyle-party" onchange="updateFilter('hairstyle', 'Party', this.checked)">
+                            <label for="hairstyle-party">Party</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="hairstyle-traditional" onchange="updateFilter('hairstyle', 'Traditional', this.checked)">
+                            <label for="hairstyle-traditional">Traditional</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <button class="filter-header" onclick="toggleDropdown(this)">
+                    <h3 class="filter-title">BELTS</h3>
+                    <span class="dropdown-arrow">▼</span>
+                </button>
+                <div class="filter-content">
+                    <div class="filter-options">
+                        <div class="filter-option">
+                            <input type="checkbox" id="cat-belts" onchange="updateFilter('category', 'Belts', this.checked)">
+                            <label for="cat-belts">All Belts</label>
+                        </div>
+                        <hr style="margin: 10px 0; border: none; border-top: 1px solid #f0f0f0;">
+                        <div style="font-size: 11px; color: #888; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Width</div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="belt-skinny" onchange="updateFilter('beltwidth', 'Skinny', this.checked)">
+                            <label for="belt-skinny">Skinny</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="belt-regular" onchange="updateFilter('beltwidth', 'Regular', this.checked)">
+                            <label for="belt-regular">Regular</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="belt-wide" onchange="updateFilter('beltwidth', 'Wide', this.checked)">
+                            <label for="belt-wide">Wide</label>
+                        </div>
+                        <div style="font-size: 11px; color: #888; margin: 12px 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;">Style</div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="beltstyle-casual" onchange="updateFilter('beltstyle', 'Casual', this.checked)">
+                            <label for="beltstyle-casual">Casual</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="beltstyle-formal" onchange="updateFilter('beltstyle', 'Formal', this.checked)">
+                            <label for="beltstyle-formal">Formal</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="beltstyle-statement" onchange="updateFilter('beltstyle', 'Statement', this.checked)">
+                            <label for="beltstyle-statement">Statement</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="beltstyle-chain" onchange="updateFilter('beltstyle', 'Chain', this.checked)">
+                            <label for="beltstyle-chain">Chain</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <button class="filter-header" onclick="toggleDropdown(this)">
+                    <h3 class="filter-title">SCARVES & WRAPS</h3>
+                    <span class="dropdown-arrow">▼</span>
+                </button>
+                <div class="filter-content">
+                    <div class="filter-options">
+                        <div class="filter-option">
+                            <input type="checkbox" id="cat-scarves" onchange="updateFilter('category', 'Scarves & Wraps', this.checked)">
+                            <label for="cat-scarves">All Scarves & Wraps</label>
+                        </div>
+                        <hr style="margin: 10px 0; border: none; border-top: 1px solid #f0f0f0;">
+                        <div style="font-size: 11px; color: #888; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Fabric</div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="fabric-silk" onchange="updateFilter('scarffabric', 'Silk', this.checked)">
+                            <label for="fabric-silk">Silk</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="fabric-wool" onchange="updateFilter('scarffabric', 'Wool', this.checked)">
+                            <label for="fabric-wool">Wool</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="fabric-cotton" onchange="updateFilter('scarffabric', 'Cotton', this.checked)">
+                            <label for="fabric-cotton">Cotton</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="fabric-chiffon" onchange="updateFilter('scarffabric', 'Chiffon', this.checked)">
+                            <label for="fabric-chiffon">Chiffon</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="fabric-cashmere" onchange="updateFilter('scarffabric', 'Cashmere', this.checked)">
+                            <label for="fabric-cashmere">Cashmere</label>
+                        </div>
+                        <div style="font-size: 11px; color: #888; margin: 12px 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;">Style</div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="scarfstyle-shawl" onchange="updateFilter('scarfstyle', 'Shawl', this.checked)">
+                            <label for="scarfstyle-shawl">Shawl</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="scarfstyle-bandana" onchange="updateFilter('scarfstyle', 'Bandana', this.checked)">
+                            <label for="scarfstyle-bandana">Bandana</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="scarfstyle-wrap" onchange="updateFilter('scarfstyle', 'Wrap', this.checked)">
+                            <label for="scarfstyle-wrap">Wrap</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <button class="filter-header" onclick="toggleDropdown(this)">
+                    <h3 class="filter-title">HATS & CAPS</h3>
+                    <span class="dropdown-arrow">▼</span>
+                </button>
+                <div class="filter-content">
+                    <div class="filter-options">
+                        <div class="filter-option">
+                            <input type="checkbox" id="cat-hats" onchange="updateFilter('category', 'Hats & Caps', this.checked)">
+                            <label for="cat-hats">All Hats & Caps</label>
+                        </div>
+                        <hr style="margin: 10px 0; border: none; border-top: 1px solid #f0f0f0;">
+                        <div style="font-size: 11px; color: #888; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Type</div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="hat-sun" onchange="updateFilter('hattype', 'Sun', this.checked)">
+                            <label for="hat-sun">Sun</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="hat-fedora" onchange="updateFilter('hattype', 'Fedora', this.checked)">
+                            <label for="hat-fedora">Fedora</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="hat-beanie" onchange="updateFilter('hattype', 'Beanie', this.checked)">
+                            <label for="hat-beanie">Beanie</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="hat-baseball" onchange="updateFilter('hattype', 'Baseball', this.checked)">
+                            <label for="hat-baseball">Baseball</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="hat-beret" onchange="updateFilter('hattype', 'Beret', this.checked)">
+                            <label for="hat-beret">Beret</label>
+                        </div>
+                        <div style="font-size: 11px; color: #888; margin: 12px 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;">Material</div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="hatmat-straw" onchange="updateFilter('hatmaterial', 'Straw', this.checked)">
+                            <label for="hatmat-straw">Straw</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="hatmat-wool" onchange="updateFilter('hatmaterial', 'Wool', this.checked)">
+                            <label for="hatmat-wool">Wool</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="hatmat-cotton" onchange="updateFilter('hatmaterial', 'Cotton', this.checked)">
+                            <label for="hatmat-cotton">Cotton</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="hatmat-acrylic" onchange="updateFilter('hatmaterial', 'Acrylic', this.checked)">
+                            <label for="hatmat-acrylic">Acrylic</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <button class="filter-header" onclick="toggleDropdown(this)">
+                    <h3 class="filter-title">EYEWEAR</h3>
+                    <span class="dropdown-arrow">▼</span>
+                </button>
+                <div class="filter-content">
+                    <div class="filter-options">
+                        <div class="filter-option">
+                            <input type="checkbox" id="cat-eyewear" onchange="updateFilter('category', 'Eyewear', this.checked)">
+                            <label for="cat-eyewear">All Eyewear</label>
+                        </div>
+                        <hr style="margin: 10px 0; border: none; border-top: 1px solid #f0f0f0;">
+                        <div style="font-size: 11px; color: #888; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Frame Shape</div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="frame-round" onchange="updateFilter('frameshape', 'Round', this.checked)">
+                            <label for="frame-round">Round</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="frame-square" onchange="updateFilter('frameshape', 'Square', this.checked)">
+                            <label for="frame-square">Square</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="frame-cateye" onchange="updateFilter('frameshape', 'Cat-eye', this.checked)">
+                            <label for="frame-cateye">Cat-eye</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="frame-oversized" onchange="updateFilter('frameshape', 'Oversized', this.checked)">
+                            <label for="frame-oversized">Oversized</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="frame-aviator" onchange="updateFilter('frameshape', 'Aviator', this.checked)">
+                            <label for="frame-aviator">Aviator</label>
+                        </div>
+                        <div style="font-size: 11px; color: #888; margin: 12px 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;">Lens Type</div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="lens-uv" onchange="updateFilter('lenstype', 'UV Protection', this.checked)">
+                            <label for="lens-uv">UV Protection</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="lens-polarized" onchange="updateFilter('lenstype', 'Polarized', this.checked)">
+                            <label for="lens-polarized">Polarized</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="lens-bluelight" onchange="updateFilter('lenstype', 'Blue Light', this.checked)">
+                            <label for="lens-bluelight">Blue Light</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <button class="filter-header" onclick="toggleDropdown(this)">
+                    <h3 class="filter-title">WATCHES</h3>
+                    <span class="dropdown-arrow">▼</span>
+                </button>
+                <div class="filter-content">
+                    <div class="filter-options">
+                        <div class="filter-option">
+                            <input type="checkbox" id="cat-watches" onchange="updateFilter('category', 'Watches', this.checked)">
+                            <label for="cat-watches">All Watches</label>
+                        </div>
+                        <hr style="margin: 10px 0; border: none; border-top: 1px solid #f0f0f0;">
+                        <div style="font-size: 11px; color: #888; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Style</div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="watch-dress" onchange="updateFilter('watchstyle', 'Dress', this.checked)">
+                            <label for="watch-dress">Dress</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="watch-casual" onchange="updateFilter('watchstyle', 'Casual', this.checked)">
+                            <label for="watch-casual">Casual</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="watch-sporty" onchange="updateFilter('watchstyle', 'Sporty', this.checked)">
+                            <label for="watch-sporty">Sporty</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="watch-smart" onchange="updateFilter('watchstyle', 'Smart', this.checked)">
+                            <label for="watch-smart">Smart</label>
+                        </div>
+                        <div style="font-size: 11px; color: #888; margin: 12px 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;">Strap Material</div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="strap-leather" onchange="updateFilter('strapmaterial', 'Leather', this.checked)">
+                            <label for="strap-leather">Leather</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="strap-metal" onchange="updateFilter('strapmaterial', 'Metal', this.checked)">
+                            <label for="strap-metal">Metal</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="strap-fabric" onchange="updateFilter('strapmaterial', 'Fabric', this.checked)">
+                            <label for="strap-fabric">Fabric</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="strap-silicone" onchange="updateFilter('strapmaterial', 'Silicone', this.checked)">
+                            <label for="strap-silicone">Silicone</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <button class="filter-header" onclick="toggleDropdown(this)">
+                    <h3 class="filter-title">GLOVES</h3>
+                    <span class="dropdown-arrow">▼</span>
+                </button>
+                <div class="filter-content">
+                    <div class="filter-options">
+                        <div class="filter-option">
+                            <input type="checkbox" id="cat-gloves" onchange="updateFilter('category', 'Gloves', this.checked)">
+                            <label for="cat-gloves">All Gloves</label>
+                        </div>
+                        <hr style="margin: 10px 0; border: none; border-top: 1px solid #f0f0f0;">
+                        <div style="font-size: 11px; color: #888; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Type</div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="glove-fashion" onchange="updateFilter('glovetype', 'Fashion', this.checked)">
+                            <label for="glove-fashion">Fashion</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="glove-winter" onchange="updateFilter('glovetype', 'Winter', this.checked)">
+                            <label for="glove-winter">Winter</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="glove-evening" onchange="updateFilter('glovetype', 'Evening', this.checked)">
+                            <label for="glove-evening">Evening</label>
+                        </div>
+                        <div style="font-size: 11px; color: #888; margin: 12px 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;">Material</div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="glove-wool" onchange="updateFilter('glovematerial', 'Wool', this.checked)">
+                            <label for="glove-wool">Wool</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="glove-leather" onchange="updateFilter('glovematerial', 'Leather', this.checked)">
+                            <label for="glove-leather">Leather</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="glove-satin" onchange="updateFilter('glovematerial', 'Satin', this.checked)">
+                            <label for="glove-satin">Satin</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="glove-cotton" onchange="updateFilter('glovematerial', 'Cotton', this.checked)">
+                            <label for="glove-cotton">Cotton</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <button class="filter-header" onclick="toggleDropdown(this)">
+                    <h3 class="filter-title">OTHERS</h3>
+                    <span class="dropdown-arrow">▼</span>
+                </button>
+                <div class="filter-content">
+                    <div class="filter-options">
+                        <div class="filter-option">
+                            <input type="checkbox" id="cat-others" onchange="updateFilter('category', 'Others', this.checked)">
+                            <label for="cat-others">All Others</label>
+                        </div>
+                        <hr style="margin: 10px 0; border: none; border-top: 1px solid #f0f0f0;">
+                        <div style="font-size: 11px; color: #888; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Function</div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="other-keychains" onchange="updateFilter('otherfunction', 'Keychains', this.checked)">
+                            <label for="other-keychains">Keychains</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="other-phonecases" onchange="updateFilter('otherfunction', 'Phone Cases', this.checked)">
+                            <label for="other-phonecases">Phone Cases</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="other-socks" onchange="updateFilter('otherfunction', 'Socks', this.checked)">
+                            <label for="other-socks">Socks</label>
+                        </div>
+                        <div style="font-size: 11px; color: #888; margin: 12px 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;">Material</div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="othermaterial-leather" onchange="updateFilter('othermaterial', 'Leather', this.checked)">
+                            <label for="othermaterial-leather">Leather</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="othermaterial-plastic" onchange="updateFilter('othermaterial', 'Plastic', this.checked)">
+                            <label for="othermaterial-plastic">Plastic</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="othermaterial-fabric" onchange="updateFilter('othermaterial', 'Fabric', this.checked)">
+                            <label for="othermaterial-fabric">Fabric</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="othermaterial-mixed" onchange="updateFilter('othermaterial', 'Mixed', this.checked)">
+                            <label for="othermaterial-mixed">Mixed</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            
+        </div>
+
+        <div class="content-area">
+            <div class="content-header">
+                <div class="content-info">
+                    <div class="product-count">
+                        Showing <span id="productCount">12</span> of <span id="totalProducts">12</span> products
+                        <span id="viewMore" class="view-more" style="display: none;">• View More</span>
+                    </div>
+                </div>
+                <div class="sort-wrapper">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="sort-icon">
+                        <path d="M3 6h18M7 12h10M11 18h2"/>
+                    </svg>
+                    <div class="sort-dropdown">
+                        <select id="sortBy">
+                            <option value="sort-by">Sort By</option>
+                            <option value="price-low">Price: Low to High</option>
+                            <option value="price-high">Price: High to Low</option>
+                            <option value="newest">Newest First</option>
+                            <option value="popular">Most Popular</option>
+                        </select>
+                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="dropdown-chevron">
+                        <polyline points="6,9 12,15 18,9"/>
+                    </svg>
+                </div>
+            </div>
+            
+            <div class="filter-tags" id="selectedFilters">
+                <!-- Selected filters will appear here -->
+                <button class="reset-filters-btn" onclick="resetAllFilters()" style="display: none;" id="resetFiltersBtn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                    </svg>
+                    Reset Filters
+                </button>
+            </div>
+            
+            <div class="product-grid" id="productGrid">
+                {% include 'partials/_product_card.html' %}
+            </div>
+            
+            <!-- Pagination Controls - Hidden when all products fit on one page -->
+            <div class="pagination-container" style="display: none;">
+                <div class="pagination-info">
+                    Showing <span id="currentRange">1-12</span> of <span id="totalItems">12</span> results
+                </div>
+            </div>
+        </div>
+    </div>
+
+     <!-- Connect filters accessories JS -->
+    <script src="{{ url_for('static', filename='js/_filters_accessories.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/_product_card.js') }}"></script>
+    
+    <script>
+        // Initialize product cards after DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load wishlist state for all products
+            const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
+            const wishlistBtns = document.querySelectorAll('.wishlist-btn');
+            
+            wishlistBtns.forEach(btn => {
+                const productCard = btn.closest('.product-card');
+                const productId = btn.getAttribute('onclick').match(/'([^']+)'/)[1];
+                if (wishlist.includes(productId)) {
+                    btn.classList.add('active');
+                }
+            });
+        });
+    </script>
+
+

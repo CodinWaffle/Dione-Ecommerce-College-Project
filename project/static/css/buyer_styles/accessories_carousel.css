@@ -1,0 +1,13 @@
+/* Accessories-specific carousel styles */
+
+.accessories-carousel .carousel-item {
+  /* Add accessories-specific styling */
+}
+
+.accessories-carousel .product-card {
+  border-color: #f2e8d5;
+}
+
+.accessories-carousel .product-card:hover {
+  border-color: #e8d9b3;
+}

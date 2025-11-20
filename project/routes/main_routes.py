@@ -24,93 +24,12 @@ def index():
             return redirect(url_for('main.pending'))
         role = (getattr(current_user, 'role', '') or '').lower()
         if role == 'seller':
-            return redirect(url_for('main.seller_dashboard'))
+            return redirect(url_for('seller.dashboard'))
         if role == 'rider':
             return redirect(url_for('main.rider_dashboard'))
     
     # Navigation items for header
-    nav_items = [
-        {
-            'name': 'Clothing',
-            'bold': False,
-            'active': True,
-            'dropdown': {
-                'categories': ['Tops', 'Bottoms', 'Dresses', 'Outwear', 'Activewear', 'Sleepwear', 'Undergarments', 'Swimwear', 'Occasionwear'],
-                'sections': [
-                    {
-                        'title': 'Women Tops',
-                        'subitems': ['T-Shirts', 'Blouses', 'Button-downs', 'Tank Tops', 'Crop Tops', 'Tube Tops', 'Tunics', 'Wrap Tops', 'Peplum Tops', 'Bodysuits', 'Sweaters', 'Cardigans', 'Sweatshirts & Hoodies']
-                    }
-                ],
-                'promo': {
-                    'title': 'Spring Collection',
-                    'subtitle': 'Fresh Styles Await',
-                    'description': 'Discover the latest trends with our new spring collection.',
-                    'button': 'Explore'
-                }
-            }
-        },
-        {
-            'name': 'Shoes',
-            'bold': False,
-            'active': False,
-            'dropdown': {
-                'categories': ['Heels', 'Flats', 'Sandals', 'Sneakers', 'Boots', 'Slippers & Comfort', 'Occasion Shoes'],
-                'sections': [
-                    {
-                        'title': 'Heels',
-                        'subitems': ['Stilettos', 'Pumps', 'Block Heels', 'Wedge Heels', 'Kitten Heels', 'Platform Heels', 'Ankle Strap Heels', 'Mules', 'Peep Toe Heels', 'Slingbacks']
-                    }
-                ],
-                'promo': {
-                    'title': 'Step Up',
-                    'subtitle': 'New Shoe Collection',
-                    'description': 'Walk in style with our curated shoe selection.',
-                    'button': 'Shop Now'
-                }
-            }
-        },
-        {
-            'name': 'Accessories',
-            'bold': False,
-            'active': False,
-            'dropdown': {
-                'categories': ['Bags', 'Jewelry', 'Hair Accessories', 'Belts', 'Scarves & Wraps', 'Hats & Caps', 'Eyewear', 'Watches', 'Gloves', 'Others'],
-                'sections': [
-                    {
-                        'title': 'Accessories',
-                        'subitems': ['Handbags', 'Shoulder Bags', 'Tote Bags', 'Crossbody Bags', 'Clutches', 'Backpacks', 'Wallets & Pouches', 'Necklaces', 'Earrings', 'Bracelets']
-                    }
-                ],
-                'promo': {
-                    'title': 'Complete Your Look',
-                    'subtitle': 'Accessory Essentials',
-                    'description': 'Find the perfect finishing touch for any outfit.',
-                    'button': 'Browse'
-                }
-            }
-        },
-        {
-            'name': "What's New",
-            'bold': True,
-            'active': False,
-            'dropdown': {
-                'categories': ['New Arrivals', 'Best Sellers', 'Trending', 'Limited Edition', 'Seasonal'],
-                'sections': [
-                    {
-                        'title': 'Latest Drops',
-                        'subitems': ['This Week', 'This Month', 'Last 30 Days', 'Coming Soon']
-                    }
-                ],
-                'promo': {
-                    'title': 'Exclusive Launch',
-                    'subtitle': 'Be First to Know',
-                    'description': 'Get early access to our newest collections and exclusive drops.',
-                    'button': 'Join Now'
-                }
-            }
-        }
-    ]
+    nav_items = get_nav_items()
     
     return render_template('main/index.html', nav_items=nav_items)
 
@@ -121,49 +40,12 @@ def profile():
     if getattr(current_user, 'role_requested', None) and not getattr(current_user, 'is_approved', True):
         return redirect(url_for('main.pending'))
     if role == 'seller':
-        return redirect(url_for('main.seller_dashboard'))
+        return redirect(url_for('seller.dashboard'))
     if role == 'rider':
         return redirect(url_for('main.rider_dashboard'))
     return render_template('main/profile.html', username=current_user.email)
 
-@main.route('/seller/dashboard')
-@login_required
-def seller_dashboard():
-    role = (getattr(current_user, 'role', '') or '').lower()
-    is_approved = getattr(current_user, 'is_approved', False)
-    
-    # If user has requested seller role but not approved yet, show pending page
-    if getattr(current_user, 'role_requested', None) == 'seller' and not is_approved:
-        return redirect(url_for('main.pending'))
-    
-    # If user is not a seller, deny access
-    if role != 'seller' or not is_approved:
-        flash("You don't have access to the seller dashboard.", 'warning')
-        return redirect(url_for('main.profile'))
-    
-    # Get seller profile data
-    seller_profile = current_user.seller_profile[0] if hasattr(current_user, 'seller_profile') and current_user.seller_profile else None
-    
-    return render_template('seller/dashboard.html', 
-                         username=current_user.email, 
-                         seller=seller_profile,
-                         active_page='dashboard')
-
-
-@main.route('/seller/products')
-@login_required
-def seller_products():
-    if (getattr(current_user, 'role', '') or '').lower() != 'seller' or not getattr(current_user, 'is_approved', False):
-        flash("You don't have access to seller tools.", 'warning')
-        return redirect(url_for('main.profile'))
-    
-    # Get seller profile data
-    seller_profile = current_user.seller_profile[0] if hasattr(current_user, 'seller_profile') and current_user.seller_profile else None
-    
-    return render_template('seller/seller_product_management.html', 
-                         username=current_user.email, 
-                         seller=seller_profile,
-                         active_page='products')
+# Seller routes moved to seller_routes.py blueprint
 
 @main.route('/rider/dashboard')
 @login_required
@@ -191,7 +73,7 @@ def pending():
     # If not pending anymore, route to appropriate place
     role = (getattr(current_user, 'role', '') or 'buyer').lower()
     if role == 'seller':
-        return redirect(url_for('main.seller_dashboard'))
+        return redirect(url_for('seller.dashboard'))
     if role == 'rider':
         return redirect(url_for('main.rider_dashboard'))
     return redirect(url_for('main.index'))
@@ -232,3 +114,311 @@ def test_db():
             "error": str(e),
             "message": "Database connection failed"
         }), 500
+
+
+# ============================================
+# CLOTHING ROUTES
+# ============================================
+
+@main.route('/shop/all/clothing')
+def shop_all_clothing():
+    """Shop all clothing items"""
+    products = []  # TODO: Fetch from database
+    nav_items = get_nav_items()
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='clothing')
+
+@main.route('/shop/clothing/tops')
+def shop_clothing_tops():
+    """Shop clothing tops"""
+    products = []
+    nav_items = get_nav_items()
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='clothing', subcategory='tops')
+
+@main.route('/shop/clothing/bottoms')
+def shop_clothing_bottoms():
+    """Shop clothing bottoms"""
+    products = []
+    nav_items = get_nav_items()
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='clothing', subcategory='bottoms')
+
+@main.route('/shop/clothing/dresses')
+def shop_clothing_dresses():
+    """Shop dresses"""
+    products = []
+    nav_items = get_nav_items()
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='clothing', subcategory='dresses')
+
+@main.route('/shop/clothing/outwear')
+def shop_clothing_outwear():
+    """Shop outerwear"""
+    products = []
+    nav_items = get_nav_items()
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='clothing', subcategory='outwear')
+
+@main.route('/shop/clothing/activewear')
+def shop_clothing_activewear():
+    """Shop activewear"""
+    products = []
+    nav_items = get_nav_items()
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='clothing', subcategory='activewear')
+
+@main.route('/shop/clothing/sleepwear')
+def shop_clothing_sleepwear():
+    """Shop sleepwear"""
+    products = []
+    nav_items = get_nav_items()
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='clothing', subcategory='sleepwear')
+
+@main.route('/shop/clothing/undergarments')
+def shop_clothing_undergarments():
+    """Shop undergarments"""
+    products = []
+    nav_items = get_nav_items()
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='clothing', subcategory='undergarments')
+
+@main.route('/shop/clothing/swimwear')
+def shop_clothing_swimwear():
+    """Shop swimwear"""
+    products = []
+    nav_items = get_nav_items()
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='clothing', subcategory='swimwear')
+
+@main.route('/shop/clothing/occasionwear')
+def shop_clothing_occasionwear():
+    """Shop occasionwear"""
+    products = []
+    nav_items = get_nav_items()
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='clothing', subcategory='occasionwear')
+
+
+# ============================================
+# SHOES ROUTES
+# ============================================
+
+@main.route('/shop/all/shoes')
+def shop_all_shoes():
+    """Shop all shoes"""
+    products = []
+    nav_items = get_nav_items()
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='shoes')
+
+@main.route('/shop/shoes/heels')
+def shop_shoes_heels():
+    """Shop heels"""
+    products = []
+    nav_items = get_nav_items()
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='shoes', subcategory='heels')
+
+@main.route('/shop/shoes/flats')
+def shop_shoes_flats():
+    """Shop flats"""
+    products = []
+    nav_items = get_nav_items()
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='shoes', subcategory='flats')
+
+@main.route('/shop/shoes/sandals')
+def shop_shoes_sandals():
+    """Shop sandals"""
+    products = []
+    nav_items = get_nav_items()
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='shoes', subcategory='sandals')
+
+@main.route('/shop/shoes/sneakers')
+def shop_shoes_sneakers():
+    """Shop sneakers"""
+    products = []
+    nav_items = get_nav_items()
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='shoes', subcategory='sneakers')
+
+@main.route('/shop/shoes/boots')
+def shop_shoes_boots():
+    """Shop boots"""
+    products = []
+    nav_items = get_nav_items()
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='shoes', subcategory='boots')
+
+@main.route('/shop/shoes/slippers')
+def shop_shoes_slippers():
+    """Shop slippers & comfort wear"""
+    products = []
+    nav_items = get_nav_items()
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='shoes', subcategory='slippers')
+
+@main.route('/shop/shoes/occasion-shoes')
+def shop_shoes_occasion_shoes():
+    """Shop occasion/dress shoes"""
+    products = []
+    nav_items = get_nav_items()
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='shoes', subcategory='occasion-shoes')
+
+
+# ============================================
+# ACCESSORIES ROUTES
+# ============================================
+
+@main.route('/shop/all/accessories')
+def shop_all_accessories():
+    """Shop all accessories"""
+    products = []
+    nav_items = get_nav_items()
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='accessories')
+
+@main.route('/shop/accessories/bags')
+def shop_accessories_bags():
+    """Shop bags"""
+    products = []
+    nav_items = get_nav_items()
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='accessories', subcategory='bags')
+
+@main.route('/shop/accessories/jewelry')
+def shop_accessories_jewelry():
+    """Shop jewelry"""
+    products = []
+    nav_items = get_nav_items()
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='accessories', subcategory='jewelry')
+
+@main.route('/shop/accessories/hair-accessories')
+def shop_accessories_hair_accessories():
+    """Shop hair accessories"""
+    products = []
+    nav_items = get_nav_items()
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='accessories', subcategory='hair-accessories')
+
+@main.route('/shop/accessories/belts')
+def shop_accessories_belts():
+    """Shop belts"""
+    products = []
+    nav_items = get_nav_items()
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='accessories', subcategory='belts')
+
+@main.route('/shop/accessories/scarves-wraps')
+def shop_accessories_scarves_wraps():
+    """Shop scarves & wraps"""
+    products = []
+    nav_items = get_nav_items()
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='accessories', subcategory='scarves-wraps')
+
+@main.route('/shop/accessories/hats-caps')
+def shop_accessories_hats_caps():
+    """Shop hats & caps"""
+    products = []
+    nav_items = get_nav_items()
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='accessories', subcategory='hats-caps')
+
+@main.route('/shop/accessories/eyewear')
+def shop_accessories_eyewear():
+    """Shop eyewear"""
+    products = []
+    nav_items = get_nav_items()
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='accessories', subcategory='eyewear')
+
+@main.route('/shop/accessories/watches')
+def shop_accessories_watches():
+    """Shop watches"""
+    products = []
+    nav_items = get_nav_items()
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='accessories', subcategory='watches')
+
+@main.route('/shop/accessories/gloves')
+def shop_accessories_gloves():
+    """Shop gloves"""
+    products = []
+    nav_items = get_nav_items()
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='accessories', subcategory='gloves')
+
+@main.route('/shop/accessories/others')
+def shop_accessories_others():
+    """Shop other accessories"""
+    products = []
+    nav_items = get_nav_items()
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='accessories', subcategory='others')
+
+
+# Helper function to get navigation items
+def get_nav_items():
+    """Return navigation items for header"""
+    return [
+        {
+            'name': 'Clothing',
+            'bold': False,
+            'active': False,
+            'url': url_for('main.shop_all_clothing'),
+            'dropdown': {
+                'categories': ['Tops', 'Bottoms', 'Dresses', 'Outwear', 'Activewear', 'Sleepwear', 'Undergarments', 'Swimwear', 'Occasionwear'],
+                'sections': [
+                    {
+                        'title': 'Women Tops',
+                        'subitems': ['T-Shirts', 'Blouses', 'Button-downs', 'Tank Tops', 'Crop Tops', 'Tube Tops', 'Tunics', 'Wrap Tops', 'Peplum Tops', 'Bodysuits', 'Sweaters', 'Cardigans', 'Sweatshirts & Hoodies']
+                    }
+                ],
+                'promo': {
+                    'title': 'Spring Collection',
+                    'subtitle': 'Fresh Styles Await',
+                    'description': 'Discover the latest trends with our new spring collection.',
+                    'button': 'Explore'
+                }
+            }
+        },
+        {
+            'name': 'Shoes',
+            'bold': False,
+            'active': False,
+            'url': url_for('main.shop_all_shoes'),
+            'dropdown': {
+                'categories': ['Heels', 'Flats', 'Sandals', 'Sneakers', 'Boots', 'Slippers & Comfort', 'Occasion Shoes'],
+                'sections': [
+                    {
+                        'title': 'Heels',
+                        'subitems': ['Stilettos', 'Pumps', 'Block Heels', 'Wedge Heels', 'Kitten Heels', 'Platform Heels', 'Ankle Strap Heels', 'Mules', 'Peep Toe Heels', 'Slingbacks']
+                    }
+                ],
+                'promo': {
+                    'title': 'Step Up',
+                    'subtitle': 'New Shoe Collection',
+                    'description': 'Walk in style with our curated shoe selection.',
+                    'button': 'Shop Now'
+                }
+            }
+        },
+        {
+            'name': 'Accessories',
+            'bold': False,
+            'active': False,
+            'url': url_for('main.shop_all_accessories'),
+            'dropdown': {
+                'categories': ['Bags', 'Jewelry', 'Hair Accessories', 'Belts', 'Scarves & Wraps', 'Hats & Caps', 'Eyewear', 'Watches', 'Gloves', 'Others'],
+                'sections': [
+                    {
+                        'title': 'Accessories',
+                        'subitems': ['Handbags', 'Shoulder Bags', 'Tote Bags', 'Crossbody Bags', 'Clutches', 'Backpacks', 'Wallets & Pouches', 'Necklaces', 'Earrings', 'Bracelets']
+                    }
+                ],
+                'promo': {
+                    'title': 'Complete Your Look',
+                    'subtitle': 'Accessory Essentials',
+                    'description': 'Find the perfect finishing touch for any outfit.',
+                    'button': 'Browse'
+                }
+            }
+        },
+        {
+            'name': "What's New",
+            'bold': True,
+            'active': False,
+            'dropdown': {
+                'categories': ['New Arrivals', 'Best Sellers', 'Trending', 'Limited Edition', 'Seasonal'],
+                'sections': [
+                    {
+                        'title': 'Latest Drops',
+                        'subitems': ['This Week', 'This Month', 'Last 30 Days', 'Coming Soon']
+                    }
+                ],
+                'promo': {
+                    'title': 'Exclusive Launch',
+                    'subtitle': 'Be First to Know',
+                    'description': 'Get early access to our newest collections and exclusive drops.',
+                    'button': 'Join Now'
+                }
+            }
+        }
+    ]

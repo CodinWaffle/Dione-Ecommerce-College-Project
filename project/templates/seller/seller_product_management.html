@@ -5,101 +5,92 @@ Dione Ecommerce{% endblock %} {% block extra_css %}
   href="{{ url_for('static', filename='css/seller_styles/seller_product_management.css') }}?v={{ range(1, 10000) | random }}"
 />
 {% endblock %} {% block content %}
-<div class="page-header">
-  <div class="page-header-left-product">
-    <h1>Product Management</h1>
-    <p class="page-subtext">Manage your product listings.</p>
-  </div>
-</div>
-
-<!-- stats -->
-<div class="stats-grid">
-  <div class="stat-card">
-    <div class="stat-icon blue"><i data-lucide="layers"></i></div>
-    <div class="stat-content">
-      <span class="stat-label">Total Products</span>
-      <h3 class="stat-value">{{ products|length if products else 0 }}</h3>
+<!-- Wrapper div with product-management class for consistent styling -->
+<div class="product-management">
+  <div class="page-header">
+    <div class="page-header-left-product">
+      <h1>Product Management</h1>
+      <p class="page-subtext">Manage your product listings.</p>
     </div>
   </div>
-  <div class="stat-card">
-    <div class="stat-icon orange"><i data-lucide="alert-circle"></i></div>
-    <div class="stat-content">
-      <span class="stat-label">Out of Stock</span>
-      <h3 class="stat-value">
-        {{ products|selectattr('stock', 'defined')|selectattr('stock',
-        'equalto', 0)|list|length if products else 0 }}
-      </h3>
+
+  <!-- stats -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon blue"><i data-lucide="layers"></i></div>
+      <div class="stat-content">
+        <span class="stat-label">Total Products</span>
+        <h3 class="stat-value">{{ products|length if products else 0 }}</h3>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon orange"><i data-lucide="alert-circle"></i></div>
+      <div class="stat-content">
+        <span class="stat-label">Out of Stock</span>
+        <h3 class="stat-value">
+          {{ products|selectattr('stock', 'defined')|selectattr('stock',
+          'equalto', 0)|list|length if products else 0 }}
+        </h3>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon green"><i data-lucide="check-circle"></i></div>
+      <div class="stat-content">
+        <span class="stat-label">Active Listings</span>
+        <h3 class="stat-value">
+          {{ products|selectattr('status', 'equalto', 'active')|list|length if
+          products else 0 }}
+        </h3>
+      </div>
     </div>
   </div>
-  <div class="stat-card">
-    <div class="stat-icon green"><i data-lucide="check-circle"></i></div>
-    <div class="stat-content">
-      <span class="stat-label">Active Listings</span>
-      <h3 class="stat-value">
-        {{ products|selectattr('status', 'equalto', 'active')|list|length if
-        products else 0 }}
-      </h3>
+
+  <div class="card">
+    <div class="card-header">
+      <!-- Nav tabs: All / Out of Stock / Active -->
+      <nav class="seller-nav-tabs" role="tablist" aria-label="Product views">
+        <button
+          class="tab active"
+          data-status=""
+          id="tabAll"
+          aria-selected="true"
+          role="tab"
+        >
+          <i data-lucide="layers"></i>
+          <span class="tab-label">All Products</span>
+          <span class="tab-count" id="countAll">0</span>
+        </button>
+
+        <button
+          class="tab"
+          data-status="out-of-stock"
+          id="tabOut"
+          aria-selected="false"
+          role="tab"
+        >
+          <i data-lucide="archive"></i>
+          <span class="tab-label">Out of stock</span>
+          <span class="tab-count" id="countOut">0</span>
+        </button>
+
+        <button
+          class="tab"
+          data-status="active"
+          id="tabActive"
+          aria-selected="false"
+          role="tab"
+        >
+          <i data-lucide="check-circle"></i>
+          <span class="tab-label">Active listings</span>
+          <span class="tab-count" id="countActive">0</span>
+        </button>
+        <!-- sliding underline -->
+        <div class="tabs-underline" aria-hidden="true"></div>
+      </nav>
     </div>
-  </div>
-</div>
 
-<div class="card">
-  <div class="card-header">
-    <!-- Nav tabs: All / Out of Stock / Active -->
-    <nav class="seller-nav-tabs" role="tablist" aria-label="Product views">
-      <button
-        class="tab active"
-        data-status=""
-        id="tabAll"
-        aria-selected="true"
-        role="tab"
-      >
-        <i data-lucide="layers"></i>
-        <span class="tab-label">All Products</span>
-        <span class="tab-count" id="countAll">0</span>
-      </button>
-
-      <button
-        class="tab"
-        data-status="out-of-stock"
-        id="tabOut"
-        aria-selected="false"
-        role="tab"
-      >
-        <i data-lucide="archive"></i>
-        <span class="tab-label">Out of stock</span>
-        <span class="tab-count" id="countOut">0</span>
-      </button>
-
-      <button
-        class="tab"
-        data-status="active"
-        id="tabActive"
-        aria-selected="false"
-        role="tab"
-      >
-        <i data-lucide="check-circle"></i>
-        <span class="tab-label">Active listings</span>
-        <span class="tab-count" id="countActive">0</span>
-      </button>
-      <!-- sliding underline -->
-      <div class="tabs-underline" aria-hidden="true"></div>
-    </nav>
-  </div>
-
-  <div class="products-list card-body">
-    <div
-      class="product-controls"
-      style="
-        margin-bottom: 1rem;
-        display: flex;
-        gap: 12px;
-        align-items: center;
-        justify-content: space-between;
-        flex-wrap: wrap;
-      "
-    >
-      <div style="display: flex; gap: 8px; align-items: center">
+    <div class="products-list card-body">
+      <div class="product-controls">
         <div class="search-box">
           <input
             type="text"
@@ -121,524 +112,98 @@ Dione Ecommerce{% endblock %} {% block extra_css %}
             <option value="out-of-stock">Out of Stock</option>
           </select>
         </div>
-      </div>
-      <div style="display: flex; gap: 8px; align-items: center">
         <button class="btn-primary" id="addProductBtn">
           <i data-lucide="plus"></i><span>Add Product</span>
         </button>
       </div>
-    </div>
-    <div id="bulkActions" class="bulk-actions" style="display: none">
-      <button class="btn-secondary" id="bulkRestock">Restock Selected</button>
-      <button class="btn-secondary" id="bulkArchive">Archive Selected</button>
-      <button class="btn-secondary" id="bulkEdit">Bulk Edit</button>
-    </div>
-    <div class="product-table-container">
-      <table class="product-table">
-        <colgroup>
-          <col style="width: 40px" />
-          <col style="width: 35%" />
-          <col style="width: 15%" />
-          <col style="width: 10%" />
-          <col style="width: 10%" />
-          <col style="width: 12%" />
-          <col style="width: 18%" />
-        </colgroup>
-        <thead>
-          <tr>
-            <th style="width: 40px">
-              <input type="checkbox" id="selectAll" />
-            </th>
-            <th>Product</th>
-            <th class="col-right">Category</th>
-            <th class="col-right">Price</th>
-            <th class="col-right">Stock</th>
-            <th class="col-right">Status</th>
-            <th class="col-right">Actions</th>
-          </tr>
-        </thead>
-        <tbody id="productTableBody">
-          {% for p in products %}
-          <tr data-id="{{ p.id }}">
-            <td>
-              <input type="checkbox" class="row-select" data-id="{{ p.id }}" />
-            </td>
-            <td>
-              <div class="product-info">
-                <img
-                  src="{{ p.image if p.image else url_for('static', filename='images/placeholder.svg') }}"
-                  class="product-image"
-                  alt="{{ p.name }}"
-                />
-                <span class="product-name">{{ p.name }}</span>
-              </div>
-            </td>
-            <td class="col-right">{{ p.category }}</td>
-            <td class="col-right">${{ '%.2f'|format(p.price) }}</td>
-            <td class="col-right">
-              {{ p.stock if p.stock is defined else '—' }}
-            </td>
-            <td class="col-right">
-              <span class="status-badge status-{{ p.status }}"
-                >{{ p.status }}</span
-              >
-            </td>
-            <td class="col-right">
-              <div class="action-buttons">
-                <button class="btn-icon edit-product" data-id="{{ p.id }}">
-                  <i data-lucide="edit"></i><span>Edit</span>
-                </button>
-                <button
-                  class="btn-icon delete-product"
+      <div id="bulkActions" class="bulk-actions" style="display: none">
+        <button class="btn-secondary" id="bulkRestock">Restock Selected</button>
+        <button class="btn-secondary" id="bulkArchive">Archive Selected</button>
+        <button class="btn-secondary" id="bulkEdit">Bulk Edit</button>
+      </div>
+      <div class="product-table-container">
+        <table class="product-table">
+          <colgroup>
+            <col style="width: 40px" />
+            <col style="width: 30%" />
+            <col style="width: 12%" />
+            <col style="width: 12%" />
+            <col style="width: 10%" />
+            <col style="width: 10%" />
+            <col style="width: 12%" />
+            <col style="width: 14%" />
+          </colgroup>
+          <thead>
+            <tr>
+              <th style="width: 40px">
+                <input type="checkbox" id="selectAll" />
+              </th>
+              <th>Product</th>
+              <th class="col-right">Category</th>
+              <th class="col-right">Sub-Category</th>
+              <th class="col-right">Price</th>
+              <th class="col-right">Stock</th>
+              <th class="col-right">Status</th>
+              <th class="col-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="productTableBody">
+            {% for p in products %}
+            <tr data-id="{{ p.id }}">
+              <td>
+                <input
+                  type="checkbox"
+                  class="row-select"
                   data-id="{{ p.id }}"
-                  aria-label="Delete {{ p.name }}"
+                />
+              </td>
+              <td>
+                <div class="product-info">
+                  <img
+                    src="{{ p.image if p.image else url_for('static', filename='images/placeholder.svg') }}"
+                    class="product-image"
+                    alt="{{ p.name }}"
+                  />
+                  <span class="product-name">{{ p.name }}</span>
+                </div>
+              </td>
+              <td class="col-right">{{ p.category }}</td>
+              <td class="col-right">
+                {{ p.subcategory if p.subcategory else '—' }}
+              </td>
+              <td class="col-right">${{ '%.2f'|format(p.price) }}</td>
+              <td class="col-right">
+                {{ p.stock if p.stock is defined else '—' }}
+              </td>
+              <td class="col-right">
+                <span class="status-badge status-{{ p.status }}"
+                  >{{ p.status }}</span
                 >
-                  <i data-lucide="trash-2"></i>
-                </button>
-              </div>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-      {% include 'seller/partials/_tableFooter.html' %}
+              </td>
+              <td class="col-right">
+                <div class="action-buttons">
+                  <button class="btn-icon edit-product" data-id="{{ p.id }}">
+                    <i data-lucide="edit"></i><span>Edit</span>
+                  </button>
+                  <button
+                    class="btn-icon delete-product"
+                    data-id="{{ p.id }}"
+                    aria-label="Delete {{ p.name }}"
+                  >
+                    <i data-lucide="trash-2"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% include 'seller/partials/_tableFooter.html' %}
+      </div>
     </div>
   </div>
 </div>
 {% endblock %} {% block extra_js %}
 <script src="{{ url_for('static', filename='js/seller_scripts/seller_product_management.js') }}?v={{ range(1, 10000) | random }}"></script>
-<script>
-  // Additional initialization if needed
-  document.addEventListener("DOMContentLoaded", function () {
-    const closeButtons = productModal.querySelectorAll(".close-modal");
-    closeButtons.forEach((btn) => btn.addEventListener("click", closeModal));
-
-    // image upload wiring
-    const imageUploadBox = document.getElementById("imageUpload");
-    const fileInput = document.getElementById("productFilesInput");
-    const imagePreview = document.getElementById("imagePreview");
-
-    if (imageUploadBox) {
-      imageUploadBox.addEventListener("click", () => fileInput.click());
-      imageUploadBox.addEventListener("dragover", (e) => {
-        e.preventDefault();
-        imageUploadBox.classList.add("dragover");
-      });
-      imageUploadBox.addEventListener("dragleave", (e) => {
-        e.preventDefault();
-        imageUploadBox.classList.remove("dragover");
-      });
-      imageUploadBox.addEventListener("drop", (e) => {
-        e.preventDefault();
-        imageUploadBox.classList.remove("dragover");
-        if (e.dataTransfer && e.dataTransfer.files) {
-          fileInput.files = e.dataTransfer.files;
-          renderPreviews(fileInput.files);
-        }
-      });
-    }
-
-    if (fileInput) {
-      fileInput.addEventListener("change", (e) =>
-        renderPreviews(e.target.files)
-      );
-    }
-
-    // Category hierarchy rendering
-    const categoriesJsonEl = document.getElementById("categoriesData");
-    let categoriesData = {};
-    try {
-      if (categoriesJsonEl)
-        categoriesData = JSON.parse(categoriesJsonEl.textContent || "{}");
-    } catch (err) {
-      console.warn("Invalid categoriesData JSON", err);
-    }
-
-    const categorySelect = document.getElementById("productCategory");
-    const categoryHierarchyEl = document.getElementById("categoryHierarchy");
-
-    function renderCategoryHierarchy(selectedCategory) {
-      // if a category is specified, show its subcategories and any deeper mapping
-      const cat =
-        selectedCategory || (categorySelect && categorySelect.value) || "";
-      categoryHierarchyEl.innerHTML = "";
-      if (!cat) {
-        // show root categories
-        const rootList = document.createElement("div");
-        rootList.textContent =
-          "Categories: " +
-          Object.keys(categoriesData)
-            .filter((k) => !k.endsWith("_details"))
-            .join(", ");
-        categoryHierarchyEl.appendChild(rootList);
-        return;
-      }
-
-      const subs = categoriesData[cat] || [];
-      const list = document.createElement("div");
-      list.style.display = "flex";
-      list.style.flexDirection = "column";
-      const heading = document.createElement("div");
-      heading.style.fontWeight = "600";
-      heading.style.marginBottom = "6px";
-      heading.textContent = cat + " — subcategories";
-      list.appendChild(heading);
-
-      const items = document.createElement("div");
-      items.style.display = "flex";
-      items.style.flexWrap = "wrap";
-      items.style.gap = "6px";
-
-      subs.forEach((sub) => {
-        const chip = document.createElement("button");
-        chip.type = "button";
-        chip.textContent = sub;
-        chip.dataset.sub = sub;
-        chip.style.padding = "6px 8px";
-        chip.style.border = "1px solid #e2e8f0";
-        chip.style.borderRadius = "6px";
-        chip.style.background = "#fff";
-        chip.style.cursor = "pointer";
-        chip.addEventListener("click", () => {
-          // toggle selection
-          const isSelected = chip.classList.toggle("selected");
-          chip.style.background = isSelected ? "#6b21a8" : "#fff";
-          chip.style.color = isSelected ? "#fff" : "#000";
-          updateSelectedSubcategories();
-          // show or remove deeper details per selected state
-          if (isSelected) {
-            renderSubDetailsAdd(cat, sub);
-          } else {
-            renderSubDetailsRemove(sub);
-          }
-        });
-        items.appendChild(chip);
-      });
-
-      list.appendChild(items);
-      categoryHierarchyEl.appendChild(list);
-    }
-
-    function renderSubDetails(cat, sub) {
-      // show deeper details when available (e.g., shoes -> heels -> pumps)
-      const key = cat + "_details";
-      const details = categoriesData[key] && categoriesData[key][sub];
-      // This function is left as a placeholder when called directly; use renderSubDetailsAdd/remove instead.
-      return;
-    }
-
-    // Add a detail panel for a specific selected subcategory (if details exist)
-    function renderSubDetailsAdd(cat, sub) {
-      const key = cat + "_details";
-      const details = categoriesData[key] && categoriesData[key][sub];
-      if (!details) return;
-      // avoid duplicate
-      if (
-        categoryHierarchyEl.querySelector(
-          '.sub-details[data-sub="' + sub + '"]'
-        )
-      )
-        return;
-
-      const detailWrap = document.createElement("div");
-      detailWrap.className = "sub-details";
-      detailWrap.dataset.sub = sub;
-      detailWrap.style.marginTop = "8px";
-      const h = document.createElement("div");
-      h.style.fontWeight = "600";
-      h.style.marginBottom = "6px";
-      h.textContent = sub + " — items";
-      detailWrap.appendChild(h);
-
-      const items = document.createElement("div");
-      items.style.display = "flex";
-      items.style.gap = "6px";
-      items.style.flexWrap = "wrap";
-
-      details.forEach((d) => {
-        const chip = document.createElement("button");
-        chip.type = "button";
-        chip.textContent = d;
-        chip.style.padding = "6px 8px";
-        chip.style.border = "1px solid #e2e8f0";
-        chip.style.borderRadius = "6px";
-        chip.style.background = "#fff";
-        chip.style.cursor = "pointer";
-        chip.addEventListener("click", () => {
-          const subInput = document.getElementById("productSubcategory");
-          // append a combined value for this detail
-          const current = (subInput.value || "")
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean);
-          const combined = sub + " - " + d;
-          if (!current.includes(combined)) {
-            current.push(combined);
-            subInput.value = current.join(", ");
-          }
-        });
-        items.appendChild(chip);
-      });
-      detailWrap.appendChild(items);
-      categoryHierarchyEl.appendChild(detailWrap);
-    }
-
-    // Remove detail panel for a subcategory (and optionally remove related combined entries)
-    function renderSubDetailsRemove(sub) {
-      const existing = categoryHierarchyEl.querySelector(
-        '.sub-details[data-sub="' + sub + '"]'
-      );
-      if (existing) existing.remove();
-      // also remove any combined 'sub - item' entries from the input
-      const subInput = document.getElementById("productSubcategory");
-      if (!subInput) return;
-      const current = (subInput.value || "")
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean);
-      const filtered = current.filter((v) => !v.startsWith(sub + " - "));
-      subInput.value = filtered.join(", ");
-    }
-
-    // Update the productSubcategory input based on currently selected chips
-    function updateSelectedSubcategories() {
-      const selectedChips =
-        categoryHierarchyEl.querySelectorAll("button.selected");
-      const names = Array.from(selectedChips)
-        .map((c) => c.dataset.sub)
-        .filter(Boolean);
-      const subInput = document.getElementById("productSubcategory");
-      if (subInput) subInput.value = names.join(", ");
-    }
-
-    if (categorySelect) {
-      categorySelect.addEventListener("change", (e) =>
-        renderCategoryHierarchy(e.target.value)
-      );
-    }
-
-    // Variations chips: preset sizes and colors
-    const defaultSizes = ["XS", "S", "M", "L", "XL", "XXL"];
-    const defaultColors = [
-      "Black",
-      "White",
-      "Red",
-      "Blue",
-      "Green",
-      "Beige",
-      "Pink",
-    ];
-    const sizeChipsContainer = document.getElementById("sizeChips");
-    const colorChipsContainer = document.getElementById("colorChips");
-
-    function makeChip(text, container, inputEl) {
-      const chip = document.createElement("button");
-      chip.type = "button";
-      chip.className = "var-chip";
-      chip.textContent = text;
-      chip.style.padding = "6px 8px";
-      chip.style.border = "1px solid #e2e8f0";
-      chip.style.borderRadius = "6px";
-      chip.style.background = "#fff";
-      chip.style.cursor = "pointer";
-      chip.addEventListener("click", () => {
-        toggleChipValue(chip, text, inputEl);
-      });
-      container.appendChild(chip);
-    }
-
-    function toggleChipValue(chip, value, inputEl) {
-      const selected = chip.classList.toggle("selected");
-      const current = (inputEl.value || "")
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean);
-      if (selected) {
-        current.push(value);
-      } else {
-        const idx = current.indexOf(value);
-        if (idx !== -1) current.splice(idx, 1);
-      }
-      inputEl.value = current.join(",");
-      // small visual cue
-      chip.style.background = selected ? "#6b21a8" : "#fff";
-      chip.style.color = selected ? "#fff" : "#000";
-    }
-
-    function initVariationChips() {
-      const sizeInput = document.getElementById("sizeInput");
-      const colorInput = document.getElementById("colorInput");
-      if (sizeChipsContainer && sizeInput) {
-        sizeChipsContainer.innerHTML = "";
-        defaultSizes.forEach((s) => makeChip(s, sizeChipsContainer, sizeInput));
-      }
-      if (colorChipsContainer && colorInput) {
-        colorChipsContainer.innerHTML = "";
-        defaultColors.forEach((c) =>
-          makeChip(c, colorChipsContainer, colorInput)
-        );
-      }
-    }
-
-    // Initialize on load and on modal open
-    initVariationChips();
-    const addTopBtn = document.getElementById("addProductBtnTop");
-    if (addTopBtn) addTopBtn.addEventListener("click", initVariationChips);
-
-    // Stepper / multi-step form logic
-    const formSteps = Array.from(document.querySelectorAll(".form-step"));
-    const stepElements = Array.from(
-      document.querySelectorAll("#modalStepper .step")
-    );
-    const prevBtn = document.getElementById("prevStep");
-    const nextBtn = document.getElementById("nextStep");
-    const saveBtn = document.getElementById("saveProduct");
-    const reviewArea = document.getElementById("reviewArea");
-    let currentStep = 1;
-
-    function showStep(step) {
-      currentStep = Math.max(1, Math.min(step, formSteps.length));
-      formSteps.forEach((fs) => (fs.style.display = "none"));
-      const active = document.querySelector(
-        '.form-step[data-step="' + currentStep + '"]'
-      );
-      if (active) active.style.display = "";
-
-      // update stepper visuals
-      stepElements.forEach((se) => {
-        const s = Number(se.dataset.step);
-        se.classList.remove("active");
-        se.classList.remove("completed");
-        if (s < currentStep) se.classList.add("completed");
-        if (s === currentStep) se.classList.add("active");
-      });
-
-      // buttons
-      if (prevBtn) prevBtn.style.display = currentStep > 1 ? "" : "none";
-      if (nextBtn)
-        nextBtn.style.display = currentStep < formSteps.length ? "" : "none";
-      if (saveBtn)
-        saveBtn.style.display = currentStep === formSteps.length ? "" : "none";
-
-      // populate review when on last step
-      if (currentStep === formSteps.length && reviewArea) {
-        const data = {
-          name: document.getElementById("productName").value,
-          category: document.getElementById("productCategory").value,
-          subcategory: document.getElementById("productSubcategory").value,
-          price: document.getElementById("productPrice").value,
-          colors: document.getElementById("colorInput").value,
-          sizes: document.getElementById("sizeInput").value,
-          stock: document.getElementById("productStock")
-            ? document.getElementById("productStock").value
-            : "",
-          sku: document.getElementById("productSKU").value,
-          tags: document.getElementById("productTags").value,
-        };
-        reviewArea.innerHTML = Object.keys(data)
-          .map(
-            (k) =>
-              "<div><strong>" +
-              k.charAt(0).toUpperCase() +
-              k.slice(1) +
-              ":</strong> " +
-              (data[k] || "&mdash;") +
-              "</div>"
-          )
-          .join("");
-      }
-    }
-
-    if (nextBtn)
-      nextBtn.addEventListener("click", () => showStep(currentStep + 1));
-    if (prevBtn)
-      prevBtn.addEventListener("click", () => showStep(currentStep - 1));
-
-    // allow clicking step circles to jump
-    stepElements.forEach((se) =>
-      se.addEventListener("click", () => showStep(Number(se.dataset.step)))
-    );
-
-    // ensure modal opens at step 1
-    function openAddModalHook() {
-      showStep(1);
-      initVariationChips();
-    }
-    if (addTopBtn) addTopBtn.addEventListener("click", openAddModalHook);
-
-    function renderPreviews(files) {
-      imagePreview.innerHTML = "";
-      if (!files || files.length === 0) return;
-      Array.from(files)
-        .slice(0, 8)
-        .forEach((file) => {
-          const url = URL.createObjectURL(file);
-          const el = document.createElement("div");
-          el.style.position = "relative";
-          el.style.width = "100px";
-          el.style.height = "100px";
-          el.style.borderRadius = "6px";
-          el.style.overflow = "hidden";
-          el.style.background = "#f8fafc";
-          el.style.display = "flex";
-          el.style.alignItems = "center";
-          el.style.justifyContent = "center";
-
-          if (file.type.startsWith("image/")) {
-            const img = document.createElement("img");
-            img.src = url;
-            img.style.width = "100%";
-            img.style.height = "100%";
-            img.style.objectFit = "cover";
-            el.appendChild(img);
-          } else {
-            const icon = document.createElement("div");
-            icon.textContent = file.name;
-            icon.style.fontSize = "12px";
-            icon.style.padding = "6px";
-            el.appendChild(icon);
-          }
-
-          imagePreview.appendChild(el);
-        });
-    }
-
-    // form handling: reset and fake submit
-    const productForm = document.getElementById("productForm");
-    if (productForm) {
-      productForm.addEventListener("submit", function (e) {
-        e.preventDefault();
-        const formData = new FormData(productForm);
-        // also include files
-        Array.from(fileInput.files || []).forEach((f, i) =>
-          formData.append("files[" + i + "]", f)
-        );
-        // For now, just log data and close modal. Real implementation should POST to server.
-        console.log(
-          "Product form submitted. Keys: ",
-          Array.from(formData.keys())
-        );
-        closeModal();
-        productForm.reset();
-        imagePreview.innerHTML = "";
-      });
-    }
-
-    function openAddModal(e) {
-      // reset form and set title
-      const modalTitle = productModal.querySelector("#modalTitle");
-      if (modalTitle) modalTitle.textContent = "Add Product";
-      if (productForm) productForm.reset();
-      imagePreview.innerHTML = "";
-      renderCategoryHierarchy();
-      productModal.classList.add("active");
-      productModal.setAttribute("aria-hidden", "false");
-    }
-
-    function closeModal() {
-      productModal.classList.remove("active");
-      productModal.setAttribute("aria-hidden", "true");
-    }
-  });
-</script>
+<script></script>
 {% endblock %}

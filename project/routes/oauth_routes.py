@@ -132,7 +132,7 @@ def google_logged_in(blueprint, token):
     try:
         role = (getattr(current_user, 'role', '') or 'buyer').lower()
         if role == 'seller':
-            return redirect(url_for('main.seller_dashboard'))
+            return redirect(url_for('seller.dashboard'))
         if role == 'rider':
             return redirect(url_for('main.rider_dashboard'))
         return redirect(url_for('main.index'))
@@ -180,7 +180,7 @@ def facebook_logged_in(blueprint, token):
     try:
         role = (getattr(current_user, 'role', '') or 'buyer').lower()
         if role == 'seller':
-            return redirect(url_for('main.seller_dashboard'))
+            return redirect(url_for('seller.dashboard'))
         if role == 'rider':
             return redirect(url_for('main.rider_dashboard'))
         return redirect(url_for('main.index'))

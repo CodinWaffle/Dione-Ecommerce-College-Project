@@ -1,13 +1,13 @@
-{% set active_page = 'products' %} {% extends 'seller/seller_base.html' %} {%
+{% set active_page = 'products' %} {% extends 'seller/base_seller.html' %} {%
 block title %}Product Preview{% endblock %} {% block extra_css %} <link
 rel="stylesheet" href="{{ url_for('static',
-filename='css/add_product_preview.css') }}" / >
+filename='css/seller_styles/add_product_preview.css') }}" / >
 <link
   rel="stylesheet"
-  href="{{ url_for('static', filename='css/progress_bar.css') }}"
+  href="{{ url_for('static', filename='css/seller_styles/progress_bar.css') }}"
 />
-{% endblock %} {% block page_content %} {% set progress_step = 4 %} {% include
-'partials/_progress_bar.html' %}
+{% endblock %} {% block content %} {% set progress_step = 4 %} {% include
+'seller/partials/_progress_bar.html' %}
 <div class="container-fluid preview-page">
   <div class="preview-section">
     <div class="page-header">
@@ -26,43 +26,43 @@ filename='css/add_product_preview.css') }}" / >
           <span id="previewProductName">-</span>
         </div>
         <div class="preview-item">
-          <label>Category:</label>
-          <span id="previewCategory">-</span>
-        </div>
-        <div class="preview-item">
-          <label>Sub Category:</label>
-          <span id="previewSubCategory">-</span>
-        </div>
-        <div class="preview-item">
-          <label>Sub-items:</label>
-          <span id="previewSubItems">-</span>
-        </div>
-        <div class="preview-item">
-          <label>Model Information:</label>
-          <span id="previewModelInfo">-</span>
-        </div>
-        <div class="preview-item">
-          <label>Product Filters Applied:</label>
-          <span id="previewProductFilters">-</span>
-        </div>
-        <div class="preview-item">
           <label>Price:</label>
           <span id="previewPrice">-</span>
         </div>
         <div class="preview-item">
-          <label>Discount Percentage:</label>
-          <span id="previewDiscountPercent">-</span>
+          <label>Category:</label>
+          <span id="previewCategory">-</span>
+        </div>
+        <div class="preview-item">
+          <label>Subcategory:</label>
+          <span id="previewSubCategory">-</span>
         </div>
         <div class="preview-item">
           <label>Discount Type:</label>
           <span id="previewDiscountType">-</span>
         </div>
         <div class="preview-item">
+          <label>Sub-Items:</label>
+          <span id="previewSubItems">-</span>
+        </div>
+        <div class="preview-item">
+          <label>Discount Percentage:</label>
+          <span id="previewDiscountPercent">-</span>
+        </div>
+        <div class="preview-item">
+          <label>Model Information:</label>
+          <span id="previewModelInfo">-</span>
+        </div>
+        <div class="preview-item">
           <label>Voucher Type:</label>
           <span id="previewVoucherType">-</span>
         </div>
+        <div class="preview-item">
+          <label>Product Filters Applied:</label>
+          <span id="previewProductFilters">-</span>
+        </div>
         <div class="preview-images">
-          <label>Product Images:</label>
+          <label><strong>Product Photos:</strong></label>
           <div id="previewImages" class="image-grid">
             <!-- Images will be inserted here -->
           </div>
@@ -74,6 +74,12 @@ filename='css/add_product_preview.css') }}" / >
     <div class="preview-group">
       <h3>Product Details</h3>
       <div class="preview-content" id="descriptionPreview">
+        <div class="preview-item full-width">
+          <label><strong>Size Guide Photos</strong></label>
+          <div id="previewSizeGuide" class="image-grid">
+            <!-- Size guide photos will be inserted here -->
+          </div>
+        </div>
         <div class="preview-item">
           <label>Description:</label>
           <p id="previewDescription">-</p>
@@ -86,6 +92,12 @@ filename='css/add_product_preview.css') }}" / >
           <label>Details & Fit:</label>
           <p id="previewDetailsFit">-</p>
         </div>
+        <div class="preview-item full-width">
+          <label><strong>Certifications</strong></label>
+          <div id="previewCertifications" class="image-grid">
+            <!-- Certification photos will be inserted here -->
+          </div>
+        </div>
       </div>
     </div>
 
@@ -94,18 +106,88 @@ filename='css/add_product_preview.css') }}" / >
       <h3>Stock Information</h3>
       <div class="preview-content" id="stockPreview">
         <div class="preview-item">
-          <label>SKU:</label>
-          <span id="previewSKU">-</span>
-        </div>
-        <div class="preview-item">
           <label>Total Stock:</label>
           <span id="previewTotalStock">-</span>
         </div>
         <div class="preview-item full-width">
           <label>Variants:</label>
-          <ul id="previewVariants" class="variants-list">
-            <!-- Variants will be inserted here as <li class="variant-item"> elements -->
-          </ul>
+          <div style="overflow-x: auto">
+            <table
+              id="previewVariantsTable"
+              class="variants-table"
+              style="width: 100%; border-collapse: collapse; margin-top: 0.5rem"
+            >
+              <thead>
+                <tr
+                  style="
+                    border-bottom: 2px solid #e0e0e0;
+                    background-color: #f5f5f5;
+                  "
+                >
+                  <th
+                    style="
+                      padding: 10px;
+                      text-align: left;
+                      font-weight: 600;
+                      color: #333;
+                    "
+                  >
+                    SKU
+                  </th>
+                  <th
+                    style="
+                      padding: 10px;
+                      text-align: left;
+                      font-weight: 600;
+                      color: #333;
+                    "
+                  >
+                    Color
+                  </th>
+                  <th
+                    style="
+                      padding: 10px;
+                      text-align: left;
+                      font-weight: 600;
+                      color: #333;
+                    "
+                  >
+                    Size
+                  </th>
+                  <th
+                    style="
+                      padding: 10px;
+                      text-align: center;
+                      font-weight: 600;
+                      color: #333;
+                    "
+                  >
+                    Stock
+                  </th>
+                  <th
+                    style="
+                      padding: 10px;
+                      text-align: center;
+                      font-weight: 600;
+                      color: #333;
+                    "
+                  >
+                    Low Stock
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="previewVariantsList">
+                <tr>
+                  <td
+                    colspan="5"
+                    style="padding: 10px; text-align: center; color: #999"
+                  >
+                    -
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
@@ -152,6 +234,7 @@ filename='css/add_product_preview.css') }}" / >
   </div>
 </div>
 {% endblock %} {% block extra_js %}
-<script src="{{ url_for('static', filename='js/add_product_preview.js') }}"></script>
-<script src="{{ url_for('static', filename='js/progress_bar.js') }}"></script>
+<script src="{{ url_for('static', filename='js/seller_scripts/add_product_flow.js') }}"></script>
+<script src="{{ url_for('static', filename='js/seller_scripts/add_product_preview.js') }}"></script>
+<script src="{{ url_for('static', filename='js/seller_scripts/progress_bar.js') }}"></script>
 {% endblock %}

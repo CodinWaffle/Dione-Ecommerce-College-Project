@@ -46,7 +46,7 @@ def login_post():
     # Redirect by active role
     role = (getattr(user, 'role', '') or 'buyer').lower()
     if role == 'seller':
-        return redirect(url_for('main.seller_dashboard'))
+        return redirect(url_for('seller.dashboard'))
     if role == 'rider':
         return redirect(url_for('main.rider_dashboard'))
     if role == 'admin':
@@ -196,7 +196,7 @@ def signup_post():
         return redirect(url_for('main.index'))
     elif role == 'seller':
         flash('Account created successfully! Welcome to your seller dashboard.', 'success')
-        return redirect(url_for('main.seller_dashboard'))
+        return redirect(url_for('seller.dashboard'))
     elif role == 'rider':
         flash('Account created successfully! Welcome to your rider dashboard.', 'success')
         return redirect(url_for('main.rider_dashboard'))

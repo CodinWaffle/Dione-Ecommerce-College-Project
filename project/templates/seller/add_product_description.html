@@ -1,4 +1,4 @@
-{% set active_page = 'products' %} {% extends 'seller/seller_base.html' %} {%
+{% set active_page = 'products' %} {% extends 'seller/base_seller.html' %} {%
 block title %}Product Details Description{% endblock %} {% block extra_css %}
 <link
   rel="stylesheet"
@@ -6,15 +6,15 @@ block title %}Product Details Description{% endblock %} {% block extra_css %}
 />
 <link
   rel="stylesheet"
-  href="{{ url_for('static', filename='css/add_product_description.css') }}"
+  href="{{ url_for('static', filename='css/seller_styles/add_product_description.css') }}"
 />
 <link
   rel="stylesheet"
-  href="{{ url_for('static', filename='css/progress_bar.css') }}"
+  href="{{ url_for('static', filename='css/seller_styles/progress_bar.css') }}"
 />
-{% endblock %} {% block page_content %}
-<div class="container">
-  {% set progress_step = 2 %} {% include 'partials/_progress_bar.html' %}
+{% endblock %} {% block content %}
+<div class="container-description">
+  {% set progress_step = 2 %} {% include 'seller/partials/_progress_bar.html' %}
   <form id="productDescriptionForm" class="form-main">
     <div class="form-page" id="page2">
       <div class="page-header">
@@ -167,11 +167,11 @@ block title %}Product Details Description{% endblock %} {% block extra_css %}
         </svg>
         Add Product
       </button>
+      </div>
     </div>
   </form>
 </div>
 {% endblock %} {% block extra_js %}
-<script src="{{ url_for('static', filename='js/product_preview.js') }}"></script>
-<script src="{{ url_for('static', filename='js/add_product_description.js') }}"></script>
-<script src="{{ url_for('static', filename='js/progress_bar.js') }}"></script>
+<script src="{{ url_for('static', filename='js/seller_scripts/add_product_flow.js') }}"></script>
+<script src="{{ url_for('static', filename='js/seller_scripts/add_product_description.js') }}"></script>
 {% endblock %}

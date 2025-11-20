@@ -1,0 +1,242 @@
+/* Progress Bar Styles */
+
+/* Header section */
+.progress-header-wrap {
+  width: 100%;
+  margin-bottom: 1.5rem;
+}
+
+.progress-header {
+  text-align: left;
+}
+
+.progress-title {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 0.5rem 0;
+}
+
+.progress-subtext {
+  font-size: 1rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* Card wrapper with discard button */
+.progress-card-wrap {
+  position: relative;
+  width: 100%;
+  margin-bottom: 2rem;
+}
+
+/* Discard button */
+#discardProgressBtn {
+  position: absolute;
+  top: -10px;
+  right: 12px;
+  z-index: 9999;
+  background: #fff5f5;
+  border: 1px solid rgba(220, 38, 38, 0.12);
+  color: #b91c1c;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease;
+}
+
+#discardProgressBtn:hover {
+  background: #fee2e2;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+#discardProgressBtn:active {
+  transform: translateY(0);
+}
+
+/* Progress container */
+.progress-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 100%;
+  padding: 1rem 0;
+}
+
+/* Progress line background */
+.progress-line-bg {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-50%);
+  width: 75%;
+  max-width: 900px;
+  height: 3px;
+  background: #e5e7eb;
+  z-index: 1;
+}
+
+.progress-line-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: #6c5ce7;
+  transition: width 0.5s ease;
+  border-radius: 3px;
+}
+
+/* Steps container */
+.steps {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 75%;
+  max-width: 900px;
+  position: relative;
+  z-index: 2;
+}
+
+/* Individual step */
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex: 1;
+}
+
+/* Step circle */
+.step-circle {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 3px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  position: relative;
+  z-index: 3;
+}
+
+.step-circle svg {
+  width: 28px;
+  height: 28px;
+  stroke: #9ca3af;
+  transition: stroke 0.3s ease;
+}
+
+/* Active step */
+.step.active .step-circle {
+  background: #ffffff;
+  border-color: #6c5ce7;
+  box-shadow: 0 4px 16px rgba(108, 92, 231, 0.3);
+}
+
+.step.active .step-circle svg {
+  stroke: #6c5ce7;
+}
+
+/* Completed step */
+.step.completed .step-circle {
+  background: #6c5ce7;
+  border-color: #6c5ce7;
+}
+
+.step.completed .step-circle svg {
+  stroke: #ffffff;
+}
+
+/* Step label */
+.step-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
+  text-align: center;
+  white-space: nowrap;
+  transition: color 0.3s ease;
+}
+
+.step.active .step-label {
+  color: #6c5ce7;
+  font-weight: 600;
+}
+
+.step.completed .step-label {
+  color: #6c5ce7;
+  font-weight: 600;
+}
+
+.step:hover .step-circle {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .progress-container {
+    padding: 0.5rem 0;
+  }
+
+  .progress-line-bg,
+  .steps {
+    width: 85%;
+  }
+
+  .step-circle {
+    width: 48px;
+    height: 48px;
+  }
+
+  .step-circle svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .step-label {
+    font-size: 0.75rem;
+  }
+
+  .progress-title {
+    font-size: 1.5rem;
+  }
+
+  .progress-subtext {
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .progress-line-bg,
+  .steps {
+    width: 92%;
+  }
+
+  .step-label {
+    font-size: 0.65rem;
+  }
+
+  .step-circle {
+    width: 40px;
+    height: 40px;
+  }
+
+  .step-circle svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .progress-title {
+    font-size: 1.25rem;
+  }
+}
