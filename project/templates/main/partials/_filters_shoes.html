@@ -1,426 +1,1205 @@
+<!-- Connect filters shoes CSS -->
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/_filters_shoes.css') }}"
+/>
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/_product_card.css') }}"
+/>
 
-    <!-- Connect filters shoes CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/_filters_shoes.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/_product_card.css') }}">
- 
-    <div class="container">
-        <div class="sidebar-filter">
-            <div class="filter-header-title">
-                <h2>
-                    <!-- Lucide Filter Icon -->
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46" />
-                    </svg>
-                    Filter By
-                </h2>
-            </div>
-            
-            <!-- Priority Filters -->
-            <div class="filter-section">
-                <button class="filter-header" onclick="toggleDropdown(this)">
-                    <h3 class="filter-title">COLORS</h3>
-                    <span class="dropdown-arrow">▼</span>
-                </button>
-                <div class="filter-content">
-                    <div class="color-options-with-names">
-                        <div class="color-option-item" data-color="black" onclick="selectColor(this, 'Black')">
-                            <div class="color-swatch-large" style="background-color: #000000"></div>
-                            <span class="color-name">Black</span>
-                        </div>
-                        <div class="color-option-item" data-color="white" onclick="selectColor(this, 'White')">
-                            <div class="color-swatch-large" style="background-color: #ffffff; border-color: #ccc"></div>
-                            <span class="color-name">White</span>
-                        </div>
-                        <div class="color-option-item" data-color="brown" onclick="selectColor(this, 'Brown')">
-                            <div class="color-swatch-large" style="background-color: #92400e"></div>
-                            <span class="color-name">Brown</span>
-                        </div>
-                        <div class="color-option-item" data-color="navy" onclick="selectColor(this, 'Navy')">
-                            <div class="color-swatch-large" style="background-color: #1f2937"></div>
-                            <span class="color-name">Navy</span>
-                        </div>
-                        <div class="color-option-item" data-color="red" onclick="selectColor(this, 'Red')">
-                            <div class="color-swatch-large" style="background-color: #ef4444"></div>
-                            <span class="color-name">Red</span>
-                        </div>
-                        <div class="color-option-item" data-color="gray" onclick="selectColor(this, 'Gray')">
-                            <div class="color-swatch-large" style="background-color: #6b7280"></div>
-                            <span class="color-name">Gray</span>
-                        </div>
-                        <div class="color-option-item" data-color="tan" onclick="selectColor(this, 'Tan')">
-                            <div class="color-swatch-large" style="background-color: #f59e0b"></div>
-                            <span class="color-name">Tan</span>
-                        </div>
-                        <div class="color-option-item" data-color="pink" onclick="selectColor(this, 'Pink')">
-                            <div class="color-swatch-large" style="background-color: #ec4899"></div>
-                            <span class="color-name">Pink</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="filter-section">
-                <button class="filter-header" onclick="toggleDropdown(this)">
-                    <h3 class="filter-title">SIZE</h3>
-                    <span class="dropdown-arrow">▼</span>
-                </button>
-                <div class="filter-content">
-                    <div class="filter-options">
-                        <div class="filter-option">
-                            <input type="checkbox" id="size-5" onchange="updateFilter('size', 'US 5', this.checked)">
-                            <label for="size-5">US 5</label>
-                        </div>
-                        <div class="filter-option">
-                            <input type="checkbox" id="size-6" onchange="updateFilter('size', 'US 6', this.checked)">
-                            <label for="size-6">US 6</label>
-                        </div>
-                        <div class="filter-option">
-                            <input type="checkbox" id="size-7" onchange="updateFilter('size', 'US 7', this.checked)">
-                            <label for="size-7">US 7</label>
-                        </div>
-                        <div class="filter-option">
-                            <input type="checkbox" id="size-8" onchange="updateFilter('size', 'US 8', this.checked)">
-                            <label for="size-8">US 8</label>
-                        </div>
-                        <div class="filter-option">
-                            <input type="checkbox" id="size-9" onchange="updateFilter('size', 'US 9', this.checked)">
-                            <label for="size-9">US 9</label>
-                        </div>
-                        <div class="filter-option">
-                            <input type="checkbox" id="size-10" onchange="updateFilter('size', 'US 10', this.checked)">
-                            <label for="size-10">US 10</label>
-                        </div>
-                        <div class="filter-option">
-                            <input type="checkbox" id="size-11" onchange="updateFilter('size', 'US 11', this.checked)">
-                            <label for="size-11">US 11</label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="filter-section">
-                <button class="filter-header" onclick="toggleDropdown(this)">
-                    <h3 class="filter-title">MATERIAL</h3>
-                    <span class="dropdown-arrow">▼</span>
-                </button>
-                <div class="filter-content">
-                    <div class="filter-options">
-                        <div class="filter-option">
-                            <input type="checkbox" id="mat-leather" onchange="updateFilter('material', 'Leather', this.checked)">
-                            <label for="mat-leather">Leather</label>
-                        </div>
-                        <div class="filter-option">
-                            <input type="checkbox" id="mat-faux" onchange="updateFilter('material', 'Faux Leather', this.checked)">
-                            <label for="mat-faux">Faux Leather</label>
-                        </div>
-                        <div class="filter-option">
-                            <input type="checkbox" id="mat-suede" onchange="updateFilter('material', 'Suede', this.checked)">
-                            <label for="mat-suede">Suede</label>
-                        </div>
-                        <div class="filter-option">
-                            <input type="checkbox" id="mat-canvas" onchange="updateFilter('material', 'Canvas', this.checked)">
-                            <label for="mat-canvas">Canvas</label>
-                        </div>
-                        <div class="filter-option">
-                            <input type="checkbox" id="mat-rubber" onchange="updateFilter('material', 'Rubber', this.checked)">
-                            <label for="mat-rubber">Rubber</label>
-                        </div>
-                        <div class="filter-option">
-                            <input type="checkbox" id="mat-knit" onchange="updateFilter('material', 'Knit', this.checked)">
-                            <label for="mat-knit">Knit</label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="filter-section">
-                <button class="filter-header" onclick="toggleDropdown(this)">
-                    <h3 class="filter-title">PRICE</h3>
-                    <span class="dropdown-arrow">▼</span>
-                </button>
-                <div class="filter-content">
-                    <div class="price-range">
-                        <input type="number" class="price-input" placeholder="Min ₱" id="minPrice">
-                        <span class="price-separator">-</span>
-                        <input type="number" class="price-input" placeholder="Max ₱" id="maxPrice">
-                    </div>
-                </div>
-            </div>
-
-            <div class="filter-section">
-                <button class="filter-header" onclick="toggleDropdown(this)">
-                    <h3 class="filter-title">RATINGS</h3>
-                    <span class="dropdown-arrow">▼</span>
-                </button>
-                <div class="filter-content">
-                    <div class="filter-options">
-                        <div class="filter-option">
-                            <input type="checkbox" id="rating-5" onchange="updateFilter('rating', '5 Stars', this.checked)">
-                            <label for="rating-5">★★★★★ (5 Stars)</label>
-                        </div>
-                        <div class="filter-option">
-                            <input type="checkbox" id="rating-4" onchange="updateFilter('rating', '4+ Stars', this.checked)">
-                            <label for="rating-4">★★★★☆ (4+ Stars)</label>
-                        </div>
-                        <div class="filter-option">
-                            <input type="checkbox" id="rating-3" onchange="updateFilter('rating', '3+ Stars', this.checked)">
-                            <label for="rating-3">★★★☆☆ (3+ Stars)</label>
-                        </div>
-                        <div class="filter-option">
-                            <input type="checkbox" id="rating-2" onchange="updateFilter('rating', '2+ Stars', this.checked)">
-                            <label for="rating-2">★★☆☆☆ (2+ Stars)</label>
-                        </div>
-                        <div class="filter-option">
-                            <input type="checkbox" id="rating-1" onchange="updateFilter('rating', '1+ Stars', this.checked)">
-                            <label for="rating-1">★☆☆☆☆ (1+ Stars)</label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Shoes Categories with Nested Subcategories -->
-            <div class="filter-section">
-                <button class="filter-header" onclick="toggleDropdown(this)">
-                    <h3 class="filter-title">HEELS</h3>
-                    <span class="dropdown-arrow">▼</span>
-                </button>
-                <div class="filter-content">
-                    <div class="filter-options">
-                        <div style="margin-left: 0; margin-bottom: 12px;">
-                            <div style="font-size: 11px; color: #888; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">Heel Height</div>
-                            <div class="filter-option"><input type="checkbox" id="heel-low" onchange="updateFilter('heel_height', 'Low <2”', this.checked)"><label for="heel-low">Low &lt;2”</label></div>
-                            <div class="filter-option"><input type="checkbox" id="heel-mid" onchange="updateFilter('heel_height', 'Mid 2–3.5”', this.checked)"><label for="heel-mid">Mid 2–3.5”</label></div>
-                            <div class="filter-option"><input type="checkbox" id="heel-high" onchange="updateFilter('heel_height', 'High 3.5”+', this.checked)"><label for="heel-high">High 3.5”+</label></div>
-                            <div style="font-size: 11px; color: #888; margin: 8px 0 6px 0; text-transform: uppercase; letter-spacing: 0.5px;">Heel Type</div>
-                            <div class="filter-option"><input type="checkbox" id="heel-stiletto" onchange="updateFilter('heel_type', 'Stiletto', this.checked)"><label for="heel-stiletto">Stiletto</label></div>
-                            <div class="filter-option"><input type="checkbox" id="heel-block" onchange="updateFilter('heel_type', 'Block', this.checked)"><label for="heel-block">Block</label></div>
-                            <div class="filter-option"><input type="checkbox" id="heel-wedge" onchange="updateFilter('heel_type', 'Wedge', this.checked)"><label for="heel-wedge">Wedge</label></div>
-                            <div class="filter-option"><input type="checkbox" id="heel-kitten" onchange="updateFilter('heel_type', 'Kitten', this.checked)"><label for="heel-kitten">Kitten</label></div>
-                            <div class="filter-option"><input type="checkbox" id="heel-platform" onchange="updateFilter('heel_type', 'Platform', this.checked)"><label for="heel-platform">Platform</label></div>
-                            <div style="font-size: 11px; color: #888; margin: 8px 0 6px 0; text-transform: uppercase; letter-spacing: 0.5px;">Toe Style</div>
-                            <div class="filter-option"><input type="checkbox" id="toe-pointed" onchange="updateFilter('toe_style', 'Pointed', this.checked)"><label for="toe-pointed">Pointed</label></div>
-                            <div class="filter-option"><input type="checkbox" id="toe-round" onchange="updateFilter('toe_style', 'Round', this.checked)"><label for="toe-round">Round</label></div>
-                            <div class="filter-option"><input type="checkbox" id="toe-square" onchange="updateFilter('toe_style', 'Square', this.checked)"><label for="toe-square">Square</label></div>
-                            <div class="filter-option"><input type="checkbox" id="toe-peep" onchange="updateFilter('toe_style', 'Peep', this.checked)"><label for="toe-peep">Peep</label></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="filter-section">
-                <button class="filter-header" onclick="toggleDropdown(this)">
-                    <h3 class="filter-title">FLATS</h3>
-                    <span class="dropdown-arrow">▼</span>
-                </button>
-                <div class="filter-content">
-                    <div class="filter-options">
-                        <div style="margin-left: 0; margin-bottom: 12px;">
-                            <div style="font-size: 11px; color: #888; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">Style</div>
-                            <div class="filter-option"><input type="checkbox" id="flats-ballet" onchange="updateFilter('flats_style', 'Ballet', this.checked)"><label for="flats-ballet">Ballet</label></div>
-                            <div class="filter-option"><input type="checkbox" id="flats-loafers" onchange="updateFilter('flats_style', 'Loafers', this.checked)"><label for="flats-loafers">Loafers</label></div>
-                            <div class="filter-option"><input type="checkbox" id="flats-espadrilles" onchange="updateFilter('flats_style', 'Espadrilles', this.checked)"><label for="flats-espadrilles">Espadrilles</label></div>
-                            <div class="filter-option"><input type="checkbox" id="flats-sandals" onchange="updateFilter('flats_style', 'Sandals', this.checked)"><label for="flats-sandals">Sandals</label></div>
-                            <div style="font-size: 11px; color: #888; margin: 8px 0 6px 0; text-transform: uppercase; letter-spacing: 0.5px;">Closure</div>
-                            <div class="filter-option"><input type="checkbox" id="flats-slipon" onchange="updateFilter('flats_closure', 'Slip-On', this.checked)"><label for="flats-slipon">Slip-On</label></div>
-                            <div class="filter-option"><input type="checkbox" id="flats-buckle" onchange="updateFilter('flats_closure', 'Buckle', this.checked)"><label for="flats-buckle">Buckle</label></div>
-                            <div class="filter-option"><input type="checkbox" id="flats-laces" onchange="updateFilter('flats_closure', 'Laces', this.checked)"><label for="flats-laces">Laces</label></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="filter-section">
-                <button class="filter-header" onclick="toggleDropdown(this)">
-                    <h3 class="filter-title">SANDALS</h3>
-                    <span class="dropdown-arrow">▼</span>
-                </button>
-                <div class="filter-content">
-                    <div class="filter-options">
-                        <div style="margin-left: 0; margin-bottom: 12px;">
-                            <div style="font-size: 11px; color: #888; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">Straps</div>
-                            <div class="filter-option"><input type="checkbox" id="sandals-thin" onchange="updateFilter('sandals_straps', 'Thin', this.checked)"><label for="sandals-thin">Thin</label></div>
-                            <div class="filter-option"><input type="checkbox" id="sandals-thick" onchange="updateFilter('sandals_straps', 'Thick', this.checked)"><label for="sandals-thick">Thick</label></div>
-                            <div class="filter-option"><input type="checkbox" id="sandals-multi" onchange="updateFilter('sandals_straps', 'Multi', this.checked)"><label for="sandals-multi">Multi</label></div>
-                            <div style="font-size: 11px; color: #888; margin: 8px 0 6px 0; text-transform: uppercase; letter-spacing: 0.5px;">Heel</div>
-                            <div class="filter-option"><input type="checkbox" id="sandals-flat" onchange="updateFilter('sandals_heel', 'Flat', this.checked)"><label for="sandals-flat">Flat</label></div>
-                            <div class="filter-option"><input type="checkbox" id="sandals-low" onchange="updateFilter('sandals_heel', 'Low', this.checked)"><label for="sandals-low">Low</label></div>
-                            <div class="filter-option"><input type="checkbox" id="sandals-wedge" onchange="updateFilter('sandals_heel', 'Wedge', this.checked)"><label for="sandals-wedge">Wedge</label></div>
-                            <div class="filter-option"><input type="checkbox" id="sandals-platform" onchange="updateFilter('sandals_heel', 'Platform', this.checked)"><label for="sandals-platform">Platform</label></div>
-                            <div style="font-size: 11px; color: #888; margin: 8px 0 6px 0; text-transform: uppercase; letter-spacing: 0.5px;">Fastening</div>
-                            <div class="filter-option"><input type="checkbox" id="sandals-slipon" onchange="updateFilter('sandals_fastening', 'Slip-On', this.checked)"><label for="sandals-slipon">Slip-On</label></div>
-                            <div class="filter-option"><input type="checkbox" id="sandals-buckle" onchange="updateFilter('sandals_fastening', 'Buckle', this.checked)"><label for="sandals-buckle">Buckle</label></div>
-                            <div class="filter-option"><input type="checkbox" id="sandals-velcro" onchange="updateFilter('sandals_fastening', 'Velcro', this.checked)"><label for="sandals-velcro">Velcro</label></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="filter-section">
-                <button class="filter-header" onclick="toggleDropdown(this)">
-                    <h3 class="filter-title">SNEAKERS</h3>
-                    <span class="dropdown-arrow">▼</span>
-                </button>
-                <div class="filter-content">
-                    <div class="filter-options">
-                        <div style="margin-left: 0; margin-bottom: 12px;">
-                            <div style="font-size: 11px; color: #888; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">Type</div>
-                            <div class="filter-option"><input type="checkbox" id="sneakers-casual" onchange="updateFilter('sneakers_type', 'Casual', this.checked)"><label for="sneakers-casual">Casual</label></div>
-                            <div class="filter-option"><input type="checkbox" id="sneakers-chunky" onchange="updateFilter('sneakers_type', 'Chunky', this.checked)"><label for="sneakers-chunky">Chunky</label></div>
-                            <div class="filter-option"><input type="checkbox" id="sneakers-slipon" onchange="updateFilter('sneakers_type', 'Slip-on', this.checked)"><label for="sneakers-slipon">Slip-on</label></div>
-                            <div class="filter-option"><input type="checkbox" id="sneakers-lifestyle" onchange="updateFilter('sneakers_type', 'Lifestyle', this.checked)"><label for="sneakers-lifestyle">Lifestyle</label></div>
-                            <div style="font-size: 11px; color: #888; margin: 8px 0 6px 0; text-transform: uppercase; letter-spacing: 0.5px;">Sole Thickness</div>
-                            <div class="filter-option"><input type="checkbox" id="sneakers-flat" onchange="updateFilter('sneakers_sole', 'Flat', this.checked)"><label for="sneakers-flat">Flat</label></div>
-                            <div class="filter-option"><input type="checkbox" id="sneakers-platform" onchange="updateFilter('sneakers_sole', 'Platform', this.checked)"><label for="sneakers-platform">Platform</label></div>
-                            <div class="filter-option"><input type="checkbox" id="sneakers-chunkysole" onchange="updateFilter('sneakers_sole', 'Chunky', this.checked)"><label for="sneakers-chunkysole">Chunky</label></div>
-                            <div style="font-size: 11px; color: #888; margin: 8px 0 6px 0; text-transform: uppercase; letter-spacing: 0.5px;">Material</div>
-                            <div class="filter-option"><input type="checkbox" id="sneakers-canvas" onchange="updateFilter('sneakers_material', 'Canvas', this.checked)"><label for="sneakers-canvas">Canvas</label></div>
-                            <div class="filter-option"><input type="checkbox" id="sneakers-knit" onchange="updateFilter('sneakers_material', 'Knit', this.checked)"><label for="sneakers-knit">Knit</label></div>
-                            <div class="filter-option"><input type="checkbox" id="sneakers-leather" onchange="updateFilter('sneakers_material', 'Leather', this.checked)"><label for="sneakers-leather">Leather</label></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="filter-section">
-                <button class="filter-header" onclick="toggleDropdown(this)">
-                    <h3 class="filter-title">BOOTS</h3>
-                    <span class="dropdown-arrow">▼</span>
-                </button>
-                <div class="filter-content">
-                    <div class="filter-options">
-                        <div style="margin-left: 0; margin-bottom: 12px;">
-                            <div style="font-size: 11px; color: #888; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">Length</div>
-                            <div class="filter-option"><input type="checkbox" id="boots-ankle" onchange="updateFilter('boots_length', 'Ankle', this.checked)"><label for="boots-ankle">Ankle</label></div>
-                            <div class="filter-option"><input type="checkbox" id="boots-midcalf" onchange="updateFilter('boots_length', 'Mid-calf', this.checked)"><label for="boots-midcalf">Mid-calf</label></div>
-                            <div class="filter-option"><input type="checkbox" id="boots-knee" onchange="updateFilter('boots_length', 'Knee', this.checked)"><label for="boots-knee">Knee</label></div>
-                            <div class="filter-option"><input type="checkbox" id="boots-overtheknee" onchange="updateFilter('boots_length', 'Over-the-knee', this.checked)"><label for="boots-overtheknee">Over-the-knee</label></div>
-                            <div style="font-size: 11px; color: #888; margin: 8px 0 6px 0; text-transform: uppercase; letter-spacing: 0.5px;">Heel</div>
-                            <div class="filter-option"><input type="checkbox" id="boots-flat" onchange="updateFilter('boots_heel', 'Flat', this.checked)"><label for="boots-flat">Flat</label></div>
-                            <div class="filter-option"><input type="checkbox" id="boots-block" onchange="updateFilter('boots_heel', 'Block', this.checked)"><label for="boots-block">Block</label></div>
-                            <div class="filter-option"><input type="checkbox" id="boots-stiletto" onchange="updateFilter('boots_heel', 'Stiletto', this.checked)"><label for="boots-stiletto">Stiletto</label></div>
-                            <div style="font-size: 11px; color: #888; margin: 8px 0 6px 0; text-transform: uppercase; letter-spacing: 0.5px;">Closure</div>
-                            <div class="filter-option"><input type="checkbox" id="boots-zip" onchange="updateFilter('boots_closure', 'Zip', this.checked)"><label for="boots-zip">Zip</label></div>
-                            <div class="filter-option"><input type="checkbox" id="boots-laceup" onchange="updateFilter('boots_closure', 'Lace-up', this.checked)"><label for="boots-laceup">Lace-up</label></div>
-                            <div class="filter-option"><input type="checkbox" id="boots-pullon" onchange="updateFilter('boots_closure', 'Pull-on', this.checked)"><label for="boots-pullon">Pull-on</label></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="filter-section">
-                <button class="filter-header" onclick="toggleDropdown(this)">
-                    <h3 class="filter-title">SLIPPERS & COMFORTWEAR</h3>
-                    <span class="dropdown-arrow">▼</span>
-                </button>
-                <div class="filter-content">
-                    <div class="filter-options">
-                        <div style="margin-left: 0; margin-bottom: 12px;">
-                            <div style="font-size: 11px; color: #888; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">Type</div>
-                            <div class="filter-option"><input type="checkbox" id="slippers-flipflops" onchange="updateFilter('slippers_type', 'Flip-flops', this.checked)"><label for="slippers-flipflops">Flip-flops</label></div>
-                            <div class="filter-option"><input type="checkbox" id="slippers-indoor" onchange="updateFilter('slippers_type', 'Indoor', this.checked)"><label for="slippers-indoor">Indoor</label></div>
-                            <div class="filter-option"><input type="checkbox" id="slippers-sandals" onchange="updateFilter('slippers_type', 'Sandals', this.checked)"><label for="slippers-sandals">Sandals</label></div>
-                            <div style="font-size: 11px; color: #888; margin: 8px 0 6px 0; text-transform: uppercase; letter-spacing: 0.5px;">Cushioning</div>
-                            <div class="filter-option"><input type="checkbox" id="slippers-regular" onchange="updateFilter('slippers_cushioning', 'Regular', this.checked)"><label for="slippers-regular">Regular</label></div>
-                            <div class="filter-option"><input type="checkbox" id="slippers-extrasoft" onchange="updateFilter('slippers_cushioning', 'Extra Soft', this.checked)"><label for="slippers-extrasoft">Extra Soft</label></div>
-                            <div class="filter-option"><input type="checkbox" id="slippers-ortho" onchange="updateFilter('slippers_cushioning', 'Orthopedic', this.checked)"><label for="slippers-ortho">Orthopedic</label></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="filter-section">
-                <button class="filter-header" onclick="toggleDropdown(this)">
-                    <h3 class="filter-title">OCCASION/DRESS SHOES</h3>
-                    <span class="dropdown-arrow">▼</span>
-                </button>
-                <div class="filter-content">
-                    <div class="filter-options">
-                        <div style="margin-left: 0; margin-bottom: 12px;">
-                            <div style="font-size: 11px; color: #888; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">Occasion</div>
-                            <div class="filter-option"><input type="checkbox" id="occasion-formal" onchange="updateFilter('occasion_type', 'Formal', this.checked)"><label for="occasion-formal">Formal</label></div>
-                            <div class="filter-option"><input type="checkbox" id="occasion-party" onchange="updateFilter('occasion_type', 'Party', this.checked)"><label for="occasion-party">Party</label></div>
-                            <div class="filter-option"><input type="checkbox" id="occasion-wedding" onchange="updateFilter('occasion_type', 'Wedding', this.checked)"><label for="occasion-wedding">Wedding</label></div>
-                            <div style="font-size: 11px; color: #888; margin: 8px 0 6px 0; text-transform: uppercase; letter-spacing: 0.5px;">Material Finish</div>
-                            <div class="filter-option"><input type="checkbox" id="occasion-glossy" onchange="updateFilter('occasion_finish', 'Glossy', this.checked)"><label for="occasion-glossy">Glossy</label></div>
-                            <div class="filter-option"><input type="checkbox" id="occasion-matte" onchange="updateFilter('occasion_finish', 'Matte', this.checked)"><label for="occasion-matte">Matte</label></div>
-                            <div class="filter-option"><input type="checkbox" id="occasion-embellished" onchange="updateFilter('occasion_finish', 'Embellished', this.checked)"><label for="occasion-embellished">Embellished</label></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!--Removed the generic heel height filter as it's now integrated into the category sub-sections-->
-            
-        </div>
-
-        <div class="content-area">
-            <div class="content-header">
-                <div class="content-info">
-                    <div class="product-count">
-                        Showing <span id="productCount">12</span> of <span id="totalProducts">12</span> products
-                        <span id="viewMore" class="view-more" style="display: none;">• View More</span>
-                    </div>
-                </div>
-                <div class="sort-wrapper">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="sort-icon">
-                        <path d="M3 6h18M7 12h10M11 18h2"/>
-                    </svg>
-                    <div class="sort-dropdown">
-                        <select id="sortBy">
-                            <option value="sort-by">Sort By</option>
-                            <option value="price-low">Price: Low to High</option>
-                            <option value="price-high">Price: High to Low</option>
-                            <option value="newest">Newest First</option>
-                            <option value="popular">Most Popular</option>
-                        </select>
-                    </div>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="dropdown-chevron">
-                        <polyline points="6,9 12,15 18,9"/>
-                    </svg>
-                </div>
-            </div>
-            
-            <div class="filter-tags" id="selectedFilters">
-                <!-- Selected filters will appear here -->
-                <button class="reset-filters-btn" onclick="resetAllFilters()" style="display: none;" id="resetFiltersBtn">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
-                    </svg>
-                    Reset Filters
-                </button>
-            </div>
-            
-            <div class="product-grid" id="productGrid">
-                {% include 'partials/_product_card.html' %}
-            </div>
-            
-            <!-- Pagination Controls - Hidden when all products fit on one page -->
-            <div class="pagination-container" style="display: none;">
-                <div class="pagination-info">
-                    <span>Showing <span id="currentRange">1-12</span> of <span id="totalItems">12</span> items</span>
-                </div>
-            </div>
-        </div>
+<div class="container">
+  <div class="sidebar-filter">
+    <div class="filter-header-title">
+      <h2>
+        <!-- Lucide Filter Icon -->
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="18"
+          height="18"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46" />
+        </svg>
+        Filter By
+      </h2>
     </div>
 
-    <!-- Connect filters shoes JS -->
-    <script src="{{ url_for('static', filename='js/_filters_shoes.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/_product_card.js') }}"></script>
-    
-    <script>
-        // Initialize product cards after DOM is loaded
-        document.addEventListener('DOMContentLoaded', function() {
-            // Load wishlist state for all products
-            const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
-            const wishlistBtns = document.querySelectorAll('.wishlist-btn');
-            
-            wishlistBtns.forEach(btn => {
-                const productCard = btn.closest('.product-card');
-                const productId = btn.getAttribute('onclick').match(/'([^']+)'/)[1];
-                if (wishlist.includes(productId)) {
-                    btn.classList.add('active');
-                }
-            });
-        });
-    </script>
+    <!-- Priority Filters -->
+    <div class="filter-section">
+      <button class="filter-header" onclick="toggleDropdown(this)">
+        <h3 class="filter-title">COLORS</h3>
+        <span class="dropdown-arrow">▼</span>
+      </button>
+      <div class="filter-content">
+        <div class="color-options-with-names">
+          <div
+            class="color-option-item"
+            data-color="black"
+            onclick="selectColor(this, 'Black')"
+          >
+            <div
+              class="color-swatch-large"
+              style="background-color: #000000"
+            ></div>
+            <span class="color-name">Black</span>
+          </div>
+          <div
+            class="color-option-item"
+            data-color="white"
+            onclick="selectColor(this, 'White')"
+          >
+            <div
+              class="color-swatch-large"
+              style="background-color: #ffffff; border-color: #ccc"
+            ></div>
+            <span class="color-name">White</span>
+          </div>
+          <div
+            class="color-option-item"
+            data-color="brown"
+            onclick="selectColor(this, 'Brown')"
+          >
+            <div
+              class="color-swatch-large"
+              style="background-color: #92400e"
+            ></div>
+            <span class="color-name">Brown</span>
+          </div>
+          <div
+            class="color-option-item"
+            data-color="navy"
+            onclick="selectColor(this, 'Navy')"
+          >
+            <div
+              class="color-swatch-large"
+              style="background-color: #1f2937"
+            ></div>
+            <span class="color-name">Navy</span>
+          </div>
+          <div
+            class="color-option-item"
+            data-color="red"
+            onclick="selectColor(this, 'Red')"
+          >
+            <div
+              class="color-swatch-large"
+              style="background-color: #ef4444"
+            ></div>
+            <span class="color-name">Red</span>
+          </div>
+          <div
+            class="color-option-item"
+            data-color="gray"
+            onclick="selectColor(this, 'Gray')"
+          >
+            <div
+              class="color-swatch-large"
+              style="background-color: #6b7280"
+            ></div>
+            <span class="color-name">Gray</span>
+          </div>
+          <div
+            class="color-option-item"
+            data-color="tan"
+            onclick="selectColor(this, 'Tan')"
+          >
+            <div
+              class="color-swatch-large"
+              style="background-color: #f59e0b"
+            ></div>
+            <span class="color-name">Tan</span>
+          </div>
+          <div
+            class="color-option-item"
+            data-color="pink"
+            onclick="selectColor(this, 'Pink')"
+          >
+            <div
+              class="color-swatch-large"
+              style="background-color: #ec4899"
+            ></div>
+            <span class="color-name">Pink</span>
+          </div>
+        </div>
+      </div>
+    </div>
 
+    <div class="filter-section">
+      <button class="filter-header" onclick="toggleDropdown(this)">
+        <h3 class="filter-title">SIZE</h3>
+        <span class="dropdown-arrow">▼</span>
+      </button>
+      <div class="filter-content">
+        <div class="filter-options">
+          <div class="filter-option">
+            <input
+              type="checkbox"
+              id="size-5"
+              onchange="updateFilter('size', 'US 5', this.checked)"
+            />
+            <label for="size-5">US 5</label>
+          </div>
+          <div class="filter-option">
+            <input
+              type="checkbox"
+              id="size-6"
+              onchange="updateFilter('size', 'US 6', this.checked)"
+            />
+            <label for="size-6">US 6</label>
+          </div>
+          <div class="filter-option">
+            <input
+              type="checkbox"
+              id="size-7"
+              onchange="updateFilter('size', 'US 7', this.checked)"
+            />
+            <label for="size-7">US 7</label>
+          </div>
+          <div class="filter-option">
+            <input
+              type="checkbox"
+              id="size-8"
+              onchange="updateFilter('size', 'US 8', this.checked)"
+            />
+            <label for="size-8">US 8</label>
+          </div>
+          <div class="filter-option">
+            <input
+              type="checkbox"
+              id="size-9"
+              onchange="updateFilter('size', 'US 9', this.checked)"
+            />
+            <label for="size-9">US 9</label>
+          </div>
+          <div class="filter-option">
+            <input
+              type="checkbox"
+              id="size-10"
+              onchange="updateFilter('size', 'US 10', this.checked)"
+            />
+            <label for="size-10">US 10</label>
+          </div>
+          <div class="filter-option">
+            <input
+              type="checkbox"
+              id="size-11"
+              onchange="updateFilter('size', 'US 11', this.checked)"
+            />
+            <label for="size-11">US 11</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <button class="filter-header" onclick="toggleDropdown(this)">
+        <h3 class="filter-title">MATERIAL</h3>
+        <span class="dropdown-arrow">▼</span>
+      </button>
+      <div class="filter-content">
+        <div class="filter-options">
+          <div class="filter-option">
+            <input
+              type="checkbox"
+              id="mat-leather"
+              onchange="updateFilter('material', 'Leather', this.checked)"
+            />
+            <label for="mat-leather">Leather</label>
+          </div>
+          <div class="filter-option">
+            <input
+              type="checkbox"
+              id="mat-faux"
+              onchange="updateFilter('material', 'Faux Leather', this.checked)"
+            />
+            <label for="mat-faux">Faux Leather</label>
+          </div>
+          <div class="filter-option">
+            <input
+              type="checkbox"
+              id="mat-suede"
+              onchange="updateFilter('material', 'Suede', this.checked)"
+            />
+            <label for="mat-suede">Suede</label>
+          </div>
+          <div class="filter-option">
+            <input
+              type="checkbox"
+              id="mat-canvas"
+              onchange="updateFilter('material', 'Canvas', this.checked)"
+            />
+            <label for="mat-canvas">Canvas</label>
+          </div>
+          <div class="filter-option">
+            <input
+              type="checkbox"
+              id="mat-rubber"
+              onchange="updateFilter('material', 'Rubber', this.checked)"
+            />
+            <label for="mat-rubber">Rubber</label>
+          </div>
+          <div class="filter-option">
+            <input
+              type="checkbox"
+              id="mat-knit"
+              onchange="updateFilter('material', 'Knit', this.checked)"
+            />
+            <label for="mat-knit">Knit</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <button class="filter-header" onclick="toggleDropdown(this)">
+        <h3 class="filter-title">PRICE</h3>
+        <span class="dropdown-arrow">▼</span>
+      </button>
+      <div class="filter-content">
+        <div class="price-range">
+          <input
+            type="number"
+            class="price-input"
+            placeholder="Min ₱"
+            id="minPrice"
+          />
+          <span class="price-separator">-</span>
+          <input
+            type="number"
+            class="price-input"
+            placeholder="Max ₱"
+            id="maxPrice"
+          />
+        </div>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <button class="filter-header" onclick="toggleDropdown(this)">
+        <h3 class="filter-title">RATINGS</h3>
+        <span class="dropdown-arrow">▼</span>
+      </button>
+      <div class="filter-content">
+        <div class="filter-options">
+          <div class="filter-option">
+            <input
+              type="checkbox"
+              id="rating-5"
+              onchange="updateFilter('rating', '5 Stars', this.checked)"
+            />
+            <label for="rating-5">★★★★★ (5 Stars)</label>
+          </div>
+          <div class="filter-option">
+            <input
+              type="checkbox"
+              id="rating-4"
+              onchange="updateFilter('rating', '4+ Stars', this.checked)"
+            />
+            <label for="rating-4">★★★★☆ (4+ Stars)</label>
+          </div>
+          <div class="filter-option">
+            <input
+              type="checkbox"
+              id="rating-3"
+              onchange="updateFilter('rating', '3+ Stars', this.checked)"
+            />
+            <label for="rating-3">★★★☆☆ (3+ Stars)</label>
+          </div>
+          <div class="filter-option">
+            <input
+              type="checkbox"
+              id="rating-2"
+              onchange="updateFilter('rating', '2+ Stars', this.checked)"
+            />
+            <label for="rating-2">★★☆☆☆ (2+ Stars)</label>
+          </div>
+          <div class="filter-option">
+            <input
+              type="checkbox"
+              id="rating-1"
+              onchange="updateFilter('rating', '1+ Stars', this.checked)"
+            />
+            <label for="rating-1">★☆☆☆☆ (1+ Stars)</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shoes Categories with Nested Subcategories -->
+    <div class="filter-section">
+      <button class="filter-header" onclick="toggleDropdown(this)">
+        <h3 class="filter-title">HEELS</h3>
+        <span class="dropdown-arrow">▼</span>
+      </button>
+      <div class="filter-content">
+        <div class="filter-options">
+          <div style="margin-left: 0; margin-bottom: 12px">
+            <div
+              style="
+                font-size: 11px;
+                color: #888;
+                margin-bottom: 6px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+              "
+            >
+              Heel Height
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="heel-low"
+                onchange="updateFilter('heel_height', 'Low <2”', this.checked)"
+              /><label for="heel-low">Low &lt;2”</label>
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="heel-mid"
+                onchange="updateFilter('heel_height', 'Mid 2–3.5”', this.checked)"
+              /><label for="heel-mid">Mid 2–3.5”</label>
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="heel-high"
+                onchange="updateFilter('heel_height', 'High 3.5”+', this.checked)"
+              /><label for="heel-high">High 3.5”+</label>
+            </div>
+            <div
+              style="
+                font-size: 11px;
+                color: #888;
+                margin: 8px 0 6px 0;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+              "
+            >
+              Heel Type
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="heel-stiletto"
+                onchange="updateFilter('heel_type', 'Stiletto', this.checked)"
+              /><label for="heel-stiletto">Stiletto</label>
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="heel-block"
+                onchange="updateFilter('heel_type', 'Block', this.checked)"
+              /><label for="heel-block">Block</label>
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="heel-wedge"
+                onchange="updateFilter('heel_type', 'Wedge', this.checked)"
+              /><label for="heel-wedge">Wedge</label>
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="heel-kitten"
+                onchange="updateFilter('heel_type', 'Kitten', this.checked)"
+              /><label for="heel-kitten">Kitten</label>
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="heel-platform"
+                onchange="updateFilter('heel_type', 'Platform', this.checked)"
+              /><label for="heel-platform">Platform</label>
+            </div>
+            <div
+              style="
+                font-size: 11px;
+                color: #888;
+                margin: 8px 0 6px 0;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+              "
+            >
+              Toe Style
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="toe-pointed"
+                onchange="updateFilter('toe_style', 'Pointed', this.checked)"
+              /><label for="toe-pointed">Pointed</label>
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="toe-round"
+                onchange="updateFilter('toe_style', 'Round', this.checked)"
+              /><label for="toe-round">Round</label>
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="toe-square"
+                onchange="updateFilter('toe_style', 'Square', this.checked)"
+              /><label for="toe-square">Square</label>
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="toe-peep"
+                onchange="updateFilter('toe_style', 'Peep', this.checked)"
+              /><label for="toe-peep">Peep</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <button class="filter-header" onclick="toggleDropdown(this)">
+        <h3 class="filter-title">FLATS</h3>
+        <span class="dropdown-arrow">▼</span>
+      </button>
+      <div class="filter-content">
+        <div class="filter-options">
+          <div style="margin-left: 0; margin-bottom: 12px">
+            <div
+              style="
+                font-size: 11px;
+                color: #888;
+                margin-bottom: 6px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+              "
+            >
+              Style
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="flats-ballet"
+                onchange="updateFilter('flats_style', 'Ballet', this.checked)"
+              /><label for="flats-ballet">Ballet</label>
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="flats-loafers"
+                onchange="updateFilter('flats_style', 'Loafers', this.checked)"
+              /><label for="flats-loafers">Loafers</label>
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="flats-espadrilles"
+                onchange="updateFilter('flats_style', 'Espadrilles', this.checked)"
+              /><label for="flats-espadrilles">Espadrilles</label>
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="flats-sandals"
+                onchange="updateFilter('flats_style', 'Sandals', this.checked)"
+              /><label for="flats-sandals">Sandals</label>
+            </div>
+            <div
+              style="
+                font-size: 11px;
+                color: #888;
+                margin: 8px 0 6px 0;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+              "
+            >
+              Closure
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="flats-slipon"
+                onchange="updateFilter('flats_closure', 'Slip-On', this.checked)"
+              /><label for="flats-slipon">Slip-On</label>
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="flats-buckle"
+                onchange="updateFilter('flats_closure', 'Buckle', this.checked)"
+              /><label for="flats-buckle">Buckle</label>
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="flats-laces"
+                onchange="updateFilter('flats_closure', 'Laces', this.checked)"
+              /><label for="flats-laces">Laces</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <button class="filter-header" onclick="toggleDropdown(this)">
+        <h3 class="filter-title">SANDALS</h3>
+        <span class="dropdown-arrow">▼</span>
+      </button>
+      <div class="filter-content">
+        <div class="filter-options">
+          <div style="margin-left: 0; margin-bottom: 12px">
+            <div
+              style="
+                font-size: 11px;
+                color: #888;
+                margin-bottom: 6px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+              "
+            >
+              Straps
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="sandals-thin"
+                onchange="updateFilter('sandals_straps', 'Thin', this.checked)"
+              /><label for="sandals-thin">Thin</label>
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="sandals-thick"
+                onchange="updateFilter('sandals_straps', 'Thick', this.checked)"
+              /><label for="sandals-thick">Thick</label>
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="sandals-multi"
+                onchange="updateFilter('sandals_straps', 'Multi', this.checked)"
+              /><label for="sandals-multi">Multi</label>
+            </div>
+            <div
+              style="
+                font-size: 11px;
+                color: #888;
+                margin: 8px 0 6px 0;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+              "
+            >
+              Heel
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="sandals-flat"
+                onchange="updateFilter('sandals_heel', 'Flat', this.checked)"
+              /><label for="sandals-flat">Flat</label>
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="sandals-low"
+                onchange="updateFilter('sandals_heel', 'Low', this.checked)"
+              /><label for="sandals-low">Low</label>
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="sandals-wedge"
+                onchange="updateFilter('sandals_heel', 'Wedge', this.checked)"
+              /><label for="sandals-wedge">Wedge</label>
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="sandals-platform"
+                onchange="updateFilter('sandals_heel', 'Platform', this.checked)"
+              /><label for="sandals-platform">Platform</label>
+            </div>
+            <div
+              style="
+                font-size: 11px;
+                color: #888;
+                margin: 8px 0 6px 0;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+              "
+            >
+              Fastening
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="sandals-slipon"
+                onchange="updateFilter('sandals_fastening', 'Slip-On', this.checked)"
+              /><label for="sandals-slipon">Slip-On</label>
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="sandals-buckle"
+                onchange="updateFilter('sandals_fastening', 'Buckle', this.checked)"
+              /><label for="sandals-buckle">Buckle</label>
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="sandals-velcro"
+                onchange="updateFilter('sandals_fastening', 'Velcro', this.checked)"
+              /><label for="sandals-velcro">Velcro</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <button class="filter-header" onclick="toggleDropdown(this)">
+        <h3 class="filter-title">SNEAKERS</h3>
+        <span class="dropdown-arrow">▼</span>
+      </button>
+      <div class="filter-content">
+        <div class="filter-options">
+          <div style="margin-left: 0; margin-bottom: 12px">
+            <div
+              style="
+                font-size: 11px;
+                color: #888;
+                margin-bottom: 6px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+              "
+            >
+              Type
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="sneakers-casual"
+                onchange="updateFilter('sneakers_type', 'Casual', this.checked)"
+              /><label for="sneakers-casual">Casual</label>
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="sneakers-chunky"
+                onchange="updateFilter('sneakers_type', 'Chunky', this.checked)"
+              /><label for="sneakers-chunky">Chunky</label>
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="sneakers-slipon"
+                onchange="updateFilter('sneakers_type', 'Slip-on', this.checked)"
+              /><label for="sneakers-slipon">Slip-on</label>
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="sneakers-lifestyle"
+                onchange="updateFilter('sneakers_type', 'Lifestyle', this.checked)"
+              /><label for="sneakers-lifestyle">Lifestyle</label>
+            </div>
+            <div
+              style="
+                font-size: 11px;
+                color: #888;
+                margin: 8px 0 6px 0;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+              "
+            >
+              Sole Thickness
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="sneakers-flat"
+                onchange="updateFilter('sneakers_sole', 'Flat', this.checked)"
+              /><label for="sneakers-flat">Flat</label>
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="sneakers-platform"
+                onchange="updateFilter('sneakers_sole', 'Platform', this.checked)"
+              /><label for="sneakers-platform">Platform</label>
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="sneakers-chunkysole"
+                onchange="updateFilter('sneakers_sole', 'Chunky', this.checked)"
+              /><label for="sneakers-chunkysole">Chunky</label>
+            </div>
+            <div
+              style="
+                font-size: 11px;
+                color: #888;
+                margin: 8px 0 6px 0;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+              "
+            >
+              Material
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="sneakers-canvas"
+                onchange="updateFilter('sneakers_material', 'Canvas', this.checked)"
+              /><label for="sneakers-canvas">Canvas</label>
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="sneakers-knit"
+                onchange="updateFilter('sneakers_material', 'Knit', this.checked)"
+              /><label for="sneakers-knit">Knit</label>
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="sneakers-leather"
+                onchange="updateFilter('sneakers_material', 'Leather', this.checked)"
+              /><label for="sneakers-leather">Leather</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <button class="filter-header" onclick="toggleDropdown(this)">
+        <h3 class="filter-title">BOOTS</h3>
+        <span class="dropdown-arrow">▼</span>
+      </button>
+      <div class="filter-content">
+        <div class="filter-options">
+          <div style="margin-left: 0; margin-bottom: 12px">
+            <div
+              style="
+                font-size: 11px;
+                color: #888;
+                margin-bottom: 6px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+              "
+            >
+              Length
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="boots-ankle"
+                onchange="updateFilter('boots_length', 'Ankle', this.checked)"
+              /><label for="boots-ankle">Ankle</label>
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="boots-midcalf"
+                onchange="updateFilter('boots_length', 'Mid-calf', this.checked)"
+              /><label for="boots-midcalf">Mid-calf</label>
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="boots-knee"
+                onchange="updateFilter('boots_length', 'Knee', this.checked)"
+              /><label for="boots-knee">Knee</label>
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="boots-overtheknee"
+                onchange="updateFilter('boots_length', 'Over-the-knee', this.checked)"
+              /><label for="boots-overtheknee">Over-the-knee</label>
+            </div>
+            <div
+              style="
+                font-size: 11px;
+                color: #888;
+                margin: 8px 0 6px 0;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+              "
+            >
+              Heel
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="boots-flat"
+                onchange="updateFilter('boots_heel', 'Flat', this.checked)"
+              /><label for="boots-flat">Flat</label>
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="boots-block"
+                onchange="updateFilter('boots_heel', 'Block', this.checked)"
+              /><label for="boots-block">Block</label>
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="boots-stiletto"
+                onchange="updateFilter('boots_heel', 'Stiletto', this.checked)"
+              /><label for="boots-stiletto">Stiletto</label>
+            </div>
+            <div
+              style="
+                font-size: 11px;
+                color: #888;
+                margin: 8px 0 6px 0;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+              "
+            >
+              Closure
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="boots-zip"
+                onchange="updateFilter('boots_closure', 'Zip', this.checked)"
+              /><label for="boots-zip">Zip</label>
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="boots-laceup"
+                onchange="updateFilter('boots_closure', 'Lace-up', this.checked)"
+              /><label for="boots-laceup">Lace-up</label>
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="boots-pullon"
+                onchange="updateFilter('boots_closure', 'Pull-on', this.checked)"
+              /><label for="boots-pullon">Pull-on</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <button class="filter-header" onclick="toggleDropdown(this)">
+        <h3 class="filter-title">SLIPPERS & COMFORTWEAR</h3>
+        <span class="dropdown-arrow">▼</span>
+      </button>
+      <div class="filter-content">
+        <div class="filter-options">
+          <div style="margin-left: 0; margin-bottom: 12px">
+            <div
+              style="
+                font-size: 11px;
+                color: #888;
+                margin-bottom: 6px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+              "
+            >
+              Type
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="slippers-flipflops"
+                onchange="updateFilter('slippers_type', 'Flip-flops', this.checked)"
+              /><label for="slippers-flipflops">Flip-flops</label>
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="slippers-indoor"
+                onchange="updateFilter('slippers_type', 'Indoor', this.checked)"
+              /><label for="slippers-indoor">Indoor</label>
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="slippers-sandals"
+                onchange="updateFilter('slippers_type', 'Sandals', this.checked)"
+              /><label for="slippers-sandals">Sandals</label>
+            </div>
+            <div
+              style="
+                font-size: 11px;
+                color: #888;
+                margin: 8px 0 6px 0;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+              "
+            >
+              Cushioning
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="slippers-regular"
+                onchange="updateFilter('slippers_cushioning', 'Regular', this.checked)"
+              /><label for="slippers-regular">Regular</label>
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="slippers-extrasoft"
+                onchange="updateFilter('slippers_cushioning', 'Extra Soft', this.checked)"
+              /><label for="slippers-extrasoft">Extra Soft</label>
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="slippers-ortho"
+                onchange="updateFilter('slippers_cushioning', 'Orthopedic', this.checked)"
+              /><label for="slippers-ortho">Orthopedic</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <button class="filter-header" onclick="toggleDropdown(this)">
+        <h3 class="filter-title">OCCASION/DRESS SHOES</h3>
+        <span class="dropdown-arrow">▼</span>
+      </button>
+      <div class="filter-content">
+        <div class="filter-options">
+          <div style="margin-left: 0; margin-bottom: 12px">
+            <div
+              style="
+                font-size: 11px;
+                color: #888;
+                margin-bottom: 6px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+              "
+            >
+              Occasion
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="occasion-formal"
+                onchange="updateFilter('occasion_type', 'Formal', this.checked)"
+              /><label for="occasion-formal">Formal</label>
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="occasion-party"
+                onchange="updateFilter('occasion_type', 'Party', this.checked)"
+              /><label for="occasion-party">Party</label>
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="occasion-wedding"
+                onchange="updateFilter('occasion_type', 'Wedding', this.checked)"
+              /><label for="occasion-wedding">Wedding</label>
+            </div>
+            <div
+              style="
+                font-size: 11px;
+                color: #888;
+                margin: 8px 0 6px 0;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+              "
+            >
+              Material Finish
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="occasion-glossy"
+                onchange="updateFilter('occasion_finish', 'Glossy', this.checked)"
+              /><label for="occasion-glossy">Glossy</label>
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="occasion-matte"
+                onchange="updateFilter('occasion_finish', 'Matte', this.checked)"
+              /><label for="occasion-matte">Matte</label>
+            </div>
+            <div class="filter-option">
+              <input
+                type="checkbox"
+                id="occasion-embellished"
+                onchange="updateFilter('occasion_finish', 'Embellished', this.checked)"
+              /><label for="occasion-embellished">Embellished</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!--Removed the generic heel height filter as it's now integrated into the category sub-sections-->
+  </div>
+
+  <div class="content-area">
+    <div class="content-header">
+      <div class="content-info">
+        <div class="product-count">
+          Showing <span id="productCount">12</span> of
+          <span id="totalProducts">12</span> products
+          <span id="viewMore" class="view-more" style="display: none"
+            >• View More</span
+          >
+        </div>
+      </div>
+      <div class="sort-wrapper">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="16"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          stroke-width="2"
+          class="sort-icon"
+        >
+          <path d="M3 6h18M7 12h10M11 18h2" />
+        </svg>
+        <div class="sort-dropdown">
+          <select id="sortBy">
+            <option value="sort-by">Sort By</option>
+            <option value="price-low">Price: Low to High</option>
+            <option value="price-high">Price: High to Low</option>
+            <option value="newest">Newest First</option>
+            <option value="popular">Most Popular</option>
+          </select>
+        </div>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="12"
+          height="12"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          stroke-width="2"
+          class="dropdown-chevron"
+        >
+          <polyline points="6,9 12,15 18,9" />
+        </svg>
+      </div>
+    </div>
+
+    <div class="filter-tags" id="selectedFilters">
+      <!-- Selected filters will appear here -->
+      <button
+        class="reset-filters-btn"
+        onclick="resetAllFilters()"
+        style="display: none"
+        id="resetFiltersBtn"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="14"
+          height="14"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path
+            d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"
+          />
+        </svg>
+        Reset Filters
+      </button>
+    </div>
+
+    <div class="product-grid" id="productGrid">
+      {% for _ in range(24) %} {% include 'main/components/_product_card.html'
+      %} {% endfor %}
+    </div>
+
+    <!-- Pagination Controls -->
+      <div class="pagination-container">
+        <div class="pagination-info">
+          <span
+            >Showing <span id="currentRange">1-12</span> of
+            <span id="totalItems">24</span> items</span
+          >
+        </div>
+        <div class="pagination-controls">
+          <button
+            class="pagination-btn prev-btn"
+            id="prevBtn"
+            onclick="goToPage(currentPage - 1)"
+            disabled
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <polyline points="15,18 9,12 15,6"></polyline>
+            </svg>
+            Previous
+          </button>
+          <div class="page-numbers" id="pageNumbers">
+            <!-- Page numbers will be generated by JavaScript -->
+          </div>
+          <button
+            class="pagination-btn next-btn"
+            id="nextBtn"
+            onclick="goToPage(currentPage + 1)"
+          >
+            Next
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <polyline points="9,18 15,12 9,6"></polyline>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+</div>
+
+<!-- Connect filters shoes JS -->
+<script src="{{ url_for('static', filename='js/_filters_shoes.js') }}"></script>
+<script src="{{ url_for('static', filename='js/_product_card.js') }}"></script>
+
+<script>
+  // Initialize product cards after DOM is loaded
+  document.addEventListener("DOMContentLoaded", function () {
+    // Load wishlist state for all products
+    const wishlist = JSON.parse(localStorage.getItem("wishlist") || "[]");
+    const wishlistBtns = document.querySelectorAll(".wishlist-btn");
+
+    wishlistBtns.forEach((btn) => {
+      const productCard = btn.closest(".product-card");
+      const productId = btn.getAttribute("onclick").match(/'([^']+)'/)[1];
+      if (wishlist.includes(productId)) {
+        btn.classList.add("active");
+      }
+    });
+  });
+</script>

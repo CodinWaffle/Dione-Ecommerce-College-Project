@@ -744,6 +744,52 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
   });
+
+  // Main Category Navigation - Direct to base_buyer with category selection
+  const mainCategories = ["clothing", "shoes", "accessories"];
+
+  mainCategories.forEach(function (category) {
+    // Handle main nav item clicks (when clicking the category name itself)
+    const navItems = document.querySelectorAll(".nav-item");
+    navItems.forEach(function (item) {
+      const navLink = item.querySelector(".nav-link-desktop");
+      if (navLink && navLink.textContent.toLowerCase().includes(category)) {
+        navLink.addEventListener("click", function (e) {
+          // Only navigate if it's not a link with an href
+          if (
+            !navLink.getAttribute("href") ||
+            navLink.getAttribute("href") === "#"
+          ) {
+            e.preventDefault();
+            navigateToCategory(category);
+          }
+        });
+      }
+    });
+
+    // Handle "SHOP ALL" links for each category
+    const shopAllLink = document.querySelector(
+      `.shop-all-link a[href*="/shop/all/${category}"], 
+       .shop-all-link a:has-text("SHOP ALL ${category.toUpperCase()}")`
+    );
+
+    // Since :has-text() isn't standard, iterate through shop-all links
+    const shopAllLinks = document.querySelectorAll(".shop-all-link a");
+    shopAllLinks.forEach(function (link) {
+      const linkText = link.textContent.trim().toUpperCase();
+      if (linkText.includes(`SHOP ALL ${category.toUpperCase()}`)) {
+        link.addEventListener("click", function (e) {
+          e.preventDefault();
+          navigateToCategory(category);
+        });
+      }
+    });
+  });
+
+  // Function to navigate to category page
+  function navigateToCategory(category) {
+    window.location.href = `/shop/all/${category}`;
+  }
 });
 // Profile dropdown logic
 const profileBtn = document.getElementById("profileBtn");

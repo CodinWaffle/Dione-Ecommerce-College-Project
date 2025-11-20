@@ -125,70 +125,70 @@ def shop_all_clothing():
     """Shop all clothing items"""
     products = []  # TODO: Fetch from database
     nav_items = get_nav_items()
-    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='clothing')
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='clothing', selected_category='clothing')
 
 @main.route('/shop/clothing/tops')
 def shop_clothing_tops():
     """Shop clothing tops"""
     products = []
     nav_items = get_nav_items()
-    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='clothing', subcategory='tops')
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='clothing', subcategory='tops', selected_category='clothing')
 
 @main.route('/shop/clothing/bottoms')
 def shop_clothing_bottoms():
     """Shop clothing bottoms"""
     products = []
     nav_items = get_nav_items()
-    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='clothing', subcategory='bottoms')
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='clothing', subcategory='bottoms', selected_category='clothing')
 
 @main.route('/shop/clothing/dresses')
 def shop_clothing_dresses():
     """Shop dresses"""
     products = []
     nav_items = get_nav_items()
-    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='clothing', subcategory='dresses')
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='clothing', subcategory='dresses', selected_category='clothing')
 
 @main.route('/shop/clothing/outwear')
 def shop_clothing_outwear():
     """Shop outerwear"""
     products = []
     nav_items = get_nav_items()
-    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='clothing', subcategory='outwear')
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='clothing', subcategory='outwear', selected_category='clothing')
 
 @main.route('/shop/clothing/activewear')
 def shop_clothing_activewear():
     """Shop activewear"""
     products = []
     nav_items = get_nav_items()
-    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='clothing', subcategory='activewear')
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='clothing', subcategory='activewear', selected_category='clothing')
 
 @main.route('/shop/clothing/sleepwear')
 def shop_clothing_sleepwear():
     """Shop sleepwear"""
     products = []
     nav_items = get_nav_items()
-    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='clothing', subcategory='sleepwear')
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='clothing', subcategory='sleepwear', selected_category='clothing')
 
 @main.route('/shop/clothing/undergarments')
 def shop_clothing_undergarments():
     """Shop undergarments"""
     products = []
     nav_items = get_nav_items()
-    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='clothing', subcategory='undergarments')
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='clothing', subcategory='undergarments', selected_category='clothing')
 
 @main.route('/shop/clothing/swimwear')
 def shop_clothing_swimwear():
     """Shop swimwear"""
     products = []
     nav_items = get_nav_items()
-    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='clothing', subcategory='swimwear')
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='clothing', subcategory='swimwear', selected_category='clothing')
 
 @main.route('/shop/clothing/occasionwear')
 def shop_clothing_occasionwear():
     """Shop occasionwear"""
     products = []
     nav_items = get_nav_items()
-    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='clothing', subcategory='occasionwear')
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='clothing', subcategory='occasionwear', selected_category='clothing')
 
 
 # ============================================
@@ -200,56 +200,56 @@ def shop_all_shoes():
     """Shop all shoes"""
     products = []
     nav_items = get_nav_items()
-    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='shoes')
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='shoes', selected_category='shoes')
 
 @main.route('/shop/shoes/heels')
 def shop_shoes_heels():
     """Shop heels"""
     products = []
     nav_items = get_nav_items()
-    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='shoes', subcategory='heels')
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='shoes', subcategory='heels', selected_category='shoes')
 
 @main.route('/shop/shoes/flats')
 def shop_shoes_flats():
     """Shop flats"""
     products = []
     nav_items = get_nav_items()
-    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='shoes', subcategory='flats')
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='shoes', subcategory='flats', selected_category='shoes')
 
 @main.route('/shop/shoes/sandals')
 def shop_shoes_sandals():
     """Shop sandals"""
     products = []
     nav_items = get_nav_items()
-    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='shoes', subcategory='sandals')
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='shoes', subcategory='sandals', selected_category='shoes')
 
 @main.route('/shop/shoes/sneakers')
 def shop_shoes_sneakers():
     """Shop sneakers"""
     products = []
     nav_items = get_nav_items()
-    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='shoes', subcategory='sneakers')
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='shoes', subcategory='sneakers', selected_category='shoes')
 
 @main.route('/shop/shoes/boots')
 def shop_shoes_boots():
     """Shop boots"""
     products = []
     nav_items = get_nav_items()
-    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='shoes', subcategory='boots')
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='shoes', subcategory='boots', selected_category='shoes')
 
 @main.route('/shop/shoes/slippers')
 def shop_shoes_slippers():
     """Shop slippers & comfort wear"""
     products = []
     nav_items = get_nav_items()
-    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='shoes', subcategory='slippers')
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='shoes', subcategory='slippers', selected_category='shoes')
 
 @main.route('/shop/shoes/occasion-shoes')
 def shop_shoes_occasion_shoes():
     """Shop occasion/dress shoes"""
     products = []
     nav_items = get_nav_items()
-    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='shoes', subcategory='occasion-shoes')
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='shoes', subcategory='occasion-shoes', selected_category='shoes')
 
 
 # ============================================
@@ -261,77 +261,77 @@ def shop_all_accessories():
     """Shop all accessories"""
     products = []
     nav_items = get_nav_items()
-    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='accessories')
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='accessories', selected_category='accessories')
 
 @main.route('/shop/accessories/bags')
 def shop_accessories_bags():
     """Shop bags"""
     products = []
     nav_items = get_nav_items()
-    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='accessories', subcategory='bags')
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='accessories', subcategory='bags', selected_category='accessories')
 
 @main.route('/shop/accessories/jewelry')
 def shop_accessories_jewelry():
     """Shop jewelry"""
     products = []
     nav_items = get_nav_items()
-    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='accessories', subcategory='jewelry')
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='accessories', subcategory='jewelry', selected_category='accessories')
 
 @main.route('/shop/accessories/hair-accessories')
 def shop_accessories_hair_accessories():
     """Shop hair accessories"""
     products = []
     nav_items = get_nav_items()
-    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='accessories', subcategory='hair-accessories')
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='accessories', subcategory='hair-accessories', selected_category='accessories')
 
 @main.route('/shop/accessories/belts')
 def shop_accessories_belts():
     """Shop belts"""
     products = []
     nav_items = get_nav_items()
-    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='accessories', subcategory='belts')
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='accessories', subcategory='belts', selected_category='accessories')
 
 @main.route('/shop/accessories/scarves-wraps')
 def shop_accessories_scarves_wraps():
     """Shop scarves & wraps"""
     products = []
     nav_items = get_nav_items()
-    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='accessories', subcategory='scarves-wraps')
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='accessories', subcategory='scarves-wraps', selected_category='accessories')
 
 @main.route('/shop/accessories/hats-caps')
 def shop_accessories_hats_caps():
     """Shop hats & caps"""
     products = []
     nav_items = get_nav_items()
-    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='accessories', subcategory='hats-caps')
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='accessories', subcategory='hats-caps', selected_category='accessories')
 
 @main.route('/shop/accessories/eyewear')
 def shop_accessories_eyewear():
     """Shop eyewear"""
     products = []
     nav_items = get_nav_items()
-    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='accessories', subcategory='eyewear')
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='accessories', subcategory='eyewear', selected_category='accessories')
 
 @main.route('/shop/accessories/watches')
 def shop_accessories_watches():
     """Shop watches"""
     products = []
     nav_items = get_nav_items()
-    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='accessories', subcategory='watches')
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='accessories', subcategory='watches', selected_category='accessories')
 
 @main.route('/shop/accessories/gloves')
 def shop_accessories_gloves():
     """Shop gloves"""
     products = []
     nav_items = get_nav_items()
-    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='accessories', subcategory='gloves')
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='accessories', subcategory='gloves', selected_category='accessories')
 
 @main.route('/shop/accessories/others')
 def shop_accessories_others():
     """Shop other accessories"""
     products = []
     nav_items = get_nav_items()
-    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='accessories', subcategory='others')
+    return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='accessories', subcategory='others', selected_category='accessories')
 
 
 # Helper function to get navigation items

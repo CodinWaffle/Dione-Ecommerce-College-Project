@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      /* Content Area Container */
+      .content-area {
+        flex: 1;
+        background: white;
+        padding: 24px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      }
+
+      /* Content Header - Product Count & Sort */
+      .content-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #f0f0f0;
+      }
+
+      .content-info {
+        display: flex;
+        <style>
+        font-weight: 400;
+        color: #666;
+        font-family: "Montserrat", sans-serif;
+      }
+
+      .product-count #productCount {
+        background: linear-gradient(135deg, #8b5cf6, #a855f7, #c084fc);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 700;
+      }
+
+      .view-more {
+        font-size: 14px;
+        color: #666;
+      }
+
+      /* Sort Dropdown */
+      .sort-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+        background: white;
+        min-width: 180px;
+        cursor: pointer;
+        transition: border-color 0.2s ease;
+      }
+
+      .sort-wrapper:hover {
+        border-color: #ccc;
+      }
+
+      .sort-wrapper:focus-within {
+        border-color: #000;
+      }
+
+      .sort-icon {
+        color: #666;
+        flex-shrink: 0;
+      }
+
+      .sort-dropdown select {
+        border: none;
+        background: transparent;
+        font-size: 14px;
+        color: #333;
+        cursor: pointer;
+        flex: 1;
+        outline: none;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+      }
+
+      .dropdown-chevron {
+        color: #666;
+        flex-shrink: 0;
+        pointer-events: none;
+      }
+
+      /* Filter Tags */
+      .filter-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 24px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #f0f0f0;
+      }
+
+      .filter-tags:empty {
+        display: none;
+      }
+
+      .filter-tags .reset-filters-btn {
+        background: #ff4444;
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-left: auto;
+        font-family: "Montserrat", sans-serif;
+      }
+
+      .filter-tags .reset-filters-btn:hover {
+        background: #ff3333;
+        transform: translateY(-1px);
+      }
+
+      .filter-tag {
+        background: #8b5cf6;
+        color: #fff;
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .filter-tag .remove {
+        cursor: pointer;
+        font-weight: bold;
+        color: #e0e0e0;
+      }
+
+      .filter-tag .remove:hover {
+        color: #fff;
+      }
+
+      /* Product Grid */
+      .product-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        margin-bottom: 40px;
+      }
+
+      /* Pagination Styles */
+      .pagination-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 32px;
+        padding-top: 24px;
+        border-top: 1px solid #f0f0f0;
+      }
+
+      .pagination-info {
+        font-size: 14px;
+        color: #666;
+      }
+
+      .pagination-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .pagination-btn {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        border: 1px solid #e0e0e0;
+        background: white;
+        color: #333;
+        border-radius: 6px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .pagination-btn:hover:not(:disabled) {
+        border-color: #000;
+        background: #f9f9f9;
+      }
+
+      .pagination-btn:disabled {
+        color: #ccc;
+        cursor: not-allowed;
+        border-color: #f0f0f0;
+      }
+
+      .pagination-btn:disabled svg {
+        color: #ccc;
+      }
+
+      .pagination-btn.next-btn {
+        background: linear-gradient(135deg, #8b5cf6, #a855f7);
+        color: white;
+        border-color: #8b5cf6;
+      }
+
+      .pagination-btn.next-btn:hover:not(:disabled) {
+        background: linear-gradient(135deg, #7c3aed, #9333ea);
+        border-color: #7c3aed;
+      }
+
+      .pagination-btn.next-btn:disabled {
+        background: #e5e7eb;
+        color: #9ca3af;
+        border-color: #e5e7eb;
+      }
+
+      .page-numbers {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin: 0 16px;
+      }
+
+      .page-btn {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #e0e0e0;
+        background: white;
+        color: #333;
+        border-radius: 6px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .page-btn:hover {
+        border-color: #8b5cf6;
+        background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+        color: #8b5cf6;
+      }
+
+      .page-btn.active {
+        background: linear-gradient(135deg, #8b5cf6, #a855f7);
+        color: white;
+        border-color: #8b5cf6;
+      }
+
+      .page-ellipsis {
+        padding: 0 8px;
+        color: #666;
+        font-size: 14px;
+      }
+
+      /* Responsive Design */
+      @media (max-width: 900px) {
+        .product-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 18px;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .content-header {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 12px;
+        }
+
+        .product-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="content-area">
+      <!-- Content Header with Product Count & Sort -->
+      <div class="content-header">
+        <div class="content-info">
+          <div class="product-count">
+            Showing <span id="productCount">12</span> of
+            <span id="totalProducts">12</span> products
+            <span id="viewMore" class="view-more" style="display: none"
+              >• View More</span
+            >
+          </div>
+        </div>
+        <div class="sort-wrapper">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="2"
+            class="sort-icon"
+          >
+            <path d="M3 6h18M7 12h10M11 18h2" />
+          </svg>
+
+            <div class="content-area">
+          <div class="sort-dropdown">
+            <select id="sortBy">
+              <option value="sort-by">Sort By</option>
+              <option value="price-low">Price: Low to High</option>
+              <option value="price-high">Price: High to Low</option>
+              <option value="newest">Newest First</option>
+              <option value="popular">Most Popular</option>
+            </select>
+          </div>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="12"
+            height="12"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="2"
+            class="dropdown-chevron"
+          >
+            <polyline points="6,9 12,15 18,9" />
+          </svg>
+        </div>
+      </div>
+
+      <!-- Active Filter Tags -->
+      <div class="filter-tags" id="selectedFilters">
+        <!-- Selected filters will appear here -->
+        <button
+          class="reset-filters-btn"
+          onclick="resetAllFilters()"
+          style="display: none"
+          id="resetFiltersBtn"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="14"
+            height="14"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"
+            />
+          </svg>
+          Reset Filters
+        </button>
+      </div>
+
+      <!-- Product Grid -->
+      <div class="product-grid" id="productGrid">
+        {% include 'main/components/_product_card.html' %}
+      </div>
+
+      <!-- Pagination Controls -->
+      <div class="pagination-container">
+        <div class="pagination-info">
+          <span
+            >Showing <span id="currentRange">1-12</span> of
+            <span id="totalItems">24</span> items</span
+          >
+        </div>
+        <div class="pagination-controls">
+          <button
+            class="pagination-btn prev-btn"
+            id="prevBtn"
+            onclick="goToPage(currentPage - 1)"
+            disabled
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <polyline points="15,18 9,12 15,6"></polyline>
+            </svg>
+            Previous
+          </button>
+          <div class="page-numbers" id="pageNumbers">
+            <!-- Page numbers will be generated by JavaScript -->
+          </div>
+          <button
+            class="pagination-btn next-btn"
+            id="nextBtn"
+            onclick="goToPage(currentPage + 1)"
+          >
+            Next
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <polyline points="9,18 15,12 9,6"></polyline>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    <script>
+      // Content Area Variables
+      let totalProducts = 24; // Total products available
+      let displayedProducts = 12; // Products shown per page
+      let currentPage = 1;
+      let totalPages = Math.ceil(totalProducts / displayedProducts);
+
+      // Update Product Count
+      function updateProductCount() {
+        const productCountElement = document.getElementById("productCount");
+        const viewMoreElement = document.getElementById("viewMore");
+        const totalProductsElement = document.getElementById("totalProducts");
+
+        // Calculate filtered products based on active filters
+        let filteredCount = totalProducts;
+        if (Object.keys(activeFilters).length > 0) {
+          filteredCount = Math.floor(totalProducts * 0.6); // Mock filtered result
+        }
+
+        // Update total pages based on filtered results
+        totalPages = Math.ceil(filteredCount / displayedProducts);
+
+        productCountElement.textContent = Math.min(
+          displayedProducts,
+        totalProductsElement.textContent = filteredCount;
+
+        // Show/hide pagination container
+        const paginationContainer = document.querySelector(
+          ".pagination-container"
+        );
+        if (filteredCount > displayedProducts) {
+          paginationContainer.style.display = "flex";
+          if (viewMoreElement) viewMoreElement.style.display = "block";
+        } else {
+          paginationContainer.style.display = "none";
+          if (viewMoreElement) viewMoreElement.style.display = "none";
+        }
+
+        updatePagination();
+      }
+
+      // Update Pagination Display
+      function updatePagination() {
+        const currentRangeElement = document.getElementById("currentRange");
+        const totalItemsElement = document.getElementById("totalItems");
+        const prevBtn = document.getElementById("prevBtn");
+        const nextBtn = document.getElementById("nextBtn");
+        const pageNumbers = document.getElementById("pageNumbers");
+
+        // Calculate filtered products
+        let filteredCount = totalProducts;
+        if (Object.keys(activeFilters).length > 0) {
+          filteredCount = Math.floor(totalProducts * 0.6);
+        }
+
+        // Update range display
+        const startItem = (currentPage - 1) * displayedProducts + 1;
+        const endItem = Math.min(
+          currentPage * displayedProducts,
+          filteredCount
+        );
+        currentRangeElement.textContent = `${startItem}-${endItem}`;
+        totalItemsElement.textContent = filteredCount;
+
+        // Update prev/next buttons
+        prevBtn.disabled = currentPage === 1;
+        nextBtn.disabled = currentPage === totalPages;
+
+        // Generate page numbers
+        generatePageNumbers(pageNumbers);
+      }
+
+      // Generate Page Number Buttons
+      function generatePageNumbers(container) {
+        container.innerHTML = "";
+
+        const maxVisiblePages = 5;
+        let startPage = Math.max(
+          1,
+          currentPage - Math.floor(maxVisiblePages / 2)
+        );
+        let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+        // Adjust start if we're near the end
+        if (endPage - startPage + 1 < maxVisiblePages) {
+          startPage = Math.max(1, endPage - maxVisiblePages + 1);
+        }
+
+        // Add first page if not visible
+        if (startPage > 1) {
+          const firstBtn = createPageButton(1);
+          container.appendChild(firstBtn);
+
+          if (startPage > 2) {
+            const ellipsis = document.createElement("span");
+            ellipsis.className = "page-ellipsis";
+            ellipsis.textContent = "...";
+            container.appendChild(ellipsis);
+          }
+        }
+
+        // Add visible page numbers
+        for (let i = startPage; i <= endPage; i++) {
+          const pageBtn = createPageButton(i);
+          container.appendChild(pageBtn);
+        }
+
+        // Add last page if not visible
+        if (endPage < totalPages) {
+          if (endPage < totalPages - 1) {
+            const ellipsis = document.createElement("span");
+            ellipsis.className = "page-ellipsis";
+            ellipsis.textContent = "...";
+            container.appendChild(ellipsis);
+          }
+
+          const lastBtn = createPageButton(totalPages);
+          container.appendChild(lastBtn);
+        }
+      }
+
+      // Create Individual Page Button
+      function createPageButton(pageNum) {
+        const button = document.createElement("button");
+        button.className = `page-btn ${
+          pageNum === currentPage ? "active" : ""
+        }`;
+        button.textContent = pageNum;
+        button.dataset.page = pageNum;
+        button.addEventListener("click", () => goToPage(pageNum));
+        return button;
+      }
+
+      // Navigate to Specific Page
+      function goToPage(page) {
+        if (page < 1 || page > totalPages) return;
+
+        currentPage = page;
+        updatePagination();
+
+        // Scroll to top of content area
+        document.querySelector(".content-area").scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }
+
+      // Sort Products
+      function sortProducts(sortBy) {
+        const productGrid = document.getElementById("productGrid");
+        const products = Array.from(productGrid.children);
+
+        products.sort((a, b) => {
+          const priceA = parseFloat(
+            a.querySelector(".product-price").textContent.replace("$", "")
+          );
+          const priceB = parseFloat(
+            b.querySelector(".product-price").textContent.replace("$", "")
+          );
+          const nameA = a.querySelector(".product-name").textContent;
+          const nameB = b.querySelector(".product-name").textContent;
+
+          switch (sortBy) {
+            case "price-low":
+              return priceA - priceB;
+            case "price-high":
+              return priceB - priceA;
+            case "name-az":
+              return nameA.localeCompare(nameB);
+            case "name-za":
+              return nameB.localeCompare(nameA);
+            case "rating":
+              return Math.random() - 0.5;
+            case "newest":
+              return Math.random() - 0.5;
+            default:
+              return 0;
+          }
+        });
+
+        // Clear and re-append sorted products
+        productGrid.innerHTML = "";
+        products.forEach((product) => productGrid.appendChild(product));
+      }
+
+      // Initialize Page
+      document.addEventListener("DOMContentLoaded", function () {
+        updateProductCount();
+
+        // Add sort functionality
+        const sortSelect = document.getElementById("sortBy");
+        if (sortSelect) {
+          sortSelect.addEventListener("change", function () {
+            if (this.value !== "default") {
+              sortProducts(this.value);
+            }
+          });
+        }
+
+        // Add pagination event listeners
+        const prevBtn = document.getElementById("prevBtn");
+        const nextBtn = document.getElementById("nextBtn");
+
+        if (prevBtn) {
+          prevBtn.addEventListener("click", () => {
+            goToPage(currentPage - 1);
+          });
+        }
+
+        if (nextBtn) {
+          nextBtn.addEventListener("click", () => {
+            goToPage(currentPage + 1);
+          });
+        }
+      });
+    </script>
+  </body>
+</html>
