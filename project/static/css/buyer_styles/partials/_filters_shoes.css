@@ -159,12 +159,12 @@ body {
 .filter-content {
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.12s ease;
+  transition: max-height 0.3s ease;
   background: white;
 }
 
 .filter-section.active .filter-content {
-  max-height: 600px;
+  max-height: 1200px;
 }
 
 .filter-options {

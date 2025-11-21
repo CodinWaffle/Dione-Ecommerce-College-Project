@@ -314,6 +314,18 @@ body {
   stroke-width: 2;
 }
 
+/* Ensure header icons are clickable and sit above page overlays */
+.header-actions .icon-btn {
+  pointer-events: auto;
+  z-index: 1200;
+}
+
+.header-actions .wishlist-btn {
+  position: relative;
+  z-index: 1201;
+  pointer-events: auto;
+}
+
 .cart-count {
   position: absolute;
   top: 2px;
