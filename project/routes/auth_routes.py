@@ -32,6 +32,11 @@ def login_post():
         flash(error, 'danger')
         return redirect(url_for('auth.login'))
 
+    role = (getattr(user, 'role', '') or '').lower()
+    if role == 'admin':
+        flash('Admin accounts must sign in on the Admin Login page.', 'warning')
+        return render_template('auth/login.html'), 403
+
     # Block suspended users
     if getattr(user, 'is_suspended', False):
         flash('Your account is suspended. Please contact support.', 'danger')
