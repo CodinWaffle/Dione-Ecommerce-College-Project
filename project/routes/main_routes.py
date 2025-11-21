@@ -78,6 +78,120 @@ def pending():
         return redirect(url_for('main.rider_dashboard'))
     return redirect(url_for('main.index'))
 
+@main.route('/cart')
+def cart():
+    """Display shopping cart"""
+    nav_items = get_nav_items()
+    cart_items = []  # TODO: Fetch cart items from session/database
+    
+    # Calculate summary values
+    subtotal = 0
+    discount = 0
+    delivery_fee = 0
+    total = 0
+    
+    if cart_items:
+        subtotal = sum(float(item.get('price', 0)) * int(item.get('quantity', 1)) for item in cart_items)
+        discount = subtotal * 0.2  # 20% discount
+        delivery_fee = 15
+        total = subtotal - discount + delivery_fee
+    
+    return render_template(
+        'main/cart.html',
+        nav_items=nav_items,
+        cart_items=cart_items,
+        subtotal=subtotal,
+        discount=discount,
+        delivery_fee=delivery_fee,
+        total=total
+    )
+
+@main.route('/checkout')
+@login_required
+def buyer_checkout():
+    """Display checkout page"""
+    nav_items = get_nav_items()
+    cart_items = []  # TODO: Fetch cart items from session/database
+    
+    # Calculate summary values
+    subtotal = 0
+    discount = 0
+    delivery_fee = 0
+    total = 0
+    
+    if cart_items:
+        subtotal = sum(float(item.get('price', 0)) * int(item.get('quantity', 1)) for item in cart_items)
+        discount = subtotal * 0.2  # 20% discount
+        delivery_fee = 15
+        total = subtotal - discount + delivery_fee
+    
+    return render_template(
+        'main/checkout.html',
+        nav_items=nav_items,
+        cart_items=cart_items,
+        subtotal=subtotal,
+        discount=discount,
+        delivery_fee=delivery_fee,
+        total=total
+    )
+
+@main.route('/payment')
+@login_required
+def payment():
+    """Display payment page"""
+    nav_items = get_nav_items()
+    cart_items = []  # TODO: Fetch cart items from session/database
+    
+    # Calculate summary values
+    subtotal = 0
+    discount = 0
+    delivery_fee = 0
+    total = 0
+    
+    if cart_items:
+        subtotal = sum(float(item.get('price', 0)) * int(item.get('quantity', 1)) for item in cart_items)
+        discount = subtotal * 0.2  # 20% discount
+        delivery_fee = 15
+        total = subtotal - discount + delivery_fee
+    
+    return render_template(
+        'main/payment.html',
+        nav_items=nav_items,
+        user=current_user,
+        cart_items=cart_items,
+        subtotal=subtotal,
+        discount=discount,
+        delivery_fee=delivery_fee,
+        total=total
+    )
+
+@main.route('/product/<product_id>')
+def product_detail(product_id):
+    """Display product detail page"""
+    nav_items = get_nav_items()
+    product = {}  # TODO: Fetch product from database by ID
+    
+    # Stock data structure: color -> sizes -> quantity
+    stock_data = {
+        'Black': {'XS': 5, 'S': 8, 'M': 10, 'L': 7, 'XL': 4},
+        'White': {'XS': 3, 'S': 6, 'M': 9, 'L': 5, 'XL': 2},
+        'Navy': {'XS': 4, 'S': 7, 'M': 8, 'L': 6, 'XL': 3},
+        'Yellow': {'XS': 2, 'S': 5, 'M': 6, 'L': 4, 'XL': 1}
+    }
+    
+    # Product pricing and cart popup data
+    product_price = 99.99  # TODO: Fetch actual price from database
+    selected_quantity = 1
+    
+    return render_template(
+        'main/product_detail.html',
+        nav_items=nav_items,
+        product=product,
+        stock_data=stock_data,
+        product_price=product_price,
+        selected_quantity=selected_quantity
+    )
+
 
 
 @main.route('/health')

@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Cart</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/buyer_styles/cart.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/buyer_styles/partials/_header_buyer.css') }}"
+    />
+  </head>
+  <body>
+    <!-- Include Header -->
+    {% include 'main/partials/_header_buyer.html' %}
+    <!-- Main Content -->
+    <div class="main-container">
+      <!-- Cart Section -->
+      <div class="cart-section">
+        <div class="cart-header">
+          <h1 class="cart-title">My Bag</h1>
+          <span class="item-count"
+            ><span class="item-number"
+              >{{ cart_items|length if cart_items else 0 }}</span
+            >
+            <span class="item-text"
+              >ITEM{{ 's' if cart_items and cart_items|length != 1 else ''
+              }}</span
+            ></span
+          >
+        </div>
+
+        <div class="shipping-notice">
+          <span class="shipping-icon">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <rect x="1" y="3" width="15" height="13"></rect>
+              <polygon points="16,3 22,9 22,16 16,16"></polygon>
+              <circle cx="5.5" cy="18.5" r="2.5"></circle>
+              <circle cx="18.5" cy="18.5" r="2.5"></circle>
+            </svg>
+          </span>
+          <span class="shipping-text"
+            >These items are going fast. Check out now to make them yours.</span
+          >
+        </div>
+
+        <!-- Product Cards -->
+        {% if cart_items %} {% for item in cart_items %}
+        <div class="product-card">
+          <img
+            src="{{ item.image_url if item.image_url else url_for('static', filename='images/product_1.jpg') }}"
+            alt="{{ item.name }}"
+            class="product-image"
+          />
+          <div class="product-details">
+            <a href="#" class="store-name" onclick="return false;"
+              >{{ item.store_name|default('SHOP.CO Store') }}</a
+            >
+            <h3 class="product-name">{{ item.name }}</h3>
+            <div class="product-specs">
+              Size: {{ item.size }}<br />
+              Color: {{ item.color }}
+            </div>
+            <div class="product-actions">
+              <div class="quantity-controls">
+                <button
+                  class="qty-btn"
+                  onclick="updateQuantity({{ item.id }}, -1)"
+                >
+                  −
+                </button>
+                <input
+                  type="number"
+                  class="qty-input"
+                  value="{{ item.quantity }}"
+                  id="qty-{{ item.id }}"
+                  readonly
+                />
+                <button
+                  class="qty-btn"
+                  onclick="updateQuantity({{ item.id }}, 1)"
+                >
+                  +
+                </button>
+              </div>
+              <div class="product-price">₱{{ "%.2f"|format(item.price) }}</div>
+            </div>
+            <div class="product-links">
+              <a
+                href="#"
+                class="product-link"
+                onclick="saveForLater({{ item.id }})"
+                >Save for later</a
+              >
+              <a href="#" class="product-link">Edit</a>
+              <a
+                href="#"
+                class="product-link"
+                onclick="removeItem({{ item.id }})"
+                >Remove</a
+              >
+            </div>
+          </div>
+        </div>
+        {% endfor %} {% else %}
+        <div class="empty-cart">
+          <p>Your cart is empty</p>
+          <a href="{{ url_for('main.index') }}" class="continue-shopping-btn"
+            >Continue Shopping</a
+          >
+        </div>
+        {% endif %}
+
+        <!-- Saved Items Section -->
+        <div class="saved-section" id="saved-items">
+          <h2 class="saved-title">Saved Items</h2>
+          <div id="saved-items-container">
+            <p class="no-saved-items" id="no-saved-message">
+              You have no saved items.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order Summary -->
+      <div class="order-summary">
+        <h2 class="summary-title">Order Summary</h2>
+
+        <div class="summary-row">
+          <span class="summary-label">Subtotal</span>
+          <span class="summary-value" id="subtotal"
+            >₱{{ "%.2f"|format(subtotal|default(0)) }}</span
+          >
+        </div>
+
+        <div class="summary-row">
+          <span class="summary-label">Discount (-20%)</span>
+          <span class="summary-value discount" id="discount"
+            >-₱{{ "%.2f"|format(discount|default(0)) }}</span
+          >
+        </div>
+
+        <div class="summary-row">
+          <span class="summary-label">Delivery Fee</span>
+          <span class="summary-value" id="delivery"
+            >₱{{ "%.2f"|format(delivery_fee|default(15)) }}</span
+          >
+        </div>
+
+        <div class="summary-row total-row">
+          <span class="summary-label">Total</span>
+          <span class="summary-value" id="total"
+            >₱{{ "%.2f"|format(total|default(0)) }}</span
+          >
+        </div>
+
+        <button class="checkout-btn" onclick="goToCheckout()">
+          Go to Checkout →
+        </button>
+      </div>
+    </div>
+
+    <script>
+      // Cart functionality
+      let cartItems = {{ cart_items|tojson if cart_items else '[]' }};
+      let savedItems = [];
+
+      function updateQuantity(itemId, change) {
+          const item = cartItems.find(item => item.id === itemId);
+          if (item) {
+              item.quantity = Math.max(1, item.quantity + change);
+              document.getElementById(`qty-${itemId}`).value = item.quantity;
+              updateSummary();
+          }
+      }
+
+      function removeItem(itemId) {
+          if (confirm('Are you sure you want to remove this item?')) {
+              cartItems = cartItems.filter(item => item.id !== itemId);
+              document.querySelector(`#qty-${itemId}`).closest('.product-card').remove();
+              updateItemCount();
+              updateSummary();
+          }
+      }
+
+      function saveForLater(itemId) {
+          const item = cartItems.find(item => item.id === itemId);
+          if (item) {
+              // Move item from cart to saved items
+              savedItems.push(item);
+              cartItems = cartItems.filter(item => item.id !== itemId);
+
+              // Remove from cart display
+              document.querySelector(`#qty-${itemId}`).closest('.product-card').remove();
+
+              // Add to saved items display
+              addToSavedItemsDisplay(item);
+
+              // Update cart
+              updateItemCount();
+              updateSummary();
+              updateSavedItemsDisplay();
+          }
+      }
+
+      function addToSavedItemsDisplay(item) {
+          const savedContainer = document.getElementById('saved-items-container');
+          const noSavedMessage = document.getElementById('no-saved-message');
+
+          // Hide "no saved items" message
+          noSavedMessage.style.display = 'none';
+
+          // Create saved item HTML
+          const savedItemHTML = `
+              <div class="saved-item" id="saved-${item.id}">
+                  <img src="${item.image_url || "{{ url_for('static', filename='images/product_1.jpg') }}"}" alt="${item.name}" class="saved-item-image">
+                  <div class="saved-item-details">
+                      <a href="#" class="store-name" onclick="return false;">${item.store_name || 'SHOP.CO Store'}</a>
+                      <h4 class="saved-item-name">${item.name}</h4>
+                      <div class="saved-item-specs">
+                          Size: ${item.size}<br>
+                          Color: ${item.color}
+                      </div>
+                      <div class="saved-item-price">₱${parseFloat(item.price).toFixed(2)}</div>
+                      <div class="saved-item-links">
+                          <a href="#" class="product-link" onclick="moveToCart(${item.id})">Move to bag</a>
+                          <a href="#" class="product-link" onclick="removeSavedItem(${item.id})">Remove</a>
+                      </div>
+                  </div>
+              </div>
+          `;
+
+          savedContainer.insertAdjacentHTML('beforeend', savedItemHTML);
+      }
+
+      function moveToCart(itemId) {
+          const item = savedItems.find(item => item.id === itemId);
+          if (item) {
+              // Move item back to cart
+              cartItems.push(item);
+              savedItems = savedItems.filter(item => item.id !== itemId);
+
+              // Remove from saved items display
+              document.getElementById(`saved-${itemId}`).remove();
+
+              // Add back to cart display (reload page for simplicity, or you could recreate the HTML)
+              location.reload();
+          }
+      }
+
+      function removeSavedItem(itemId) {
+          if (confirm('Are you sure you want to remove this saved item?')) {
+              savedItems = savedItems.filter(item => item.id !== itemId);
+              document.getElementById(`saved-${itemId}`).remove();
+              updateSavedItemsDisplay();
+          }
+      }
+
+      function updateSavedItemsDisplay() {
+          const noSavedMessage = document.getElementById('no-saved-message');
+          if (savedItems.length === 0) {
+              noSavedMessage.style.display = 'block';
+          } else {
+              noSavedMessage.style.display = 'none';
+          }
+      }
+
+      function updateItemCount() {
+          const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+          const itemNumberElement = document.querySelector('.item-number');
+          const itemTextElement = document.querySelector('.item-text');
+
+          if (itemNumberElement && itemTextElement) {
+              itemNumberElement.textContent = totalItems;
+              itemTextElement.textContent = `ITEM${totalItems !== 1 ? 'S' : ''}`;
+          }
+
+          const cartBadge = document.querySelector('.cart-badge');
+          if (cartBadge) {
+              cartBadge.textContent = totalItems;
+          }
+      }
+
+      function updateSummary() {
+          const subtotal = cartItems.reduce((sum, item) => sum + (parseFloat(item.price) * parseInt(item.quantity)), 0);
+          const discount = subtotal > 0 ? subtotal * 0.2 : 0; // 20% discount
+          const delivery = subtotal > 0 ? 15 : 0; // No delivery fee if cart is empty
+          const total = subtotal > 0 ? subtotal - discount + delivery : 0; // Set to 0 if no items
+
+          document.getElementById('subtotal').textContent = `₱${subtotal.toFixed(2)}`;
+          document.getElementById('discount').textContent = `-₱${discount.toFixed(2)}`;
+          document.getElementById('delivery').textContent = `₱${delivery.toFixed(2)}`;
+          document.getElementById('total').textContent = `₱${total.toFixed(2)}`;
+      }
+
+      function goToCheckout() {
+          if (cartItems.length === 0) {
+              alert('Your cart is empty!');
+              return;
+          }
+          window.location.href = "{{ url_for('main.buyer_checkout') }}";
+      }
+
+      // Initialize the page
+      document.addEventListener('DOMContentLoaded', function() {
+          updateItemCount();
+          updateSummary();
+      });
+
+      // Search functionality
+      document.querySelector('.search-input').addEventListener('keypress', function(e) {
+          if (e.key === 'Enter') {
+              const searchTerm = this.value.trim();
+              if (searchTerm) {
+                  alert(`Searching for: ${searchTerm}`);
+                  // Search logic would go here
+              }
+          }
+      });
+    </script>
+    <script src="{{ url_for('static', filename='js/buyer_scripts/cart.js') }}"></script>
+  </body>
+</html>

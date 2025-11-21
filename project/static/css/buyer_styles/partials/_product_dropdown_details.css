@@ -1,0 +1,496 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Poppins:wght@300;400;500;600&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #fafafa;
+}
+
+.product-details-container {
+    max-width: 100%;
+    margin: 2rem 0 0 0;
+    padding: 1.5rem 0;
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
+    border-top: 1px solid #eee;
+}
+
+/* Store Information */
+.store-info {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: white;
+    border-radius: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.store-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0;
+}
+
+.store-profile-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+}
+
+.store-profile-image {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 2px solid #eee;
+}
+
+.profile-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.store-details {
+    flex: 1;
+}
+
+.store-name {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 0.25rem;
+}
+
+.store-location {
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.875rem;
+    color: #666;
+    font-weight: 400;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.store-location svg {
+    flex-shrink: 0;
+    color: #8e44ad;
+}
+
+.store-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.follow-btn,
+.chat-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: transparent;
+    color: #8e44ad;
+    border: 2px solid #8e44ad;
+    padding: 0.75rem 2rem;
+    border-radius: 0;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    min-width: 180px;
+    justify-content: center;
+}
+
+.follow-btn:hover,
+.chat-btn:hover {
+    background: #8e44ad;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(142, 68, 173, 0.3);
+}
+
+.follow-btn.following {
+    background: #28a745;
+    border-color: #28a745;
+    color: white;
+}
+
+.follow-btn.following:hover {
+    background: #1e7e34;
+    border-color: #1e7e34;
+}
+
+/* Vouchers & Shipping */
+.vouchers-section {
+    margin-bottom: 2rem;
+}
+
+.vouchers-shipping {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.voucher-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, #8e44ad, #9b59b6, #b968c7, #d63384);
+    color: white;
+    padding: 0.75rem 1rem;
+    border-radius: 25px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
+    box-shadow: 0 2px 8px rgba(142, 68, 173, 0.3);
+    transition: all 0.2s ease;
+    flex: 1;
+    min-width: 200px;
+    justify-content: center;
+    text-align: center;
+    background-size: 200% 200%;
+    animation: gradientShift 3s ease infinite;
+}
+
+@keyframes gradientShift {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.voucher-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(142, 68, 173, 0.4);
+    animation-duration: 1.5s;
+}
+
+.voucher-item svg {
+    color: white;
+    flex-shrink: 0;
+}
+
+/* Size Guide */
+
+.section-subtitle {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Section Titles */
+.section-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 2rem;
+    text-align: center;
+    letter-spacing: 1px;
+}
+
+
+
+/* You May Also Like */
+.you-may-like {
+    margin-bottom: 2rem;
+}
+
+.products-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem 0;
+}
+
+.view-more-container {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+.view-more-btn {
+    background: #8e44ad;
+    color: white;
+    border: none;
+    padding: 0.875rem 2rem;
+    border-radius: 25px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(142, 68, 173, 0.3);
+}
+
+.view-more-btn:hover {
+    background: #6c3483;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(142, 68, 173, 0.4);
+}
+
+/* Product Cards are now handled by _product_card.css */
+.no-products {
+    text-align: center;
+    padding: 2rem;
+    color: #666;
+    font-style: italic;
+    grid-column: 1 / -1;
+}
+
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    max-width: 700px;
+    width: 90%;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 1rem;
+}
+
+.modal-header h3 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.close-btn:hover {
+    background-color: #f0f0f0;
+}
+
+/* Size Guide Image */
+.size-guide-image {
+    text-align: center;
+}
+
+.size-chart-img {
+    width: 100%;
+    max-width: 1200px;
+    height: auto;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+
+.size-guide-text {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-top: 1rem;
+}
+
+.size-guide-text p {
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.9rem;
+    color: #666;
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* Product Information Sections */
+.product-info-sections {
+    margin-top: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.product-info-content {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.info-section {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #eee;
+}
+
+.info-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.info-section p {
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: #666;
+    margin: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .product-details-container {
+        padding: 1rem 0.5rem;
+    }
+    
+    .store-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+    
+    .store-profile-section {
+        justify-content: center;
+        text-align: center;
+    }
+    
+    .store-actions {
+        flex-direction: row;
+        justify-content: center;
+        gap: 1rem;
+    }
+    
+    .follow-btn,
+    .chat-btn {
+        justify-content: center;
+        flex: 1;
+    }
+    
+    .vouchers-shipping {
+        padding: 1rem;
+    }
+    
+    .voucher-item {
+        font-size: 0.8rem;
+    }
+    
+    .section-title {
+        font-size: 1.3rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .products-container {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        padding: 0.5rem 0;
+    }
+    
+    .vouchers-shipping {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .voucher-item {
+        min-width: auto;
+        font-size: 0.75rem;
+        padding: 0.6rem 0.8rem;
+    }
+    
+    .store-info {
+        padding: 1rem;
+    }
+    
+    .modal-content {
+        padding: 1.5rem;
+        margin: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .store-name {
+        font-size: 1.3rem;
+    }
+    
+    .follow-btn,
+    .chat-btn {
+        padding: 0.6rem 1.5rem;
+        font-size: 0.85rem;
+        min-width: 140px;
+    }
+    
+    .vouchers-shipping {
+        padding: 0.875rem;
+    }
+    
+    .voucher-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+        text-align: left;
+    }
+    
+    .products-container {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        padding: 0.5rem 0;
+    }
+    
+    .view-more-btn {
+        padding: 0.75rem 1.5rem;
+        font-size: 0.85rem;
+    }
+    
+    .modal-content {
+        padding: 1rem;
+        margin: 0.5rem;
+    }
+}

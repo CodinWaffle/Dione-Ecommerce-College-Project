@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Checkout - SHOP.CO</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/buyer_styles/checkout.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/buyer_styles/partials/_header_buyer.css') }}"
+    />
+  </head>
+  <body>
+    <!-- Include Header -->
+    {% include 'main/partials/_header_buyer.html' %}
+    <div class="container">
+      <div class="checkout-wrapper">
+        <!-- Checkout Form -->
+        <div class="checkout-form">
+          <h1>Checkout</h1>
+
+          <!-- Contact Information -->
+          <div class="form-section">
+            <div class="section-header">
+              <h2>
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"
+                  ></path>
+                  <polyline points="22,6 12,13 2,6"></polyline>
+                </svg>
+                Contact
+              </h2>
+            </div>
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                required
+                placeholder="Enter your email"
+              />
+            </div>
+            <div class="checkbox-group">
+              <input type="checkbox" id="newsletter" name="newsletter" />
+              <label for="newsletter">Email me with news and offers</label>
+            </div>
+          </div>
+
+          <!-- Shipping Address -->
+          <div class="form-section">
+            <div class="section-header">
+              <h2>
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <rect x="1" y="3" width="15" height="13"></rect>
+                  <polygon points="16,3 22,9 22,16 16,16"></polygon>
+                  <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                  <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                </svg>
+                Delivery
+              </h2>
+            </div>
+            <div class="form-group">
+              <label for="country">Country/Region</label>
+              <select id="country" name="country" required>
+                <option value="">Select country</option>
+                <option value="US" selected>United States</option>
+                <option value="CA">Canada</option>
+                <option value="UK">United Kingdom</option>
+                <option value="AU">Australia</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="firstName">First name</label>
+                <input type="text" id="firstName" name="firstName" required />
+              </div>
+              <div class="form-group">
+                <label for="lastName">Last name</label>
+                <input type="text" id="lastName" name="lastName" required />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="address">Address</label>
+              <input type="text" id="address" name="address" required />
+            </div>
+            <div class="form-group">
+              <label for="apartment">Apartment, suite, etc. (optional)</label>
+              <input type="text" id="apartment" name="apartment" />
+            </div>
+            <div class="form-row three-col">
+              <div class="form-group">
+                <label for="city">City</label>
+                <input type="text" id="city" name="city" required />
+              </div>
+              <div class="form-group">
+                <label for="state">State</label>
+                <select id="state" name="state" required>
+                  <option value="">Select state</option>
+                  <option value="CA">California</option>
+                  <option value="NY">New York</option>
+                  <option value="TX">Texas</option>
+                  <option value="FL">Florida</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="zipCode">ZIP code</label>
+                <input type="text" id="zipCode" name="zipCode" required />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="phone">Phone</label>
+              <input type="tel" id="phone" name="phone" />
+              <small class="form-hint"
+                >In case we need to contact you about your order</small
+              >
+            </div>
+
+            <div class="delivery-note">
+              <a href="#" class="add-note-link">Add delivery instructions</a>
+            </div>
+          </div>
+
+          <!-- Shipping Method -->
+          <div class="form-section">
+            <h2>Shipping method</h2>
+            <div class="shipping-option">
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                "
+              >
+                <div>
+                  <div>Standard</div>
+                  <div class="shipping-method">5-7 business days</div>
+                </div>
+                <div style="font-weight: 600">
+                  ${{ "%.2f"|format(delivery_fee|default(15)) }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Gift Message -->
+          <div class="form-section">
+            <div class="checkbox-group">
+              <input type="checkbox" id="giftMessage" name="giftMessage" />
+              <label for="giftMessage">This order contains a gift</label>
+            </div>
+          </div>
+
+          <!-- Privacy Policy -->
+          <div class="form-section">
+            <div class="checkbox-group">
+              <input type="checkbox" id="privacy" name="privacy" required />
+              <label for="privacy">
+                I have read and agree to the website terms and conditions,
+                <a href="#" class="privacy-link">privacy policy</a>, and
+                <a href="#" class="privacy-link">refund policy</a>.
+              </label>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            class="next-step-btn"
+            onclick="proceedToNextStep()"
+          >
+            COMPLETE ORDER
+          </button>
+
+          <div class="powered-by">Secure checkout powered by SHOP.CO</div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="order-summary">
+          <div class="summary-header">
+            <h3>Order summary</h3>
+            <div class="total-amount">
+              ${{ "%.2f"|format(total|default(0)) }}
+            </div>
+          </div>
+
+          <!-- Order Items -->
+          {% if cart_items %} {% for item in cart_items %}
+          <div class="order-item">
+            <div class="item-image">
+              <img
+                src="{{ item.image_url if item.image_url else url_for('static', filename='images/product_1.jpg') }}"
+                alt="{{ item.name }}"
+              />
+              <div class="item-quantity">{{ item.quantity }}</div>
+            </div>
+            <div class="item-details">
+              <h4>{{ item.name }}</h4>
+              <p>{{ item.store_name|default('SHOP.CO Store') }}</p>
+              <p>Size: {{ item.size }} / Color: {{ item.color }}</p>
+              <div class="item-price">${{ "%.2f"|format(item.price) }}</div>
+            </div>
+          </div>
+          {% endfor %} {% else %}
+          <div class="order-item">
+            <p>No items in cart</p>
+          </div>
+          {% endif %}
+
+          <!-- Summary Breakdown -->
+          <div class="summary-breakdown">
+            <div class="summary-row">
+              <span>Subtotal</span>
+              <span>${{ "%.2f"|format(subtotal|default(0)) }}</span>
+            </div>
+            <div class="summary-row">
+              <span>Shipping</span>
+              <span>${{ "%.2f"|format(delivery_fee|default(15)) }}</span>
+            </div>
+            {% if discount > 0 %}
+            <div class="summary-row">
+              <span>Discount</span>
+              <span style="color: #dc3545"
+                >-${{ "%.2f"|format(discount) }}</span
+              >
+            </div>
+            {% endif %}
+            <div class="summary-row total">
+              <span>Total</span>
+              <span>${{ "%.2f"|format(total|default(0)) }}</span>
+            </div>
+          </div>
+
+          <!-- Mobile Shipping Section -->
+          <div class="mobile-shipping-section">
+            <h3>Shipping</h3>
+            <div class="shipping-info">
+              <div style="display: flex; justify-content: space-between">
+                <div>
+                  <div>Standard</div>
+                  <div style="font-size: 13px; color: #666">
+                    5-7 business days
+                  </div>
+                </div>
+                <div>${{ "%.2f"|format(delivery_fee|default(15)) }}</div>
+              </div>
+            </div>
+
+            <div class="checkbox-group">
+              <input
+                type="checkbox"
+                id="giftMessageMobile"
+                name="giftMessageMobile"
+              />
+              <label for="giftMessageMobile">This order contains a gift</label>
+            </div>
+
+            <button
+              type="button"
+              class="next-step-btn mobile-btn"
+              onclick="proceedToNextStep()"
+            >
+              COMPLETE ORDER
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/buyer_scripts/checkout.js') }}"></script>
+  </body>
+</html>

@@ -1,0 +1,264 @@
+<!-- Reviews Grid Component -->
+<!-- Main Reviews Header Section -->
+<header class="reviews-main-header">
+    <div class="reviews-header-content">
+        <h3 class="reviews-title">Ratings & Reviews</h3>
+        
+        <!-- Sort and Filter Controls -->
+        <div class="reviews-controls">
+            <div class="sort-filter-container">
+                <div class="sort-section">
+                    <label class="sort-label">Sort by:</label>
+                    <select class="sort-select" id="reviewSortSelect" onchange="sortReviews(this.value)">
+                        <option value="newest">Newest First</option>
+                        <option value="oldest">Oldest First</option>
+                        <option value="highest-rating">Highest Rating</option>
+                        <option value="lowest-rating">Lowest Rating</option>
+                        <option value="most-helpful">Most Helpful</option>
+                    </select>
+                </div>
+                
+                <div class="filter-section">
+                    <label class="filter-label">Filter by:</label>
+                    <select class="filter-select" id="reviewFilterSelect" onchange="filterReviews(this.value)">
+                        <option value="all">All Reviews</option>
+                        <option value="5-stars">5 Stars</option>
+                        <option value="4-stars">4 Stars</option>
+                        <option value="3-stars">3 Stars</option>
+                        <option value="2-stars">2 Stars</option>
+                        <option value="1-star">1 Star</option>
+                        <option value="with-photos">With Photos</option>
+                        <option value="verified-only">Verified Buyers Only</option>
+                    </select>
+                </div>
+                
+                <div class="variation-filter-section">
+                    <label class="variation-label">Variation:</label>
+                    <select class="variation-select" id="variationFilterSelect" onchange="filterByVariation(this.value)">
+                        <option value="all">All Variations</option>
+                        <option value="XS-Black">XS - Black</option>
+                        <option value="S-Black">S - Black</option>
+                        <option value="M-Black">M - Black</option>
+                        <option value="L-Black">L - Black</option>
+                        <option value="XL-Black">XL - Black</option>
+                        <option value="XS-White">XS - White</option>
+                        <option value="S-White">S - White</option>
+                        <option value="M-White">M - White</option>
+                        <option value="L-White">L - White</option>
+                        <option value="XL-White">XL - White</option>
+                    </select>
+                </div>
+                
+                <button class="clear-filters-btn" onclick="clearAllFilters()">
+                    <i class="fas fa-times"></i>
+                    Clear Filters
+                </button>
+            </div>
+        </div>
+        
+        <div class="reviews-stats">
+            <div class="average-rating">
+                <div class="rating-display">
+                    <span class="rating-number">{{ average_rating|round(1) if average_rating else 0 }}</span>
+                    <div class="stars-large">
+                        {% for i in range(1, 6) %}
+                            <i class="fas fa-star{% if i > (average_rating or 0) %} star-empty{% endif %}"></i>
+                        {% endfor %}
+                    </div>
+                </div>
+                <span class="total-reviews">Based on {{ reviews|length if reviews else 0 }} reviews</span>
+            </div>
+            
+            <!-- Ratings Breakdown -->
+            <div class="ratings-breakdown">
+                {% set rating_counts = {5: 0, 4: 0, 3: 0, 2: 0, 1: 0} %}
+                {% if reviews %}
+                    {% for review in reviews %}
+                        {% set _ = rating_counts.update({review.rating: rating_counts[review.rating] + 1}) %}
+                    {% endfor %}
+                {% endif %}
+                {% for star_rating in [5, 4, 3, 2, 1] %}
+                <div class="rating-breakdown-item">
+                    <span class="star-label">{{ star_rating }}</span>
+                    <i class="fas fa-star"></i>
+                    <div class="rating-bar">
+                        <div class="rating-fill" style="width: {{ (rating_counts[star_rating] / (reviews|length if reviews else 1)) * 100 }}%"></div>
+                    </div>
+                    <span class="rating-count">{{ rating_counts[star_rating] }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</header>
+
+<div class="reviews-container">
+    <div class="reviews-grid">
+        {% if reviews %}
+            {% for review in reviews %}
+                <!-- Individual Review Card -->
+                <div class="review-card" data-review-id="{{ review.id }}">
+                    <!-- Header with profile and menu -->
+                    <div class="review-card-header">
+                        <div class="profile-section">
+                            <img src="{{ review.user.profile_image if review.user.profile_image else url_for('static', filename='images/default-avatar.png') }}" 
+                                 alt="Profile" class="profile-photo">
+                            <div class="profile-info">
+                                <h3 class="username">{{ review.user.first_name }} {{ review.user.last_name[0] if review.user.last_name else '' }}.</h3>
+                                <span class="verified-buyer">
+                                    <i class="fas fa-check-circle"></i>
+                                    Verified Buyer
+                                </span>
+                            </div>
+                        </div>
+                        {% if current_user.is_authenticated and current_user.id == review.user_id %}
+                        <div class="menu-section">
+                            <button class="menu-btn" onclick="toggleReviewMenu({{ review.id }})">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <div class="dropdown-menu" id="reviewMenu{{ review.id }}">
+                                <button onclick="editReview({{ review.id }})">
+                                    <i class="fas fa-edit"></i>
+                                    Edit Review
+                                </button>
+                                <button onclick="removeReview({{ review.id }})" class="delete-btn">
+                                    <i class="fas fa-trash"></i>
+                                    Remove Review
+                                </button>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Overall Rating -->
+                    <div class="overall-rating">
+                        <div class="stars" data-rating="{{ review.rating }}">
+                            {% for i in range(1, 6) %}
+                                <i class="fas fa-star{% if i > review.rating %} star-empty{% endif %}"></i>
+                            {% endfor %}
+                        </div>
+                        <span class="rating-text">{{ review.title if review.title else 'Great product!' }}</span>
+                    </div>
+
+                    <!-- Detailed Ratings (if available) -->
+                    {% if review.detailed_ratings %}
+                    <div class="detailed-ratings">
+                        {% for category, rating in review.detailed_ratings.items() %}
+                        <div class="rating-item">
+                            <span class="rating-label">{{ category|title }}</span>
+                            <div class="stars small" data-rating="{{ rating }}">
+                                {% for i in range(1, 6) %}
+                                    <i class="fas fa-star{% if i > rating %} star-empty{% endif %}"></i>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Order Variation -->
+                    {% if review.product_variation %}
+                    <div class="order-variation">
+                        <span class="variation-label">Purchased:</span>
+                        <span class="variation-details">{{ review.product_variation }}</span>
+                    </div>
+                    {% endif %}
+
+                    <!-- Review Text -->
+                    <div class="review-text" id="reviewText{{ review.id }}">
+                        <p>{{ review.comment }}</p>
+                    </div>
+
+                    <!-- Product Media -->
+                    {% if review.images or review.video %}
+                    <div class="product-media">
+                        {% if review.images %}
+                            {% for image in review.images %}
+                            <div class="media-item">
+                                <img src="{{ url_for('static', filename='uploads/' + image) }}" 
+                                     alt="Review photo" class="product-image" onclick="openImageLightbox('{{ url_for('static', filename='uploads/' + image) }}')">
+                            </div>
+                            {% endfor %}
+                        {% endif %}
+                        
+                        {% if review.video %}
+                        <div class="media-item">
+                            <div class="video-container">
+                                <video controls class="product-video">
+                                    <source src="{{ url_for('static', filename='uploads/' + review.video) }}" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-reviews">
+                <i class="fas fa-star-half-alt"></i>
+                <h4>No reviews yet</h4>
+                <p>Be the first to review this product!</p>
+            </div>
+        {% endif %}
+    </div>
+    
+</div>
+
+<!-- You May Also Like Section -->
+<section class="you-may-like">
+    <h3 class="section-title">YOU MAY ALSO LIKE</h3>
+    <div class="products-container">
+        {% set sample_products = [
+            {'name': 'Classic White Tee', 'price': '1,250', 'image_url': url_for('static', filename='images/product_1.jpg')},
+            {'name': 'Denim Crop Top', 'price': '2,150', 'image_url': url_for('static', filename='images/product_2.jpg')},
+            {'name': 'Floral Tube Top', 'price': '1,890', 'image_url': url_for('static', filename='images/product_3.png')},
+            {'name': 'Striped Tank Top', 'price': '1,450', 'image_url': url_for('static', filename='images/Tank Tops.png')}
+        ] %}
+        
+        {% for product in sample_products %}
+        <div class="product-card" onclick="navigateToProduct('{{ loop.index }}')">
+            <div class="product-image-container">
+                <img src="{{ product.image_url }}" alt="{{ product.name }}" class="product-image primary">
+                <img src="{{ product.image_url }}" alt="{{ product.name }}" class="product-image secondary">
+                <div class="hover-actions">
+                    <button class="action-btn wishlist-btn" onclick="event.stopPropagation(); toggleProductCardWishlist('{{ loop.index }}', this)" title="Save Item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                        </svg>
+                    </button>
+                    <button class="action-btn cart-btn" onclick="event.stopPropagation(); addProductCardToCart('{{ loop.index }}'); navigateToProduct('{{ loop.index }}')" title="Buy Item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <path d="M16 10a4 4 0 0 1-8 0"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="product-details">
+                <div class="product-info">
+                    <div class="product-left">
+                        <h3 class="product-name">{{ product.name }}</h3>
+                        <div class="color-swatches">
+                            <div class="color-swatch active" style="background-color: #000000" onclick="event.stopPropagation(); selectProductCardColor(this, '#000000')"></div>
+                            <div class="color-swatch" style="background-color: #FFFFFF" onclick="event.stopPropagation(); selectProductCardColor(this, '#FFFFFF')"></div>
+                            <div class="color-swatch" style="background-color: #FF4757" onclick="event.stopPropagation(); selectProductCardColor(this, '#FF4757')"></div>
+                        </div>
+                        <div class="price-container">
+                            <span class="price">₱{{ product.price }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Image Lightbox Modal -->
+<div id="imageLightbox" class="lightbox-modal">
+    <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
+    <img class="lightbox-content" id="lightboxImage">
+</div>

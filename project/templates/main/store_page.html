@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Elegant Boutique - Premium Store</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+          sans-serif;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
+        padding: 20px;
+        color: #2c3e50;
+      }
+
+      /* Banner section now full-width at top */
+      .banner {
+        width: 100vw;
+        height: 300px;
+        margin: -20px -20px 0 -20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(102, 126, 234, 0.2);
+      }
+
+      .banner::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300"><defs><pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse"><path d="M 60 0 L 0 0 0 60" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1"/></pattern></defs><rect width="1200" height="300" fill="url(%23grid)"/></svg>');
+      }
+
+      /* Store container with negative margin to overlap banner */
+      .container {
+        max-width: 1000px;
+        margin: -120px auto 40px;
+        position: relative;
+        z-index: 10;
+        padding: 0 20px;
+      }
+
+      /* Profile card is now primary container */
+      .profile-card {
+        background: white;
+        border-radius: 16px;
+        padding: 50px 40px 40px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 24px;
+      }
+
+      /* Profile pic repositioned as overlapping element */
+      .profile-pic {
+        width: 160px;
+        height: 160px;
+        border-radius: 50%;
+        border: 6px solid white;
+        box-shadow: 0 12px 32px rgba(102, 126, 234, 0.35);
+        margin-top: -100px;
+        flex-shrink: 0;
+        overflow: hidden;
+      }
+
+      .profile-pic img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      /* Store details centered layout */
+      .store-details {
+        text-align: center;
+        width: 100%;
+      }
+
+      .store-name {
+        font-size: 32px;
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: #2c3e50;
+        letter-spacing: -0.5px;
+      }
+
+      .store-location {
+        font-size: 15px;
+        color: #7f8c8d;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        font-weight: 500;
+      }
+
+      /* Rating displayed prominently */
+      .rating-section {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-bottom: 24px;
+      }
+
+      .rating-stars {
+        display: flex;
+        gap: 2px;
+      }
+
+      .star {
+        color: #f39c12;
+        font-size: 18px;
+      }
+
+      .rating-text {
+        font-size: 14px;
+        color: #555;
+        font-weight: 600;
+      }
+
+      /* Stats grid now 3 columns in container */
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        width: 100%;
+        padding: 28px 0;
+        border-top: 1px solid #ecf0f1;
+        border-bottom: 1px solid #ecf0f1;
+        margin: 0;
+      }
+
+      .stat-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .stat-number {
+        font-size: 24px;
+        font-weight: 700;
+        color: #667eea;
+      }
+
+      .stat-label {
+        font-size: 12px;
+        color: #95a5a6;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        font-weight: 600;
+      }
+
+      /* Action buttons improved styling */
+      .action-buttons {
+        display: flex;
+        gap: 12px;
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 8px;
+      }
+
+      .btn {
+        padding: 13px 32px;
+        border: none;
+        border-radius: 8px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: 1;
+        min-width: 140px;
+        justify-content: center;
+      }
+
+      .btn-follow {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+      }
+
+      .btn-follow:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+      }
+
+      .btn-follow:active {
+        transform: translateY(0);
+      }
+
+      .btn-follow.following {
+        background: #ecf0f1;
+        color: #2c3e50;
+        box-shadow: none;
+      }
+
+      .btn-follow.following:hover {
+        background: #d5dbdb;
+      }
+
+      .btn-chat {
+        background: white;
+        color: #667eea;
+        border: 2px solid #667eea;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+      }
+
+      .btn-chat:hover {
+        background: #f8f9ff;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(102, 126, 234, 0.2);
+      }
+
+      .btn-chat:active {
+        transform: translateY(0);
+      }
+
+      /* Improved responsive design */
+      @media (max-width: 768px) {
+        body {
+          padding: 16px;
+        }
+
+        .banner {
+          height: 240px;
+          margin: -16px -16px 0 -16px;
+        }
+
+        .container {
+          margin: -100px auto 30px;
+          padding: 0 16px;
+        }
+
+        .profile-card {
+          padding: 40px 24px 32px;
+          gap: 20px;
+        }
+
+        .profile-pic {
+          width: 130px;
+          height: 130px;
+          margin-top: -80px;
+        }
+
+        .store-name {
+          font-size: 26px;
+        }
+
+        .stats {
+          gap: 16px;
+          padding: 20px 0;
+        }
+
+        .stat-number {
+          font-size: 20px;
+        }
+
+        .btn {
+          padding: 11px 24px;
+          font-size: 14px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        body {
+          padding: 12px;
+        }
+
+        .banner {
+          height: 180px;
+          margin: -12px -12px 0 -12px;
+        }
+
+        .container {
+          margin: -80px auto 20px;
+          padding: 0 12px;
+        }
+
+        .profile-card {
+          padding: 32px 16px 24px;
+          gap: 16px;
+        }
+
+        .profile-pic {
+          width: 110px;
+          height: 110px;
+          margin-top: -60px;
+        }
+
+        .store-name {
+          font-size: 22px;
+        }
+
+        .store-location {
+          font-size: 14px;
+        }
+
+        .rating-text {
+          font-size: 13px;
+        }
+
+        .stats {
+          gap: 12px;
+          padding: 16px 0;
+        }
+
+        .stat-number {
+          font-size: 18px;
+        }
+
+        .stat-label {
+          font-size: 11px;
+        }
+
+        .action-buttons {
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .btn {
+          width: 100%;
+          min-width: auto;
+          padding: 12px 20px;
+          font-size: 14px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Full-width banner at top -->
+    <div class="banner"></div>
+
+    <!-- Container with overlapping profile card -->
+    <div class="container">
+      <div class="profile-card">
+        <!-- Profile pic now overlaps banner -->
+        <img
+          src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=160&h=160&fit=crop"
+          alt="Store Logo"
+          class="profile-pic"
+        />
+
+        <div class="store-details">
+          <!-- Store Name and Location -->
+          <h1 class="store-name">Elegant Boutique</h1>
+          <div class="store-location">📍 South Luzon</div>
+
+          <!-- Rating section -->
+          <div class="rating-section">
+            <div class="rating-stars">
+              <span class="star">★</span>
+              <span class="star">★</span>
+              <span class="star">★</span>
+              <span class="star">★</span>
+              <span class="star">★</span>
+            </div>
+            <span class="rating-text">(4.8)</span>
+          </div>
+
+          <!-- Stats -->
+          <div class="stats">
+            <div class="stat-item">
+              <span class="stat-number">1.2K</span>
+              <span class="stat-label">Products Sold</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number">8.5K</span>
+              <span class="stat-label">Followers</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number">4.8</span>
+              <span class="stat-label">Rating</span>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="action-buttons">
+            <button
+              class="btn btn-follow"
+              id="followBtn"
+              onclick="toggleFollow()"
+            >
+              <span>+</span> Follow
+            </button>
+            <button class="btn btn-chat" onclick="handleChat()">💬 Chat</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function toggleFollow() {
+        const btn = document.getElementById("followBtn");
+
+        if (btn.classList.contains("following")) {
+          btn.classList.remove("following");
+          btn.innerHTML = "<span>+</span> Follow";
+        } else {
+          btn.classList.add("following");
+          btn.innerHTML = "✓ Following";
+        }
+      }
+
+      function handleChat() {
+        alert("💬 Opening chat with Elegant Boutique...");
+      }
+    </script>
+  </body>
+</html>

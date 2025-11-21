@@ -1,0 +1,64 @@
+<aside class="sidebar">
+  <div class="profile-section">
+    <div class="avatar">
+      {{ current_user.email[0].upper() if current_user.email else 'U' }}
+    </div>
+    <div class="profile-info">
+      <h3 class="username">
+        {{ current_user.email.split('@')[0] if current_user.email else 'User' }}
+      </h3>
+    </div>
+  </div>
+
+  <nav class="nav-menu">
+    <!-- My Account Expandable Menu -->
+    <div class="nav-item expandable expanded" onclick="toggleMenu(event)">
+      <span style="display: flex; align-items: center; gap: 12px; flex: 1">
+        <svg
+          class="nav-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+        <span>My Account</span>
+      </span>
+      <svg
+        class="chevron"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <polyline points="6,9 12,15 18,9"></polyline>
+      </svg>
+    </div>
+
+    <!-- My Account Submenu -->
+    <div class="sub-menu open">
+      <a href="my_account.html" class="sub-item active" data-section="profile">
+        Profile
+      </a>
+      <a href="#" class="sub-item" data-section="addresses"> Addresses </a>
+    </div>
+
+    <!-- Logout Link -->
+    <a href="{{ url_for('auth.logout') }}" class="nav-item logout-link">
+      <svg
+        class="nav-icon"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+        <polyline points="16 17 21 12 16 7"></polyline>
+        <line x1="21" y1="12" x2="9" y2="12"></line>
+      </svg>
+      <span>Logout</span>
+    </a>
+  </nav>
+</aside>
