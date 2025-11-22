@@ -260,14 +260,14 @@ def sales():
 @login_required
 def products():
     """Product management placeholder"""
-    return render_template('admin/products.html')
+    return render_template('admin/admin_products_management.html')
 
 
 @admin_bp.get('/sellers')
 @login_required
 def sellers():
     """Seller management placeholder"""
-    return render_template('admin/sellers.html')
+    return render_template('admin/admin_sellers_management.html')
 
 
 @admin_bp.get('/riders')
