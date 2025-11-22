@@ -342,6 +342,11 @@ small {
   transition: all 0.2s ease;
 }
 
+.photo-upload-box.dragover {
+  border-color: #6c5ce7;
+  background: rgba(108, 92, 231, 0.08);
+}
+
 .photo-upload-box:hover {
   border-color: #667eea;
   background: #f9fafb;

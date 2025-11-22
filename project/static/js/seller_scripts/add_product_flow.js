@@ -51,6 +51,17 @@
     // Save to sessionStorage
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(allData));
     console.log("Form data saved:", allData);
+
+    // Mirror data per form in localStorage for preview steps
+    if (typeof localStorage !== "undefined" && formId) {
+      try {
+        const existing = JSON.parse(localStorage.getItem(formId) || "{}");
+        const merged = Object.assign({}, existing, data);
+        localStorage.setItem(formId, JSON.stringify(merged));
+      } catch (err) {
+        console.warn("Failed to persist form data to localStorage", err);
+      }
+    }
   }
 
   // Load form data from sessionStorage

@@ -11,6 +11,7 @@ class User(UserMixin, db.Model):
   id = db.Column(db.Integer, primary_key=True)
   email = db.Column(db.String(100), unique=True, nullable=False)  # Primary identifier for login
   password = db.Column(db.String(255))
+  username = db.Column(db.String(150))
 
   role = db.Column(db.String(20), nullable=False, default='buyer')
 
@@ -158,5 +159,85 @@ class SiteSetting(db.Model):
 
   def __repr__(self):
     return f"<SiteSetting {self.key}={self.value}>"
+
+
+class Product(db.Model):
+  """Product listings created by sellers"""
+  id = db.Column(db.Integer, primary_key=True)
+  seller_id = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
+  name = db.Column(db.String(255), nullable=False)
+  description = db.Column(db.Text, default='')
+  category = db.Column(db.String(50), nullable=False)
+  subcategory = db.Column(db.String(50))
+  price = db.Column(db.Numeric(10, 2), nullable=False, default=0)
+  compare_at_price = db.Column(db.Numeric(10, 2))
+  stock = db.Column(db.Integer, nullable=False, default=0)
+  sku = db.Column(db.String(100))
+  barcode = db.Column(db.String(100))
+  status = db.Column(db.String(20), nullable=False, default='draft')
+  discount_type = db.Column(db.String(20))
+  discount_value = db.Column(db.Numeric(6, 2))
+  voucher_type = db.Column(db.String(50))
+  materials = db.Column(db.Text)
+  details_fit = db.Column(db.Text)
+  model_height = db.Column(db.String(50))
+  wearing_size = db.Column(db.String(50))
+  allow_backorder = db.Column(db.Boolean, default=False)
+  track_inventory = db.Column(db.Boolean, default=True)
+  low_stock_threshold = db.Column(db.Integer, default=0)
+  attributes = db.Column(db.JSON, default=dict)
+  image = db.Column(db.String(512))
+  secondary_image = db.Column(db.String(512))
+  tags = db.Column(db.Text)
+  created_at = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
+  updated_at = db.Column(db.DateTime, nullable=False, server_default=db.func.now(), onupdate=db.func.now())
+
+  seller = db.relationship('User', backref=db.backref('products', lazy=True))
+
+  def sync_status(self):
+    """Update status to reflect current inventory."""
+    current_status = (self.status or 'draft').lower()
+    if self.stock <= 0:
+      self.status = 'out-of-stock'
+    elif current_status in ('out-of-stock', 'draft'):
+      self.status = 'active'
+    elif current_status not in ('active', 'inactive'):
+      self.status = 'active'
+
+  def to_dashboard_dict(self):
+    """Return lightweight dictionary for seller dashboard tables."""
+    compare = float(self.compare_at_price or 0)
+    price = float(self.price or 0)
+    return {
+      'id': self.id,
+      'name': self.name,
+      'category': self.category,
+      'subcategory': self.subcategory,
+      'price': price,
+      'compare_at_price': compare if compare > 0 else None,
+      'stock': self.stock,
+      'status': self.status,
+      'sku': self.sku,
+      'image': self.image,
+    }
+
+  def to_public_dict(self):
+    """Return product data for buyer-facing pages."""
+    price = float(self.price or 0)
+    compare_price = float(self.compare_at_price or 0)
+    return {
+      'id': self.id,
+      'name': self.name,
+      'primaryImage': self.image or '/static/image/banner.png',
+      'secondaryImage': self.secondary_image or self.image or '/static/image/banner.png',
+      'material': (self.materials or 'Premium Fabric').split('\n')[0],
+      'price': price,
+      'originalPrice': compare_price if compare_price > price else None,
+      'category': self.category,
+      'subcategory': self.subcategory,
+    }
+
+  def __repr__(self):
+    return f'<Product {self.id} - {self.name}>'
 
 

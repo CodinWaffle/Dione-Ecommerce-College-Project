@@ -28,11 +28,18 @@ def create_app(config_name='default'):
     login_manager.init_app(app)
 
     # Import models
-    from .models import User, OAuth
+    from .models import User, OAuth, Product
 
     @login_manager.user_loader
     def load_user(user_id):
         return db.session.get(User, int(user_id))
+
+    # Register blueprints
+    from .routes.auth_routes import auth
+    from .routes.main_routes import main, get_nav_items
+    from .routes.oauth_routes import google_blueprint, facebook_blueprint, debug_bp
+    from .routes.admin_routes import admin_bp
+    from .routes.seller_routes import seller_bp
 
     # Context processor to make current_user available in all templates
     @app.context_processor
@@ -40,12 +47,13 @@ def create_app(config_name='default'):
         """Make current_user available in all Jinja2 templates"""
         return {'current_user': current_user}
 
-    # Register blueprints
-    from .routes.auth_routes import auth
-    from .routes.main_routes import main
-    from .routes.oauth_routes import google_blueprint, facebook_blueprint, debug_bp
-    from .routes.admin_routes import admin_bp
-    from .routes.seller_routes import seller_bp
+    @app.context_processor
+    def inject_nav_items():
+        """Provide navigation data for buyer headers on all public pages"""
+        try:
+            return {'nav_items': get_nav_items()}
+        except Exception:
+            return {'nav_items': []}
 
     app.register_blueprint(auth)
     app.register_blueprint(main)

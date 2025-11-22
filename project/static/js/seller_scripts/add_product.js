@@ -362,6 +362,160 @@ const materials = {
 const currentPage = 1;
 const totalPages = 2;
 
+function getHiddenPhotoInput(index) {
+  if (Number(index) === 0) {
+    return document.getElementById("primaryImageField");
+  }
+  if (Number(index) === 1) {
+    return document.getElementById("secondaryImageField");
+  }
+  return null;
+}
+
+function persistProductFormDraft() {
+  if (window.ProductFormFlow && typeof window.ProductFormFlow.saveFormData === "function") {
+    window.ProductFormFlow.saveFormData("productForm");
+  }
+}
+
+function updatePhotoPreview(box, dataUrl) {
+  const preview = box.querySelector(".photo-preview");
+  const img = preview ? preview.querySelector("img") : null;
+  const removeBtn = preview ? preview.querySelector(".remove-photo") : null;
+  const labelEl = box.querySelector(".photo-label");
+  if (!preview || !img) return;
+  if (dataUrl) {
+    img.src = dataUrl;
+    preview.classList.add("active");
+    if (removeBtn) removeBtn.style.display = "flex";
+    if (labelEl) labelEl.style.display = "none";
+  } else {
+    img.src = "#";
+    preview.classList.remove("active");
+    if (removeBtn) removeBtn.style.display = "none";
+    if (labelEl) labelEl.style.display = "";
+  }
+}
+
+function setupPhotoUploads() {
+  const boxes = document.querySelectorAll(".photo-upload-box");
+  if (!boxes.length) return;
+  boxes.forEach((box) => {
+    const input = box.querySelector(".photo-input");
+    const removeBtn = box.querySelector(".remove-photo");
+    const idx = Number(box.dataset.index || 0);
+    const hiddenInput = getHiddenPhotoInput(idx);
+
+    if (hiddenInput && hiddenInput.value) {
+      updatePhotoPreview(box, hiddenInput.value);
+    } else {
+      updatePhotoPreview(box, "");
+    }
+
+    const handleFileSelection = (file) => {
+      if (!file) return;
+      if (!file.type.startsWith("image/")) {
+        alert("Please upload an image file.");
+        if (input) {
+          input.value = "";
+        }
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const dataUrl = e.target?.result;
+        if (hiddenInput) {
+          hiddenInput.value = dataUrl || "";
+        }
+        updatePhotoPreview(box, dataUrl);
+        persistProductFormDraft();
+      };
+      reader.readAsDataURL(file);
+    };
+
+    if (input) {
+      input.addEventListener("change", (event) => {
+        const file = event.target.files && event.target.files[0];
+        handleFileSelection(file);
+      });
+    }
+
+    if (removeBtn) {
+        removeBtn.addEventListener("click", (event) => {
+          event.preventDefault();
+          if (input) {
+            input.value = "";
+          }
+          if (hiddenInput) {
+            hiddenInput.value = "";
+          }
+          updatePhotoPreview(box, "");
+          persistProductFormDraft();
+        });
+      }
+
+      const label = box.querySelector(".photo-label");
+      const previewArea = box.querySelector(".photo-preview");
+      const makeClickable = (target) => {
+        if (!target) return;
+        target.addEventListener("click", (event) => {
+          if (event.target?.classList?.contains("remove-photo")) {
+            return;
+          }
+          event.preventDefault();
+          input?.click();
+        });
+      };
+      makeClickable(box);
+      makeClickable(label);
+      makeClickable(previewArea);
+
+      const toggleDragState = (state) => {
+        if (!box) return;
+        if (state) {
+          box.classList.add("dragover");
+        } else {
+          box.classList.remove("dragover");
+        }
+      };
+
+      ["dragenter", "dragover"].forEach((eventName) => {
+        box.addEventListener(
+          eventName,
+          (event) => {
+            event.preventDefault();
+            toggleDragState(true);
+          },
+          false
+        );
+      });
+
+      ["dragleave", "dragend"].forEach((eventName) => {
+        box.addEventListener(
+          eventName,
+          (event) => {
+            event.preventDefault();
+            toggleDragState(false);
+          },
+          false
+        );
+      });
+
+      box.addEventListener(
+        "drop",
+        (event) => {
+          event.preventDefault();
+          toggleDragState(false);
+          const file =
+            (event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0]) ||
+            null;
+          handleFileSelection(file);
+        },
+        false
+      );
+    });
+  }
+
 // DOM Elements
 const pages = document.querySelectorAll(".form-page");
 const progressSteps = document.querySelectorAll(".progress-step");
@@ -379,6 +533,7 @@ const subItemsContainer = document.getElementById("subItemsContainer");
 // Initialize
 document.addEventListener("DOMContentLoaded", () => {
   setupCategoryChange();
+  setupPhotoUploads();
 
   // Enhance form UI: mark required fields (except model info) and prepare error placeholders
   setupRequiredUI();

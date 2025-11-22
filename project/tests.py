@@ -1,4 +1,5 @@
 import itertools
+from decimal import Decimal
 from typing import Dict, Iterable, Tuple
 
 import pytest
@@ -7,7 +8,7 @@ from sqlalchemy.exc import IntegrityError
 from werkzeug.security import generate_password_hash
 
 from project import create_app, db
-from project.models import OAuth, SiteSetting, User
+from project.models import OAuth, Product, SiteSetting, User
 from project.utils.validators import Validators
 
 
@@ -391,6 +392,35 @@ def test_seller_dashboard_allowed_for_seller(client, user_factory):
     assert b"Seller Dashboard" in response.data
 
 
+def test_seller_can_create_product(client, user_factory, app):
+    seller = user_factory(email="product.seller@example.com", role="seller", is_approved=True)
+    login(client, seller.email, DEFAULT_PASSWORD)
+    payload = {
+        "productName": "Studio Tee",
+        "category": "clothing",
+        "subcategory": "Tops",
+        "price": "100",
+        "discountType": "percentage",
+        "discountPercentage": "20",
+        "description": "Soft cotton shirt",
+        "materials": "100% Cotton",
+        "detailsFit": "Relaxed fit",
+        "totalStock": "5",
+        "sku": "SKU-100",
+        "trackInventory": "on",
+    }
+    response = client.post("/seller/add_product_preview", data=payload, follow_redirects=True)
+    assert response.status_code == 200
+    assert b"Product added successfully" in response.data
+    with app.app_context():
+        stored = Product.query.filter_by(seller_id=seller.id).first()
+        assert stored is not None
+        assert stored.name == "Studio Tee"
+        assert stored.stock == 5
+        assert float(stored.price) == pytest.approx(80.0)
+        assert float(stored.compare_at_price) == pytest.approx(100.0)
+
+
 def test_rider_dashboard_allowed_for_rider(client, user_factory):
     rider = user_factory(email="rider@example.com", role="rider", is_approved=True)
     login(client, rider.email, DEFAULT_PASSWORD)
@@ -404,6 +434,25 @@ def test_rider_dashboard_rejects_buyers(client, user_factory):
     login(client, buyer.email, DEFAULT_PASSWORD)
     response = client.get("/rider/dashboard", follow_redirects=True)
     assert b"Welcome" in response.data
+
+
+def test_homepage_includes_product_json(client, app, user_factory):
+    seller = user_factory(email="feed.seller@example.com", role="seller", is_approved=True)
+    with app.app_context():
+        product = Product(
+            seller_id=seller.id,
+            name="Runway Dress",
+            category="clothing",
+            subcategory="Dresses",
+            price=Decimal("150.00"),
+            stock=3,
+        )
+        product.sync_status()
+        db.session.add(product)
+        db.session.commit()
+    response = client.get("/")
+    assert response.status_code == 200
+    assert b"Runway Dress" in response.data
 
 
 def test_health_endpoint_reports_user_count(client, user_factory, app):
@@ -707,6 +756,7 @@ def test_database_schema_contains_expected_tables(app):
         assert "user" in tables
         assert "oauth" in tables
         assert "site_setting" in tables
+        assert "product" in tables
 
 
 def test_site_setting_persistence(app):

@@ -4,7 +4,7 @@ Main routes for Dione Ecommerce
 from flask import Blueprint, render_template, jsonify, redirect, url_for, flash
 from flask_login import login_required, current_user, logout_user
 from project import db
-from project.models import User
+from project.models import Product, User
 
 main = Blueprint('main', __name__)
 
@@ -31,7 +31,17 @@ def index():
     # Navigation items for header
     nav_items = get_nav_items()
     
-    return render_template('main/index.html', nav_items=nav_items)
+    featured = Product.query.filter_by(status='active').order_by(Product.created_at.desc()).limit(8).all()
+    trending = Product.query.filter_by(status='active').order_by(Product.stock.desc()).limit(8).all()
+    new_arrivals = Product.query.filter_by(status='active').order_by(Product.updated_at.desc()).limit(8).all()
+
+    product_buckets = {
+        'featured': [product.to_public_dict() for product in featured],
+        'trending': [product.to_public_dict() for product in trending],
+        'new_arrivals': [product.to_public_dict() for product in new_arrivals],
+    }
+    
+    return render_template('main/index.html', nav_items=nav_items, product_buckets=product_buckets)
 
 @main.route('/profile')
 @login_required
