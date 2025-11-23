@@ -1,225 +1,506 @@
-{% extends "admin/base_admin.html" %}
+{% extends "admin/base_admin.html" %} {% block page_title %}Dashboard{% endblock
+%} {% block extra_css %}
+<!-- Google Fonts - Montserrat and Poppins -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap"
+  rel="stylesheet"
+/>
 
-{% block page_title %}Dashboard{% endblock %}
+<!-- Boxicons for Outline Icons -->
+<link
+  href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+  rel="stylesheet"
+/>
 
-{% block admin_content %}
-<style>
-  .dashboard-header {
-    margin-bottom: 32px;
-  }
+<!-- Custom CSS -->
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/admin_styles/admin.css') }}"
+/>
+{% endblock} {% block admin_content %}
+<div class="dashboard-container">
+  <!-- Include the sidebar component -->
+  {% include 'components/sidebar.html' %}
 
-  .dashboard-title {
-    font-size: 1.875rem;
-    font-weight: 700;
-    color: #1f2937;
-    margin-bottom: 8px;
-  }
+  <div class="main-content" id="main-content">
+    <!-- Include the header component -->
+    {% include 'components/header.html' %}
 
-  .dashboard-subtitle {
-    color: #6b7280;
-    font-size: 1rem;
-  }
+    <div class="dashboard-content">
+      <div class="page-header">
+        <h1>Dashboard</h1>
+        <p>Welcome back, {{ username }}! Here's an overview of your system.</p>
+      </div>
 
-  .kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 20px;
-    margin-bottom: 32px;
-  }
+      <!-- Stats Cards -->
+      <div class="stats-cards">
+        <!-- Total Sales Card -->
+        <div class="stat-card">
+          <div class="stat-card-icon blue">
+            <i class="bx bx-cart"></i>
+          </div>
+          <div class="stat-card-info">
+            <h3>Total Sales</h3>
+            <p class="stat-number">3,784</p>
+            <div class="stat-change positive">
+              <i class="bx bx-up-arrow-alt"></i>
+              <span>8.7% increase</span>
+            </div>
+          </div>
+        </div>
 
-  .kpi-card {
-    background: white;
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
+        <!-- Total Revenue Card -->
+        <div class="stat-card">
+          <div class="stat-card-icon green">
+            <i class="bx bx-dollar-circle"></i>
+          </div>
+          <div class="stat-card-info">
+            <h3>Total Revenue</h3>
+            <p class="stat-number">$124,500</p>
+            <div class="stat-change positive">
+              <i class="bx bx-up-arrow-alt"></i>
+              <span>6.3% increase</span>
+            </div>
+          </div>
+        </div>
 
-  .kpi-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  }
+        <!-- Net Profit Card -->
+        <div class="stat-card">
+          <div class="stat-card-icon purple">
+            <i class="bx bx-money"></i>
+          </div>
+          <div class="stat-card-info">
+            <h3>Net Profit</h3>
+            <p class="stat-number">$43,250</p>
+            <div class="stat-change positive">
+              <i class="bx bx-up-arrow-alt"></i>
+              <span>4.8% increase</span>
+            </div>
+          </div>
+        </div>
 
-  .kpi-icon-box {
-    width: 50px;
-    height: 50px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    margin-bottom: 12px;
-  }
+        <!-- Website Traffic Card -->
+        <div class="stat-card">
+          <div class="stat-card-icon cyan">
+            <i class="bx bx-bar-chart-alt-2"></i>
+          </div>
+          <div class="stat-card-info">
+            <h3>Website Traffic</h3>
+            <p class="stat-number">18.4K</p>
+            <div class="stat-change positive">
+              <i class="bx bx-up-arrow-alt"></i>
+              <span>12.5% increase</span>
+            </div>
+          </div>
+        </div>
 
-  .kpi-card.blue .kpi-icon-box {
-    background: #3b82f6;
-    color: white;
-  }
+        <!-- Total Users Card -->
+        <div class="stat-card">
+          <div class="stat-card-icon teal">
+            <i class="bx bx-group"></i>
+          </div>
+          <div class="stat-card-info">
+            <h3>Total Users</h3>
+            <p class="stat-number">2,456</p>
+            <div class="stat-users-split">
+              <span>1,875 Buyers</span> | <span>581 Sellers</span> |
+              <span>124 Riders</span>
+            </div>
+          </div>
+        </div>
 
-  .kpi-card.green .kpi-icon-box {
-    background: #10b981;
-    color: white;
-  }
+        <!-- Commission Card -->
+        <div class="stat-card">
+          <div class="stat-card-icon orange">
+            <i class="bx bx-wallet"></i>
+          </div>
+          <div class="stat-card-info">
+            <h3>Commissions</h3>
+            <p class="stat-number">$18,340</p>
+            <div class="stat-change positive">
+              <i class="bx bx-up-arrow-alt"></i>
+              <span>7.2% increase</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
-  .kpi-card.purple .kpi-icon-box {
-    background: #8b5cf6;
-    color: white;
-  }
+      <div class="dashboard-grid">
+        <div class="dashboard-card chart-card">
+          <div class="card-header">
+            <h3>Sales Analytics</h3>
+            <div class="card-actions">
+              <button class="filter-btn">
+                <i class="bx bx-filter"></i>
+                Filter
+              </button>
+              <div class="time-filter">
+                <button class="active">Day</button>
+                <button>Week</button>
+                <button>Month</button>
+                <button>Year</button>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="chart-container">
+              <!-- Chart will be rendered by JS here -->
+              <div class="chart-placeholder">Sales Analytics Chart</div>
+            </div>
+          </div>
+        </div>
 
-  .kpi-card.cyan .kpi-icon-box {
-    background: #06b6d4;
-    color: white;
-  }
+        <div class="dashboard-card">
+          <div class="card-header">
+            <h3>Recent Orders</h3>
+            <a href="#" class="view-all">View All</a>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Order ID</th>
+                    <th>Customer</th>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>#ORD-7264</td>
+                    <td>John Smith</td>
+                    <td>Oct 16, 2025</td>
+                    <td>$120.00</td>
+                    <td>
+                      <span class="status-badge completed">Completed</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>#ORD-7263</td>
+                    <td>Emily Johnson</td>
+                    <td>Oct 15, 2025</td>
+                    <td>$85.20</td>
+                    <td>
+                      <span class="status-badge pending">Pending</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>#ORD-7262</td>
+                    <td>Michael Brown</td>
+                    <td>Oct 15, 2025</td>
+                    <td>$240.50</td>
+                    <td>
+                      <span class="status-badge processing">Processing</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>#ORD-7261</td>
+                    <td>Sarah Wilson</td>
+                    <td>Oct 14, 2025</td>
+                    <td>$52.75</td>
+                    <td>
+                      <span class="status-badge completed">Completed</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>#ORD-7260</td>
+                    <td>David Lee</td>
+                    <td>Oct 14, 2025</td>
+                    <td>$175.25</td>
+                    <td>
+                      <span class="status-badge cancelled">Cancelled</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
 
-  .kpi-card.emerald .kpi-icon-box {
-    background: #059669;
-    color: white;
-  }
+        <div class="dashboard-card">
+          <div class="card-header">
+            <h3>Top Products</h3>
+            <a href="#" class="view-all">View All</a>
+          </div>
+          <div class="card-body">
+            <div class="tab-content active" id="products-tab">
+              <div class="top-products-list">
+                <div class="product-item">
+                  <div class="product-image">
+                    <img
+                      src="https://via.placeholder.com/50x50"
+                      alt="Product 1"
+                    />
+                  </div>
+                  <div class="product-info">
+                    <h4>Wireless Headphones</h4>
+                    <p>Electronics</p>
+                  </div>
+                  <div class="product-stats">
+                    <span class="product-price">$89.99</span>
+                    <span class="product-sold">235 sold</span>
+                  </div>
+                </div>
+                <div class="product-item">
+                  <div class="product-image">
+                    <img
+                      src="https://via.placeholder.com/50x50"
+                      alt="Product 2"
+                    />
+                  </div>
+                  <div class="product-info">
+                    <h4>Smart Watch</h4>
+                    <p>Electronics</p>
+                  </div>
+                  <div class="product-stats">
+                    <span class="product-price">$125.50</span>
+                    <span class="product-sold">189 sold</span>
+                  </div>
+                </div>
+                <div class="product-item">
+                  <div class="product-image">
+                    <img
+                      src="https://via.placeholder.com/50x50"
+                      alt="Product 3"
+                    />
+                  </div>
+                  <div class="product-info">
+                    <h4>Laptop Sleeve</h4>
+                    <p>Accessories</p>
+                  </div>
+                  <div class="product-stats">
+                    <span class="product-price">$24.99</span>
+                    <span class="product-sold">162 sold</span>
+                  </div>
+                </div>
+                <div class="product-item">
+                  <div class="product-image">
+                    <img
+                      src="https://via.placeholder.com/50x50"
+                      alt="Product 4"
+                    />
+                  </div>
+                  <div class="product-info">
+                    <h4>Wireless Charger</h4>
+                    <p>Electronics</p>
+                  </div>
+                  <div class="product-stats">
+                    <span class="product-price">$35.00</span>
+                    <span class="product-sold">145 sold</span>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-  .kpi-card.orange .kpi-icon-box {
-    background: #f97316;
-    color: white;
-  }
+            <div class="tab-content" id="categories-tab">
+              <div class="categories-stats">
+                <div class="category-item">
+                  <div class="category-name">
+                    <i class="bx bx-laptop"></i>
+                    <span>Electronics</span>
+                  </div>
+                  <div class="category-bar">
+                    <div class="category-progress" style="width: 78%"></div>
+                  </div>
+                  <div class="category-percentage">78%</div>
+                </div>
+                <div class="category-item">
+                  <div class="category-name">
+                    <i class="bx bx-closet"></i>
+                    <span>Fashion</span>
+                  </div>
+                  <div class="category-bar">
+                    <div class="category-progress" style="width: 65%"></div>
+                  </div>
+                  <div class="category-percentage">65%</div>
+                </div>
+                <div class="category-item">
+                  <div class="category-name">
+                    <i class="bx bx-home"></i>
+                    <span>Home & Living</span>
+                  </div>
+                  <div class="category-bar">
+                    <div class="category-progress" style="width: 52%"></div>
+                  </div>
+                  <div class="category-percentage">52%</div>
+                </div>
+                <div class="category-item">
+                  <div class="category-name">
+                    <i class="bx bx-book"></i>
+                    <span>Books & Stationery</span>
+                  </div>
+                  <div class="category-bar">
+                    <div class="category-progress" style="width: 45%"></div>
+                  </div>
+                  <div class="category-percentage">45%</div>
+                </div>
+                <div class="category-item">
+                  <div class="category-name">
+                    <i class="bx bx-basketball"></i>
+                    <span>Sports & Outdoors</span>
+                  </div>
+                  <div class="category-bar">
+                    <div class="category-progress" style="width: 38%"></div>
+                  </div>
+                  <div class="category-percentage">38%</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-  .kpi-content {
-    width: 100%;
-  }
+        <div class="dashboard-card">
+          <div class="card-header">
+            <h3>Customer Activity</h3>
+            <a href="#" class="view-all">View All</a>
+          </div>
+          <div class="card-body">
+            <div class="activity-list">
+              <div class="activity-item">
+                <div class="activity-icon purple">
+                  <i class="bx bx-user-plus"></i>
+                </div>
+                <div class="activity-info">
+                  <h4>New User Registration</h4>
+                  <p>Jane Cooper has registered</p>
+                  <span class="activity-time">5 minutes ago</span>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-icon green">
+                  <i class="bx bx-cart"></i>
+                </div>
+                <div class="activity-info">
+                  <h4>New Order Placed</h4>
+                  <p>Order #7264 was placed</p>
+                  <span class="activity-time">15 minutes ago</span>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-icon orange">
+                  <i class="bx bx-message-square"></i>
+                </div>
+                <div class="activity-info">
+                  <h4>New Product Review</h4>
+                  <p>Robert Fox left a 5-star review</p>
+                  <span class="activity-time">30 minutes ago</span>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-icon red">
+                  <i class="bx bx-x-circle"></i>
+                </div>
+                <div class="activity-info">
+                  <h4>Cancelled Order</h4>
+                  <p>Order #7260 was cancelled</p>
+                  <span class="activity-time">45 minutes ago</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-  .kpi-label {
-    color: #6b7280;
-    font-size: 0.85rem;
-    font-weight: 500;
-    margin-bottom: 6px;
-  }
+        <!-- Top Earning Categories Card -->
+        <div class="dashboard-card">
+          <div class="card-header">
+            <h3>Top Earning Categories</h3>
+            <div class="card-actions">
+              <div class="time-filter small">
+                <button class="active">Month</button>
+                <button>Quarter</button>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="progress-chart">
+              <div class="progress-item">
+                <div class="progress-info">
+                  <div class="progress-label">
+                    <span class="label-name">Electronics</span>
+                    <span class="label-value">$12,450</span>
+                  </div>
+                  <div class="progress-percentage">28.5%</div>
+                </div>
+                <div class="progress-bar">
+                  <div
+                    class="progress-fill"
+                    style="width: 28.5%; background-color: var(--color-primary)"
+                  ></div>
+                </div>
+              </div>
 
-  .kpi-value {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #1f2937;
-    margin-bottom: 4px;
-  }
+              <div class="progress-item">
+                <div class="progress-info">
+                  <div class="progress-label">
+                    <span class="label-name">Fashion & Apparel</span>
+                    <span class="label-value">$10,280</span>
+                  </div>
+                  <div class="progress-percentage">23.6%</div>
+                </div>
+                <div class="progress-bar">
+                  <div
+                    class="progress-fill"
+                    style="width: 23.6%; background-color: #3498db"
+                  ></div>
+                </div>
+              </div>
 
-  .kpi-change {
-    font-size: 0.75rem;
-    color: #6b7280;
-  }
+              <div class="progress-item">
+                <div class="progress-info">
+                  <div class="progress-label">
+                    <span class="label-name">Home & Furniture</span>
+                    <span class="label-value">$8,750</span>
+                  </div>
+                  <div class="progress-percentage">20.1%</div>
+                </div>
+                <div class="progress-bar">
+                  <div
+                    class="progress-fill"
+                    style="width: 20.1%; background-color: #2ecc71"
+                  ></div>
+                </div>
+              </div>
 
-  .kpi-change.positive {
-    color: #10b981;
-  }
+              <div class="progress-item">
+                <div class="progress-info">
+                  <div class="progress-label">
+                    <span class="label-name">Beauty & Personal Care</span>
+                    <span class="label-value">$6,540</span>
+                  </div>
+                  <div class="progress-percentage">15.0%</div>
+                </div>
+                <div class="progress-bar">
+                  <div
+                    class="progress-fill"
+                    style="width: 15%; background-color: #e74c3c"
+                  ></div>
+                </div>
+              </div>
 
-  @media (max-width: 1400px) {
-    .kpi-grid {
-      grid-template-columns: repeat(3, 1fr);
-    }
-  }
-
-  @media (max-width: 992px) {
-    .kpi-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
-
-  @media (max-width: 640px) {
-    .kpi-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .kpi-card {
-      flex-direction: row;
-      text-align: left;
-      gap: 12px;
-    }
-
-    .kpi-icon-box {
-      min-width: 50px;
-      height: 50px;
-      margin-bottom: 0;
-    }
-
-    .kpi-content {
-      flex: 1;
-    }
-  }
-</style>
-
-<div class="dashboard-header">
-  <h1 class="dashboard-title">Dashboard</h1>
-  <p class="dashboard-subtitle">Welcome back, Admin User! Here's an overview of your system.</p>
-</div>
-
-<div class="kpi-grid">
-  <div class="kpi-card blue">
-    <div class="kpi-icon-box">
-      <i class="fas fa-shopping-cart"></i>
-    </div>
-    <div class="kpi-content">
-      <div class="kpi-label">Total Sales</div>
-      <div class="kpi-value">0</div>
-      <div class="kpi-change">↑ 0% increase</div>
+              <div class="progress-item">
+                <div class="progress-info">
+                  <div class="progress-label">
+                    <span class="label-name">Food & Groceries</span>
+                    <span class="label-value">$3,320</span>
+                  </div>
+                  <div class="progress-percentage">7.6%</div>
+                </div>
+                <div class="progress-bar">
+                  <div
+                    class="progress-fill"
+                    style="width: 7.6%; background-color: #f39c12"
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
-
-  <div class="kpi-card green">
-    <div class="kpi-icon-box">
-      <i class="fas fa-dollar-sign"></i>
-    </div>
-    <div class="kpi-content">
-      <div class="kpi-label">Total Revenue</div>
-      <div class="kpi-value">$0</div>
-      <div class="kpi-change">↑ 0% increase</div>
-    </div>
-  </div>
-
-  <div class="kpi-card purple">
-    <div class="kpi-icon-box">
-      <i class="fas fa-chart-line"></i>
-    </div>
-    <div class="kpi-content">
-      <div class="kpi-label">Net Profit</div>
-      <div class="kpi-value">$0</div>
-      <div class="kpi-change">↑ 0% increase</div>
-    </div>
-  </div>
-
-  <div class="kpi-card cyan">
-    <div class="kpi-icon-box">
-      <i class="fas fa-globe"></i>
-    </div>
-    <div class="kpi-content">
-      <div class="kpi-label">Website Traffic</div>
-      <div class="kpi-value">0</div>
-      <div class="kpi-change">↑ 0% increase</div>
-    </div>
-  </div>
-
-  <div class="kpi-card emerald">
-    <div class="kpi-icon-box">
-      <i class="fas fa-users"></i>
-    </div>
-    <div class="kpi-content">
-      <div class="kpi-label">Total Users</div>
-      <div class="kpi-value">{{ total_users }}</div>
-      <div class="kpi-change">↑ 0% increase</div>
-    </div>
-  </div>
-
-  <div class="kpi-card orange">
-    <div class="kpi-icon-box">
-      <i class="fas fa-building"></i>
-    </div>
-    <div class="kpi-content">
-      <div class="kpi-label">Commissions</div>
-      <div class="kpi-value">$0</div>
-      <div class="kpi-change">↑ 0% increase</div>
-    </div>
-  </div>
-</div>
-
 </div>
 {% endblock %}
-

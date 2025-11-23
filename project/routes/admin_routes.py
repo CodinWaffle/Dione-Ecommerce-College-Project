@@ -3,10 +3,10 @@ Admin routes for managing user approvals and viewing admin dashboard
 """
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, jsonify
 from flask_login import login_required, current_user, login_user, logout_user
-from werkzeug.security import check_password_hash
 from flask_mail import Message
 from project import db, mail
 from project.models import User, SiteSetting, Seller, Rider
+from project.services.auth_service import AuthService
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -39,10 +39,12 @@ def login_post():
     email = request.form.get('email')
     password = request.form.get('password')
 
-    user = User.query.filter_by(email=email).first()
-    if not user or (getattr(user, 'role', '').lower() != 'admin') or not user.password or not check_password_hash(user.password, password):
-        flash('Invalid admin credentials.', 'danger')
-        return redirect(url_for('admin.login'))
+    user, error = AuthService.authenticate_user(email, password)
+    if error:
+        return "Invalid admin credentials.", 401
+
+    if (getattr(user, 'role', '') or '').lower() != 'admin':
+        return "Only admin accounts can sign in here.", 403
 
     login_user(user, remember=True)
     return redirect(url_for('admin.overview'))
@@ -274,14 +276,14 @@ def sellers():
 @login_required
 def riders():
     """Rider management placeholder"""
-    return render_template('admin/riders.html')
+    return render_template('admin/admin_riders_management.html')
 
 
 @admin_bp.get('/commission')
 @login_required
 def commission():
     """Commission & payouts placeholder"""
-    return render_template('admin/commission.html')
+    return render_template('admin/admin_commission_management.html')
 
 
 @admin_bp.get('/website')

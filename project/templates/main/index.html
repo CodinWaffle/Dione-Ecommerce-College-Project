@@ -84,6 +84,9 @@
 </section>
 {% endblock %} {% include 'main/components/_product_card.html' %} {% block
 extra_js %}
+<script>
+  window.__PRODUCT_BUCKETS__ = {{ (product_buckets or {}) | tojson }};
+</script>
 <script src="{{ url_for('static', filename='js/buyer_scripts/components/product_card.js') }}"></script>
 <script src="{{ url_for('static', filename='js/buyer_scripts/homepage.js') }}"></script>
 {% endblock %}

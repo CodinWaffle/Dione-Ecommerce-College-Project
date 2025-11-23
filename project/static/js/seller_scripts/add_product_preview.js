@@ -51,6 +51,33 @@ function generateGalleryPreviews(images, label) {
     .join("");
 }
 
+function collectPreviewImages(basicInfo) {
+  if (!basicInfo) return [];
+  const output = [];
+  const pushValue = (value) => {
+    if (value && typeof value === "string") {
+      output.push(value);
+    }
+  };
+  pushValue(basicInfo.primaryImage);
+  pushValue(basicInfo.secondaryImage);
+  if (Array.isArray(basicInfo.images)) {
+    basicInfo.images.forEach((img) => pushValue(img));
+  } else if (typeof basicInfo.images === "string" && basicInfo.images.trim()) {
+    try {
+      const parsed = JSON.parse(basicInfo.images);
+      if (Array.isArray(parsed)) {
+        parsed.forEach((img) => pushValue(img));
+      } else {
+        pushValue(basicInfo.images);
+      }
+    } catch (err) {
+      pushValue(basicInfo.images);
+    }
+  }
+  return output;
+}
+
 function addImagePreviewHandlers() {
   document.querySelectorAll(".preview-image-box[data-image]").forEach((box) => {
     box.addEventListener("click", () => {
@@ -130,7 +157,8 @@ function updatePreview() {
   // Images (2 photos max from basic info)
   const imagesContainer = document.getElementById("previewImages");
   if (imagesContainer) {
-    imagesContainer.innerHTML = generateImagePreviews(basicInfo.images || []);
+    const imageList = collectPreviewImages(basicInfo);
+    imagesContainer.innerHTML = generateImagePreviews(imageList);
     addImagePreviewHandlers();
   }
 
@@ -241,9 +269,10 @@ if (document.readyState === "loading") {
       name:
         basicInfo.productName || description.productName || "Untitled Product",
       image:
-        (basicInfo.images && basicInfo.images[0]) ||
-        (description.images && description.images[0]) ||
-        "/static/images/placeholder.svg",
+        basicInfo.primaryImage ||
+        basicInfo.secondaryImage ||
+        "/static/image/banner.png",
+      images: collectPreviewImages(basicInfo),
       price: Number(basicInfo.price) || 0,
       stock:
         Number(stock.totalStock) ||

@@ -4,6 +4,28 @@
   rel="stylesheet"
   href="{{ url_for('static', filename='css/admin.css') }}"
 />
+
+<!-- Product Management Specific CSS -->
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/admin_styles/admin.css') }}"
+/>
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/admin_styles/admin_product_management.css') }}"
+/>
+
+<!-- Commision Management Specific CSS -->
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/admin_styles/admin_commission_management.css') }}"
+/>
+
+<!-- Users Management Specific CSS -->
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/admin_styles/admin_users_management.css') }}"
+/>
 {% endblock %} {% block content %}
 <style>
   .navbar {

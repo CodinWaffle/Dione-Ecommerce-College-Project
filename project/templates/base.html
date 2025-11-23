@@ -5,6 +5,8 @@
     <meta http-equiv="X-UA-Compatible" content="IE-edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Dione Ecommerce</title>
+    {% set user_role = current_user.role|default('', true)|lower %}
+    {% set is_seller = current_user.is_authenticated and user_role == 'seller' %}
     <link
       rel="icon"
       type="image/png"
@@ -13,7 +15,7 @@
     />
 
     <!-- Lucide Icons (for seller panel) -->
-    {% if current_user.is_authenticated and current_user.role == 'seller' %}
+    {% if is_seller %}
     <script src="https://unpkg.com/lucide@latest"></script>
     {% endif %}
 
@@ -46,7 +48,7 @@
     />
 
     <!-- Seller Panel Styles -->
-    {% if current_user.is_authenticated and current_user.role == 'seller' %}
+    {% if is_seller %}
     <link
       rel="stylesheet"
       type="text/css"
@@ -57,7 +59,7 @@
       type="text/css"
       href="{{ url_for('static', filename='css/seller_styles/partials/_header_seller.css') }}?v={{ range(1, 1000) | random }}"
     />
-    {% endif %} {% if request.endpoint == 'main.index' %}
+    {% endif %} {% if not is_seller %}
     <link
       rel="stylesheet"
       type="text/css"
@@ -67,7 +69,7 @@
     endblock %}
   </head>
   <body>
-    {% if current_user.is_authenticated and current_user.role == 'seller' %}
+    {% if is_seller %}
     <!-- Seller Layout -->
     {% include 'seller/partials/_sidebar_seller.html' %}
     <div class="main-content" style="margin-left: 280px">
@@ -99,10 +101,7 @@
     </div>
     {% else %}
     <!-- Buyer/Default Layout -->
-    {% block header %} {% if request.endpoint and
-    request.endpoint.startswith('auth.') %} {% include
-    'main/partials/_header_auth.html' %} {% else %} {% include
-    'main/partials/_header_buyer.html' %} {% endif %} {% endblock %}
+    {% block header %} {% include 'main/partials/_header_buyer.html' %} {% endblock %}
 
     <div class="container-fluid">
       {% block flash_messages_buyer %} {% with messages =
@@ -132,7 +131,7 @@
     {% include 'main/partials/_footer.html' %} {% endif %}
 
     <!-- Seller Panel Scripts -->
-    {% if current_user.is_authenticated and current_user.role == 'seller' %}
+    {% if is_seller %}
     <script src="{{ url_for('static', filename='js/seller_scripts/partials/_sidebar_seller.js') }}?v={{ range(1, 1000) | random }}"></script>
     <script src="{{ url_for('static', filename='js/seller_scripts/partials/_header_seller.js') }}?v={{ range(1, 1000) | random }}"></script>
     {% endif %} {% block extra_js %}{% endblock %} {% block extra_scripts %}{%

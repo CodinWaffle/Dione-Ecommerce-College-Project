@@ -1,10 +1,685 @@
-{% extends "admin/base_admin.html" %}
+{% extends "admin/base_admin.html" %} {% block page_title %}Sellers Management{%
+endblock %} {% block extra_css %}
 
-{% block page_title %}Sellers Management{% endblock %}
+<!-- Google Fonts - Montserrat and Poppins -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap"
+  rel="stylesheet"
+/>
 
-{% block admin_content %}
-<div class="admin-card">
-  <h5>Sellers Management</h5>
-  <p class="text-muted mb-0">Use this space to review seller performance, approvals, and escalations.</p>
+<!-- Boxicons for Outline Icons -->
+<link
+  href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+  rel="stylesheet"
+/>
+
+<!-- Custom CSS -->
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/style.css') }}"
+/>
+{% endblock %} {% block admin_content %}
+<div class="dashboard-container">
+  <!-- Include the sidebar component -->
+  {% include 'admin/partials/_sidebar_admin.html' %}
+
+  <div class="main-content" id="main-content">
+    <!-- Include the header component -->
+    {% include 'admin/partials/_header_admin.html' %}
+
+    <div class="dashboard-content">
+      <div class="page-header">
+        <h1>Seller Management</h1>
+        <p>
+          Manage your platform sellers, review applications, and monitor
+          performance
+        </p>
+      </div>
+
+      <!-- Seller Management Tabs -->
+      <div class="tab-container">
+        <div class="tab-header">
+          <button class="tab-btn active" data-tab="pending">
+            Pending Approval
+          </button>
+          <button class="tab-btn" data-tab="active">Active Sellers</button>
+          <button class="tab-btn" data-tab="flagged">Flagged Accounts</button>
+          <button class="tab-btn" data-tab="suspended">Suspended</button>
+        </div>
+
+        <div class="tab-content active" id="pending">
+          <div class="card-header">
+            <h3>Pending Seller Approvals</h3>
+            <div class="header-actions">
+              <div class="search-mini">
+                <i class="bx bx-search"></i>
+                <input type="text" placeholder="Search applications..." />
+              </div>
+              <div class="filter-dropdown">
+                <button class="filter-btn">
+                  <i class="bx bx-filter-alt"></i>
+                  <span>Filter</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Seller Name</th>
+                  <th>Business Name</th>
+                  <th>Category</th>
+                  <th>Application Date</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <div class="seller-info">
+                      <div class="seller-avatar">
+                        <img
+                          src="https://via.placeholder.com/40"
+                          alt="Sarah Johnson"
+                        />
+                      </div>
+                      <div>
+                        <p class="seller-name">Sarah Johnson</p>
+                        <p class="seller-email">sarah@homemadegoods.com</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td>Homemade Goods Co.</td>
+                  <td>Handicrafts</td>
+                  <td>Oct 15, 2025</td>
+                  <td>
+                    <span class="status-badge pending">Pending Review</span>
+                  </td>
+                  <td>
+                    <div class="action-buttons">
+                      <button class="action-btn view" title="View Details">
+                        <i class="bx bx-show"></i>
+                      </button>
+                      <button
+                        class="action-btn approve"
+                        title="Approve Application"
+                      >
+                        <i class="bx bx-check"></i>
+                      </button>
+                      <button
+                        class="action-btn reject"
+                        title="Reject Application"
+                      >
+                        <i class="bx bx-x"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="seller-info">
+                      <div class="seller-avatar">
+                        <img
+                          src="https://via.placeholder.com/40"
+                          alt="Michael Chen"
+                        />
+                      </div>
+                      <div>
+                        <p class="seller-name">Michael Chen</p>
+                        <p class="seller-email">michael@techgadgets.com</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td>Tech Gadgets Plus</td>
+                  <td>Electronics</td>
+                  <td>Oct 16, 2025</td>
+                  <td>
+                    <span class="status-badge pending"
+                      >Document Verification</span
+                    >
+                  </td>
+                  <td>
+                    <div class="action-buttons">
+                      <button class="action-btn view" title="View Details">
+                        <i class="bx bx-show"></i>
+                      </button>
+                      <button
+                        class="action-btn approve"
+                        title="Approve Application"
+                      >
+                        <i class="bx bx-check"></i>
+                      </button>
+                      <button
+                        class="action-btn reject"
+                        title="Reject Application"
+                      >
+                        <i class="bx bx-x"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="seller-info">
+                      <div class="seller-avatar">
+                        <img
+                          src="https://via.placeholder.com/40"
+                          alt="Priya Sharma"
+                        />
+                      </div>
+                      <div>
+                        <p class="seller-name">Priya Sharma</p>
+                        <p class="seller-email">priya@organicfoods.com</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td>Organic Foods Market</td>
+                  <td>Food & Beverages</td>
+                  <td>Oct 14, 2025</td>
+                  <td>
+                    <span class="status-badge pending"
+                      >Address Verification</span
+                    >
+                  </td>
+                  <td>
+                    <div class="action-buttons">
+                      <button class="action-btn view" title="View Details">
+                        <i class="bx bx-show"></i>
+                      </button>
+                      <button
+                        class="action-btn approve"
+                        title="Approve Application"
+                      >
+                        <i class="bx bx-check"></i>
+                      </button>
+                      <button
+                        class="action-btn reject"
+                        title="Reject Application"
+                      >
+                        <i class="bx bx-x"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pagination">
+            <button class="page-btn prev">
+              <i class="bx bx-chevron-left"></i>
+            </button>
+            <button class="page-btn active">1</button>
+            <button class="page-btn">2</button>
+            <button class="page-btn">3</button>
+            <span class="page-separator">...</span>
+            <button class="page-btn">8</button>
+            <button class="page-btn next">
+              <i class="bx bx-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="tab-content" id="active">
+          <div class="card-header">
+            <h3>Active Sellers</h3>
+            <div class="header-actions">
+              <div class="search-mini">
+                <i class="bx bx-search"></i>
+                <input type="text" placeholder="Search sellers..." />
+              </div>
+              <div class="filter-dropdown">
+                <button class="filter-btn">
+                  <i class="bx bx-filter-alt"></i>
+                  <span>Filter</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="stats-cards seller-stats">
+            <div class="stat-card">
+              <div class="stat-card-icon purple">
+                <i class="bx bx-store"></i>
+              </div>
+              <div class="stat-card-info">
+                <h3>Total Sellers</h3>
+                <p class="stat-number">248</p>
+                <div class="stat-change positive">
+                  <i class="bx bx-up-arrow-alt"></i>
+                  <span>12 new this month</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-card-icon blue">
+                <i class="bx bx-package"></i>
+              </div>
+              <div class="stat-card-info">
+                <h3>Active Products</h3>
+                <p class="stat-number">12,456</p>
+                <div class="stat-change positive">
+                  <i class="bx bx-up-arrow-alt"></i>
+                  <span>256 new this week</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-card-icon green">
+                <i class="bx bx-dollar-circle"></i>
+              </div>
+              <div class="stat-card-info">
+                <h3>Total Commission</h3>
+                <p class="stat-number">$28,350</p>
+                <div class="stat-change positive">
+                  <i class="bx bx-up-arrow-alt"></i>
+                  <span>18.5% increase</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-card-icon orange">
+                <i class="bx bx-bar-chart-alt-2"></i>
+              </div>
+              <div class="stat-card-info">
+                <h3>Average Rating</h3>
+                <p class="stat-number">4.7/5.0</p>
+                <div class="stat-change positive">
+                  <i class="bx bx-up-arrow-alt"></i>
+                  <span>0.2 increase</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Seller</th>
+                  <th>Store Name</th>
+                  <th>Products</th>
+                  <th>Revenue</th>
+                  <th>Commission</th>
+                  <th>Rating</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <div class="seller-info">
+                      <div class="seller-avatar">
+                        <img
+                          src="https://via.placeholder.com/40"
+                          alt="James Wilson"
+                        />
+                      </div>
+                      <div>
+                        <p class="seller-name">James Wilson</p>
+                        <p class="seller-email">james@furnitureloft.com</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td>Furniture Loft</td>
+                  <td>124</td>
+                  <td>$24,850</td>
+                  <td>$2,485</td>
+                  <td>
+                    <div class="rating">
+                      <i class="bx bxs-star"></i>
+                      <i class="bx bxs-star"></i>
+                      <i class="bx bxs-star"></i>
+                      <i class="bx bxs-star"></i>
+                      <i class="bx bxs-star-half"></i>
+                      <span>4.5</span>
+                    </div>
+                  </td>
+                  <td><span class="status-badge success">Active</span></td>
+                  <td>
+                    <div class="action-buttons">
+                      <button class="action-btn view" title="View Details">
+                        <i class="bx bx-show"></i>
+                      </button>
+                      <button class="action-btn warn" title="Send Warning">
+                        <i class="bx bx-error"></i>
+                      </button>
+                      <button
+                        class="action-btn suspend"
+                        title="Suspend Account"
+                      >
+                        <i class="bx bx-block"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="seller-info">
+                      <div class="seller-avatar">
+                        <img
+                          src="https://via.placeholder.com/40"
+                          alt="Olivia Thompson"
+                        />
+                      </div>
+                      <div>
+                        <p class="seller-name">Olivia Thompson</p>
+                        <p class="seller-email">olivia@beautypro.com</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td>Beauty Pro Shop</td>
+                  <td>86</td>
+                  <td>$18,320</td>
+                  <td>$1,832</td>
+                  <td>
+                    <div class="rating">
+                      <i class="bx bxs-star"></i>
+                      <i class="bx bxs-star"></i>
+                      <i class="bx bxs-star"></i>
+                      <i class="bx bxs-star"></i>
+                      <i class="bx bxs-star"></i>
+                      <span>4.9</span>
+                    </div>
+                  </td>
+                  <td><span class="status-badge success">Active</span></td>
+                  <td>
+                    <div class="action-buttons">
+                      <button class="action-btn view" title="View Details">
+                        <i class="bx bx-show"></i>
+                      </button>
+                      <button class="action-btn warn" title="Send Warning">
+                        <i class="bx bx-error"></i>
+                      </button>
+                      <button
+                        class="action-btn suspend"
+                        title="Suspend Account"
+                      >
+                        <i class="bx bx-block"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="seller-info">
+                      <div class="seller-avatar">
+                        <img
+                          src="https://via.placeholder.com/40"
+                          alt="David Kim"
+                        />
+                      </div>
+                      <div>
+                        <p class="seller-name">David Kim</p>
+                        <p class="seller-email">david@sportsequip.com</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td>Sports Equipment Pro</td>
+                  <td>219</td>
+                  <td>$32,780</td>
+                  <td>$3,278</td>
+                  <td>
+                    <div class="rating">
+                      <i class="bx bxs-star"></i>
+                      <i class="bx bxs-star"></i>
+                      <i class="bx bxs-star"></i>
+                      <i class="bx bxs-star"></i>
+                      <i class="bx bx-star"></i>
+                      <span>4.0</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="status-badge warning">On Probation</span>
+                  </td>
+                  <td>
+                    <div class="action-buttons">
+                      <button class="action-btn view" title="View Details">
+                        <i class="bx bx-show"></i>
+                      </button>
+                      <button class="action-btn warn" title="Send Warning">
+                        <i class="bx bx-error"></i>
+                      </button>
+                      <button
+                        class="action-btn suspend"
+                        title="Suspend Account"
+                      >
+                        <i class="bx bx-block"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pagination">
+            <button class="page-btn prev">
+              <i class="bx bx-chevron-left"></i>
+            </button>
+            <button class="page-btn active">1</button>
+            <button class="page-btn">2</button>
+            <button class="page-btn">3</button>
+            <span class="page-separator">...</span>
+            <button class="page-btn">12</button>
+            <button class="page-btn next">
+              <i class="bx bx-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="tab-content" id="flagged">
+          <div class="card-header">
+            <h3>Flagged Seller Accounts</h3>
+            <div class="header-actions">
+              <div class="search-mini">
+                <i class="bx bx-search"></i>
+                <input type="text" placeholder="Search flagged accounts..." />
+              </div>
+              <div class="filter-dropdown">
+                <button class="filter-btn">
+                  <i class="bx bx-filter-alt"></i>
+                  <span>Filter</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Seller</th>
+                  <th>Store Name</th>
+                  <th>Issue Type</th>
+                  <th>Violation Count</th>
+                  <th>Last Violation</th>
+                  <th>Reports</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <div class="seller-info">
+                      <div class="seller-avatar">
+                        <img
+                          src="https://via.placeholder.com/40"
+                          alt="Robert Garcia"
+                        />
+                      </div>
+                      <div>
+                        <p class="seller-name">Robert Garcia</p>
+                        <p class="seller-email">robert@techdeals.com</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td>Tech Deals Central</td>
+                  <td>Product Misrepresentation</td>
+                  <td>3</td>
+                  <td>Oct 12, 2025</td>
+                  <td><span class="count-badge danger">8 reports</span></td>
+                  <td>
+                    <div class="action-buttons">
+                      <button class="action-btn view" title="View Details">
+                        <i class="bx bx-show"></i>
+                      </button>
+                      <button class="action-btn contact" title="Contact Seller">
+                        <i class="bx bx-envelope"></i>
+                      </button>
+                      <button class="action-btn warn" title="Issue Warning">
+                        <i class="bx bx-error"></i>
+                      </button>
+                      <button
+                        class="action-btn suspend"
+                        title="Suspend Account"
+                      >
+                        <i class="bx bx-block"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="seller-info">
+                      <div class="seller-avatar">
+                        <img
+                          src="https://via.placeholder.com/40"
+                          alt="Linda Martinez"
+                        />
+                      </div>
+                      <div>
+                        <p class="seller-name">Linda Martinez</p>
+                        <p class="seller-email">linda@fashiontrends.com</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td>Fashion Trends Co</td>
+                  <td>Shipping Delays</td>
+                  <td>2</td>
+                  <td>Oct 14, 2025</td>
+                  <td>
+                    <span class="count-badge warning">5 reports</span>
+                  </td>
+                  <td>
+                    <div class="action-buttons">
+                      <button class="action-btn view" title="View Details">
+                        <i class="bx bx-show"></i>
+                      </button>
+                      <button class="action-btn contact" title="Contact Seller">
+                        <i class="bx bx-envelope"></i>
+                      </button>
+                      <button class="action-btn warn" title="Issue Warning">
+                        <i class="bx bx-error"></i>
+                      </button>
+                      <button
+                        class="action-btn suspend"
+                        title="Suspend Account"
+                      >
+                        <i class="bx bx-block"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="tab-content" id="suspended">
+          <div class="card-header">
+            <h3>Suspended Seller Accounts</h3>
+            <div class="header-actions">
+              <div class="search-mini">
+                <i class="bx bx-search"></i>
+                <input type="text" placeholder="Search suspended accounts..." />
+              </div>
+              <div class="filter-dropdown">
+                <button class="filter-btn">
+                  <i class="bx bx-filter-alt"></i>
+                  <span>Filter</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Seller</th>
+                  <th>Store Name</th>
+                  <th>Suspension Reason</th>
+                  <th>Suspended Date</th>
+                  <th>Suspension Period</th>
+                  <th>Appeals</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <div class="seller-info">
+                      <div class="seller-avatar">
+                        <img
+                          src="https://via.placeholder.com/40"
+                          alt="Thomas Reynolds"
+                        />
+                      </div>
+                      <div>
+                        <p class="seller-name">Thomas Reynolds</p>
+                        <p class="seller-email">thomas@electronicsplus.com</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td>Electronics Plus</td>
+                  <td>Multiple Policy Violations</td>
+                  <td>Oct 5, 2025</td>
+                  <td>30 days</td>
+                  <td>
+                    <span class="status-badge pending">1 pending appeal</span>
+                  </td>
+                  <td>
+                    <div class="action-buttons">
+                      <button class="action-btn view" title="View Details">
+                        <i class="bx bx-show"></i>
+                      </button>
+                      <button class="action-btn contact" title="Contact Seller">
+                        <i class="bx bx-envelope"></i>
+                      </button>
+                      <button
+                        class="action-btn reinstate"
+                        title="Reinstate Account"
+                      >
+                        <i class="bx bx-check-circle"></i>
+                      </button>
+                      <button
+                        class="action-btn delete"
+                        title="Permanently Remove"
+                      >
+                        <i class="bx bx-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
+{% endblock %} {% block extra_js %}
+<!-- JavaScript -->
+<script src="{{ url_for('static', filename='js/admin_scripts/admin_sellers_management.js') }}"></script>
 {% endblock %}

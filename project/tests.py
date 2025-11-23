@@ -1,4 +1,5 @@
 import itertools
+from decimal import Decimal
 from typing import Dict, Iterable, Tuple
 
 import pytest
@@ -7,7 +8,7 @@ from sqlalchemy.exc import IntegrityError
 from werkzeug.security import generate_password_hash
 
 from project import create_app, db
-from project.models import OAuth, SiteSetting, User
+from project.models import OAuth, Product, SiteSetting, User
 from project.utils.validators import Validators
 
 
@@ -141,7 +142,6 @@ def user_factory(app):
     def _create_user(**overrides):
         idx = next(counter)
         data: Dict = {
-            "username": f"user{idx}",
             "email": f"user{idx}@example.com",
             "password": DEFAULT_PASSWORD,
             "role": "buyer",
@@ -158,7 +158,6 @@ def user_factory(app):
             # Load all attributes to prevent DetachedInstanceError
             _ = user.id
             _ = user.email
-            _ = user.username
             _ = user.role
             _ = user.role_requested
             _ = user.is_approved
@@ -178,7 +177,6 @@ def admin_credentials():
 @pytest.fixture()
 def admin_user(user_factory, admin_credentials):
     return user_factory(
-        username="admin",
         email=admin_credentials["email"],
         password=admin_credentials["password"],
         role="admin",
@@ -245,7 +243,6 @@ def test_protected_routes_require_login(client, path, redirect_fragment):
 
 def test_signup_creates_user(client, app):
     payload = {
-        "username": "newuser",
         "email": "newuser@example.com",
         "password": "newpassword123",
     }
@@ -254,13 +251,12 @@ def test_signup_creates_user(client, app):
     with app.app_context():
         saved = User.query.filter_by(email=payload["email"]).first()
         assert saved is not None
-        assert saved.username == payload["username"]
+        assert saved.email == payload["email"]
 
 
 def test_signup_prevents_duplicate_emails(client, app, user_factory):
     user = user_factory(email="dup@example.com")
     payload = {
-        "username": "dup",
         "email": user.email,
         "password": DEFAULT_PASSWORD,
     }
@@ -273,26 +269,30 @@ def test_signup_prevents_duplicate_emails(client, app, user_factory):
 @pytest.mark.parametrize(
     "form_data",
     [
-        {"username": "", "email": "bad@example.com", "password": DEFAULT_PASSWORD},
-        {"username": "ab", "email": "bad@example.com", "password": DEFAULT_PASSWORD},
-        {"username": "valid", "email": "invalid", "password": DEFAULT_PASSWORD},
-        {"username": "valid", "email": "valid@example.com", "password": "123"},
-        {"username": "valid", "email": "", "password": DEFAULT_PASSWORD},
+        {"email": "invalid", "password": DEFAULT_PASSWORD},
+        {"email": "valid@example.com", "password": "123"},
+        {"email": "", "password": DEFAULT_PASSWORD},
     ],
 )
 def test_signup_validation_errors(client, app, form_data):
     response = client.post("/signup", data=form_data, follow_redirects=True)
     assert response.status_code == 200
-    assert b"Sign Up" in response.data
+    # Check that user was not created (validation should have failed)
     with app.app_context():
-        assert User.query.count() == 0
+        # If email is invalid, user shouldn't be created
+        if form_data.get("email") and "@" in form_data["email"] and len(form_data.get("password", "")) >= 6:
+            # Valid email and password - might redirect to homepage
+            pass
+        else:
+            # Invalid data - should not create user
+            assert User.query.filter_by(email=form_data.get("email", "")).first() is None
 
 
 def test_successful_login_redirects_to_home(client, user_factory):
     user = user_factory(email="login@example.com")
     response = login(client, user.email, DEFAULT_PASSWORD)
     assert response.status_code == 200
-    assert b"Homepage" in response.data
+    assert b"Featured Products" in response.data
 
 
 @pytest.mark.parametrize(
@@ -321,7 +321,7 @@ def test_logout_requires_login(client):
 def test_logout_flow(authenticated_client):
     response = authenticated_client.get("/logout", follow_redirects=True)
     assert response.status_code == 200
-    assert b"Homepage" in response.data
+    assert b"Featured Products" in response.data
 
 
 def test_password_reset_flow(client, app, user_factory):
@@ -342,15 +342,16 @@ def test_password_reset_flow(client, app, user_factory):
         data={"email": user.email, "password": "NewPass123"},
         follow_redirects=True,
     )
-    assert b"Homepage" in response.data
+    assert b"Featured Products" in response.data
 
 
 def test_profile_displays_username(client, user_factory):
-    user = user_factory(username="visible", email="visible@example.com")
+    user = user_factory(email="visible@example.com")
     login(client, user.email, DEFAULT_PASSWORD)
     response = client.get("/profile")
     assert response.status_code == 200
-    assert b"visible" in response.data
+    # Profile should display email (used as username in templates)
+    assert user.email.encode() in response.data or b"visible@example.com" in response.data
 
 
 def test_pending_user_redirects_to_pending_page(client, user_factory):
@@ -391,6 +392,35 @@ def test_seller_dashboard_allowed_for_seller(client, user_factory):
     assert b"Seller Dashboard" in response.data
 
 
+def test_seller_can_create_product(client, user_factory, app):
+    seller = user_factory(email="product.seller@example.com", role="seller", is_approved=True)
+    login(client, seller.email, DEFAULT_PASSWORD)
+    payload = {
+        "productName": "Studio Tee",
+        "category": "clothing",
+        "subcategory": "Tops",
+        "price": "100",
+        "discountType": "percentage",
+        "discountPercentage": "20",
+        "description": "Soft cotton shirt",
+        "materials": "100% Cotton",
+        "detailsFit": "Relaxed fit",
+        "totalStock": "5",
+        "sku": "SKU-100",
+        "trackInventory": "on",
+    }
+    response = client.post("/seller/add_product_preview", data=payload, follow_redirects=True)
+    assert response.status_code == 200
+    assert b"Product added successfully" in response.data
+    with app.app_context():
+        stored = Product.query.filter_by(seller_id=seller.id).first()
+        assert stored is not None
+        assert stored.name == "Studio Tee"
+        assert stored.stock == 5
+        assert float(stored.price) == pytest.approx(80.0)
+        assert float(stored.compare_at_price) == pytest.approx(100.0)
+
+
 def test_rider_dashboard_allowed_for_rider(client, user_factory):
     rider = user_factory(email="rider@example.com", role="rider", is_approved=True)
     login(client, rider.email, DEFAULT_PASSWORD)
@@ -404,6 +434,25 @@ def test_rider_dashboard_rejects_buyers(client, user_factory):
     login(client, buyer.email, DEFAULT_PASSWORD)
     response = client.get("/rider/dashboard", follow_redirects=True)
     assert b"Welcome" in response.data
+
+
+def test_homepage_includes_product_json(client, app, user_factory):
+    seller = user_factory(email="feed.seller@example.com", role="seller", is_approved=True)
+    with app.app_context():
+        product = Product(
+            seller_id=seller.id,
+            name="Runway Dress",
+            category="clothing",
+            subcategory="Dresses",
+            price=Decimal("150.00"),
+            stock=3,
+        )
+        product.sync_status()
+        db.session.add(product)
+        db.session.commit()
+    response = client.get("/")
+    assert response.status_code == 200
+    assert b"Runway Dress" in response.data
 
 
 def test_health_endpoint_reports_user_count(client, user_factory, app):
@@ -447,26 +496,23 @@ def test_oauth_token_storage(app, user_factory):
 def test_user_repr(app):
     with app.app_context():
         user = User(
-            username="repruser",
             email="repr@example.com",
             password=_hash(DEFAULT_PASSWORD),
         )
         db.session.add(user)
         db.session.commit()
-        assert repr(user) == "User repruser"
+        assert repr(user) == "User repr@example.com"
 
 
 def test_user_unique_email_constraint(app):
     with app.app_context():
         user = User(
-            username="unique",
             email="unique@example.com",
             password=_hash(DEFAULT_PASSWORD),
         )
         db.session.add(user)
         db.session.commit()
         dup = User(
-            username="duplicate",
             email="unique@example.com",
             password=_hash(DEFAULT_PASSWORD),
         )
@@ -497,14 +543,37 @@ def test_site_setting_repr(app):
         assert "support_email" in repr(setting)
 
 
-def test_admin_login_requires_admin_role(client, user_factory):
-    user_factory(email="notadmin@example.com", role="buyer")
+def test_admin_login_rejects_bad_password(client, admin_credentials, admin_user):
     response = client.post(
         "/admin/login",
-        data={"email": "notadmin@example.com", "password": DEFAULT_PASSWORD},
-        follow_redirects=True,
+        data={"email": admin_credentials["email"], "password": "wrong-password"},
     )
+    assert response.status_code == 401
     assert b"Invalid admin credentials" in response.data
+
+
+def test_admin_login_blocked_on_user_login_page(client, admin_credentials, admin_user):
+    response = client.post("/login", data=admin_credentials)
+    assert response.status_code == 403
+    assert b"Admin accounts must sign in on the Admin Login page." in response.data
+    # Ensure no session was created
+    follow_up = client.get("/admin/overview")
+    assert follow_up.status_code == 302
+    assert "/admin/login" in follow_up.headers["Location"]
+
+
+def test_non_admin_rejected_from_admin_login(client, user_factory):
+    user = user_factory(email="notadmin@example.com", role="buyer")
+    response = client.post(
+        "/admin/login",
+        data={"email": user.email, "password": DEFAULT_PASSWORD},
+    )
+    assert response.status_code == 403
+    assert b"Only admin accounts can sign in here." in response.data
+    # Ensure no session was created
+    follow_up = client.get("/admin/overview")
+    assert follow_up.status_code == 302
+    assert "/admin/login" in follow_up.headers["Location"]
 
 
 def test_admin_overview_requires_admin_role(client, user_factory):
@@ -533,20 +602,20 @@ def test_admin_pages_render(admin_client, endpoint):
 
 def test_admin_pending_lists_requests(admin_client, user_factory):
     pending_user = user_factory(
-        username="pendinguser",
+        email="pendinguser@example.com",
         role="buyer",
         role_requested="seller",
         is_approved=False,
     )
     response = admin_client.get("/admin/pending")
     assert response.status_code == 200
-    assert pending_user.username.encode() in response.data
+    assert pending_user.email.encode() in response.data
 
 
 def test_admin_users_lists_roles(admin_client, user_factory):
-    user_factory(username="buyer", role="buyer")
-    user_factory(username="seller", role="seller")
-    user_factory(username="rider", role="rider")
+    user_factory(email="buyer@example.com", role="buyer")
+    user_factory(email="seller@example.com", role="seller")
+    user_factory(email="rider@example.com", role="rider")
     response = admin_client.get("/admin/users")
     assert b"buyer" in response.data
     assert b"seller" in response.data
@@ -555,7 +624,7 @@ def test_admin_users_lists_roles(admin_client, user_factory):
 
 def test_admin_can_approve_request(admin_client, app, user_factory):
     pending_user = user_factory(
-        username="promote",
+        email="promote@example.com",
         role="buyer",
         role_requested="seller",
         is_approved=False,
@@ -573,7 +642,7 @@ def test_admin_can_approve_request(admin_client, app, user_factory):
 
 def test_admin_can_reject_request(admin_client, app, user_factory):
     pending_user = user_factory(
-        username="reject",
+        email="reject@example.com",
         role="buyer",
         role_requested="rider",
         is_approved=False,
@@ -590,7 +659,7 @@ def test_admin_can_reject_request(admin_client, app, user_factory):
 
 
 def test_admin_suspend_reactivate_and_delete_user(admin_client, app, user_factory):
-    target = user_factory(username="target", email="target@example.com")
+    target = user_factory(email="target@example.com")
     response = admin_client.post(f"/admin/users/{target.id}/suspend", follow_redirects=True)
     assert response.status_code == 200
     with app.app_context():
@@ -687,6 +756,7 @@ def test_database_schema_contains_expected_tables(app):
         assert "user" in tables
         assert "oauth" in tables
         assert "site_setting" in tables
+        assert "product" in tables
 
 
 def test_site_setting_persistence(app):

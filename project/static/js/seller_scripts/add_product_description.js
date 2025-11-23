@@ -55,9 +55,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function validatePage2() {
     let valid = true;
-    const sizeGuideInputs = document.querySelectorAll(
-      'input[name="sizeGuide[]"]'
-    );
     const description = document.getElementById("description");
     const materials = document.getElementById("materials");
     const detailsFit = document.getElementById("detailsFit");
@@ -65,26 +62,6 @@ document.addEventListener("DOMContentLoaded", function () {
     description && clearErrorFor(description);
     materials && clearErrorFor(materials);
     detailsFit && clearErrorFor(detailsFit);
-    // clear errors for any sizeguide inputs
-    if (sizeGuideInputs && sizeGuideInputs.length) {
-      sizeGuideInputs.forEach((el) => clearErrorFor(el));
-    }
-
-    // File input: must have at least one selected size guide file
-    let hasSizeGuide = false;
-    if (sizeGuideInputs && sizeGuideInputs.length) {
-      sizeGuideInputs.forEach((inp) => {
-        if (inp.files && inp.files.length > 0) hasSizeGuide = true;
-      });
-    }
-    if (!hasSizeGuide) {
-      // show error on the first sizeguide input or container
-      const first =
-        sizeGuideInputs && sizeGuideInputs.length ? sizeGuideInputs[0] : null;
-      showErrorFor(first || description, "Please upload a size guide photo.");
-      valid = false;
-    }
-
     // Textareas: must not be empty (trimmed)
     if (!description || description.value.trim() === "") {
       showErrorFor(description, "Please enter a product description.");
@@ -135,9 +112,7 @@ document.addEventListener("DOMContentLoaded", function () {
   document
     .querySelectorAll('input[name="certifications[]"]')
     .forEach(setupFileInput);
-  document
-    .querySelectorAll('input[name="sizeGuide[]"]')
-    .forEach(setupFileInput);
+  // Size guide inputs removed
 
   // Utility to add a new upload slot to a container (returns the created input)
   function addUploadSlot(container, inputName, boxClass) {
@@ -151,9 +126,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const placeholder = document.createElement("div");
     placeholder.className =
-      boxClass === "cert-upload-box"
-        ? "cert-upload-placeholder"
-        : "sizeguide-placeholder";
+      "cert-upload-placeholder";
     const icon = document.createElement("i");
     icon.className = "ri-image-line";
     const small = document.createElement("small");
@@ -198,35 +171,6 @@ document.addEventListener("DOMContentLoaded", function () {
     if (certContainer.querySelectorAll(".cert-upload-box").length >= 5) {
       certAddBtn.disabled = true;
       certAddBtn.classList.add("disabled");
-    }
-  }
-
-  // Handle sizeguide add button
-  const sizeguideContainer = document.getElementById("sizeguideContainer");
-  const sizeguideAddBtn = document.getElementById("sizeguideAddBtn");
-  if (sizeguideAddBtn && sizeguideContainer) {
-    sizeguideAddBtn.addEventListener("click", function () {
-      const current =
-        sizeguideContainer.querySelectorAll(".sizeguide-box").length;
-      if (current >= 5) return;
-      const input = addUploadSlot(
-        sizeguideContainer,
-        "sizeGuide[]",
-        "sizeguide-box"
-      );
-      input.click();
-      // disable add when reach max
-      const after =
-        sizeguideContainer.querySelectorAll(".sizeguide-box").length;
-      if (after >= 5) {
-        sizeguideAddBtn.disabled = true;
-        sizeguideAddBtn.classList.add("disabled");
-      }
-    });
-    // initialize disabled state
-    if (sizeguideContainer.querySelectorAll(".sizeguide-box").length >= 5) {
-      sizeguideAddBtn.disabled = true;
-      sizeguideAddBtn.classList.add("disabled");
     }
   }
 

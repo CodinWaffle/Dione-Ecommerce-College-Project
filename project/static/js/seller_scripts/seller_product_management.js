@@ -28,7 +28,10 @@ document.addEventListener("DOMContentLoaded", function () {
     );
   }
 
-  let products = JSON.parse(localStorage.getItem("products") || "[]");
+  const preloaded = window.__SELLER_PRODUCTS__ || [];
+  let products = Array.isArray(preloaded)
+    ? JSON.parse(JSON.stringify(preloaded))
+    : [];
 
   // Tab elements
   const tabAll = document.getElementById("tabAll");
@@ -108,7 +111,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 <td>
                     <div class="product-info">
                         <img src="${
-                          product.image || "/static/images/placeholder.svg"
+                          product.image || "/static/image/banner.png"
                         }" alt="${product.name}" class="product-image">
                         <span class="product-name">${product.name}</span>
                     </div>
@@ -242,10 +245,9 @@ document.addEventListener("DOMContentLoaded", function () {
         status: "active",
         image:
           imagePreview.querySelector("img")?.src ||
-          "/static/images/placeholder.svg",
+          "/static/image/banner.png",
       };
       products.unshift(product);
-      localStorage.setItem("products", JSON.stringify(products));
       renderProducts(products);
       if (productModal) {
         productModal.classList.remove("active");
@@ -328,7 +330,6 @@ document.addEventListener("DOMContentLoaded", function () {
       if (delBtn) {
         const id = parseInt(delBtn.dataset.id);
         products = products.filter((x) => x.id !== id);
-        localStorage.setItem("products", JSON.stringify(products));
         renderProducts(products);
       }
     });
@@ -364,7 +365,6 @@ document.addEventListener("DOMContentLoaded", function () {
           ? Object.assign({}, p, { stock: (p.stock || 0) + 10 })
           : p
       );
-      localStorage.setItem("products", JSON.stringify(products));
       renderProducts(products);
       bulkActions.style.display = "none";
     });
@@ -376,7 +376,6 @@ document.addEventListener("DOMContentLoaded", function () {
       products = products.map((p) =>
         ids.includes(p.id) ? Object.assign({}, p, { status: "archived" }) : p
       );
-      localStorage.setItem("products", JSON.stringify(products));
       renderProducts(products);
       bulkActions.style.display = "none";
     });

@@ -12,6 +12,16 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
       rel="stylesheet"
     />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{{ url_for('static', filename='css/buyer_styles/partials/_header_buyer.css') }}"
+    />
     <style>
       * {
         margin: 0;
@@ -90,7 +100,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 120px 40px 40px;
+        padding: 180px 40px 60px;
       }
 
       .signup-container {

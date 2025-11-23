@@ -160,7 +160,7 @@ Dione Ecommerce{% endblock %} {% block extra_css %}
               <td>
                 <div class="product-info">
                   <img
-                    src="{{ p.image if p.image else url_for('static', filename='images/placeholder.svg') }}"
+                    src="{{ p.image if p.image else url_for('static', filename='image/banner.png') }}"
                     class="product-image"
                     alt="{{ p.name }}"
                   />
@@ -171,7 +171,7 @@ Dione Ecommerce{% endblock %} {% block extra_css %}
               <td class="col-right">
                 {{ p.subcategory if p.subcategory else '—' }}
               </td>
-              <td class="col-right">${{ '%.2f'|format(p.price) }}</td>
+              <td class="col-right">${{ '%.2f'|format(p.price or 0) }}</td>
               <td class="col-right">
                 {{ p.stock if p.stock is defined else '—' }}
               </td>
@@ -204,6 +204,9 @@ Dione Ecommerce{% endblock %} {% block extra_css %}
   </div>
 </div>
 {% endblock %} {% block extra_js %}
+<script>
+  window.__SELLER_PRODUCTS__ = {{ (product_payload or []) | tojson }};
+</script>
 <script src="{{ url_for('static', filename='js/seller_scripts/seller_product_management.js') }}?v={{ range(1, 10000) | random }}"></script>
 <script></script>
 {% endblock %}

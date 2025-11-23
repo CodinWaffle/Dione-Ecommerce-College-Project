@@ -54,13 +54,15 @@ block title %}Add New Product{% endblock %} {% block extra_css %}
                 >Product Photos (Other photos can be added on the Variation
                 Section)</label
               >
-              <div class="photo-upload-container">
-                <div class="photo-upload-box" data-index="0">
-                  <input type="file" class="photo-input" accept="image/*" />
-                  <label class="photo-label">
-                    <i class="ri-image-add-line"></i>
-                    <span>Main Photo</span>
-                  </label>
+              <input type="hidden" name="primaryImage" id="primaryImageField" />
+              <input type="hidden" name="secondaryImage" id="secondaryImageField" />
+                <div class="photo-upload-container">
+                  <div class="photo-upload-box" data-index="0">
+                    <input type="file" class="photo-input" accept="image/*" id="photoInput0" />
+                    <label class="photo-label" for="photoInput0">
+                      <i class="ri-image-add-line"></i>
+                      <span>Main Photo</span>
+                    </label>
                   <div class="photo-preview">
                     <img src="#" alt="Preview" />
                     <button type="button" class="remove-photo">
@@ -68,9 +70,9 @@ block title %}Add New Product{% endblock %} {% block extra_css %}
                     </button>
                   </div>
                 </div>
-                <div class="photo-upload-box" data-index="1">
-                  <input type="file" class="photo-input" accept="image/*" />
-                  <label class="photo-label">
+                  <div class="photo-upload-box" data-index="1">
+                    <input type="file" class="photo-input" accept="image/*" id="photoInput1" />
+                    <label class="photo-label" for="photoInput1">
                     <i class="ri-image-add-line"></i>
                     <span>Product Photo</span>
                   </label>
@@ -334,60 +336,6 @@ block title %}Add New Product{% endblock %} {% block extra_css %}
         <!-- Page 2: Product Details -->
         <div class="form-page" id="page2">
           <div class="form-grid">
-            Size Guide
-            <div class="form-group full-width">
-              <label for="sizeGuide">Size Guide Photo</label>
-              <p
-                style="
-                  margin: 0;
-                  color: var(--text-secondary);
-                  font-size: 0.95rem;
-                "
-              >
-                Upload 1–5 size guide photos
-              </p>
-              <div class="sizeguide-container" id="sizeguideContainer">
-                <label class="sizeguide-box">
-                  <input
-                    type="file"
-                    name="sizeGuide[]"
-                    accept="image/*"
-                    required
-                  />
-                  <div class="sizeguide-placeholder">
-                    <svg
-                      width="36"
-                      height="36"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                    >
-                      <rect
-                        x="3"
-                        y="3"
-                        width="18"
-                        height="18"
-                        rx="2"
-                        ry="2"
-                      ></rect>
-                      <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                      <polyline points="21 15 16 10 5 21"></polyline>
-                    </svg>
-                    <small>Click to upload</small>
-                  </div>
-                </label>
-                <button
-                  type="button"
-                  class="sizeguide-add-box"
-                  id="sizeguideAddBtn"
-                  aria-label="Add size guide photo"
-                >
-                  <i class="ri-add-line"></i>
-                </button>
-              </div>
-            </div>
-
             Description
             <div class="form-group full-width">
               <label for="description">Description</label>

@@ -1,10 +1,1251 @@
-{% extends "admin/base_admin.html" %}
+{% extends "admin/base_admin.html" %} {% block page_title %}Product Management{%
+endblock %} {% block extra_css %}
+<!-- Favicon -->
+<link
+  rel="icon"
+  type="image/x-icon"
+  href="{{ url_for('static', filename='img/favicon.ico') }}"
+/>
+<link
+  rel="icon"
+  type="image/svg+xml"
+  href="{{ url_for('static', filename='img/favicon.svg') }}"
+/>
+<link
+  rel="apple-touch-icon"
+  href="{{ url_for('static', filename='img/favicon.ico') }}"
+/>
+<meta name="theme-color" content="#6366f1" />
 
-{% block page_title %}Product Management{% endblock %}
+<!-- Google Fonts - Montserrat and Poppins -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap"
+  rel="stylesheet"
+/>
 
-{% block admin_content %}
-<div class="admin-card">
-  <h5>Product Management</h5>
-  <p class="text-muted mb-0">Placeholder view. Hook this page into product moderation tools when ready.</p>
-</div>
+<!-- Boxicons for Outline Icons -->
+<link
+  href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+  rel="stylesheet"
+/>
+
+<!-- Custom CSS -->
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/admin_styles/admin.css') }}"
+/>
+<!-- Product Management Specific CSS -->
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/admin_styles/admin_product_management.css') }}"
+/>
+{% endblock %} {% block admin_content %}
+<body>
+  <div class="dashboard-container">
+    <!-- Include the sidebar component -->
+    {% include 'admin/partials/_sidebar_admin.html' %}
+
+    <div class="main-content" id="main-content">
+      <!-- Include the header component -->
+      {% include 'admin/partials/_header_admin.html' %}
+
+      <div class="dashboard-content">
+        <div class="page-header">
+          <h1>Product Management</h1>
+          <p>Manage product listings, approvals, categories, and inventory.</p>
+        </div>
+
+        <!-- Product Stats Cards -->
+        <div class="stats-cards">
+          <!-- Total Products Card -->
+          <div class="stat-card">
+            <div class="stat-card-icon blue">
+              <i class="bx bx-package"></i>
+            </div>
+            <div class="stat-card-info">
+              <h3>Total Products</h3>
+              <p class="stat-number">5,432</p>
+              <div class="stat-change positive">
+                <i class="bx bx-up-arrow-alt"></i>
+                <span>3.2% increase</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pending Approvals Card -->
+          <div class="stat-card">
+            <div class="stat-card-icon orange">
+              <i class="bx bx-time"></i>
+            </div>
+            <div class="stat-card-info">
+              <h3>Pending Approvals</h3>
+              <p class="stat-number">47</p>
+              <div class="stat-change negative">
+                <i class="bx bx-up-arrow-alt"></i>
+                <span>12% increase</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Flagged Products Card -->
+          <div class="stat-card">
+            <div class="stat-card-icon red">
+              <i class="bx bx-flag"></i>
+            </div>
+            <div class="stat-card-info">
+              <h3>Flagged Products</h3>
+              <p class="stat-number">18</p>
+              <div class="stat-change negative">
+                <i class="bx bx-up-arrow-alt"></i>
+                <span>5.3% increase</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Low Stock Products Card -->
+          <div class="stat-card">
+            <div class="stat-card-icon yellow">
+              <i class="bx bx-error"></i>
+            </div>
+            <div class="stat-card-info">
+              <h3>Low Stock</h3>
+              <p class="stat-number">124</p>
+              <div class="stat-change neutral">
+                <i class="bx bx-minus"></i>
+                <span>No change</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Product Management Tabs -->
+        <div class="dashboard-grid single-column full-width">
+          <div class="dashboard-card full-width">
+            <div class="card-header">
+              <h3>Product Management</h3>
+              <div class="card-actions">
+                <div class="search-box">
+                  <input type="text" placeholder="Search products..." />
+                  <i class="bx bx-search"></i>
+                </div>
+                <button class="filter-btn">
+                  <i class="bx bx-filter"></i>
+                  Filter
+                </button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="tabs">
+                <button class="tab-btn active" data-target="all-products-tab">
+                  All Products
+                </button>
+                <button class="tab-btn" data-target="pending-tab">
+                  Pending Approval
+                </button>
+                <button class="tab-btn" data-target="flagged-tab">
+                  Flagged Products
+                </button>
+                <button class="tab-btn" data-target="categories-tab">
+                  Categories
+                </button>
+                <button class="tab-btn" data-target="inventory-tab">
+                  Inventory
+                </button>
+              </div>
+
+              <!-- All Products Tab Content -->
+              <div class="tab-content active" id="all-products-tab">
+                <div class="table-responsive full-width">
+                  <table class="data-table product-table">
+                    <thead>
+                      <tr>
+                        <th>Product ID</th>
+                        <th>Image</th>
+                        <th>Product Name</th>
+                        <th>Category</th>
+                        <th>Seller</th>
+                        <th>Price</th>
+                        <th>Stock</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>#PRD-1234</td>
+                        <td>
+                          <div class="product-image">
+                            <img
+                              src="https://via.placeholder.com/40"
+                              alt="Product"
+                            />
+                          </div>
+                        </td>
+                        <td>Wireless Bluetooth Earbuds</td>
+                        <td>Electronics</td>
+                        <td>Tech Store Inc.</td>
+                        <td>$49.99</td>
+                        <td>78</td>
+                        <td>
+                          <span class="status-badge active">Active</span>
+                        </td>
+                        <td>
+                          <div class="action-buttons">
+                            <button
+                              class="action-btn edit-btn"
+                              title="Edit Product"
+                            >
+                              <i class="bx bx-edit"></i>
+                            </button>
+                            <button
+                              class="action-btn view-btn"
+                              title="View Details"
+                            >
+                              <i class="bx bx-show"></i>
+                            </button>
+                            <button
+                              class="action-btn flag-btn"
+                              title="Flag Product"
+                            >
+                              <i class="bx bx-flag"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>#PRD-1235</td>
+                        <td>
+                          <div class="product-image">
+                            <img
+                              src="https://via.placeholder.com/40"
+                              alt="Product"
+                            />
+                          </div>
+                        </td>
+                        <td>Smart Watch Series 5</td>
+                        <td>Electronics</td>
+                        <td>Gadget World</td>
+                        <td>$129.99</td>
+                        <td>42</td>
+                        <td>
+                          <span class="status-badge active">Active</span>
+                        </td>
+                        <td>
+                          <div class="action-buttons">
+                            <button
+                              class="action-btn edit-btn"
+                              title="Edit Product"
+                            >
+                              <i class="bx bx-edit"></i>
+                            </button>
+                            <button
+                              class="action-btn view-btn"
+                              title="View Details"
+                            >
+                              <i class="bx bx-show"></i>
+                            </button>
+                            <button
+                              class="action-btn flag-btn"
+                              title="Flag Product"
+                            >
+                              <i class="bx bx-flag"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>#PRD-1236</td>
+                        <td>
+                          <div class="product-image">
+                            <img
+                              src="https://via.placeholder.com/40"
+                              alt="Product"
+                            />
+                          </div>
+                        </td>
+                        <td>Premium Leather Wallet</td>
+                        <td>Fashion</td>
+                        <td>Luxury Goods Co.</td>
+                        <td>$59.95</td>
+                        <td>15</td>
+                        <td>
+                          <span class="status-badge low-stock">Low Stock</span>
+                        </td>
+                        <td>
+                          <div class="action-buttons">
+                            <button
+                              class="action-btn edit-btn"
+                              title="Edit Product"
+                            >
+                              <i class="bx bx-edit"></i>
+                            </button>
+                            <button
+                              class="action-btn view-btn"
+                              title="View Details"
+                            >
+                              <i class="bx bx-show"></i>
+                            </button>
+                            <button
+                              class="action-btn flag-btn"
+                              title="Flag Product"
+                            >
+                              <i class="bx bx-flag"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>#PRD-1237</td>
+                        <td>
+                          <div class="product-image">
+                            <img
+                              src="https://via.placeholder.com/40"
+                              alt="Product"
+                            />
+                          </div>
+                        </td>
+                        <td>Organic Green Tea (100 bags)</td>
+                        <td>Food & Groceries</td>
+                        <td>Organic Foods Inc.</td>
+                        <td>$12.50</td>
+                        <td>89</td>
+                        <td>
+                          <span class="status-badge active">Active</span>
+                        </td>
+                        <td>
+                          <div class="action-buttons">
+                            <button
+                              class="action-btn edit-btn"
+                              title="Edit Product"
+                            >
+                              <i class="bx bx-edit"></i>
+                            </button>
+                            <button
+                              class="action-btn view-btn"
+                              title="View Details"
+                            >
+                              <i class="bx bx-show"></i>
+                            </button>
+                            <button
+                              class="action-btn flag-btn"
+                              title="Flag Product"
+                            >
+                              <i class="bx bx-flag"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>#PRD-1238</td>
+                        <td>
+                          <div class="product-image">
+                            <img
+                              src="https://via.placeholder.com/40"
+                              alt="Product"
+                            />
+                          </div>
+                        </td>
+                        <td>Designer Handbag - Limited Edition</td>
+                        <td>Fashion</td>
+                        <td>Fashion Forward</td>
+                        <td>$349.99</td>
+                        <td>3</td>
+                        <td>
+                          <span class="status-badge low-stock">Low Stock</span>
+                        </td>
+                        <td>
+                          <div class="action-buttons">
+                            <button
+                              class="action-btn edit-btn"
+                              title="Edit Product"
+                            >
+                              <i class="bx bx-edit"></i>
+                            </button>
+                            <button
+                              class="action-btn view-btn"
+                              title="View Details"
+                            >
+                              <i class="bx bx-show"></i>
+                            </button>
+                            <button
+                              class="action-btn flag-btn"
+                              title="Flag Product"
+                            >
+                              <i class="bx bx-flag"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="pagination">
+                  <button class="pagination-btn" disabled>
+                    <i class="bx bx-chevron-left"></i>
+                  </button>
+                  <button class="pagination-btn active">1</button>
+                  <button class="pagination-btn">2</button>
+                  <button class="pagination-btn">3</button>
+                  <button class="pagination-btn">4</button>
+                  <button class="pagination-btn">
+                    <i class="bx bx-chevron-right"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Pending Approval Tab Content -->
+              <div class="tab-content" id="pending-tab">
+                <div class="table-responsive full-width">
+                  <table class="data-table product-table">
+                    <thead>
+                      <tr>
+                        <th>Product ID</th>
+                        <th>Image</th>
+                        <th>Product Name</th>
+                        <th>Category</th>
+                        <th>Seller</th>
+                        <th>Submitted</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>#PRD-2001</td>
+                        <td>
+                          <div class="product-image">
+                            <img
+                              src="https://via.placeholder.com/40"
+                              alt="Product"
+                            />
+                          </div>
+                        </td>
+                        <td>Bluetooth Speaker with LED</td>
+                        <td>Electronics</td>
+                        <td>Sound Masters</td>
+                        <td>Oct 16, 2025</td>
+                        <td>
+                          <div class="action-buttons">
+                            <button
+                              class="action-btn approve-btn"
+                              title="Approve Product"
+                            >
+                              <i class="bx bx-check"></i>
+                            </button>
+                            <button
+                              class="action-btn edit-btn"
+                              title="Request Changes"
+                            >
+                              <i class="bx bx-edit"></i>
+                            </button>
+                            <button
+                              class="action-btn reject-btn"
+                              title="Reject Product"
+                            >
+                              <i class="bx bx-x"></i>
+                            </button>
+                            <button
+                              class="action-btn view-btn"
+                              title="View Details"
+                            >
+                              <i class="bx bx-show"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>#PRD-2002</td>
+                        <td>
+                          <div class="product-image">
+                            <img
+                              src="https://via.placeholder.com/40"
+                              alt="Product"
+                            />
+                          </div>
+                        </td>
+                        <td>Skin Brightening Serum</td>
+                        <td>Beauty & Personal Care</td>
+                        <td>Glow Beauty</td>
+                        <td>Oct 15, 2025</td>
+                        <td>
+                          <div class="action-buttons">
+                            <button
+                              class="action-btn approve-btn"
+                              title="Approve Product"
+                            >
+                              <i class="bx bx-check"></i>
+                            </button>
+                            <button
+                              class="action-btn edit-btn"
+                              title="Request Changes"
+                            >
+                              <i class="bx bx-edit"></i>
+                            </button>
+                            <button
+                              class="action-btn reject-btn"
+                              title="Reject Product"
+                            >
+                              <i class="bx bx-x"></i>
+                            </button>
+                            <button
+                              class="action-btn view-btn"
+                              title="View Details"
+                            >
+                              <i class="bx bx-show"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>#PRD-2003</td>
+                        <td>
+                          <div class="product-image">
+                            <img
+                              src="https://via.placeholder.com/40"
+                              alt="Product"
+                            />
+                          </div>
+                        </td>
+                        <td>Ergonomic Office Chair</td>
+                        <td>Home & Furniture</td>
+                        <td>Office Comfort</td>
+                        <td>Oct 15, 2025</td>
+                        <td>
+                          <div class="action-buttons">
+                            <button
+                              class="action-btn approve-btn"
+                              title="Approve Product"
+                            >
+                              <i class="bx bx-check"></i>
+                            </button>
+                            <button
+                              class="action-btn edit-btn"
+                              title="Request Changes"
+                            >
+                              <i class="bx bx-edit"></i>
+                            </button>
+                            <button
+                              class="action-btn reject-btn"
+                              title="Reject Product"
+                            >
+                              <i class="bx bx-x"></i>
+                            </button>
+                            <button
+                              class="action-btn view-btn"
+                              title="View Details"
+                            >
+                              <i class="bx bx-show"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Flagged Products Tab Content -->
+              <div class="tab-content" id="flagged-tab">
+                <div class="table-responsive full-width">
+                  <table class="data-table product-table">
+                    <thead>
+                      <tr>
+                        <th>Product ID</th>
+                        <th>Image</th>
+                        <th>Product Name</th>
+                        <th>Category</th>
+                        <th>Seller</th>
+                        <th>Flag Reason</th>
+                        <th>Flagged Date</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>#PRD-3045</td>
+                        <td>
+                          <div class="product-image">
+                            <img
+                              src="https://via.placeholder.com/40"
+                              alt="Product"
+                            />
+                          </div>
+                        </td>
+                        <td>Designer Replica Bag</td>
+                        <td>Fashion</td>
+                        <td>Fashion Deals</td>
+                        <td>Suspected Counterfeit</td>
+                        <td>Oct 14, 2025</td>
+                        <td>
+                          <div class="action-buttons">
+                            <button
+                              class="action-btn view-btn"
+                              title="View Details"
+                            >
+                              <i class="bx bx-show"></i>
+                            </button>
+                            <button
+                              class="action-btn edit-btn"
+                              title="Edit Product"
+                            >
+                              <i class="bx bx-edit"></i>
+                            </button>
+                            <button
+                              class="action-btn resolve-btn"
+                              title="Resolve Flag"
+                            >
+                              <i class="bx bx-check-shield"></i>
+                            </button>
+                            <button
+                              class="action-btn remove-btn"
+                              title="Remove Product"
+                            >
+                              <i class="bx bx-trash"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>#PRD-2876</td>
+                        <td>
+                          <div class="product-image">
+                            <img
+                              src="https://via.placeholder.com/40"
+                              alt="Product"
+                            />
+                          </div>
+                        </td>
+                        <td>Health Supplement</td>
+                        <td>Health & Wellness</td>
+                        <td>Natural Health Co.</td>
+                        <td>Unverified Health Claims</td>
+                        <td>Oct 12, 2025</td>
+                        <td>
+                          <div class="action-buttons">
+                            <button
+                              class="action-btn view-btn"
+                              title="View Details"
+                            >
+                              <i class="bx bx-show"></i>
+                            </button>
+                            <button
+                              class="action-btn edit-btn"
+                              title="Edit Product"
+                            >
+                              <i class="bx bx-edit"></i>
+                            </button>
+                            <button
+                              class="action-btn resolve-btn"
+                              title="Resolve Flag"
+                            >
+                              <i class="bx bx-check-shield"></i>
+                            </button>
+                            <button
+                              class="action-btn remove-btn"
+                              title="Remove Product"
+                            >
+                              <i class="bx bx-trash"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>#PRD-3178</td>
+                        <td>
+                          <div class="product-image">
+                            <img
+                              src="https://via.placeholder.com/40"
+                              alt="Product"
+                            />
+                          </div>
+                        </td>
+                        <td>Pharmaceutical Product</td>
+                        <td>Health & Wellness</td>
+                        <td>MediStore</td>
+                        <td>Requires Prescription</td>
+                        <td>Oct 10, 2025</td>
+                        <td>
+                          <div class="action-buttons">
+                            <button
+                              class="action-btn view-btn"
+                              title="View Details"
+                            >
+                              <i class="bx bx-show"></i>
+                            </button>
+                            <button
+                              class="action-btn edit-btn"
+                              title="Edit Product"
+                            >
+                              <i class="bx bx-edit"></i>
+                            </button>
+                            <button
+                              class="action-btn resolve-btn"
+                              title="Resolve Flag"
+                            >
+                              <i class="bx bx-check-shield"></i>
+                            </button>
+                            <button
+                              class="action-btn remove-btn"
+                              title="Remove Product"
+                            >
+                              <i class="bx bx-trash"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Categories Tab Content -->
+              <div class="tab-content" id="categories-tab">
+                <div class="categories-management full-width">
+                  <div class="categories-list">
+                    <h4>Product Categories</h4>
+                    <div class="categories-tree">
+                      <div class="category-item parent-category">
+                        <div class="category-header">
+                          <i class="bx bx-plus-circle"></i>
+                          <span>Electronics</span>
+                          <div class="category-actions">
+                            <button
+                              class="action-btn edit-btn"
+                              title="Edit Category"
+                            >
+                              <i class="bx bx-edit"></i>
+                            </button>
+                          </div>
+                        </div>
+                        <div class="subcategories">
+                          <div class="category-item">
+                            <div class="category-header">
+                              <span>Smartphones</span>
+                              <div class="category-actions">
+                                <button
+                                  class="action-btn edit-btn"
+                                  title="Edit Category"
+                                >
+                                  <i class="bx bx-edit"></i>
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="category-item">
+                            <div class="category-header">
+                              <span>Laptops & Computers</span>
+                              <div class="category-actions">
+                                <button
+                                  class="action-btn edit-btn"
+                                  title="Edit Category"
+                                >
+                                  <i class="bx bx-edit"></i>
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="category-item">
+                            <div class="category-header">
+                              <span>Audio & Headphones</span>
+                              <div class="category-actions">
+                                <button
+                                  class="action-btn edit-btn"
+                                  title="Edit Category"
+                                >
+                                  <i class="bx bx-edit"></i>
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="category-item parent-category">
+                        <div class="category-header">
+                          <i class="bx bx-plus-circle"></i>
+                          <span>Fashion & Apparel</span>
+                          <div class="category-actions">
+                            <button
+                              class="action-btn edit-btn"
+                              title="Edit Category"
+                            >
+                              <i class="bx bx-edit"></i>
+                            </button>
+                          </div>
+                        </div>
+                        <div class="subcategories">
+                          <div class="category-item">
+                            <div class="category-header">
+                              <span>Men's Clothing</span>
+                              <div class="category-actions">
+                                <button
+                                  class="action-btn edit-btn"
+                                  title="Edit Category"
+                                >
+                                  <i class="bx bx-edit"></i>
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="category-item">
+                            <div class="category-header">
+                              <span>Women's Clothing</span>
+                              <div class="category-actions">
+                                <button
+                                  class="action-btn edit-btn"
+                                  title="Edit Category"
+                                >
+                                  <i class="bx bx-edit"></i>
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="category-item">
+                            <div class="category-header">
+                              <span>Jewelry & Accessories</span>
+                              <div class="category-actions">
+                                <button
+                                  class="action-btn edit-btn"
+                                  title="Edit Category"
+                                >
+                                  <i class="bx bx-edit"></i>
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="category-item parent-category">
+                        <div class="category-header">
+                          <i class="bx bx-plus-circle"></i>
+                          <span>Home & Furniture</span>
+                          <div class="category-actions">
+                            <button
+                              class="action-btn edit-btn"
+                              title="Edit Category"
+                            >
+                              <i class="bx bx-edit"></i>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="category-item parent-category">
+                        <div class="category-header">
+                          <i class="bx bx-plus-circle"></i>
+                          <span>Beauty & Personal Care</span>
+                          <div class="category-actions">
+                            <button
+                              class="action-btn edit-btn"
+                              title="Edit Category"
+                            >
+                              <i class="bx bx-edit"></i>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="category-item parent-category">
+                        <div class="category-header">
+                          <i class="bx bx-plus-circle"></i>
+                          <span>Food & Groceries</span>
+                          <div class="category-actions">
+                            <button
+                              class="action-btn edit-btn"
+                              title="Edit Category"
+                            >
+                              <i class="bx bx-edit"></i>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="category-actions-panel">
+                      <button class="btn primary-btn">
+                        <i class="bx bx-plus"></i> Add Category
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="category-editor">
+                    <h4>Edit Category</h4>
+                    <form class="category-form">
+                      <div class="form-group">
+                        <label for="category-name">Category Name</label>
+                        <input
+                          type="text"
+                          id="category-name"
+                          name="category-name"
+                          placeholder="Enter category name"
+                        />
+                      </div>
+                      <div class="form-group">
+                        <label for="parent-category"
+                          >Parent Category (Optional)</label
+                        >
+                        <select id="parent-category" name="parent-category">
+                          <option value="">None (Top Level)</option>
+                          <option value="electronics">Electronics</option>
+                          <option value="fashion">Fashion & Apparel</option>
+                          <option value="home">Home & Furniture</option>
+                          <option value="beauty">Beauty & Personal Care</option>
+                          <option value="food">Food & Groceries</option>
+                        </select>
+                      </div>
+                      <div class="form-group">
+                        <label for="category-description">Description</label>
+                        <textarea
+                          id="category-description"
+                          name="category-description"
+                          placeholder="Enter category description"
+                        ></textarea>
+                      </div>
+                      <div class="form-group">
+                        <label for="category-icon">Category Icon</label>
+                        <select id="category-icon" name="category-icon">
+                          <option value="bx-laptop">Electronics</option>
+                          <option value="bx-t-shirt">Clothing</option>
+                          <option value="bx-home">Home</option>
+                          <option value="bx-spa">Beauty</option>
+                          <option value="bx-cart">Groceries</option>
+                        </select>
+                      </div>
+                      <div class="form-actions">
+                        <button type="button" class="btn secondary-btn">
+                          Cancel
+                        </button>
+                        <button type="submit" class="btn primary-btn">
+                          Save Changes
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Inventory Tab Content -->
+              <div class="tab-content" id="inventory-tab">
+                <div class="inventory-filters full-width">
+                  <div class="filter-group">
+                    <label>Stock Status:</label>
+                    <select class="filter-select">
+                      <option value="all">All</option>
+                      <option value="in-stock">In Stock</option>
+                      <option value="low-stock">Low Stock</option>
+                      <option value="out-of-stock">Out of Stock</option>
+                    </select>
+                  </div>
+                  <div class="filter-group">
+                    <label>Category:</label>
+                    <select class="filter-select">
+                      <option value="all">All Categories</option>
+                      <option value="electronics">Electronics</option>
+                      <option value="fashion">Fashion & Apparel</option>
+                      <option value="home">Home & Furniture</option>
+                      <option value="beauty">Beauty & Personal Care</option>
+                      <option value="food">Food & Groceries</option>
+                    </select>
+                  </div>
+                  <button class="btn secondary-btn">Apply Filters</button>
+                </div>
+
+                <div class="table-responsive full-width">
+                  <table class="data-table product-table">
+                    <thead>
+                      <tr>
+                        <th>Product ID</th>
+                        <th>Product Name</th>
+                        <th>SKU</th>
+                        <th>Current Stock</th>
+                        <th>Reorder Level</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>#PRD-1234</td>
+                        <td>Wireless Bluetooth Earbuds</td>
+                        <td>WBE-001</td>
+                        <td>78</td>
+                        <td>25</td>
+                        <td>
+                          <span class="status-badge active">In Stock</span>
+                        </td>
+                        <td>
+                          <div class="action-buttons">
+                            <button
+                              class="action-btn edit-btn"
+                              title="Update Stock"
+                            >
+                              <i class="bx bx-edit"></i>
+                            </button>
+                            <button
+                              class="action-btn view-btn"
+                              title="View History"
+                            >
+                              <i class="bx bx-history"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>#PRD-1236</td>
+                        <td>Premium Leather Wallet</td>
+                        <td>PLW-023</td>
+                        <td>15</td>
+                        <td>20</td>
+                        <td>
+                          <span class="status-badge low-stock">Low Stock</span>
+                        </td>
+                        <td>
+                          <div class="action-buttons">
+                            <button
+                              class="action-btn edit-btn"
+                              title="Update Stock"
+                            >
+                              <i class="bx bx-edit"></i>
+                            </button>
+                            <button
+                              class="action-btn view-btn"
+                              title="View History"
+                            >
+                              <i class="bx bx-history"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>#PRD-1238</td>
+                        <td>Designer Handbag - Limited Edition</td>
+                        <td>DHB-065</td>
+                        <td>3</td>
+                        <td>5</td>
+                        <td>
+                          <span class="status-badge low-stock">Low Stock</span>
+                        </td>
+                        <td>
+                          <div class="action-buttons">
+                            <button
+                              class="action-btn edit-btn"
+                              title="Update Stock"
+                            >
+                              <i class="bx bx-edit"></i>
+                            </button>
+                            <button
+                              class="action-btn view-btn"
+                              title="View History"
+                            >
+                              <i class="bx bx-history"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>#PRD-1242</td>
+                        <td>Professional DSLR Camera</td>
+                        <td>CAM-104</td>
+                        <td>0</td>
+                        <td>10</td>
+                        <td>
+                          <span class="status-badge cancelled"
+                            >Out of Stock</span
+                          >
+                        </td>
+                        <td>
+                          <div class="action-buttons">
+                            <button
+                              class="action-btn edit-btn"
+                              title="Update Stock"
+                            >
+                              <i class="bx bx-edit"></i>
+                            </button>
+                            <button
+                              class="action-btn view-btn"
+                              title="View History"
+                            >
+                              <i class="bx bx-history"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="bulk-actions">
+                  <button class="btn secondary-btn">
+                    <i class="bx bx-download"></i> Export Inventory
+                  </button>
+                  <button class="btn primary-btn">
+                    <i class="bx bx-plus"></i> Bulk Update Stock
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Product Edit Modal -->
+  <div class="modal" id="product-edit-modal">
+    <div class="modal-content large-modal">
+      <div class="modal-header">
+        <h3>Edit Product</h3>
+        <button class="close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form class="form-grid">
+          <div class="form-group">
+            <label for="product-name">Product Name</label>
+            <input
+              type="text"
+              id="product-name"
+              name="product-name"
+              value="Wireless Bluetooth Earbuds"
+            />
+          </div>
+          <div class="form-group">
+            <label for="product-category">Category</label>
+            <select id="product-category" name="product-category">
+              <option value="electronics" selected>Electronics</option>
+              <option value="fashion">Fashion & Apparel</option>
+              <option value="home">Home & Furniture</option>
+              <option value="beauty">Beauty & Personal Care</option>
+              <option value="food">Food & Groceries</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="product-price">Price ($)</label>
+            <input
+              type="number"
+              id="product-price"
+              name="product-price"
+              value="49.99"
+              step="0.01"
+            />
+          </div>
+          <div class="form-group">
+            <label for="product-stock">Stock Quantity</label>
+            <input
+              type="number"
+              id="product-stock"
+              name="product-stock"
+              value="78"
+            />
+          </div>
+          <div class="form-group">
+            <label for="product-sku">SKU</label>
+            <input
+              type="text"
+              id="product-sku"
+              name="product-sku"
+              value="WBE-001"
+            />
+          </div>
+          <div class="form-group">
+            <label for="product-status">Status</label>
+            <select id="product-status" name="product-status">
+              <option value="active" selected>Active</option>
+              <option value="draft">Draft</option>
+              <option value="archived">Archived</option>
+            </select>
+          </div>
+          <div class="form-group full-width">
+            <label for="product-description">Description</label>
+            <textarea
+              id="product-description"
+              name="product-description"
+              rows="4"
+            >
+Premium wireless bluetooth earbuds with noise cancellation technology, 24 hour battery life, and water resistance.</textarea
+            >
+          </div>
+          <div class="form-group full-width">
+            <label for="product-images">Product Images</label>
+            <div class="product-images-uploader">
+              <div class="product-image-preview">
+                <img
+                  src="https://via.placeholder.com/100"
+                  alt="Product preview"
+                />
+                <button class="remove-image-btn" title="Remove Image">
+                  <i class="bx bx-x"></i>
+                </button>
+              </div>
+              <div class="product-image-preview">
+                <img
+                  src="https://via.placeholder.com/100"
+                  alt="Product preview"
+                />
+                <button class="remove-image-btn" title="Remove Image">
+                  <i class="bx bx-x"></i>
+                </button>
+              </div>
+              <div class="image-upload-box">
+                <i class="bx bx-upload"></i>
+                <span>Upload Image</span>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn secondary-btn">Cancel</button>
+        <button class="btn primary-btn">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Flag Product Modal -->
+  <div class="modal" id="flag-product-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Flag Product</h3>
+        <button class="close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="form-group">
+            <label for="flag-reason">Reason for Flagging</label>
+            <select id="flag-reason" name="flag-reason">
+              <option value="">-- Select a reason --</option>
+              <option value="counterfeit">Suspected Counterfeit</option>
+              <option value="prohibited">Prohibited Item</option>
+              <option value="misrepresentation">
+                Product Misrepresentation
+              </option>
+              <option value="ip-violation">
+                Intellectual Property Violation
+              </option>
+              <option value="safety">Safety Concern</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="flag-details">Additional Details</label>
+            <textarea
+              id="flag-details"
+              name="flag-details"
+              rows="4"
+              placeholder="Please provide more details about the issue..."
+            ></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn secondary-btn">Cancel</button>
+        <button class="btn danger-btn">Flag Product</button>
+      </div>
+    </div>
+  </div>
+</body>
+{% endblock %} {% block extra_js %}
+<!-- JavaScript -->
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
 {% endblock %}

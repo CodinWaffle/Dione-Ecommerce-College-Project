@@ -1,0 +1,141 @@
+/* product_management_styles.css - Additional styles for the product management page */
+
+/* Full-width table styles */
+.full-width {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.dashboard-grid.single-column {
+  width: 100%;
+  max-width: 100%;
+}
+
+.dashboard-grid.single-column .dashboard-card {
+  width: 100%;
+  max-width: 100%;
+}
+
+.dashboard-grid.single-column .card-body {
+  padding: var(--spacing-md);
+}
+
+/* Make tables full width */
+.tab-content .table-responsive {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: auto;
+}
+
+.tab-content .data-table {
+  width: 100%;
+  min-width: 100%;
+  table-layout: auto;
+}
+
+/* Ensure proper column width */
+.tab-content .data-table th,
+.tab-content .data-table td {
+  white-space: nowrap;
+}
+
+/* Fixed width for specific columns */
+.tab-content .data-table th:nth-child(1),
+.tab-content .data-table td:nth-child(1) {
+  width: 100px; /* Product ID */
+}
+
+.tab-content .data-table th:nth-child(2),
+.tab-content .data-table td:nth-child(2) {
+  width: 70px; /* Image */
+  text-align: center;
+}
+
+.tab-content .data-table th:nth-child(8),
+.tab-content .data-table td:nth-child(8) {
+  width: 120px; /* Status */
+}
+
+.tab-content .data-table th:last-child,
+.tab-content .data-table td:last-child {
+  width: 140px; /* Actions */
+  text-align: center;
+  min-width: 140px;
+}
+
+/* Better handling of action buttons */
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+
+/* Product image styling */
+.product-image {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.product-image img {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: var(--border-radius-sm);
+}
+
+/* Categories tab layout fixes */
+.categories-management {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-lg);
+}
+
+.categories-list {
+  flex: 1;
+  min-width: 300px;
+}
+
+.category-editor {
+  flex: 1;
+  min-width: 300px;
+}
+
+/* Inventory tab layout fixes */
+.inventory-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+  align-items: center;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 1200px) {
+  .tab-content .data-table {
+    min-width: 900px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .categories-management {
+    flex-direction: column;
+  }
+
+  .inventory-filters {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .filter-group {
+    width: 100%;
+  }
+}

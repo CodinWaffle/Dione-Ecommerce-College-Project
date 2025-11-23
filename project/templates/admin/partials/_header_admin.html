@@ -1,0 +1,57 @@
+<!-- header_admin.html - Reusable admin header component -->
+<header class="admin-header">
+  <div class="header-left">
+    <button class="menu-toggle" id="menuToggle" onclick="toggleSidebar()">
+      <i data-lucide="panel-left-close"></i>
+    </button>
+    <div class="search-container-header">
+      <i data-lucide="search"></i>
+      <!-- Inline reset styles keep this input visually consistent across partials -->
+      <input
+        type="text"
+        class="search-input-header"
+        placeholder="Search..."
+        style="
+          background: transparent;
+          border: none;
+          padding: 6px 8px;
+          color: inherit;
+          outline: none;
+          box-shadow: none;
+          transition: none;
+        "
+      />
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="notification-bell">
+      <i data-lucide="bell"></i>
+      <span class="notification-count">3</span>
+    </div>
+    <div class="user-profile-dropdown">
+      <div class="user-profile-toggle">
+        <div class="user-avatar-container">
+          <div class="avatar-icon-circle">
+            <i data-lucide="user"></i>
+          </div>
+          <span class="active-indicator"></span>
+        </div>
+        <span class="user-name"
+          >{{ admin.business_name if admin and admin.business_name else
+          current_user.email }}</span
+        >
+        <i data-lucide="chevron-down" class="dropdown-arrow"></i>
+      </div>
+      <div class="user-dropdown-menu" aria-hidden="true">
+        <a href="#profile" class="profile-link">
+          <i data-lucide="user"></i>
+          <span>Profile</span>
+        </a>
+        <a href="{{ url_for('auth.logout') }}" class="logout-link">
+          <i data-lucide="log-out"></i>
+          <span>Logout</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</header>

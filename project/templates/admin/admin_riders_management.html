@@ -1,0 +1,1176 @@
+{% extends "admin/base_admin.html" %} {% block page_title %}Riders Management{%
+endblock %} {% block extra_css %}
+<!-- Google Fonts - Montserrat and Poppins -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap"
+  rel="stylesheet"
+/>
+
+<!-- Boxicons for Outline Icons -->
+<link
+  href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+  rel="stylesheet"
+/>
+
+<!-- Custom CSS -->
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/admin_styles/admin.css') }}"
+/>
+
+{% endblock %} {% block admin_content %}
+<body>
+  <div class="dashboard-container">
+    <!-- Include the sidebar component -->
+    {% include 'admin/partials/_sidebar_admin.html' %}
+
+    <div class="main-content" id="main-content">
+      <!-- Include the header component -->
+      {% include 'admin/partials/_header_admin.html' %}
+
+      <div class="dashboard-content">
+        <div class="page-header">
+          <h1>Rider Management</h1>
+          <p>
+            Manage delivery riders, monitor performance, and track deliveries
+          </p>
+        </div>
+
+        <!-- Rider Overview Stats -->
+        <div class="stats-cards">
+          <div class="stat-card">
+            <div class="stat-card-icon purple">
+              <i class="bx bx-cycling"></i>
+            </div>
+            <div class="stat-card-info">
+              <h3>Active Riders</h3>
+              <p class="stat-number">87</p>
+              <div class="stat-change positive">
+                <i class="bx bx-up-arrow-alt"></i>
+                <span>+5 this month</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-card-icon blue">
+              <i class="bx bx-package"></i>
+            </div>
+            <div class="stat-card-info">
+              <h3>Deliveries Today</h3>
+              <p class="stat-number">142</p>
+              <div class="stat-change positive">
+                <i class="bx bx-up-arrow-alt"></i>
+                <span>12% vs yesterday</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-card-icon green">
+              <i class="bx bx-star"></i>
+            </div>
+            <div class="stat-card-info">
+              <h3>Avg. Rating</h3>
+              <p class="stat-number">4.8</p>
+              <div class="stat-change positive">
+                <i class="bx bx-up-arrow-alt"></i>
+                <span>+0.2 this month</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-card-icon orange">
+              <i class="bx bx-time"></i>
+            </div>
+            <div class="stat-card-info">
+              <h3>Avg. Delivery Time</h3>
+              <p class="stat-number">24 min</p>
+              <div class="stat-change negative">
+                <i class="bx bx-down-arrow-alt"></i>
+                <span>-3 min this month</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rider Management Tabs -->
+        <div class="tab-container">
+          <div class="tab-header">
+            <button class="tab-btn active" data-tab="all-riders">
+              All Riders
+            </button>
+            <button class="tab-btn" data-tab="pending-approval">
+              Pending Approval
+            </button>
+            <button class="tab-btn" data-tab="deliveries">
+              Recent Deliveries
+            </button>
+            <button class="tab-btn" data-tab="issues">Issues & Reports</button>
+            <button class="tab-btn" data-tab="earnings">
+              Earnings & Commissions
+            </button>
+          </div>
+
+          <!-- All Riders Tab -->
+          <div class="tab-content active" id="all-riders">
+            <div class="card-header">
+              <h3>Active Rider Fleet</h3>
+              <div class="header-actions">
+                <div class="search-mini">
+                  <i class="bx bx-search"></i>
+                  <input type="text" placeholder="Search riders..." />
+                </div>
+                <div class="filter-dropdown">
+                  <button class="filter-btn">
+                    <i class="bx bx-filter-alt"></i>
+                    <span>Filter</span>
+                  </button>
+                  <div class="dropdown-menu">
+                    <a href="#">All Riders</a>
+                    <a href="#">On-duty</a>
+                    <a href="#">Off-duty</a>
+                    <a href="#">Top Rated</a>
+                  </div>
+                </div>
+                <button class="btn btn-primary">
+                  <i class="bx bx-plus"></i>
+                  Add New Rider
+                </button>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Rider</th>
+                    <th>Status</th>
+                    <th>Contact</th>
+                    <th>Vehicle Type</th>
+                    <th>Area</th>
+                    <th>Deliveries</th>
+                    <th>Rating</th>
+                    <th>Earnings</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>
+                      <div class="rider-info">
+                        <div class="rider-avatar">
+                          <img
+                            src="https://via.placeholder.com/40"
+                            alt="Michael Davis"
+                          />
+                        </div>
+                        <div>
+                          <p class="rider-name">Michael Davis</p>
+                          <p class="rider-id">RID-8721</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="status-badge success">On-duty</span></td>
+                    <td>
+                      <div class="contact-info">
+                        <p>+1 (555) 123-4567</p>
+                        <p class="small-text">michael.d@example.com</p>
+                      </div>
+                    </td>
+                    <td>Motorcycle</td>
+                    <td>Downtown</td>
+                    <td>
+                      <div class="delivery-stats">
+                        <span class="stat-primary">1,245</span>
+                        <span class="stat-secondary">32 this week</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="rating">
+                        <i class="bx bxs-star"></i>
+                        <i class="bx bxs-star"></i>
+                        <i class="bx bxs-star"></i>
+                        <i class="bx bxs-star"></i>
+                        <i class="bx bxs-star-half"></i>
+                        <span>4.8</span>
+                      </div>
+                    </td>
+                    <td>$1,876.50</td>
+                    <td>
+                      <div class="action-buttons">
+                        <button class="action-btn view" title="View Profile">
+                          <i class="bx bx-user"></i>
+                        </button>
+                        <button class="action-btn track" title="Track Location">
+                          <i class="bx bx-map"></i>
+                        </button>
+                        <button class="action-btn message" title="Message">
+                          <i class="bx bx-message-rounded"></i>
+                        </button>
+                        <button class="action-btn more" title="More Options">
+                          <i class="bx bx-dots-vertical-rounded"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="rider-info">
+                        <div class="rider-avatar">
+                          <img
+                            src="https://via.placeholder.com/40"
+                            alt="Sarah Johnson"
+                          />
+                        </div>
+                        <div>
+                          <p class="rider-name">Sarah Johnson</p>
+                          <p class="rider-id">RID-7634</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="status-badge success">On-duty</span></td>
+                    <td>
+                      <div class="contact-info">
+                        <p>+1 (555) 987-6543</p>
+                        <p class="small-text">sarah.j@example.com</p>
+                      </div>
+                    </td>
+                    <td>Electric Bike</td>
+                    <td>Midtown</td>
+                    <td>
+                      <div class="delivery-stats">
+                        <span class="stat-primary">986</span>
+                        <span class="stat-secondary">28 this week</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="rating">
+                        <i class="bx bxs-star"></i>
+                        <i class="bx bxs-star"></i>
+                        <i class="bx bxs-star"></i>
+                        <i class="bx bxs-star"></i>
+                        <i class="bx bxs-star"></i>
+                        <span>4.9</span>
+                      </div>
+                    </td>
+                    <td>$1,532.75</td>
+                    <td>
+                      <div class="action-buttons">
+                        <button class="action-btn view" title="View Profile">
+                          <i class="bx bx-user"></i>
+                        </button>
+                        <button class="action-btn track" title="Track Location">
+                          <i class="bx bx-map"></i>
+                        </button>
+                        <button class="action-btn message" title="Message">
+                          <i class="bx bx-message-rounded"></i>
+                        </button>
+                        <button class="action-btn more" title="More Options">
+                          <i class="bx bx-dots-vertical-rounded"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="rider-info">
+                        <div class="rider-avatar">
+                          <img
+                            src="https://via.placeholder.com/40"
+                            alt="David Chen"
+                          />
+                        </div>
+                        <div>
+                          <p class="rider-name">David Chen</p>
+                          <p class="rider-id">RID-6549</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span class="status-badge warning">Break</span></td>
+                    <td>
+                      <div class="contact-info">
+                        <p>+1 (555) 456-7890</p>
+                        <p class="small-text">david.c@example.com</p>
+                      </div>
+                    </td>
+                    <td>Car</td>
+                    <td>Uptown</td>
+                    <td>
+                      <div class="delivery-stats">
+                        <span class="stat-primary">1,567</span>
+                        <span class="stat-secondary">15 this week</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="rating">
+                        <i class="bx bxs-star"></i>
+                        <i class="bx bxs-star"></i>
+                        <i class="bx bxs-star"></i>
+                        <i class="bx bxs-star"></i>
+                        <i class="bx bx-star"></i>
+                        <span>4.0</span>
+                      </div>
+                    </td>
+                    <td>$2,105.25</td>
+                    <td>
+                      <div class="action-buttons">
+                        <button class="action-btn view" title="View Profile">
+                          <i class="bx bx-user"></i>
+                        </button>
+                        <button class="action-btn track" title="Track Location">
+                          <i class="bx bx-map"></i>
+                        </button>
+                        <button class="action-btn message" title="Message">
+                          <i class="bx bx-message-rounded"></i>
+                        </button>
+                        <button class="action-btn more" title="More Options">
+                          <i class="bx bx-dots-vertical-rounded"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="rider-info">
+                        <div class="rider-avatar">
+                          <img
+                            src="https://via.placeholder.com/40"
+                            alt="Olivia Martinez"
+                          />
+                        </div>
+                        <div>
+                          <p class="rider-name">Olivia Martinez</p>
+                          <p class="rider-id">RID-9123</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="status-badge neutral">Off-duty</span>
+                    </td>
+                    <td>
+                      <div class="contact-info">
+                        <p>+1 (555) 321-6547</p>
+                        <p class="small-text">olivia.m@example.com</p>
+                      </div>
+                    </td>
+                    <td>Motorcycle</td>
+                    <td>Downtown</td>
+                    <td>
+                      <div class="delivery-stats">
+                        <span class="stat-primary">892</span>
+                        <span class="stat-secondary">23 this week</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="rating">
+                        <i class="bx bxs-star"></i>
+                        <i class="bx bxs-star"></i>
+                        <i class="bx bxs-star"></i>
+                        <i class="bx bxs-star"></i>
+                        <i class="bx bx-star"></i>
+                        <span>4.2</span>
+                      </div>
+                    </td>
+                    <td>$1,482.60</td>
+                    <td>
+                      <div class="action-buttons">
+                        <button class="action-btn view" title="View Profile">
+                          <i class="bx bx-user"></i>
+                        </button>
+                        <button class="action-btn track" title="Track Location">
+                          <i class="bx bx-map"></i>
+                        </button>
+                        <button class="action-btn message" title="Message">
+                          <i class="bx bx-message-rounded"></i>
+                        </button>
+                        <button class="action-btn more" title="More Options">
+                          <i class="bx bx-dots-vertical-rounded"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="pagination">
+              <button class="page-btn prev">
+                <i class="bx bx-chevron-left"></i>
+              </button>
+              <button class="page-btn active">1</button>
+              <button class="page-btn">2</button>
+              <button class="page-btn">3</button>
+              <span class="page-separator">...</span>
+              <button class="page-btn">9</button>
+              <button class="page-btn next">
+                <i class="bx bx-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Pending Approval Tab -->
+          <div class="tab-content" id="pending-approval">
+            <div class="card-header">
+              <h3>Pending Rider Applications</h3>
+              <div class="header-actions">
+                <div class="search-mini">
+                  <i class="bx bx-search"></i>
+                  <input type="text" placeholder="Search applications..." />
+                </div>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Applicant</th>
+                    <th>Applied On</th>
+                    <th>Contact</th>
+                    <th>Vehicle Type</th>
+                    <th>Documents</th>
+                    <th>Background Check</th>
+                    <th>Training</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>
+                      <div class="rider-info">
+                        <div class="rider-avatar">
+                          <img
+                            src="https://via.placeholder.com/40"
+                            alt="James Wilson"
+                          />
+                        </div>
+                        <div>
+                          <p class="rider-name">James Wilson</p>
+                          <p class="rider-id">APP-2485</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td>Oct 16, 2025</td>
+                    <td>
+                      <div class="contact-info">
+                        <p>+1 (555) 765-4321</p>
+                        <p class="small-text">james.w@example.com</p>
+                      </div>
+                    </td>
+                    <td>Motorcycle</td>
+                    <td>
+                      <span class="status-badge success">Verified</span>
+                    </td>
+                    <td><span class="status-badge success">Passed</span></td>
+                    <td>
+                      <span class="status-badge pending">Scheduled</span>
+                    </td>
+                    <td>
+                      <div class="action-buttons">
+                        <button
+                          class="action-btn view"
+                          title="View Application"
+                        >
+                          <i class="bx bx-file"></i>
+                        </button>
+                        <button class="action-btn approve" title="Approve">
+                          <i class="bx bx-check"></i>
+                        </button>
+                        <button class="action-btn reject" title="Reject">
+                          <i class="bx bx-x"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="rider-info">
+                        <div class="rider-avatar">
+                          <img
+                            src="https://via.placeholder.com/40"
+                            alt="Lisa Thompson"
+                          />
+                        </div>
+                        <div>
+                          <p class="rider-name">Lisa Thompson</p>
+                          <p class="rider-id">APP-2486</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td>Oct 17, 2025</td>
+                    <td>
+                      <div class="contact-info">
+                        <p>+1 (555) 234-8765</p>
+                        <p class="small-text">lisa.t@example.com</p>
+                      </div>
+                    </td>
+                    <td>Electric Bike</td>
+                    <td>
+                      <span class="status-badge pending">Under Review</span>
+                    </td>
+                    <td><span class="status-badge success">Passed</span></td>
+                    <td>
+                      <span class="status-badge warning">Not Started</span>
+                    </td>
+                    <td>
+                      <div class="action-buttons">
+                        <button
+                          class="action-btn view"
+                          title="View Application"
+                        >
+                          <i class="bx bx-file"></i>
+                        </button>
+                        <button
+                          class="action-btn approve disabled"
+                          title="Complete Verification First"
+                          disabled
+                        >
+                          <i class="bx bx-check"></i>
+                        </button>
+                        <button class="action-btn reject" title="Reject">
+                          <i class="bx bx-x"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Recent Deliveries Tab -->
+          <div class="tab-content" id="deliveries">
+            <div class="card-header">
+              <h3>Recent Deliveries</h3>
+              <div class="header-actions">
+                <div class="search-mini">
+                  <i class="bx bx-search"></i>
+                  <input type="text" placeholder="Search deliveries..." />
+                </div>
+                <div class="date-filter">
+                  <i class="bx bx-calendar"></i>
+                  <input type="date" class="date-input" />
+                  <span>to</span>
+                  <input type="date" class="date-input" />
+                </div>
+              </div>
+            </div>
+
+            <div class="delivery-cards">
+              <div class="delivery-card">
+                <div class="delivery-header">
+                  <div class="delivery-id">#DEL-89245</div>
+                  <div class="delivery-time">Today, 10:45 AM</div>
+                </div>
+                <div class="delivery-details">
+                  <div class="delivery-addresses">
+                    <div class="delivery-from">
+                      <i class="bx bx-store"></i>
+                      <div>
+                        <p class="address-label">From</p>
+                        <p class="address-name">Fresh Grocery Market</p>
+                        <p class="address-location">123 Market St, Downtown</p>
+                      </div>
+                    </div>
+                    <div class="delivery-route">
+                      <div class="route-line"></div>
+                    </div>
+                    <div class="delivery-to">
+                      <i class="bx bx-home"></i>
+                      <div>
+                        <p class="address-label">To</p>
+                        <p class="address-name">John Smith</p>
+                        <p class="address-location">456 Park Ave, Midtown</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="delivery-meta">
+                    <div class="delivery-rider">
+                      <div class="mini-avatar">
+                        <img
+                          src="https://via.placeholder.com/30"
+                          alt="Michael Davis"
+                        />
+                      </div>
+                      <p>Michael Davis</p>
+                    </div>
+                    <div class="delivery-stats">
+                      <div class="delivery-stat">
+                        <i class="bx bx-time"></i>
+                        <span>28 mins</span>
+                      </div>
+                      <div class="delivery-stat">
+                        <i class="bx bx-cycling"></i>
+                        <span>3.2 km</span>
+                      </div>
+                      <div class="delivery-stat">
+                        <i class="bx bx-dollar-circle"></i>
+                        <span>$18.50</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="delivery-proof">
+                  <h4>Proof of Delivery</h4>
+                  <div class="proof-images">
+                    <div class="proof-image">
+                      <img
+                        src="https://via.placeholder.com/150"
+                        alt="Delivery Photo 1"
+                      />
+                      <button class="image-zoom">
+                        <i class="bx bx-zoom-in"></i>
+                      </button>
+                    </div>
+                    <div class="proof-image">
+                      <img
+                        src="https://via.placeholder.com/150"
+                        alt="Delivery Photo 2"
+                      />
+                      <button class="image-zoom">
+                        <i class="bx bx-zoom-in"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="signature-box">
+                    <p>Customer Signature:</p>
+                    <img
+                      src="https://via.placeholder.com/200x60"
+                      alt="Customer Signature"
+                      class="signature"
+                    />
+                  </div>
+                </div>
+                <div class="delivery-footer">
+                  <div class="delivery-status success">
+                    <i class="bx bx-check-circle"></i>
+                    <span>Delivered Successfully</span>
+                  </div>
+                  <div class="delivery-actions">
+                    <button class="action-btn" title="View Details">
+                      <i class="bx bx-detail"></i>
+                    </button>
+                    <button class="action-btn" title="Download Receipt">
+                      <i class="bx bx-download"></i>
+                    </button>
+                    <button class="action-btn" title="Report Issue">
+                      <i class="bx bx-flag"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="delivery-card">
+                <div class="delivery-header">
+                  <div class="delivery-id">#DEL-89244</div>
+                  <div class="delivery-time">Today, 10:15 AM</div>
+                </div>
+                <div class="delivery-details">
+                  <div class="delivery-addresses">
+                    <div class="delivery-from">
+                      <i class="bx bx-store"></i>
+                      <div>
+                        <p class="address-label">From</p>
+                        <p class="address-name">Electronics Hub</p>
+                        <p class="address-location">789 Tech Blvd, Uptown</p>
+                      </div>
+                    </div>
+                    <div class="delivery-route">
+                      <div class="route-line"></div>
+                    </div>
+                    <div class="delivery-to">
+                      <i class="bx bx-building-house"></i>
+                      <div>
+                        <p class="address-label">To</p>
+                        <p class="address-name">Sarah Johnson</p>
+                        <p class="address-location">246 Oak St, Westside</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="delivery-meta">
+                    <div class="delivery-rider">
+                      <div class="mini-avatar">
+                        <img
+                          src="https://via.placeholder.com/30"
+                          alt="Sarah Johnson"
+                        />
+                      </div>
+                      <p>Sarah Johnson</p>
+                    </div>
+                    <div class="delivery-stats">
+                      <div class="delivery-stat">
+                        <i class="bx bx-time"></i>
+                        <span>22 mins</span>
+                      </div>
+                      <div class="delivery-stat">
+                        <i class="bx bx-cycling"></i>
+                        <span>2.5 km</span>
+                      </div>
+                      <div class="delivery-stat">
+                        <i class="bx bx-dollar-circle"></i>
+                        <span>$22.75</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="delivery-proof">
+                  <h4>Proof of Delivery</h4>
+                  <div class="proof-images">
+                    <div class="proof-image">
+                      <img
+                        src="https://via.placeholder.com/150"
+                        alt="Delivery Photo 1"
+                      />
+                      <button class="image-zoom">
+                        <i class="bx bx-zoom-in"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="signature-box">
+                    <p>Customer Signature:</p>
+                    <img
+                      src="https://via.placeholder.com/200x60"
+                      alt="Customer Signature"
+                      class="signature"
+                    />
+                  </div>
+                </div>
+                <div class="delivery-footer">
+                  <div class="delivery-status success">
+                    <i class="bx bx-check-circle"></i>
+                    <span>Delivered Successfully</span>
+                  </div>
+                  <div class="delivery-actions">
+                    <button class="action-btn" title="View Details">
+                      <i class="bx bx-detail"></i>
+                    </button>
+                    <button class="action-btn" title="Download Receipt">
+                      <i class="bx bx-download"></i>
+                    </button>
+                    <button class="action-btn" title="Report Issue">
+                      <i class="bx bx-flag"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="pagination">
+              <button class="page-btn prev">
+                <i class="bx bx-chevron-left"></i>
+              </button>
+              <button class="page-btn active">1</button>
+              <button class="page-btn">2</button>
+              <button class="page-btn">3</button>
+              <span class="page-separator">...</span>
+              <button class="page-btn">15</button>
+              <button class="page-btn next">
+                <i class="bx bx-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Issues & Reports Tab -->
+          <div class="tab-content" id="issues">
+            <div class="card-header">
+              <h3>Issues & Reports</h3>
+              <div class="header-actions">
+                <div class="search-mini">
+                  <i class="bx bx-search"></i>
+                  <input type="text" placeholder="Search issues..." />
+                </div>
+                <div class="filter-dropdown">
+                  <button class="filter-btn">
+                    <i class="bx bx-filter-alt"></i>
+                    <span>Filter</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="issues-list">
+              <div class="issue-card">
+                <div class="issue-header warning">
+                  <i class="bx bx-error"></i>
+                  <span class="issue-type">Delayed Delivery</span>
+                  <span class="issue-id">#ISS-4521</span>
+                </div>
+                <div class="issue-body">
+                  <div class="issue-details">
+                    <div class="issue-info">
+                      <h4>Significant Delivery Delay</h4>
+                      <p>
+                        Customer reported a delivery time of over 1 hour when
+                        the estimated time was 25 minutes.
+                      </p>
+                    </div>
+                    <div class="issue-meta">
+                      <div class="meta-item">
+                        <span class="meta-label">Reported:</span>
+                        <span class="meta-value">Oct 18, 2025</span>
+                      </div>
+                      <div class="meta-item">
+                        <span class="meta-label">Order ID:</span>
+                        <span class="meta-value">#ORD-78542</span>
+                      </div>
+                      <div class="meta-item">
+                        <span class="meta-label">Status:</span>
+                        <span class="status-badge warning"
+                          >Under Investigation</span
+                        >
+                      </div>
+                    </div>
+                  </div>
+                  <div class="issue-rider">
+                    <div class="rider-info">
+                      <div class="rider-avatar">
+                        <img
+                          src="https://via.placeholder.com/40"
+                          alt="David Chen"
+                        />
+                      </div>
+                      <div>
+                        <p class="rider-name">David Chen</p>
+                        <p class="rider-id">RID-6549</p>
+                      </div>
+                    </div>
+                    <div class="rider-stats">
+                      <div class="stat-item">
+                        <span class="stat-label">Previous Issues:</span>
+                        <span class="stat-value">2 in last month</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="issue-footer">
+                  <div class="issue-actions">
+                    <button class="btn btn-outline">View Details</button>
+                    <button class="btn btn-warning">Issue Warning</button>
+                    <button class="btn btn-danger">Suspend Rider</button>
+                  </div>
+                  <div class="issue-resolution">
+                    <select class="resolution-dropdown">
+                      <option value="" selected disabled>
+                        Select Resolution...
+                      </option>
+                      <option value="warning">Issue Warning</option>
+                      <option value="training">
+                        Require Additional Training
+                      </option>
+                      <option value="suspend">Suspend Account</option>
+                      <option value="terminate">Terminate Partnership</option>
+                    </select>
+                    <button class="btn btn-primary">Resolve Issue</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="issue-card">
+                <div class="issue-header danger">
+                  <i class="bx bx-error-circle"></i>
+                  <span class="issue-type">Customer Complaint</span>
+                  <span class="issue-id">#ISS-4520</span>
+                </div>
+                <div class="issue-body">
+                  <div class="issue-details">
+                    <div class="issue-info">
+                      <h4>Damaged Package</h4>
+                      <p>
+                        Customer reported that package was visibly damaged upon
+                        delivery. Item inside was broken.
+                      </p>
+                    </div>
+                    <div class="issue-meta">
+                      <div class="meta-item">
+                        <span class="meta-label">Reported:</span>
+                        <span class="meta-value">Oct 17, 2025</span>
+                      </div>
+                      <div class="meta-item">
+                        <span class="meta-label">Order ID:</span>
+                        <span class="meta-value">#ORD-78536</span>
+                      </div>
+                      <div class="meta-item">
+                        <span class="meta-label">Status:</span>
+                        <span class="status-badge danger">Critical</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="issue-rider">
+                    <div class="rider-info">
+                      <div class="rider-avatar">
+                        <img
+                          src="https://via.placeholder.com/40"
+                          alt="Olivia Martinez"
+                        />
+                      </div>
+                      <div>
+                        <p class="rider-name">Olivia Martinez</p>
+                        <p class="rider-id">RID-9123</p>
+                      </div>
+                    </div>
+                    <div class="rider-stats">
+                      <div class="stat-item">
+                        <span class="stat-label">Previous Issues:</span>
+                        <span class="stat-value">0 in last month</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="issue-footer">
+                  <div class="issue-actions">
+                    <button class="btn btn-outline">View Details</button>
+                    <button class="btn btn-warning">Issue Warning</button>
+                    <button class="btn btn-danger">Suspend Rider</button>
+                  </div>
+                  <div class="issue-resolution">
+                    <select class="resolution-dropdown">
+                      <option value="" selected disabled>
+                        Select Resolution...
+                      </option>
+                      <option value="warning">Issue Warning</option>
+                      <option value="training">
+                        Require Additional Training
+                      </option>
+                      <option value="suspend">Suspend Account</option>
+                      <option value="terminate">Terminate Partnership</option>
+                    </select>
+                    <button class="btn btn-primary">Resolve Issue</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Earnings & Commissions Tab -->
+          <div class="tab-content" id="earnings">
+            <div class="card-header">
+              <h3>Rider Earnings & Commissions</h3>
+              <div class="header-actions">
+                <div class="search-mini">
+                  <i class="bx bx-search"></i>
+                  <input type="text" placeholder="Search riders..." />
+                </div>
+                <div class="date-filter">
+                  <i class="bx bx-calendar"></i>
+                  <input type="date" class="date-input" />
+                  <span>to</span>
+                  <input type="date" class="date-input" />
+                </div>
+                <button class="btn btn-outline">
+                  <i class="bx bx-export"></i>
+                  Export
+                </button>
+              </div>
+            </div>
+
+            <div class="commission-settings-panel">
+              <div class="commission-setting-card">
+                <h4>Platform Commission Rate</h4>
+                <div class="commission-slider-container">
+                  <div class="slider-header">
+                    <span>Current Rate:</span>
+                    <div class="rate-display">15%</div>
+                  </div>
+                  <input
+                    type="range"
+                    class="rate-slider"
+                    min="0"
+                    max="30"
+                    step="0.5"
+                    value="15"
+                  />
+                  <div class="slider-labels">
+                    <span>0%</span>
+                    <span>15%</span>
+                    <span>30%</span>
+                  </div>
+                </div>
+                <button class="btn btn-primary">Update Commission Rate</button>
+              </div>
+
+              <div class="commission-setting-card">
+                <h4>Commission Summary</h4>
+                <div class="summary-stats">
+                  <div class="summary-stat">
+                    <div class="stat-label">Total Platform Earnings (MTD)</div>
+                    <div class="stat-value">$28,450.75</div>
+                  </div>
+                  <div class="summary-stat">
+                    <div class="stat-label">Total Rider Payouts (MTD)</div>
+                    <div class="stat-value">$161,220.90</div>
+                  </div>
+                  <div class="summary-stat">
+                    <div class="stat-label">Avg. Earnings Per Rider</div>
+                    <div class="stat-value">$1,853.11</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Rider</th>
+                    <th>Deliveries</th>
+                    <th>Gross Earnings</th>
+                    <th>Platform Commission</th>
+                    <th>Net Earnings</th>
+                    <th>Payout Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>
+                      <div class="rider-info">
+                        <div class="rider-avatar">
+                          <img
+                            src="https://via.placeholder.com/40"
+                            alt="Michael Davis"
+                          />
+                        </div>
+                        <div>
+                          <p class="rider-name">Michael Davis</p>
+                          <p class="rider-id">RID-8721</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td>32</td>
+                    <td>$2,207.65</td>
+                    <td>$331.15 (15%)</td>
+                    <td>$1,876.50</td>
+                    <td><span class="status-badge success">Paid</span></td>
+                    <td>
+                      <div class="action-buttons">
+                        <button class="action-btn view" title="View Details">
+                          <i class="bx bx-detail"></i>
+                        </button>
+                        <button
+                          class="action-btn download"
+                          title="Download Statement"
+                        >
+                          <i class="bx bx-download"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="rider-info">
+                        <div class="rider-avatar">
+                          <img
+                            src="https://via.placeholder.com/40"
+                            alt="Sarah Johnson"
+                          />
+                        </div>
+                        <div>
+                          <p class="rider-name">Sarah Johnson</p>
+                          <p class="rider-id">RID-7634</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td>28</td>
+                    <td>$1,803.24</td>
+                    <td>$270.49 (15%)</td>
+                    <td>$1,532.75</td>
+                    <td><span class="status-badge success">Paid</span></td>
+                    <td>
+                      <div class="action-buttons">
+                        <button class="action-btn view" title="View Details">
+                          <i class="bx bx-detail"></i>
+                        </button>
+                        <button
+                          class="action-btn download"
+                          title="Download Statement"
+                        >
+                          <i class="bx bx-download"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="rider-info">
+                        <div class="rider-avatar">
+                          <img
+                            src="https://via.placeholder.com/40"
+                            alt="David Chen"
+                          />
+                        </div>
+                        <div>
+                          <p class="rider-name">David Chen</p>
+                          <p class="rider-id">RID-6549</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td>15</td>
+                    <td>$2,476.76</td>
+                    <td>$371.51 (15%)</td>
+                    <td>$2,105.25</td>
+                    <td><span class="status-badge pending">Pending</span></td>
+                    <td>
+                      <div class="action-buttons">
+                        <button class="action-btn view" title="View Details">
+                          <i class="bx bx-detail"></i>
+                        </button>
+                        <button
+                          class="action-btn process"
+                          title="Process Payment"
+                        >
+                          <i class="bx bx-check-circle"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="rider-info">
+                        <div class="rider-avatar">
+                          <img
+                            src="https://via.placeholder.com/40"
+                            alt="Olivia Martinez"
+                          />
+                        </div>
+                        <div>
+                          <p class="rider-name">Olivia Martinez</p>
+                          <p class="rider-id">RID-9123</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td>23</td>
+                    <td>$1,744.23</td>
+                    <td>$261.63 (15%)</td>
+                    <td>$1,482.60</td>
+                    <td><span class="status-badge pending">Pending</span></td>
+                    <td>
+                      <div class="action-buttons">
+                        <button class="action-btn view" title="View Details">
+                          <i class="bx bx-detail"></i>
+                        </button>
+                        <button
+                          class="action-btn process"
+                          title="Process Payment"
+                        >
+                          <i class="bx bx-check-circle"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+{% endblock %} {% block extra_js %}
+<!-- JavaScript -->
+<script src="{{ url_for('static', filename='js/admin_scripts/admin_riders_management.js') }}"></script>
+{% endblock %}

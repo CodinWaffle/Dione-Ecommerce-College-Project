@@ -1,6 +1,7 @@
 """
 Authentication service for Dione Ecommerce
 """
+import re
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_mail import Message
 from flask import render_template
@@ -11,7 +12,7 @@ class AuthService:
     """Service class for authentication operations"""
 
     @staticmethod
-    def create_user(email, password, role='buyer'):
+    def create_user(email, password, role='buyer', username=None):
         """Create a new user"""
         # Validate required fields
         if not email or not password:
@@ -23,6 +24,7 @@ class AuthService:
             return None, "Email address already exists"
 
         desired_role = (role or 'buyer').lower()
+        username_value = AuthService._generate_username(username, email)
         hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
 
         # If user applies for seller/rider, create a pending request, otherwise normal creation
@@ -30,6 +32,7 @@ class AuthService:
             new_user = User(
                 email=email,
                 password=hashed_password,
+                username=username_value,
                 role='buyer',
                 role_requested=desired_role,
                 is_approved=False
@@ -39,6 +42,7 @@ class AuthService:
             new_user = User(
                 email=email,
                 password=hashed_password,
+                username=username_value,
                 role=desired_role if desired_role in {'buyer', 'admin'} else 'buyer',
                 role_requested=None,
                 is_approved=True
@@ -179,3 +183,14 @@ class AuthService:
         except Exception as e:
             db.session.rollback()
             return None, f"Error creating rider profile: {str(e)}"
+
+    @staticmethod
+    def _generate_username(username, email):
+        """Derive a safe username from provided value or email"""
+        base = (username or '').strip()
+        if not base and email:
+            base = email.split('@')[0]
+        base = re.sub(r'[^a-zA-Z0-9_-]', '_', base or '').strip('_')
+        if not base:
+            base = 'user'
+        return base[:30]

@@ -32,6 +32,11 @@ def login_post():
         flash(error, 'danger')
         return redirect(url_for('auth.login'))
 
+    role = (getattr(user, 'role', '') or '').lower()
+    if role == 'admin':
+        flash('Admin accounts must sign in on the Admin Login page.', 'warning')
+        return render_template('auth/login.html'), 403
+
     # Block suspended users
     if getattr(user, 'is_suspended', False):
         flash('Your account is suspended. Please contact support.', 'danger')
@@ -112,10 +117,14 @@ def rider_signup():
 def signup_post():
     email = request.form.get('email')
     password = request.form.get('password')
+    username = (request.form.get('username') or '').strip()
     role = (request.form.get('role') or 'buyer').lower()
 
     # Validate form
-    is_valid, errors = Validators.validate_signup_form(email, password)
+    if username:
+        is_valid, errors = Validators.validate_signup_form(username, email, password)
+    else:
+        is_valid, errors = Validators.validate_signup_form(email, password)
     # Validate role
     role_valid, role_error = Validators.validate_role(role)
     if not role_valid:
@@ -126,7 +135,7 @@ def signup_post():
         return redirect(url_for('auth.signup'))
 
     # Create user
-    user, error = AuthService.create_user(email, password, role=role)
+    user, error = AuthService.create_user(email, password, role=role, username=username)
     if error:
         flash(error, 'danger')
         return redirect(url_for('auth.signup'))
