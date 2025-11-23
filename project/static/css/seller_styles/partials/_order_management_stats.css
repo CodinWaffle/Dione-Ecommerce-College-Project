@@ -1,0 +1,68 @@
+/* Seller Order Management Stat Cards (Inventory Style) */
+.order-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+.order-stat-card {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 2px 8px rgba(60, 72, 100, 0.06);
+  padding: 1.25rem 1.5rem;
+  gap: 1.25rem;
+}
+.order-stat-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  font-size: 1.5rem;
+}
+.order-stat-icon.purple {
+  background: #ede9fe;
+  color: #6d28d9;
+}
+.order-stat-icon.green {
+  background: #dcfce7;
+  color: #16a34a;
+}
+.order-stat-icon.orange {
+  background: #fef3c7;
+  color: #ea580c;
+}
+.order-stat-icon.red {
+  background: #fee2e2;
+  color: #dc2626;
+}
+.order-stat-content {
+  flex: 1;
+}
+.order-stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #18181b;
+}
+.order-stat-label {
+  font-size: 1rem;
+  color: #71717a;
+  margin-top: 0.25rem;
+}
+/* Container for nav tabs and orders */
+.order-management-container {
+  background: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 2px 8px rgba(60, 72, 100, 0.06);
+  padding: 0 0 2rem 0;
+}
+.order-management-header {
+  border-bottom: 1px solid #e5e7eb;
+  padding: 1.5rem 2rem 0.5rem 2rem;
+}
+.order-management-body {
+  padding: 0 2rem;
+}

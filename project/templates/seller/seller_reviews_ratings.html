@@ -1,0 +1,498 @@
+{% extends 'seller/base_seller.html' %} {% block title %}Reviews & Ratings{%
+endblock %} {% block extra_css %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/seller_styles/seller_dashboard.css') }}"
+/>
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/seller_styles/seller_reviews_ratings.css') }}"
+/>
+{% endblock %} {% block page_content %}
+<div class="page-header">
+  <div class="page-header-content">
+    <h1 class="page-title">Reviews & Ratings</h1>
+    <p class="page-subtitle">
+      Monitor and respond to customer feedback about your products.
+    </p>
+  </div>
+  <div class="page-actions" style="margin-left: auto"></div>
+</div>
+
+<div class="dashboard-grid">
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon purple">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <polygon
+            points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+          ></polygon>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-label">Avg. Rating</div>
+        <div class="stat-value" id="averageRating">4.5</div>
+        <div class="star-rating" aria-label="4.5 out of 5 stars">
+          <span class="star filled">★</span>
+          <span class="star filled">★</span>
+          <span class="star filled">★</span>
+          <span class="star filled">★</span>
+          <span class="star half-filled">★</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon blue">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path
+            d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"
+          ></path>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-label">Reviews</div>
+        <div class="stat-value" id="totalReviews">248</div>
+        <div class="stat-change positive">
+          <span class="change-indicator">↑</span>
+          <span id="reviewGrowth">12%</span> this month
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon green">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path
+            d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"
+          ></path>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-label">Positive</div>
+        <div class="stat-value" id="positiveReviews">86%</div>
+        <div class="stat-change positive">
+          <span class="change-indicator">↑</span>
+          <span id="positiveChange">3%</span> vs last month
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon orange">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path
+            d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"
+          ></path>
+        </svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-label">Responses</div>
+        <div class="stat-value" id="responseRate">92%</div>
+        <div class="stat-change neutral">
+          <span id="responseTime">24h</span> avg. response time
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="charts-row">
+    <div class="chart-card">
+      <div class="chart-header">
+        <h2 class="chart-title">Rating Distribution</h2>
+        <select class="time-filter" id="ratingTimeFilter">
+          <option value="7">7 days</option>
+          <option value="30" selected>30 days</option>
+          <option value="90">90 days</option>
+          <option value="365">12 months</option>
+        </select>
+      </div>
+      <div class="chart-container">
+        <canvas id="ratingDistributionChart"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <h2 class="chart-title">Reviews Over Time</h2>
+        <select class="time-filter" id="reviewsTimeFilter">
+          <option value="7">7 days</option>
+          <option value="30" selected>30 days</option>
+          <option value="90">90 days</option>
+          <option value="365">12 months</option>
+        </select>
+      </div>
+      <div class="chart-container">
+        <canvas id="reviewsTrendChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Product Reviews Analysis -->
+  <div class="product-reviews-section">
+    <div class="section-header">
+      <h2 class="section-title">Product Reviews Analysis</h2>
+      <div class="sort-filter">
+        <label for="sortProducts">Sort by:</label>
+        <select id="sortProducts" class="filter-select">
+          <option value="recent">Most Recent</option>
+          <option value="rating_high">Highest Rating</option>
+          <option value="rating_low">Lowest Rating</option>
+          <option value="most_reviews">Most Reviews</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="products-grid" id="productsGrid">
+      <!-- Products with their review stats will be populated by JS -->
+    </div>
+  </div>
+
+  <!-- Reviews Table -->
+  <div class="table-card">
+    <div class="table-header">
+      <h2 class="table-title">Customer Reviews</h2>
+      <div class="table-actions">
+        <div class="search-wrapper">
+          <input
+            type="text"
+            id="reviewSearch"
+            class="search-input"
+            placeholder="Search reviews..."
+          />
+          <svg
+            class="search-icon"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </div>
+        <div class="filter-wrapper">
+          <select id="reviewFilter" class="filter-select">
+            <option value="all">All Reviews</option>
+            <option value="5">5 Star</option>
+            <option value="4">4 Star</option>
+            <option value="3">3 Star</option>
+            <option value="2">2 Star</option>
+            <option value="1">1 Star</option>
+            <option value="unresponded">Unresponded</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Product</th>
+            <th>Customer</th>
+            <th>Rating</th>
+            <th>Review</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="reviewsTableBody">
+          {% for review in reviews_data.recent_reviews %}
+          <tr data-review-id="{{ review.id }}">
+            <td>{{ review.review_date }}</td>
+            <td data-product="{{ review.product_name }}">
+              {{ review.product_name }}
+            </td>
+            <td data-customer="{{ review.customer_name }}">
+              <div class="customer-info">
+                <div class="customer-avatar">{{ review.customer_initial }}</div>
+                {{ review.customer_name }}
+              </div>
+            </td>
+            <td data-rating="{{ review.rating }}">
+              <div class="review-rating-display">
+                {% for i in range(5) %} {% if i < review.rating %}
+                <span class="star filled">★</span>
+                {% else %}
+                <span class="star">★</span>
+                {% endif %} {% endfor %}
+              </div>
+            </td>
+            <td data-review="{{ review.review_text }}">
+              <div class="review-text" title="{{ review.review_text }}">
+                {{ review.review_text }}
+              </div>
+            </td>
+            <td>
+              <span class="status-badge {{ review.status }}"
+                >{{ review.status|title }}</span
+              >
+            </td>
+            <td>
+              <div class="action-buttons">
+                <button
+                  class="action-btn view-btn"
+                  title="View details"
+                  data-modal-target="reviewDetailModal"
+                  data-review-id="{{ review.id }}"
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path
+                      d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
+                    ></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                </button>
+                <button
+                  class="action-btn flag-btn"
+                  title="Flag review"
+                  data-modal-target="flagReviewModal"
+                  data-review-id="{{ review.id }}"
+                  data-action="flag-review"
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path
+                      d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"
+                    ></path>
+                    <line x1="4" y1="22" x2="4" y2="15"></line>
+                  </svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% include 'partials/components/_tableFooter.html' %}
+    </div>
+  </div>
+</div>
+
+<!-- Review Detail Modal -->
+<div class="modal" id="reviewDetailModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 class="modal-title">Review Details</h2>
+      <button class="close-btn" id="closeModal">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="review-detail">
+        <div class="review-product">
+          <div class="product-image-container">
+            <img
+              src=""
+              alt="Product Image"
+              id="modalProductImage"
+              class="product-image"
+            />
+          </div>
+          <div class="product-info">
+            <h3 id="modalProductName"></h3>
+            <p id="modalProductSKU"></p>
+          </div>
+        </div>
+
+        <div class="review-content">
+          <div class="review-header">
+            <div class="review-author-info">
+              <div class="customer-avatar" id="modalCustomerAvatar"></div>
+              <div>
+                <h4 id="modalCustomerName"></h4>
+                <div class="review-meta">
+                  <span id="modalReviewDate"></span> | Order #<span
+                    id="modalOrderId"
+                  ></span>
+                </div>
+              </div>
+            </div>
+            <div class="review-rating" id="modalRatingStars"></div>
+          </div>
+
+          <div class="review-text">
+            <p id="modalReviewText"></p>
+          </div>
+
+          <div class="review-images" id="modalReviewImages">
+            <!-- Review images will be populated by JS if available -->
+          </div>
+        </div>
+
+        <div class="seller-response-section">
+          <h4>Your Response</h4>
+          <div class="existing-response" id="existingResponseContainer">
+            <div class="response-content" id="existingResponse"></div>
+            <div class="response-meta">
+              <span id="responseDate"></span>
+            </div>
+            <button class="action-btn edit-response-btn" id="editResponseBtn">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
+                ></path>
+                <path
+                  d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
+                ></path>
+              </svg>
+              Edit Response
+            </button>
+          </div>
+
+          <div class="response-form" id="responseFormContainer">
+            <textarea
+              id="responseTextarea"
+              placeholder="Type your response to this review..."
+            ></textarea>
+            <div class="form-actions">
+              <button class="action-btn primary" id="submitResponseBtn">
+                Post Response
+              </button>
+              <button class="action-btn secondary" id="cancelResponseBtn">
+                Cancel
+              </button>
+            </div>
+            <div class="response-tips">
+              <h5>Tips for responding to reviews:</h5>
+              <ul>
+                <li>Be professional and courteous</li>
+                <li>Thank the customer for their feedback</li>
+                <li>Address specific points mentioned in the review</li>
+                <li>Offer solutions for any issues mentioned</li>
+                <li>Keep responses concise and focused</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Flag Review Modal -->
+<div class="modal" id="flagReviewModal">
+  <div class="modal-content modal-sm">
+    <div class="modal-header">
+      <h2 class="modal-title">Flag Review</h2>
+      <button class="close-btn" id="closeFlagModal">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p>Please select a reason for flagging this review:</p>
+      <form id="flagReviewForm">
+        <div class="radio-group">
+          <label class="radio-label">
+            <input type="radio" name="flagReason" value="inappropriate" />
+            <span class="radio-text">Contains inappropriate content</span>
+          </label>
+          <label class="radio-label">
+            <input type="radio" name="flagReason" value="spam" />
+            <span class="radio-text">Spam or fraudulent</span>
+          </label>
+          <label class="radio-label">
+            <input type="radio" name="flagReason" value="not_product" />
+            <span class="radio-text">Not related to the product</span>
+          </label>
+          <label class="radio-label">
+            <input type="radio" name="flagReason" value="other" />
+            <span class="radio-text">Other reason</span>
+          </label>
+        </div>
+
+        <div class="form-group" id="otherReasonContainer" style="display: none">
+          <label for="otherReason">Please specify:</label>
+          <textarea
+            id="otherReason"
+            placeholder="Provide details..."
+          ></textarea>
+        </div>
+
+        <div class="form-actions center">
+          <button type="submit" class="action-btn primary" id="submitFlagBtn">
+            Submit
+          </button>
+          <button type="button" class="action-btn secondary" id="cancelFlagBtn">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %} {% block extra_js %}
+<script src="{{ url_for('static', filename='js/seller_reviews_ratings.js') }}"></script>
+{% endblock %}

@@ -1,8 +1,8 @@
-{% extends 'seller/seller_base.html' %} {% block title %}Revenue Analytics{%
+{% extends 'seller/base_seller.html' %} {% block title %}Revenue Analytics{%
 endblock %} {% block extra_css %}
 <link
   rel="stylesheet"
-  href="{{ url_for('static', filename='css/seller_revenue_analytics.css') }}"
+  href="{{ url_for('static', filename='css/seller_styles/seller_revenue_analytics.css') }}"
 />
 {% endblock %} {% block page_content %}
 <div class="page-header">
@@ -43,7 +43,7 @@ endblock %} {% block extra_css %}
   </div>
   <div class="page-header-actions">
     <a
-      href="{{ url_for('seller_payout') }}"
+      href="{{ url_for('seller.payouts') }}"
       class="btn-primary"
       id="withdrawBtn"
     >

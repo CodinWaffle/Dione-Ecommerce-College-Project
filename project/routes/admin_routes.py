@@ -11,6 +11,31 @@ from project.services.auth_service import AuthService
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
+from jinja2 import Undefined
+
+
+def _clean_for_json(obj):
+    """Recursively replace Jinja2 Undefined values with None so json serialization succeeds."""
+    # Primitive / simple cases
+    if obj is None:
+        return None
+    if isinstance(obj, Undefined):
+        return None
+    if isinstance(obj, (str, int, float, bool)):
+        return obj
+    # Dicts
+    if isinstance(obj, dict):
+        return {k: _clean_for_json(v) for k, v in obj.items()}
+    # Lists / tuples / sets
+    if isinstance(obj, (list, tuple, set)):
+        return [_clean_for_json(v) for v in obj]
+    # SQLAlchemy models or other objects: try to convert common types, otherwise return as-is
+    try:
+        # datetime and other json-serializable types will be handled by jsonify/encoder
+        return obj
+    except Exception:
+        return None
+
 
 @admin_bp.before_request
 def restrict_to_admin():
@@ -190,7 +215,9 @@ def get_seller_details(user_id):
         else:
             response_data['rider_profile'] = None
     
-    return jsonify(response_data)
+    # Sanitize potential Jinja2 Undefined values before JSON serialization
+    safe = _clean_for_json(response_data)
+    return jsonify(safe)
 
 
 @admin_bp.get('/get-warning-data/<int:user_id>')

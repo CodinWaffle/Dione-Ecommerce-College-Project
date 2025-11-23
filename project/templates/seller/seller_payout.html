@@ -1,0 +1,228 @@
+{% extends 'seller/base_seller.html' %} {% block title %}Withdraw Earnings{%
+endblock %} {% block extra_css %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/seller_dashboard.css') }}"
+/>
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/seller_payout.css') }}"
+/>
+{% endblock %} {% block page_content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Withdraw Earnings</h1>
+    <p class="page-subtext">
+      Transfer your available earnings to your preferred payment method.
+    </p>
+  </div>
+</div>
+
+<main class="dashboard">
+  <div class="payout-container">
+    <div class="payout-grid">
+      <!-- Balance Summary Card -->
+      <div class="balance-card">
+        <div class="balance-header">
+          <h2>Available Balance</h2>
+        </div>
+        <div class="balance-amount">
+          <span class="currency">₱</span>
+          <span class="amount" id="availableBalance">0.00</span>
+        </div>
+        <div class="balance-info">
+          <div class="info-item">
+            <span class="info-label">Total Earned</span>
+            <span class="info-value" id="totalEarned">₱0.00</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Pending Clearance</span>
+            <span class="info-value" id="pendingClearance">₱0.00</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Previously Withdrawn</span>
+            <span class="info-value" id="previouslyWithdrawn">₱0.00</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Withdrawal Form -->
+      <div class="withdrawal-card">
+        <div class="card-header-payout">
+          <h2>Withdraw Funds</h2>
+        </div>
+        <form id="withdrawalForm" class="withdrawal-form">
+          <div class="form-group">
+            <label for="withdrawalAmount">Amount to Withdraw</label>
+            <div class="amount-input-wrapper">
+              <span class="currency-symbol">₱</span>
+              <input
+                type="number"
+                id="withdrawalAmount"
+                class="form-control"
+                placeholder="0.00"
+                min="500"
+                step="0.01"
+                required
+              />
+            </div>
+            <p class="input-help">Minimum withdrawal: ₱500.00</p>
+          </div>
+
+          <div class="form-group">
+            <label for="paymentMethod">Payment Method</label>
+            <select id="paymentMethod" class="form-control" required>
+              <option value="" selected disabled>Select payment method</option>
+              <option value="bank">Bank Transfer</option>
+              <option value="gcash">GCash</option>
+              <option value="paymaya">PayMaya</option>
+            </select>
+          </div>
+
+          <!-- Bank Transfer Fields (Initially Hidden) -->
+          <div id="bankFields" class="payment-fields hidden">
+            <div class="form-group">
+              <label for="bankName">Bank Name</label>
+              <select id="bankName" class="form-control">
+                <option value="" selected disabled>Select your bank</option>
+                <option value="bdo">BDO</option>
+                <option value="bpi">BPI</option>
+                <option value="metrobank">Metrobank</option>
+                <option value="landbank">Landbank</option>
+                <option value="unionbank">Unionbank</option>
+                <option value="securitybank">Security Bank</option>
+                <option value="other">Other Bank</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="accountNumber">Account Number</label>
+              <input
+                type="text"
+                id="accountNumber"
+                class="form-control"
+                placeholder="Enter account number"
+              />
+            </div>
+            <div class="form-group">
+              <label for="accountName">Account Name</label>
+              <input
+                type="text"
+                id="accountName"
+                class="form-control"
+                placeholder="Enter account name"
+              />
+            </div>
+          </div>
+
+          <!-- E-wallet Fields (Initially Hidden) -->
+          <div id="ewalletFields" class="payment-fields hidden">
+            <div class="form-group">
+              <label for="mobileNumber">Mobile Number</label>
+              <input
+                type="text"
+                id="mobileNumber"
+                class="form-control"
+                placeholder="Enter mobile number"
+              />
+            </div>
+            <div class="form-group">
+              <label for="accountName">Account Name</label>
+              <input
+                type="text"
+                id="ewalletName"
+                class="form-control"
+                placeholder="Enter account name"
+              />
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="withdraw-btn" id="submitWithdrawal">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  d="M21 12v5a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"
+                ></path>
+                <polygon points="16 5 21 10 16 15"></polygon>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+              </svg>
+              Confirm Withdrawal
+            </button>
+            <button
+              type="button"
+              class="cancel-btn"
+              onclick="window.history.back()"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Recent Withdrawals Table -->
+    <div class="table-card">
+      <div class="table-header">
+        <h2 class="table-title">Recent Withdrawals</h2>
+      </div>
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Reference ID</th>
+              <th>Amount</th>
+              <th>Payment Method</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="withdrawalsTable">
+            <!-- Data will be populated by JS -->
+            <tr>
+              <td colspan="5" class="empty-table">
+                No withdrawal records found
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Withdrawal Information -->
+    <div class="info-card">
+      <h3>Withdrawal Information</h3>
+      <div class="info-content">
+        <p>
+          <strong>Processing Time:</strong> Withdrawals are typically processed
+          within 1-3 business days.
+        </p>
+        <p>
+          <strong>Fees:</strong> There is a 1.5% processing fee for all
+          withdrawals (minimum ₱10).
+        </p>
+        <p>
+          <strong>Schedule:</strong> Withdrawals requested before 2:00 PM on
+          business days will be processed on the same day.
+        </p>
+        <p>
+          <strong>Limits:</strong> Maximum withdrawal amount is ₱50,000 per
+          transaction. For larger amounts, please contact support.
+        </p>
+        <p>
+          <strong>Help:</strong> For any issues with withdrawals, please contact
+          our support team at
+          <a href="mailto:support@copyapparel.com">support@copyapparel.com</a>.
+        </p>
+      </div>
+    </div>
+  </div>
+</main>
+{% endblock %} {% block extra_js %}
+<script src="{{ url_for('static', filename='js/seller_payout.js') }}"></script>
+{% endblock %}

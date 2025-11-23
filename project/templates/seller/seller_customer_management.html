@@ -2,6 +2,10 @@
 Dione Ecommerce{% endblock %} {% block extra_css %}
 <link
   rel="stylesheet"
+  href="{{ url_for('static', filename='css/seller_styles/seller_dashboard.css') }}"
+/>
+<link
+  rel="stylesheet"
   href="{{ url_for('static', filename='css/seller_styles/seller_customer_management.css') }}?v={{ range(1, 10000) | random }}"
 />
 {% endblock %} {% block content %}

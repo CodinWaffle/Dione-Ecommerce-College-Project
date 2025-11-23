@@ -1,0 +1,55 @@
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  padding: 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.btn-icon:hover {
+  background-color: #f0f0f0;
+}
+
+.btn-icon i {
+  width: 18px;
+  height: 18px;
+  color: #666;
+}
+
+.view-details i {
+  color: #1a73e8;
+}
+
+.edit-product i {
+  color: #28a745;
+}
+
+.delete-product i {
+  color: #dc3545;
+}
+
+.btn-icon:hover i {
+  color: #333;
+}
+
+.view-details:hover i {
+  color: #0d47a1;
+}
+
+.edit-product:hover i {
+  color: #1e7e34;
+}
+
+.delete-product:hover i {
+  color: #bd2130;
+}

@@ -1,0 +1,276 @@
+/* Form Layout Improvements */
+
+/* General form field improvements */
+.form-control {
+  box-sizing: border-box;
+  max-width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  line-height: 1.5;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Improve form row layout - prevent overflow */
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 -8px;
+  width: calc(100% + 16px);
+}
+
+.form-row .form-group {
+  flex: 1 1 calc(50% - 16px);
+  margin: 0 8px 16px;
+  min-width: 200px;
+}
+
+/* Form groups with better structure */
+.form-group {
+  margin-bottom: 20px;
+  width: 100%;
+  position: relative;
+  box-sizing: border-box;
+}
+
+/* Input group layout fixes */
+.input-group {
+  display: flex;
+  flex-wrap: nowrap;
+  width: 100%;
+}
+
+.input-group-prepend {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  background-color: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-right: none;
+  border-radius: 6px 0 0 6px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  color: #6b7280;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.input-group .form-control {
+  flex: 1 1 auto;
+  width: 1%;
+  border-radius: 0 6px 6px 0;
+  margin-left: 0;
+}
+
+/* Color picker container improvements */
+.color-picker-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: nowrap;
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 16px;
+}
+
+.color-picker-container .form-control {
+  width: auto;
+  max-width: 120px;
+  flex-grow: 0;
+  box-sizing: border-box;
+  padding: 8px 12px;
+  height: 36px;
+}
+
+.color-text-input {
+  width: 120px !important;
+  min-width: 80px !important;
+  box-sizing: border-box !important;
+}
+
+.color-preview {
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+}
+
+/* Fix textarea overflow */
+textarea.form-control {
+  resize: vertical;
+  width: 100%;
+  min-height: 80px;
+  max-width: 100%;
+  font-family: inherit;
+}
+
+/* Focus states */
+.form-control:focus {
+  border-color: #4f46e5;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+/* Theme selector layout improvements */
+.theme-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 8px;
+  margin-bottom: 16px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.theme-option {
+  flex: 1 1 calc(25% - 16px);
+  max-width: 120px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  padding: 8px;
+  margin-bottom: 8px;
+  box-sizing: border-box;
+}
+
+/* Checkbox and radio layout */
+.checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+/* Toggle switch improvements */
+.toggle-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* Form actions (buttons) */
+.form-actions {
+  display: flex;
+  justify-content: flex-start;
+  gap: 12px;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+  .form-row {
+    flex-direction: column;
+    margin: 0;
+    width: 100%;
+  }
+
+  .form-row .form-group {
+    flex: 1 1 100%;
+    margin: 0 0 16px 0;
+    min-width: 0;
+    width: 100%;
+  }
+
+  input.form-control,
+  select.form-control,
+  textarea.form-control {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .theme-selector {
+    justify-content: center;
+  }
+
+  .theme-option {
+    min-width: 80px;
+    flex-basis: calc(50% - 16px);
+  }
+
+  .toggle-container {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .toggle-container .toggle-switch {
+    margin-top: 8px;
+  }
+
+  .color-picker-container {
+    flex-wrap: wrap;
+  }
+
+  .color-picker-container .form-control {
+    margin-top: 8px;
+    max-width: 100%;
+  }
+}
+
+/* Additional input types fixes */
+select.form-control {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  padding-right: 36px;
+}
+
+/* Make sure cards have proper spacing for forms */
+.card-body {
+  padding: 20px;
+  overflow: hidden;
+}
+
+/* Fix notification items */
+.notification-item {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #f3f4f6;
+  gap: 16px;
+}
+
+.notification-info {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.notification-item .toggle-switch {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 480px) {
+  .notification-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .notification-item .toggle-switch {
+    margin-top: 8px;
+    align-self: flex-start;
+  }
+}
+
+/* Code editor improvements */
+.code-editor {
+  font-family: monospace;
+  white-space: pre-wrap;
+  word-break: break-word;
+  tab-size: 2;
+  background-color: #f9fafb;
+  padding: 12px;
+}

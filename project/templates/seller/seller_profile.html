@@ -1,0 +1,30 @@
+{% extends 'seller/base_seller.html' %} {% block title %}Seller Profile{%
+endblock %} {% block page_content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <h1>Profile</h1>
+    <p class="page-subtext">Manage your seller profile information.</p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h2>Account Details</h2>
+  </div>
+  <div class="card-body">
+    <div class="profile-grid">
+      <div class="profile-avatar">
+        <img
+          src="{{ seller.profile_image_url if seller else url_for('static', filename='images/default_user.png') }}"
+          alt="Avatar"
+        />
+      </div>
+      <div class="profile-info">
+        <h3>{{ seller.name if seller else 'Seller Name' }}</h3>
+        <p>{{ seller.role if seller else '' }}</p>
+        <p>Email: seller@example.com</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

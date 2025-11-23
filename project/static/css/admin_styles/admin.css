@@ -99,17 +99,17 @@ button {
 
 .main-content {
   flex: 1;
-  padding: var(--spacing-md);
+  /* Match seller page spacing: roomy horizontal padding */
+  padding: 2rem 3rem;
   transition: all 0.3s ease;
-  /* Use padding-left so the fixed sidebar does not push layout unexpectedly.
-     The extra spacing (var(--spacing-md)) keeps content away from the sidebar. */
   margin-left: 0;
-  padding-left: 2rem;
+  /* Keep left offset based on sidebar width so fixed sidebar doesn't overlap content */
+  padding-left: calc(var(--sidebar-width) + var(--spacing-md));
 }
 
 .main-content.expanded {
-  /* legacy class kept for compatibility; prefer using the sibling selector below */
-  padding-left: 2rem;
+  /* When a legacy expanded class is used, respect collapsed sidebar spacing */
+  padding-left: calc(var(--sidebar-collapsed-width) + var(--spacing-md));
 }
 
 /* Ensure main content responds to sidebar width changes using sibling selector */

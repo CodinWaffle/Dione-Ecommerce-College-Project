@@ -69,14 +69,18 @@
       }
 
       .main-content {
-        margin-left: 280px;
+        margin-left: var(--sidebar-width);
+        /* keep space for fixed header, but use consistent content padding */
         padding-top: 82px;
+        padding-right: 3rem;
+        padding-left: 3rem;
+        padding-bottom: 2rem;
         min-height: 100vh;
         transition: margin-left 0.3s ease;
       }
 
       .main-content.expanded {
-        margin-left: 80px;
+        margin-left: var(--sidebar-collapsed-width);
       }
 
       /* Critical Sidebar Styles */
@@ -495,7 +499,7 @@
       }
     </style>
   </head>
-  <body>
+  <body{% if request.path.startswith('/seller/products') or request.path.startswith('/seller/add_product') or request.path.startswith('/seller/add_product_description') or request.path.startswith('/seller/add_product_stocks') or request.path.startswith('/seller/add_product_preview') %} class="product-editor"{% endif %}>
     <!-- Sidebar -->
     {% include 'seller/partials/_sidebar_seller.html' %}
 
@@ -509,7 +513,6 @@
       get_flashed_messages(with_categories=true) %} {% if messages %}
       <div class="p-3">
         {% for category, message in messages %} {% set alert_class = 'warning'
-        if category == 'message' else category %}
         <div
           class="alert alert-{{ alert_class }} alert-dismissible fade show"
           role="alert"
@@ -529,7 +532,10 @@
       {% endif %} {% endwith %} {% endblock %}
 
       <!-- Page Content -->
-      {% block content %}{% endblock %}
+      {% block content %} {# Some seller templates use {% block page_content %}
+      while others use {% block content %}. Support both by nesting the
+      page_content block inside the main content block so either will render. #}
+      {% block page_content %}{% endblock %} {% endblock %}
     </div>
 
     <!-- Scripts -->
@@ -546,7 +552,6 @@
         const sidebar = document.getElementById("sidebar");
         const mainContent = document.querySelector(".main-content");
         const header = document.querySelector(".seller-header");
-
         sidebar.classList.toggle("collapsed");
         mainContent.classList.toggle("expanded");
         header.classList.toggle("expanded");

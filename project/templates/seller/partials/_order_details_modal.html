@@ -1,0 +1,97 @@
+{# Order details modal - minimal markup used by seller order management #}
+<div
+  id="orderDetailsModal"
+  class="modal"
+  aria-hidden="true"
+  style="display: none"
+>
+  <div
+    class="modal-backdrop"
+    onclick="closeOrderModal()"
+    style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.4)"
+  ></div>
+  <div
+    class="modal-dialog"
+    role="dialog"
+    style="
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      border-radius: 8px;
+      max-width: 800px;
+      width: 95%;
+      z-index: 2000;
+      padding: 1rem;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    "
+  >
+    <header
+      style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+      "
+    >
+      <h3 style="margin: 0; font-size: 1.1rem">Order Details</h3>
+      <button
+        aria-label="Close"
+        onclick="closeOrderModal()"
+        style="background: none; border: none; font-size: 1.25rem"
+      >
+        &times;
+      </button>
+    </header>
+    <section id="orderDetailsContent">
+      <p><strong>Order ID:</strong> <span id="modalOrderId">—</span></p>
+      <p><strong>Customer:</strong> <span id="modalCustomer">—</span></p>
+      <p><strong>Items:</strong></p>
+      <div id="modalOrderItems">No items</div>
+      <p><strong>Total:</strong> <span id="modalOrderTotal">$0.00</span></p>
+      <p><strong>Status:</strong> <span id="modalOrderStatus">—</span></p>
+    </section>
+  </div>
+</div>
+
+<script>
+  function openOrderModal(order) {
+    try {
+      document.getElementById("modalOrderId").textContent =
+        order.id || order.order_id || "N/A";
+      document.getElementById("modalCustomer").textContent =
+        order.customer_name || order.customer || "Customer";
+      document.getElementById("modalOrderTotal").textContent =
+        "$" + (order.total_amount || order.amount || "0.00");
+      document.getElementById("modalOrderStatus").textContent =
+        order.status || "unknown";
+      var itemsEl = document.getElementById("modalOrderItems");
+      itemsEl.innerHTML = "";
+      if (order.items && order.items.length) {
+        var ul = document.createElement("ul");
+        order.items.forEach(function (it) {
+          var li = document.createElement("li");
+          li.textContent =
+            (it.name || it.product_name || "Item") +
+            " x" +
+            (it.qty || it.quantity || 1);
+          ul.appendChild(li);
+        });
+        itemsEl.appendChild(ul);
+      } else {
+        itemsEl.textContent = "No items available";
+      }
+      var modal = document.getElementById("orderDetailsModal");
+      modal.style.display = "block";
+      modal.setAttribute("aria-hidden", "false");
+    } catch (e) {
+      console.warn("openOrderModal error", e);
+    }
+  }
+  function closeOrderModal() {
+    var modal = document.getElementById("orderDetailsModal");
+    modal.style.display = "none";
+    modal.setAttribute("aria-hidden", "true");
+  }
+</script>
