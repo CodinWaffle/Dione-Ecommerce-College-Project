@@ -56,6 +56,7 @@ def deliveries():
 def earnings():
     if not _ensure_rider_access():
         return redirect(url_for('main.profile'))
+    # Restore Earnings/Payout page for riders.
     return render_template('rider/earnings_payout.html', username=current_user.email)
 
 
@@ -64,7 +65,8 @@ def earnings():
 def performance():
     if not _ensure_rider_access():
         return redirect(url_for('main.profile'))
-    return render_template('rider/performance_tracking.html', username=current_user.email)
+    # Performance page removed per request — redirect to dashboard.
+    return redirect(url_for('rider.rider_dashboard'))
 
 
 @rider_bp.route('/rider/profile')
@@ -80,7 +82,9 @@ def profile_settings():
 def map_navigation():
     if not _ensure_rider_access():
         return redirect(url_for('main.profile'))
-    return render_template('rider/map_navigation.html', username=current_user.email)
+    # Map & Navigation removed from rider area per request.
+    # Redirect to rider dashboard instead of rendering a map page.
+    return redirect(url_for('rider.rider_dashboard'))
 
 
 @rider_bp.route('/rider/notifications')

@@ -44,14 +44,6 @@
           Earnings & Payout
         </a>
       </li>
-      <li
-        class="{% if request.path == url_for('rider.map_navigation') %}active{% endif %}"
-      >
-        <a href="{{ url_for('rider.map_navigation') }}">
-          <span class="material-symbols-outlined">map</span>
-          Map & Navigation
-        </a>
-      </li>
 
       <li
         class="{% if request.path == url_for('rider.profile_settings') %}active{% endif %}"
@@ -77,14 +69,7 @@
           Communication
         </a>
       </li>
-      <li
-        class="{% if request.path == url_for('rider.performance') %}active{% endif %}"
-      >
-        <a href="{{ url_for('rider.performance') }}">
-          <span class="material-symbols-outlined">trending_up</span>
-          Performance
-        </a>
-      </li>
+      <!-- Performance link removed per request -->
 
       <li>
         <a href="#">
