@@ -75,11 +75,7 @@ h6 {
   flex-direction: column;
   min-height: 100vh;
   padding: 2rem 3rem;
-  background: linear-gradient(
-    135deg,
-    var(--purple-lightest) 0%,
-    var(--white) 100%
-  );
+  background-color: #f9fafb;
   z-index: 1; /* keep main content below sidebar */
 }
 

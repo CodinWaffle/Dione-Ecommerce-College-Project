@@ -47,11 +47,9 @@
   }
 </style>
 <div class="admin-shell">
-  {# Use the centralized sidebar partial. Provide `username` from current_user
-  so the partial displays correctly #} {% set username = (current_user.username
-  or current_user.email) %} {% include 'admin/partials/_sidebar_admin.html' %}
-  <main class="main-content admin-main-simple">
-    {% block admin_content %}{% endblock %}
-  </main>
+  {# Child admin pages include the sidebar themselves to allow per-page layout
+  (avoid double-including sidebar which can overlay content). Child templates
+  should render the sidebar and a `.main-content` element. #} {% block
+  admin_content %}{% endblock %}
 </div>
 {% endblock %}

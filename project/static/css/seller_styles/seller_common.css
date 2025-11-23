@@ -26,3 +26,24 @@
   opacity: 0;
   transform: translateY(5px);
 }
+
+/* Enforce consistent seller page spacing and background */
+.main-content {
+  /* keep space for fixed header */
+  padding-top: 82px !important;
+  padding-right: 3rem !important;
+  padding-left: 3rem !important;
+  padding-bottom: 2rem !important;
+  background-color: #f9fafb !important;
+}
+
+/* Allow product-editor flows (product management / add-product) to control inner layout
+   while still receiving the same page background */
+body.product-editor .main-content {
+  padding-right: 0 !important;
+  padding-left: 0 !important;
+  padding-bottom: 0 !important;
+  /* keep top spacing for header */
+  padding-top: 82px !important;
+  background-color: #f9fafb !important;
+}

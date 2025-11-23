@@ -1,0 +1,112 @@
+<!-- Delivery Management Page -->
+{% extends 'rider/_base.html' %} {% block title %}Delivery Management{% endblock
+%} {% block content %}
+<main class="dashboard-main">
+  <section class="dashboard-header">
+    <h1>Delivery Management</h1>
+    <div class="dashboard-search">
+      <input
+        type="text"
+        id="deliverySearchInput"
+        class="search-bar"
+        placeholder="Search deliveries..."
+      />
+    </div>
+  </section>
+  <section class="dashboard-table-section">
+    <table class="dashboard-table">
+      <thead>
+        <tr>
+          <th>Order #</th>
+          <th>Customer</th>
+          <th>Address</th>
+          <th>Contact</th>
+          <th>Payment</th>
+          <th>Notes</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="deliveryTableBody">
+        {% for delivery in deliveries %}
+        <tr data-delivery-id="{{ delivery.id }}">
+          <td>{{ delivery.order_no }}</td>
+          <td>{{ delivery.customer_name }}</td>
+          <td>{{ delivery.address }}</td>
+          <td>{{ delivery.contact }}</td>
+          <td>{{ delivery.payment_method }}</td>
+          <td>{{ delivery.notes }}</td>
+          <td>
+            <span
+              class="status-badge status-{{ delivery.status|lower|replace(' ', '-') }}"
+              >{{ delivery.status }}</span
+            >
+          </td>
+          <td>
+            <div class="action-buttons-group">
+              <button class="action-btn view-btn" title="View Details">
+                <span class="material-symbols-outlined">visibility</span>
+              </button>
+              <button class="action-btn map-btn" title="View on Map">
+                <span class="material-symbols-outlined">directions</span>
+              </button>
+              <div class="status-dropdown-container">
+                <button
+                  class="action-btn status-update-btn"
+                  title="Update Status"
+                >
+                  <span class="material-symbols-outlined">update</span>
+                </button>
+                <div class="status-dropdown-content">
+                  <a href="#" data-status="Picked up">Picked Up</a>
+                  <a href="#" data-status="In Transit">In Transit</a>
+                  <a href="#" data-status="Delivered">Delivered</a>
+                  <a href="#" data-status="Failed Delivery">Failed Delivery</a>
+                </div>
+              </div>
+              <button class="action-btn proof-btn" title="Proof of Delivery">
+                <span class="material-symbols-outlined">camera_alt</span>
+              </button>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+</main>
+
+<!-- Proof of Delivery Modal -->
+<div id="proofOfDeliveryModal" class="modal">
+  <div class="modal-content">
+    <span class="close-button">&times;</span>
+    <h2>Proof of Delivery</h2>
+    <form id="proofOfDeliveryForm">
+      <input type="hidden" id="modalDeliveryId" />
+      <div class="form-group">
+        <label for="photoUpload">Upload Photo:</label>
+        <input type="file" id="photoUpload" accept="image/*" />
+      </div>
+      <div class="form-group">
+        <label for="customerSignature">Customer Signature:</label>
+        <input
+          type="text"
+          id="customerSignature"
+          placeholder="Enter customer's name or signature"
+        />
+      </div>
+      <div class="form-group">
+        <label for="deliveryNotes">Notes (Optional):</label>
+        <textarea
+          id="deliveryNotes"
+          rows="3"
+          placeholder="e.g., Left with security guard, customer not home"
+        ></textarea>
+      </div>
+      <button type="submit" class="btn primary-btn">Submit Proof</button>
+    </form>
+  </div>
+</div>
+{% endblock %} {% block scripts %}
+<script src="{{ url_for('static', filename='js/delivery_management.js') }}"></script>
+{% endblock %}

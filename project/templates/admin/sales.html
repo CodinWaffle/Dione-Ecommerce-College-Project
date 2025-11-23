@@ -1,19 +1,27 @@
-{% extends "admin/base_admin.html" %}
+{% extends "admin/base_admin.html" %} {% block page_title %}Sales Reports{%
+endblock %} {% block admin_content %}
+<div class="dashboard-container">
+  {% include 'admin/partials/_sidebar_admin.html' %}
 
-{% block page_title %}Sales Reports{% endblock %}
-
-{% block admin_content %}
-<section>
-  <h2 class="section-title">
-    <i class="fas fa-chart-bar"></i>
-    Sales Reports
-  </h2>
-  <div class="empty-state">
-    <i class="fas fa-chart-line"></i>
-    <h4>Sales Reports & Analytics</h4>
-    <p class="text-muted">Sales reports and analytics will be available once the Order model is implemented.</p>
-    <p class="text-muted">This section will display charts, summaries, and detailed sales statistics.</p>
+  <div class="main-content" id="main-content">
+    <section>
+      <h2 class="section-title">
+        <i class="fas fa-chart-bar"></i>
+        Sales Reports
+      </h2>
+      <div class="empty-state">
+        <i class="fas fa-chart-line"></i>
+        <h4>Sales Reports & Analytics</h4>
+        <p class="text-muted">
+          Sales reports and analytics will be available once the Order model is
+          implemented.
+        </p>
+        <p class="text-muted">
+          This section will display charts, summaries, and detailed sales
+          statistics.
+        </p>
+      </div>
+    </section>
   </div>
-</section>
+</div>
 {% endblock %}
-

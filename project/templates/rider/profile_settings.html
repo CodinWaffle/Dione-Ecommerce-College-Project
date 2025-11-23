@@ -1,0 +1,81 @@
+<!-- Profile & Settings Page -->
+{% extends 'rider/_base.html' %} {% block title %}Profile & Settings{% endblock
+%} {% block content %}
+<main class="dashboard-main">
+  <section class="dashboard-header">
+    <h1>Profile & Settings</h1>
+  </section>
+  <section class="dashboard-content">
+    <h2 class="section-title">Personal Information</h2>
+    <form class="profile-form">
+      <div class="form-group">
+        <label for="riderName">Name:</label>
+        <input type="text" id="riderName" value="{{ profile.name }}" readonly />
+      </div>
+      <div class="form-group">
+        <label for="riderContact">Contact Number:</label>
+        <input
+          type="tel"
+          id="riderContact"
+          value="{{ profile.contact_number }}"
+        />
+      </div>
+      <div class="form-group">
+        <label for="riderEmail">Email:</label>
+        <input
+          type="email"
+          id="riderEmail"
+          value="{{ profile.email }}"
+          readonly
+        />
+      </div>
+      <div class="form-group">
+        <label for="riderVehicle">Vehicle Type:</label>
+        <input
+          type="text"
+          id="riderVehicle"
+          value="{{ profile.vehicle_type }}"
+        />
+      </div>
+      <div class="form-group">
+        <label for="riderPlate">Plate Number:</label>
+        <input type="text" id="riderPlate" value="{{ profile.plate_number }}" />
+      </div>
+      <button type="submit" class="btn primary-btn">Save Changes</button>
+    </form>
+
+    <h2 class="section-title">Account & Security</h2>
+    <form class="profile-form">
+      <div class="form-group">
+        <label for="currentPassword">Current Password:</label>
+        <input type="password" id="currentPassword" />
+      </div>
+      <div class="form-group">
+        <label for="newPassword">New Password:</label>
+        <input type="password" id="newPassword" />
+      </div>
+      <div class="form-group">
+        <label for="confirmPassword">Confirm New Password:</label>
+        <input type="password" id="confirmPassword" />
+      </div>
+      <button type="submit" class="btn primary-btn">Change Password</button>
+    </form>
+
+    <h2 class="section-title">Documents & Verification</h2>
+    <div class="dashboard-content">
+      <p>Upload your valid IDs or vehicle documents for verification.</p>
+      <div class="form-group">
+        <label for="idUpload">Upload ID:</label>
+        <input type="file" id="idUpload" accept="image/*,.pdf" />
+      </div>
+      <div class="form-group">
+        <label for="vehicleDocUpload">Upload Vehicle Documents:</label>
+        <input type="file" id="vehicleDocUpload" accept="image/*,.pdf" />
+      </div>
+      <button class="btn secondary-btn">Submit Documents</button>
+    </div>
+  </section>
+</main>
+{% endblock %} {% block scripts %}
+<!-- Add any specific JS for profile/settings here if needed -->
+{% endblock %}

@@ -1,0 +1,67 @@
+<!-- Pickup Management Page -->
+{% extends 'rider/_base.html' %} {% block title %}Pickup Management{% endblock
+%} {% block content %}
+<main class="dashboard-main">
+  <section class="dashboard-header">
+    <h1>Pickup Management</h1>
+    <div class="dashboard-search">
+      <input
+        type="text"
+        id="pickupSearchInput"
+        class="search-bar"
+        placeholder="Search pickups..."
+      />
+    </div>
+  </section>
+  <section class="dashboard-table-section">
+    <table class="dashboard-table">
+      <thead>
+        <tr>
+          <th>Pickup #</th>
+          <th>Seller Name</th>
+          <th>Address</th>
+          <th>Contact</th>
+          <th>Items</th>
+          <th>Notes</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="pickupTableBody">
+        {% for pickup in pickups %}
+        <tr data-pickup-id="{{ pickup.id }}">
+          <td>{{ pickup.pickup_no }}</td>
+          <td>{{ pickup.seller_name }}</td>
+          <td>{{ pickup.address }}</td>
+          <td>{{ pickup.contact }}</td>
+          <td>{{ pickup.items }}</td>
+          <td>{{ pickup.notes }}</td>
+          <td>
+            <span
+              class="status-badge status-{{ pickup.status|lower|replace(' ', '-') }}"
+              >{{ pickup.status }}</span
+            >
+          </td>
+          <td>
+            {% if pickup.status == 'Pending' %}
+            <button
+              class="action-btn mark-picked-up-btn"
+              title="Mark as Picked Up"
+            >
+              <span class="material-symbols-outlined">check_circle</span>
+            </button>
+            {% else %}
+            <button class="action-btn view-proof-btn" title="View Proof">
+              <span class="material-symbols-outlined">visibility</span>
+            </button>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+</main>
+{% endblock %} {% block scripts %}
+<script src="{{ url_for('static', filename='js/pickup_management.js') }}"></script>
+{% endblock %}

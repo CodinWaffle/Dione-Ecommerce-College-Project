@@ -1,0 +1,45 @@
+<!-- Notifications & Alerts Page -->
+{% extends 'rider/_base.html' %} {% block title %}Notifications & Alerts{%
+endblock %} {% block content %}
+<main class="dashboard-main">
+  <section class="dashboard-header">
+    <h1>Notifications & Alerts</h1>
+    <button class="btn secondary-btn">Mark All as Read</button>
+  </section>
+  <section class="dashboard-content">
+    <ul class="notification-list">
+      {% for notification in notifications %}
+      <li
+        class="notification-item {% if not notification.read %}unread{% endif %}"
+      >
+        <div class="notification-icon">
+          {% if notification.type == 'New Delivery' %}
+          <span class="material-symbols-outlined">add_task</span>
+          {% elif notification.type == 'Status Update' %}
+          <span class="material-symbols-outlined">update</span>
+          {% elif notification.type == 'Payout Processed' %}
+          <span class="material-symbols-outlined">payments</span>
+          {% else %}
+          <span class="material-symbols-outlined">info</span>
+          {% endif %}
+        </div>
+        <div class="notification-content">
+          <div class="notification-header">
+            <span class="notification-type">{{ notification.type }}</span>
+            <span class="notification-time">{{ notification.timestamp }}</span>
+          </div>
+          <p class="notification-message">{{ notification.message }}</p>
+        </div>
+        {% if not notification.read %}
+        <button class="action-btn mark-read-btn" title="Mark as Read">
+          <span class="material-symbols-outlined">done</span>
+        </button>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+</main>
+{% endblock %} {% block scripts %}
+<!-- Add any specific JS for notifications here if needed -->
+{% endblock %}

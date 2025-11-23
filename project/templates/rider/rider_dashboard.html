@@ -1,0 +1,51 @@
+<!-- Rider Dashboard Page -->
+{% extends 'rider/_base.html' %}
+{% block title %}Rider Dashboard{% endblock %}
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/rider_styles/rider_dashboard.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/rider_styles/rider_sidebar.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/rider_styles/rider_header.css') }}" />
+{% endblock %}
+{% block content %}
+<!-- Main Content -->
+<main class="dashboard-main">
+  <section class="dashboard-header">
+    <h1>Dashboard</h1>
+    </div>
+  </section>
+  <section class="dashboard-content">
+    <h2>Welcome, Rider!</h2>
+    <div class="dashboard-summary-cards">
+      <div class="summary-card">
+        <span class="material-symbols-outlined card-icon">local_shipping</span>
+        <h3>Today's Deliveries</h3>
+        <p class="card-value">{{ today_deliveries_count }}</p>
+      </div>
+      <div class="summary-card">
+        <span class="material-symbols-outlined card-icon">inventory_2</span>
+        <h3>Pending Pickups</h3>
+        <p class="card-value">{{ pending_pickups_count }}</p>
+      </div>
+      <div class="summary-card">
+        <span class="material-symbols-outlined card-icon">check_circle</span>
+        <h3>Completed Orders</h3>
+        <p class="card-value">{{ completed_orders_count }}</p>
+      </div>
+      <div class="summary-card">
+        <span class="material-symbols-outlined card-icon">payments</span>
+        <h3>Earnings Today</h3>
+        <p class="card-value">PHP {{ total_earnings_today }}</p>
+      </div>
+    </div>
+    <div class="dashboard-quick-links">
+      <p>
+        Quickly manage your
+        <a href="{{ url_for('rider.delivery_management') }}">assigned deliveries</a>
+        or view your <a href="{{ url_for('rider.earnings') }}">earnings</a>.
+      </p>
+    </div>
+  </section>
+</main>
+{% endblock %} {% block scripts %}
+<script src="{{ url_for('static', filename='js/rider_dashboard.js') }}"></script>
+{% endblock %}

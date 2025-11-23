@@ -46,6 +46,7 @@ def create_app(config_name='default'):
     from .routes.admin_routes import admin_bp
     from .routes.seller_routes import seller_bp
     from .routes.chat_routes import chat_bp
+    from .routes.rider_routes import rider_bp
 
     # Context processor to make current_user available in all templates
     @app.context_processor
@@ -101,5 +102,6 @@ def create_app(config_name='default'):
     app.register_blueprint(admin_bp)
     app.register_blueprint(chat_bp)
     app.register_blueprint(seller_bp)
+    app.register_blueprint(rider_bp)
 
     return app

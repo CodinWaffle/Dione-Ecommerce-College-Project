@@ -63,7 +63,7 @@ def rider_dashboard():
     if (getattr(current_user, 'role', '') or '').lower() != 'rider' or not getattr(current_user, 'is_approved', False):
         flash("You don't have access to the rider dashboard.", 'warning')
         return redirect(url_for('main.profile'))
-    return render_template('rider/dashboard.html', username=current_user.email)
+    return render_template('rider/rider_dashboard.html', username=current_user.email)
 
 @main.route('/rider/deliveries')
 @login_required
