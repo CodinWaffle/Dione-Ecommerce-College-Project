@@ -1,0 +1,70 @@
+<!-- sidebar.html - Reusable sidebar component -->
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="brand">
+      <i data-lucide="layout-dashboard"></i>
+      <h2>Admin<span>Panel</span></h2>
+    </div>
+  </div>
+  <div class="sidebar-content">
+    <nav class="sidebar-nav">
+      <ul class="nav-list">
+        <li class="nav-item active">
+          <a href="{{ url_for('admin.overview') }}">
+            <i data-lucide="layout-dashboard"></i>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ url_for('admin.users') }}">
+            <i data-lucide="users"></i>
+            <span>Users Management</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ url_for('admin.products') }}">
+            <i data-lucide="package"></i>
+            <span>Product Management</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ url_for('admin.sellers') }}">
+            <i data-lucide="store"></i>
+            <span>Sellers Management</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ url_for('admin.riders') }}">
+            <i data-lucide="truck"></i>
+            <span>Riders Management</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ url_for('admin.commission') }}">
+            <i data-lucide="credit-card"></i>
+            <span>Commission & Payouts</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ url_for('admin.settings') }}">
+            <i data-lucide="settings"></i>
+            <span>Settings</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+  <div class="nav-item support-item">
+    <a href="{{ url_for('admin.support') }}">
+      <i data-lucide="help-circle"></i>
+      <span>Support Center</span>
+      <span class="badge-notification">3</span>
+    </a>
+  </div>
+  <div class="sidebar-footer">
+    <a href="{{ url_for('auth.logout') }}" class="logout-btn">
+      <i data-lucide="log-out"></i>
+      <span>Logout</span>
+    </a>
+  </div>
+</div>

@@ -247,6 +247,14 @@ def orders():
         active_page='orders'
     )
 
+@seller_bp.route('/customers')
+def customers():
+    """Seller customers management"""
+    return render_template(
+        'seller/seller_customer_management.html',
+        active_page='customers'
+    )
+
 
 @seller_bp.route('/profile')
 def profile():

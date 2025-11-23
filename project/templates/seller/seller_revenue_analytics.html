@@ -1,0 +1,255 @@
+{% extends 'seller/seller_base.html' %} {% block title %}Revenue Analytics{%
+endblock %} {% block extra_css %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/seller_revenue_analytics.css') }}"
+/>
+{% endblock %} {% block page_content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Revenue Management</h1>
+    <p class="page-subtext">
+      Visualize revenue, average order value, and top products.
+    </p>
+    <div class="date-filters">
+      <div class="date-buttons">
+        <button class="date-btn today-btn">
+          <span class="btn-text">Today</span>
+        </button>
+
+        <!-- Composite date range button (looks like two inputs with an arrow + clock) -->
+        <button class="date-btn date-today-btn" type="button">
+          <span class="date-range">
+            <span class="date-box start-date">Nov 10, 2025</span>
+            <span class="date-arrow">→</span>
+            <span class="date-box end-date">Nov 10, 2025</span>
+          </span>
+          <span class="date-clock" aria-hidden="true">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="page-header-actions">
+    <a
+      href="{{ url_for('seller_payout') }}"
+      class="btn-primary"
+      id="withdrawBtn"
+    >
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path d="M21 12v5a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"></path>
+        <polygon points="16 5 21 10 16 15"></polygon>
+        <line x1="8" y1="12" x2="21" y2="12"></line>
+      </svg>
+      Withdraw Earnings
+    </a>
+  </div>
+</div>
+
+<main class="dashboard">
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon purple">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <line x1="12" y1="1" x2="12" y2="23"></line>
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+        </svg>
+      </div>
+      <div class="stat-right">
+        <div class="stat-label">Total Revenue</div>
+        <div class="stat-value" id="totalRevenue">₱0.00</div>
+        <div class="stat-change positive">
+          <span class="change-indicator">↑</span>
+          <span id="revenueChange">0%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon blue">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <circle cx="12" cy="12" r="10"></circle>
+          <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path>
+          <path d="M12 18V6"></path>
+        </svg>
+      </div>
+      <div class="stat-right">
+        <div class="stat-label">Platform Commission</div>
+        <div class="stat-value negative" id="platformCommission">₱0.00</div>
+        <div class="stat-change neutral">
+          <span id="commissionRate">0%</span> commission rate
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon orange">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+          <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+        </svg>
+      </div>
+      <div class="stat-right">
+        <div class="stat-label">Voucher Deductions</div>
+        <div class="stat-value negative" id="voucherDeductions">₱0.00</div>
+        <div class="stat-change neutral">
+          <span id="voucherCount">0</span> vouchers used
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon green">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"></path>
+          <path d="M4 6v12c0 1.1.9 2 2 2h14v-4"></path>
+          <path d="M18 12a2 2 0 0 0-2 2c0 1.1.9 2 2 2h4v-4h-4z"></path>
+        </svg>
+      </div>
+      <div class="stat-right">
+        <div class="stat-label">Net Earnings</div>
+        <div class="stat-value" id="netEarnings">₱0.00</div>
+        <div class="stat-change positive">
+          <span class="change-indicator">↑</span>
+          <span id="earningsChange">0%</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard-grid">
+    <div class="card chart-card">
+      <div class="card-header">
+        <h2 class="chart-title">Revenue Breakdown</h2>
+        <select class="filter-select" id="breakdownFilter">
+          <option value="7">Last 7 days</option>
+          <option value="30" selected>Last 30 days</option>
+          <option value="90">Last 90 days</option>
+        </select>
+      </div>
+      <div class="chart-placeholder"><canvas id="revenueChart"></canvas></div>
+      <div class="chart-legend">
+        <div class="legend-item">
+          <span class="legend-dot" style="background: #3b82f6"></span
+          ><span class="legend-label">Gross Revenue</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-dot" style="background: #ef4444"></span
+          ><span class="legend-label">Platform Fee</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-dot" style="background: #f59e0b"></span
+          ><span class="legend-label">Voucher Cost</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-dot" style="background: #10b981"></span
+          ><span class="legend-label">Net Earnings</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card chart-card">
+      <div class="card-header">
+        <h2 class="chart-title">Earnings Trend</h2>
+        <select class="filter-select" id="trendFilter">
+          <option value="7">Last 7 days</option>
+          <option value="30" selected>Last 30 days</option>
+          <option value="90">Last 90 days</option>
+        </select>
+      </div>
+      <div class="chart-placeholder"><canvas id="trendChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="card table-card">
+    <div class="table-header">
+      <h2 class="table-title">Transaction Details</h2>
+      <div class="table-actions">
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Search transactions..."
+          id="searchInput"
+        />
+        <div class="date-filter">
+          <span class="date-label">From:</span>
+          <input type="date" class="date-input" id="startDate" />
+          <span class="date-label">To:</span>
+          <input type="date" class="date-input" id="endDate" />
+        </div>
+      </div>
+    </div>
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Order ID</th>
+            <th>Product</th>
+            <th>Gross Revenue</th>
+            <th>Platform Fee</th>
+            <th>Voucher</th>
+            <th>Net Earnings</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="transactionTable">
+          <!-- Data populated by JS -->
+        </tbody>
+      </table>
+    </div>
+    {% include 'partials/components/_tableFooter.html' %}
+  </div>
+</main>
+{% endblock %} {% block extra_js %}
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='js/seller_revenue_analytics.js') }}"></script>
+<script src="{{ url_for('static', filename='js/date_picker.js') }}"></script>
+{% endblock %}

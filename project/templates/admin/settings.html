@@ -1,6 +1,7 @@
 {% extends "admin/base_admin.html" %} {% block page_title %}Settings{% endblock
 %} {% block admin_content %}
 <style>
+  
   .settings-header {
     margin-bottom: 32px;
   }
@@ -23,6 +24,11 @@
     border-bottom: 2px solid #e5e7eb;
     margin-bottom: 32px;
     flex-wrap: wrap;
+    /* prevent vertical scrollbar while allowing horizontal scrolling when needed */
+    overflow-x: auto;
+    overflow-y: hidden;
+    -ms-overflow-style: none; /* IE/Edge */
+    scrollbar-width: none; /* Firefox */
   }
 
   .settings-tab {
@@ -216,6 +222,8 @@
     font-size: 0.9rem;
   }
 
+  
+
   @media (max-width: 768px) {
     .settings-row {
       grid-template-columns: 1fr;
@@ -242,17 +250,11 @@
 </div>
 
 <div class="settings-tabs">
-  <button class="settings-tab active" data-tab="profile">
-    <i class="fas fa-user"></i> My Profile
-  </button>
-  <button class="settings-tab" data-tab="security">
+  <button class="settings-tab active" data-tab="security">
     <i class="fas fa-lock"></i> Security
   </button>
   <button class="settings-tab" data-tab="notifications">
     <i class="fas fa-bell"></i> Notifications
-  </button>
-  <button class="settings-tab" data-tab="appearance">
-    <i class="fas fa-palette"></i> Appearance
   </button>
   <button class="settings-tab" data-tab="sessions">
     <i class="fas fa-desktop"></i> Sessions & Devices
@@ -260,39 +262,437 @@
 </div>
 
 <div class="settings-content">
-  <!-- My Profile Tab -->
-  <div id="profile" class="settings-section active">
-    <p style="color: #6b7280; font-size: 1rem">
-      My Profile content coming soon...
-    </p>
-  </div>
-
   <!-- Security Tab -->
-  <div id="security" class="settings-section">
-    <p style="color: #6b7280; font-size: 1rem">
-      Security content coming soon...
-    </p>
+  <div id="profile" class="settings-section active">
+<div class="settings-tab-content" id="security-tab">
+            <div class="settings-container">
+              <!-- Change Password section removed per request -->
+
+              <div class="settings-card">
+                <h4>Two-Factor Authentication</h4>
+                <div class="two-factor-toggle-container">
+                  <div class="toggle-header">
+                    <div>
+                      <h5>Enable Two-Factor Authentication</h5>
+                      <p>
+                        Add an extra layer of security to your account by
+                        requiring a verification code in addition to your
+                        password.
+                      </p>
+                    </div>
+                    <label class="switch">
+                      <input
+                        type="checkbox"
+                        id="two-factor-toggle"
+                        {% if settings.get('two_factor_auth') %}checked{% endif %}
+                      />
+                      <span class="slider"></span>
+                    </label>
+                  </div>
+                  <div id="two-factor-setup" style="display: none">
+                    <div class="two-factor-qr">
+                      <img
+                        src="https://via.placeholder.com/200x200?text=QR+Code"
+                        alt="Two Factor Authentication QR Code"
+                      />
+                    </div>
+                    <div class="two-factor-steps">
+                      <h5>Setup Steps:</h5>
+                      <ol>
+                        <li>
+                          Download an authenticator app like Google Authenticator
+                          or Microsoft Authenticator
+                        </li>
+                        <li>Scan the QR code with your authenticator app</li>
+                        <li>
+                          Enter the 6-digit verification code from the app below
+                        </li>
+                      </ol>
+                      <div class="form-group">
+                        <label for="verification-code">Verification Code</label>
+                        <input
+                          type="text"
+                          id="verification-code"
+                          name="verification-code"
+                          placeholder="Enter 6-digit code"
+                          maxlength="6"
+                        />
+                      </div>
+                      <button class="btn primary-btn">Verify and Enable</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="settings-card">
+                <h4>Login History</h4>
+                <div class="login-history">
+                  <div class="login-history-item">
+                    <div class="login-info">
+                      <div class="login-icon">
+                        <i class="bx bx-laptop"></i>
+                      </div>
+                      <div class="login-details">
+                        <h5>Windows 11 - Chrome</h5>
+                        <p>San Francisco, USA - October 18, 2025, 9:23 AM</p>
+                      </div>
+                    </div>
+                    <div class="login-status current">Current Session</div>
+                  </div>
+                  <div class="login-history-item">
+                    <div class="login-info">
+                      <div class="login-icon">
+                        <i class="bx bx-mobile-alt"></i>
+                      </div>
+                      <div class="login-details">
+                        <h5>iPhone 16 - Safari</h5>
+                        <p>San Francisco, USA - October 17, 2025, 6:45 PM</p>
+                      </div>
+                    </div>
+                    <div class="login-status"></div>
+                  </div>
+                  <div class="login-history-item">
+                    <div class="login-info">
+                      <div class="login-icon">
+                        <i class="bx bx-laptop"></i>
+                      </div>
+                      <div class="login-details">
+                        <h5>MacOS - Firefox</h5>
+                        <p>San Francisco, USA - October 16, 2025, 11:15 AM</p>
+                      </div>
+                    </div>
+                    <div class="login-status"></div>
+                  </div>
+                </div>
+                <div class="view-all-container">
+                  <button class="btn secondary-btn">View All Activity</button>
+                </div>
+              </div>
+            </div>
+          </div>
   </div>
 
   <!-- Notifications Tab -->
   <div id="notifications" class="settings-section">
-    <p style="color: #6b7280; font-size: 1rem">
-      Notifications content coming soon...
-    </p>
+<div class="settings-tab-content" id="notifications-tab">
+            <div class="settings-container">
+              <div class="settings-card">
+                <h4>Notification Preferences</h4>
+                <div class="notification-settings">
+                  <div class="notification-item">
+                    <div class="notification-info">
+                      <h5>Email Notifications</h5>
+                      <p>
+                        Receive email notifications about account activity,
+                        security alerts, and system updates.
+                      </p>
+                    </div>
+                    <label class="switch">
+                      <input
+                        type="checkbox"
+                        class="notification-toggle"
+                        data-type="email"
+                        {% if settings.get('notifications', {}).get('email_notifications') %}checked{% endif %}
+                      />
+                      <span class="slider"></span>
+                    </label>
+                  </div>
+                  <div class="notification-item">
+                    <div class="notification-info">
+                      <h5>SMS Notifications</h5>
+                      <p>
+                        Receive text message alerts for critical account
+                        activities and security alerts.
+                      </p>
+                    </div>
+                    <label class="switch">
+                      <input
+                          type="checkbox"
+                          class="notification-toggle"
+                          data-type="sms"
+                          {% if settings.get('notifications', {}).get('sms_notifications') %}checked{% endif %}
+                        />
+                      <span class="slider"></span>
+                    </label>
+                  </div>
+                  <div class="notification-item">
+                    <div class="notification-info">
+                      <h5>Browser Notifications</h5>
+                      <p>
+                        Receive push notifications in your browser for real-time
+                        updates and alerts.
+                      </p>
+                    </div>
+                    <label class="switch">
+                        <input
+                          type="checkbox"
+                          class="notification-toggle"
+                          data-type="browser"
+                          {% if settings.get('notifications', {}).get('app_notifications') %}checked{% endif %}
+                        />
+                      <span class="slider"></span>
+                    </label>
+                  </div>
+                  <div class="notification-item">
+                    <div class="notification-info">
+                      <h5>Marketing Emails</h5>
+                      <p>
+                        Receive promotional emails, newsletter, and product
+                        updates.
+                      </p>
+                    </div>
+                    <label class="switch">
+                        <input
+                          type="checkbox"
+                          class="notification-toggle"
+                          data-type="marketing"
+                          {% if settings.get('notifications', {}).get('marketing_emails') %}checked{% endif %}
+                        />
+                      <span class="slider"></span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="settings-card">
+                <h4>Notification Types</h4>
+                <form class="settings-form">
+                  <div class="form-group full-width">
+                    <h5>Security Alerts</h5>
+                    <div class="notification-options">
+                      <div class="form-check">
+                        <input
+                          type="checkbox"
+                          id="security-email"
+                          name="security-email"
+                          checked
+                        />
+                        <label for="security-email">Email</label>
+                      </div>
+                      <div class="form-check">
+                        <input
+                          type="checkbox"
+                          id="security-sms"
+                          name="security-sms"
+                          checked
+                        />
+                        <label for="security-sms">SMS</label>
+                      </div>
+                      <div class="form-check">
+                        <input
+                          type="checkbox"
+                          id="security-browser"
+                          name="security-browser"
+                          checked
+                        />
+                        <label for="security-browser">Browser</label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group full-width">
+                    <h5>System Updates</h5>
+                    <div class="notification-options">
+                      <div class="form-check">
+                        <input
+                          type="checkbox"
+                          id="system-email"
+                          name="system-email"
+                          checked
+                        />
+                        <label for="system-email">Email</label>
+                      </div>
+                      <div class="form-check">
+                        <input
+                          type="checkbox"
+                          id="system-sms"
+                          name="system-sms"
+                        />
+                        <label for="system-sms">SMS</label>
+                      </div>
+                      <div class="form-check">
+                        <input
+                          type="checkbox"
+                          id="system-browser"
+                          name="system-browser"
+                          checked
+                        />
+                        <label for="system-browser">Browser</label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group full-width">
+                    <h5>New User Registrations</h5>
+                    <div class="notification-options">
+                      <div class="form-check">
+                        <input
+                          type="checkbox"
+                          id="user-email"
+                          name="user-email"
+                          checked
+                        />
+                        <label for="user-email">Email</label>
+                      </div>
+                      <div class="form-check">
+                        <input
+                          type="checkbox"
+                          id="user-sms"
+                          name="user-sms"
+                        />
+                        <label for="user-sms">SMS</label>
+                      </div>
+                      <div class="form-check">
+                        <input
+                          type="checkbox"
+                          id="user-browser"
+                          name="user-browser"
+                          checked
+                        />
+                        <label for="user-browser">Browser</label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-actions">
+                    <button type="button" class="btn secondary-btn">
+                      Reset to Default
+                    </button>
+                    <button type="submit" class="btn primary-btn">
+                      Save Preferences
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
   </div>
 
-  <!-- Appearance Tab -->
-  <div id="appearance" class="settings-section">
-    <p style="color: #6b7280; font-size: 1rem">
-      Appearance content coming soon...
-    </p>
-  </div>
+  <!-- Appearance tab removed -->
 
   <!-- Sessions & Devices Tab -->
   <div id="sessions" class="settings-section">
-    <p style="color: #6b7280; font-size: 1rem">
-      Sessions & Devices content coming soon...
-    </p>
+<div class="settings-tab-content" id="sessions-tab">
+            <div class="settings-container">
+              <div class="settings-card">
+                <h4>Active Sessions</h4>
+                <div class="device-list">
+                  <div class="device-item">
+                    <div class="device-info">
+                      <div class="device-icon">
+                        <i class="bx bx-laptop"></i>
+                      </div>
+                      <div class="device-details">
+                        <h5>Windows 11 - Chrome</h5>
+                        <p>San Francisco, USA - Current Session</p>
+                      </div>
+                    </div>
+                    <div class="device-actions">
+                      <span class="device-status active">Active Now</span>
+                      <button class="btn secondary-btn" disabled>
+                        This Device
+                      </button>
+                    </div>
+                  </div>
+                  <div class="device-item">
+                    <div class="device-info">
+                      <div class="device-icon">
+                        <i class="bx bx-mobile-alt"></i>
+                      </div>
+                      <div class="device-details">
+                        <h5>iPhone 16 - Safari</h5>
+                        <p>San Francisco, USA - Last active: 2 hours ago</p>
+                      </div>
+                    </div>
+                    <div class="device-actions">
+                      <span class="device-status active">Active</span>
+                      <button class="btn danger-btn logout-session">
+                        Log Out
+                      </button>
+                    </div>
+                  </div>
+                  <div class="device-item">
+                    <div class="device-info">
+                      <div class="device-icon">
+                        <i class="bx bx-tablet"></i>
+                      </div>
+                      <div class="device-details">
+                        <h5>iPad Pro - Safari</h5>
+                        <p>New York, USA - Last active: 1 day ago</p>
+                      </div>
+                    </div>
+                    <div class="device-actions">
+                      <span class="device-status active">Active</span>
+                      <button class="btn danger-btn logout-session">
+                        Log Out
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="session-actions">
+                  <button class="btn danger-btn">
+                    <i class="bx bx-log-out-circle"></i> Log Out From All Other
+                    Devices
+                  </button>
+                </div>
+              </div>
+
+              <div class="settings-card">
+                <h4>Device Management</h4>
+                <div class="device-management">
+                  <div class="form-group">
+                    <div class="toggle-header">
+                      <div>
+                        <h5>Trusted Device Recognition</h5>
+                        <p>
+                          Automatically recognize and remember devices you
+                          frequently use to simplify the login process.
+                        </p>
+                      </div>
+                      <label class="switch">
+                        <input type="checkbox" checked />
+                        <span class="slider"></span>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="toggle-header">
+                      <div>
+                        <h5>Session Timeout</h5>
+                        <p>
+                          Automatically log out inactive sessions after a period
+                          of inactivity.
+                        </p>
+                      </div>
+                      <label class="switch">
+                        <input type="checkbox" checked />
+                        <span class="slider"></span>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="session-timeout">Timeout Period</label>
+                    <select id="session-timeout" name="session-timeout">
+                      <option value="30">30 minutes</option>
+                      <option value="60" selected>1 hour</option>
+                      <option value="120">2 hours</option>
+                      <option value="240">4 hours</option>
+                      <option value="480">8 hours</option>
+                      <option value="720">12 hours</option>
+                    </select>
+                  </div>
+                  <div class="form-actions">
+                    <button type="button" class="btn secondary-btn">
+                      Cancel
+                    </button>
+                    <button type="submit" class="btn primary-btn">
+                      Save Changes
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -314,5 +714,227 @@
       document.getElementById(targetTab).classList.add("active");
     });
   });
+
+
+  // settings.js - JavaScript for admin settings page
+
+document.addEventListener("DOMContentLoaded", function () {
+  // Tab functionality
+  const tabButtons = document.querySelectorAll(".settings-tab-btn");
+  const tabContents = document.querySelectorAll(".settings-tab-content");
+
+  tabButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      // Remove active class from all tabs
+      tabButtons.forEach((btn) => btn.classList.remove("active"));
+      tabContents.forEach((content) => content.classList.remove("active"));
+
+      // Add active class to clicked tab and corresponding content
+      button.classList.add("active");
+      const targetId = button.getAttribute("data-target");
+      document.getElementById(targetId).classList.add("active");
+    });
+  });
+
+  // Password visibility toggle
+  const togglePasswordBtns = document.querySelectorAll(".toggle-password");
+  togglePasswordBtns.forEach((btn) => {
+    btn.addEventListener("click", function () {
+      const passwordInput = this.previousElementSibling;
+      const type =
+        passwordInput.getAttribute("type") === "password" ? "text" : "password";
+      passwordInput.setAttribute("type", type);
+
+      // Toggle icon
+      this.innerHTML =
+        type === "password"
+          ? '<i class="bx bx-show"></i>'
+          : '<i class="bx bx-hide"></i>';
+    });
+  });
+
+  // Theme toggle
+  const themeToggle = document.getElementById("theme-toggle");
+  if (themeToggle) {
+    themeToggle.addEventListener("change", function () {
+      if (this.checked) {
+        document.body.classList.add("dark-theme");
+        localStorage.setItem("theme", "dark");
+      } else {
+        document.body.classList.remove("dark-theme");
+        localStorage.setItem("theme", "light");
+      }
+    });
+
+    // Check for saved theme preference
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme === "dark") {
+      themeToggle.checked = true;
+      document.body.classList.add("dark-theme");
+    }
+  }
+
+  // Form validation
+  const settingsForms = document.querySelectorAll(".settings-form");
+  settingsForms.forEach((form) => {
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      let isValid = true;
+      const requiredInputs = form.querySelectorAll("input[required]");
+
+      requiredInputs.forEach((input) => {
+        if (!input.value.trim()) {
+          isValid = false;
+          input.classList.add("error");
+
+          // Add error message if not already present
+          let errorMessage = input.nextElementSibling;
+          if (
+            !errorMessage ||
+            !errorMessage.classList.contains("error-message")
+          ) {
+            errorMessage = document.createElement("div");
+            errorMessage.className = "error-message";
+            errorMessage.textContent = "This field is required";
+            input.parentNode.insertBefore(errorMessage, input.nextSibling);
+          }
+        } else {
+          input.classList.remove("error");
+
+          // Remove error message if present
+          const errorMessage = input.nextElementSibling;
+          if (
+            errorMessage &&
+            errorMessage.classList.contains("error-message")
+          ) {
+            errorMessage.remove();
+          }
+        }
+      });
+
+      // Password validation
+      const newPassword = form.querySelector("#new-password");
+      const confirmPassword = form.querySelector("#confirm-password");
+
+      if (newPassword && confirmPassword) {
+        if (newPassword.value !== confirmPassword.value) {
+          isValid = false;
+          confirmPassword.classList.add("error");
+
+          // Add error message for password mismatch
+          let errorMessage = confirmPassword.nextElementSibling;
+          if (
+            !errorMessage ||
+            !errorMessage.classList.contains("error-message")
+          ) {
+            errorMessage = document.createElement("div");
+            errorMessage.className = "error-message";
+            errorMessage.textContent = "Passwords do not match";
+            confirmPassword.parentNode.insertBefore(
+              errorMessage,
+              confirmPassword.nextSibling
+            );
+          }
+        }
+      }
+
+      if (isValid) {
+        // Show success message
+        const formActions = form.querySelector(".form-actions");
+        if (formActions) {
+          const successMessage = document.createElement("div");
+          successMessage.className = "success-message";
+          successMessage.innerHTML =
+            '<i class="bx bx-check-circle"></i> Settings saved successfully!';
+          formActions.prepend(successMessage);
+
+          // Remove after 3 seconds
+          setTimeout(() => {
+            successMessage.remove();
+          }, 3000);
+        }
+      }
+    });
+  });
+
+  // Notification toggles
+  const notificationToggles = document.querySelectorAll(".notification-toggle");
+  notificationToggles.forEach((toggle) => {
+    toggle.addEventListener("change", function () {
+      const notificationType = this.dataset.type;
+      // In a real app, you would send this to your backend
+      console.log(
+        `${notificationType} notifications ${
+          this.checked ? "enabled" : "disabled"
+        }`
+      );
+    });
+  });
+
+  // Two-factor authentication toggle
+  const twoFactorToggle = document.getElementById("two-factor-toggle");
+  if (twoFactorToggle) {
+    twoFactorToggle.addEventListener("change", function () {
+      const twoFactorSetup = document.getElementById("two-factor-setup");
+      if (twoFactorSetup) {
+        if (this.checked) {
+          twoFactorSetup.style.display = "block";
+        } else {
+          twoFactorSetup.style.display = "none";
+        }
+      }
+    });
+  }
+
+  // Session logout button
+  const logoutSessionBtns = document.querySelectorAll(".logout-session");
+  logoutSessionBtns.forEach((btn) => {
+    btn.addEventListener("click", function (e) {
+      e.preventDefault();
+      const deviceItem = this.closest(".device-item");
+      const deviceName =
+        deviceItem.querySelector(".device-details h5").textContent;
+
+      if (confirm(`Are you sure you want to log out from ${deviceName}?`)) {
+        // In a real app, you would send this to your backend
+        console.log(`Logging out from ${deviceName}`);
+
+        // Visual feedback
+        deviceItem.style.opacity = "0.5";
+        const deviceStatus = deviceItem.querySelector(".device-status");
+        if (deviceStatus) {
+          deviceStatus.textContent = "Logged Out";
+          deviceStatus.classList.remove("active");
+          deviceStatus.classList.add("inactive");
+        }
+      }
+    });
+  });
+
+  // Profile picture upload
+  const profileImageUpload = document.getElementById("profile-image-upload");
+  const profileImage = document.getElementById("profile-image");
+  const uploadBtn = document.querySelector(".upload-btn");
+
+  if (profileImageUpload && profileImage && uploadBtn) {
+    uploadBtn.addEventListener("click", function () {
+      profileImageUpload.click();
+    });
+
+    profileImageUpload.addEventListener("change", function () {
+      if (this.files && this.files[0]) {
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+          profileImage.src = e.target.result;
+        };
+
+        reader.readAsDataURL(this.files[0]);
+      }
+    });
+  }
+});
+
 </script>
 {% endblock %}

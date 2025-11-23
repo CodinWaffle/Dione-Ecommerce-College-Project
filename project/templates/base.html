@@ -5,8 +5,8 @@
     <meta http-equiv="X-UA-Compatible" content="IE-edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Dione Ecommerce</title>
-    {% set user_role = current_user.role|default('', true)|lower %}
-    {% set is_seller = current_user.is_authenticated and user_role == 'seller' %}
+    {% set user_role = current_user.role|default('', true)|lower %} {% set
+    is_seller = current_user.is_authenticated and user_role == 'seller' %}
     <link
       rel="icon"
       type="image/png"
@@ -14,10 +14,8 @@
       href="{{ url_for('static', filename='image/favicon-32x32.png') }}"
     />
 
-    <!-- Lucide Icons (for seller panel) -->
-    {% if is_seller %}
+    <!-- Lucide Icons (used across admin/seller layouts) -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    {% endif %}
 
     <link
       rel="stylesheet"
@@ -101,7 +99,8 @@
     </div>
     {% else %}
     <!-- Buyer/Default Layout -->
-    {% block header %} {% include 'main/partials/_header_buyer.html' %} {% endblock %}
+    {% block header %} {% include 'main/partials/_header_buyer.html' %} {%
+    endblock %}
 
     <div class="container-fluid">
       {% block flash_messages_buyer %} {% with messages =
@@ -136,5 +135,18 @@
     <script src="{{ url_for('static', filename='js/seller_scripts/partials/_header_seller.js') }}?v={{ range(1, 1000) | random }}"></script>
     {% endif %} {% block extra_js %}{% endblock %} {% block extra_scripts %}{%
     endblock %}
+
+    <script>
+      // Initialize Lucide icons on pages where data-lucide attributes are used
+      try {
+        if (typeof lucide !== "undefined" && lucide && lucide.createIcons) {
+          lucide.createIcons();
+        }
+      } catch (err) {
+        console.warn("Lucide initialization error:", err);
+      }
+    </script>
+
+    {% include 'partials/_chat_bubble.html' %}
   </body>
 </html>

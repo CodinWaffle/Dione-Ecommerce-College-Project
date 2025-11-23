@@ -42,6 +42,9 @@
   --border-radius-sm: 0.25rem;
   --border-radius-md: 0.5rem;
   --border-radius-lg: 1rem;
+  /* Sidebar widths for layout spacing */
+  --sidebar-width: 250px;
+  --sidebar-collapsed-width: 70px;
 }
 
 * {
@@ -98,11 +101,26 @@ button {
   flex: 1;
   padding: var(--spacing-md);
   transition: all 0.3s ease;
-  margin-left: 250px;
+  /* Use padding-left so the fixed sidebar does not push layout unexpectedly.
+     The extra spacing (var(--spacing-md)) keeps content away from the sidebar. */
+  margin-left: 0;
+  padding-left: 2rem;
 }
 
 .main-content.expanded {
-  margin-left: 70px;
+  /* legacy class kept for compatibility; prefer using the sibling selector below */
+  padding-left: 2rem;
+}
+
+/* Ensure main content responds to sidebar width changes using sibling selector */
+.sidebar + .main-content {
+  /* default when sidebar is expanded */
+  padding-left: calc(var(--sidebar-width) + var(--spacing-md));
+}
+
+.sidebar.collapsed + .main-content {
+  /* when sidebar collapses */
+  padding-left: calc(var(--sidebar-collapsed-width) + var(--spacing-md));
 }
 
 /* ==================== SIDEBAR ==================== */
@@ -788,7 +806,8 @@ button {
   }
 
   .main-content {
-    margin-left: 70px;
+    margin-left: 0;
+    padding-left: calc(var(--sidebar-collapsed-width) + var(--spacing-md));
   }
 }
 

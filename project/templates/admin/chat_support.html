@@ -1,1 +1,658 @@
 <!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Chat Dashboard</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --primary: #0066ff;
+        --primary-dark: #0052cc;
+        --background: #ffffff;
+        --surface: #f5f5f5;
+        --surface-alt: #efefef;
+        --text-primary: #111111;
+        --text-secondary: #65676b;
+        --border: #e5e5e5;
+        --success: #31a24c;
+        --buyer: #ff6b6b;
+        --seller: #4ecdc4;
+        --rider: #ffd93d;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, sans-serif;
+        background: var(--background);
+        color: var(--text-primary);
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      .container {
+        display: flex;
+        height: 100vh;
+      }
+
+      /* Sidebar */
+      .sidebar {
+        width: 320px;
+        background: var(--surface);
+        border-right: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .sidebar-header {
+        padding: 16px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .sidebar-title {
+        font-size: 24px;
+        font-weight: 800;
+        margin-bottom: 12px;
+      }
+
+      .search-box {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        background: var(--background);
+        font-size: 14px;
+      }
+
+      .search-box::placeholder {
+        color: var(--text-secondary);
+      }
+
+      .contacts-list {
+        flex: 1;
+        overflow-y: auto;
+      }
+
+      .contacts-list::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      .contacts-list::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      .contacts-list::-webkit-scrollbar-thumb {
+        background: var(--surface-alt);
+        border-radius: 4px;
+      }
+
+      .contact-item {
+        padding: 8px 8px;
+        margin: 0 8px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .contact-item:hover {
+        background: var(--surface-alt);
+      }
+
+      .contact-item.active {
+        background: var(--primary);
+        color: white;
+      }
+
+      .contact-avatar {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: white;
+        font-size: 18px;
+        flex-shrink: 0;
+      }
+
+      .contact-item.buyer .contact-avatar {
+        background: var(--buyer);
+      }
+
+      .contact-item.seller .contact-avatar {
+        background: var(--seller);
+      }
+
+      .contact-item.rider .contact-avatar {
+        background: var(--rider);
+      }
+
+      .contact-item.active .contact-avatar {
+        background: rgba(255, 255, 255, 0.3);
+      }
+
+      .contact-info {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .contact-name {
+        font-weight: 500;
+        font-size: 15px;
+        margin-bottom: 4px;
+      }
+
+      .contact-preview {
+        font-size: 13px;
+        color: var(--text-secondary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .contact-item.active .contact-preview {
+        color: rgba(255, 255, 255, 0.8);
+      }
+
+      .contact-badge {
+        display: inline-block;
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: 12px;
+        background: var(--surface);
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        margin-top: 4px;
+      }
+
+      .contact-item.buyer .contact-badge {
+        background: rgba(255, 107, 107, 0.1);
+        color: var(--buyer);
+      }
+
+      .contact-item.seller .contact-badge {
+        background: rgba(78, 205, 196, 0.1);
+        color: var(--seller);
+      }
+
+      .contact-item.rider .contact-badge {
+        background: rgba(255, 217, 61, 0.1);
+        color: #cc9a00;
+      }
+
+      /* Main chat area */
+      .main-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        background: var(--background);
+      }
+
+      .chat-header {
+        padding: 16px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .chat-title {
+        font-size: 15px;
+        font-weight: 500;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .empty-state {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 12px;
+        color: var(--text-secondary);
+      }
+
+      .empty-state-icon {
+        font-size: 48px;
+        opacity: 0.5;
+      }
+
+      /* Chat Modal */
+      .chat-modal {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 360px;
+        height: 480px;
+        background: var(--background);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        box-shadow: 0 5px 40px rgba(0, 0, 0, 0.16);
+        display: none;
+        flex-direction: column;
+        z-index: 1000;
+        animation: slideUp 0.3s ease-out;
+      }
+
+      .chat-modal.active {
+        display: flex;
+      }
+
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .modal-header {
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: var(--surface);
+      }
+
+      .modal-header-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex: 1;
+      }
+
+      .modal-contact-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: white;
+        font-size: 16px;
+      }
+
+      .modal-contact-details {
+        flex: 1;
+      }
+
+      .modal-contact-name {
+        font-weight: 500;
+        font-size: 14px;
+      }
+
+      .modal-contact-status {
+        font-size: 12px;
+        color: var(--text-secondary);
+      }
+
+      .modal-close-btn {
+        background: none;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+        color: var(--text-secondary);
+        padding: 0;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        transition: background 0.2s;
+      }
+
+      .modal-close-btn:hover {
+        background: var(--surface-alt);
+      }
+
+      .modal-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .modal-messages::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .modal-messages::-webkit-scrollbar-thumb {
+        background: var(--surface-alt);
+        border-radius: 3px;
+      }
+
+      .message {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 4px;
+      }
+
+      .message.sent {
+        justify-content: flex-end;
+      }
+
+      .message-bubble {
+        max-width: 80%;
+        padding: 8px 12px;
+        border-radius: 12px;
+        font-size: 13px;
+        line-height: 1.4;
+        word-wrap: break-word;
+      }
+
+      .message.received .message-bubble {
+        background: var(--surface);
+        color: var(--text-primary);
+      }
+
+      .message.sent .message-bubble {
+        background: var(--primary);
+        color: white;
+      }
+
+      .message-image {
+        max-width: 80%;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+
+      .modal-footer {
+        padding: 12px;
+        border-top: 1px solid var(--border);
+        display: flex;
+        gap: 8px;
+        align-items: flex-end;
+      }
+
+      .message-input {
+        flex: 1;
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 8px 12px;
+        font-size: 13px;
+        font-family: inherit;
+        resize: none;
+        max-height: 60px;
+      }
+
+      .message-input:focus {
+        outline: none;
+        border-color: var(--primary);
+      }
+
+      .icon-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 18px;
+        color: var(--primary);
+        padding: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        transition: background 0.2s;
+      }
+
+      .icon-btn:hover {
+        background: var(--surface);
+      }
+
+      .file-input {
+        display: none;
+      }
+
+      /* Responsive */
+      @media (max-width: 768px) {
+        .sidebar {
+          width: 280px;
+        }
+
+        .chat-modal {
+          width: 100%;
+          height: 100%;
+          bottom: 0;
+          right: 0;
+          border-radius: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <div class="sidebar-header">
+          <div class="sidebar-title">Messages</div>
+          <input
+            type="text"
+            class="search-box"
+            id="searchBox"
+            placeholder="Search conversations..."
+          />
+        </div>
+        <div class="contacts-list" id="contactsList"></div>
+      </div>
+
+      <!-- Main Chat Area -->
+      <div class="main-content">
+        <div class="chat-header">
+          <div class="chat-title">Select a conversation to start messaging</div>
+        </div>
+        <div class="empty-state">
+          <div class="empty-state-icon">💬</div>
+          <p>Choose a contact to view messages</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat Modal -->
+    <div class="chat-modal" id="chatModal">
+      <div class="modal-header">
+        <div class="modal-header-info">
+          <div class="modal-contact-avatar" id="modalAvatar"></div>
+          <div class="modal-contact-details">
+            <div class="modal-contact-name" id="modalContactName"></div>
+            <div class="modal-contact-status">Active now</div>
+          </div>
+        </div>
+        <button class="modal-close-btn" id="closeModalBtn">✕</button>
+      </div>
+      <div class="modal-messages" id="modalMessages"></div>
+      <div class="modal-footer">
+        <input
+          type="text"
+          class="message-input"
+          id="messageInput"
+          placeholder="Aa"
+        />
+        <input type="file" class="file-input" id="fileInput" accept="image/*" />
+        <button class="icon-btn" id="attachBtn" title="Attach image">📎</button>
+        <button class="icon-btn" id="sendBtn" title="Send message">➤</button>
+      </div>
+    </div>
+
+    <script>
+      // Load contacts from server and handle admin messaging
+      let currentContact = null;
+
+      function renderContacts(list) {
+        const contactsList = document.getElementById("contactsList");
+        contactsList.innerHTML = list
+          .map(
+            (c) => `
+                <div class="contact-item ${c.role || "buyer"}" data-id="${
+              c.id
+            }">
+                    <div class="contact-avatar">${(c.name || "U")
+                      .split(" ")
+                      .map((s) => s[0] || "")
+                      .slice(0, 2)
+                      .join("")}</div>
+                    <div class="contact-info">
+                        <div class="contact-name">${c.name}</div>
+                        <div class="contact-preview">${
+                          c.last_at ? new Date(c.last_at).toLocaleString() : ""
+                        }</div>
+                        <div class="contact-badge">${c.role}</div>
+                    </div>
+                </div>
+            `
+          )
+          .join("");
+
+        document.querySelectorAll(".contact-item").forEach((item) => {
+          item.addEventListener("click", () =>
+            openChat(parseInt(item.dataset.id))
+          );
+        });
+      }
+
+      function loadContacts() {
+        fetch("/admin/chat/contacts")
+          .then((r) => r.json())
+          .then((data) => {
+            renderContacts(data.contacts || []);
+          })
+          .catch((err) => console.error("contacts load error", err));
+      }
+
+      function openChat(userId) {
+        currentContact = userId;
+        fetch(`/admin/chat/messages/${userId}`)
+          .then((r) => r.json())
+          .then((data) => {
+            document.getElementById("modalContactName").textContent =
+              data.user.name;
+            const avatar = document.getElementById("modalAvatar");
+            avatar.textContent = (data.user.name || "U")
+              .split(" ")
+              .map((s) => s[0] || "")
+              .slice(0, 2)
+              .join("");
+            avatar.style.background =
+              data.user.role === "buyer"
+                ? "var(--buyer)"
+                : data.user.role === "seller"
+                ? "var(--seller)"
+                : "var(--rider)";
+
+            const messagesContainer = document.getElementById("modalMessages");
+            messagesContainer.innerHTML = "";
+            (data.messages || []).forEach((m) => {
+              const div = document.createElement("div");
+              div.className =
+                "message " + (m.is_from_admin ? "sent" : "received");
+              div.innerHTML = `<div class="message-bubble">${m.body}</div>`;
+              messagesContainer.appendChild(div);
+            });
+            setTimeout(
+              () =>
+                (messagesContainer.scrollTop = messagesContainer.scrollHeight),
+              0
+            );
+            document.getElementById("chatModal").classList.add("active");
+            document
+              .querySelectorAll(".contact-item")
+              .forEach((item) => item.classList.remove("active"));
+            const el = document.querySelector(`[data-id="${userId}"]`);
+            if (el) el.classList.add("active");
+          })
+          .catch((err) => console.error("load messages error", err));
+      }
+
+      function closeChat() {
+        document.getElementById("chatModal").classList.remove("active");
+        document
+          .querySelectorAll(".contact-item")
+          .forEach((item) => item.classList.remove("active"));
+        document.getElementById("messageInput").value = "";
+        currentContact = null;
+      }
+
+      function sendMessage() {
+        const input = document.getElementById("messageInput");
+        const text = input.value.trim();
+        if (!text || !currentContact) return;
+        const form = new FormData();
+        form.append("body", text);
+        fetch(`/admin/chat/messages/${currentContact}/send`, {
+          method: "POST",
+          body: form,
+        })
+          .then((r) => r.json())
+          .then((data) => {
+            if (data.ok) {
+              input.value = "";
+              // reload messages
+              openChat(currentContact);
+              // also refresh contacts list
+              loadContacts();
+            }
+          })
+          .catch((err) => console.error("admin send error", err));
+      }
+
+      function setupEventListeners() {
+        document
+          .getElementById("closeModalBtn")
+          .addEventListener("click", closeChat);
+        document
+          .getElementById("sendBtn")
+          .addEventListener("click", sendMessage);
+        document
+          .getElementById("messageInput")
+          .addEventListener("keypress", (e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              sendMessage();
+            }
+          });
+        document
+          .getElementById("attachBtn")
+          .addEventListener("click", () =>
+            document.getElementById("fileInput").click()
+          );
+        document.getElementById("fileInput").addEventListener("change", (e) => {
+          /* TODO: handle image upload */
+        });
+        document.getElementById("searchBox").addEventListener("input", (e) => {
+          const q = e.target.value.toLowerCase();
+          const items = Array.from(document.querySelectorAll(".contact-item"));
+          items.forEach((it) => {
+            const name = it
+              .querySelector(".contact-name")
+              .textContent.toLowerCase();
+            it.style.display = name.includes(q) ? "" : "none";
+          });
+        });
+      }
+
+      // initial load
+      loadContacts();
+      setupEventListeners();
+      // poll contacts periodically for updates
+      setInterval(loadContacts, 5000);
+    </script>
+  </body>
+</html>

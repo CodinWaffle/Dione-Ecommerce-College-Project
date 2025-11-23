@@ -1,4 +1,4 @@
-<!-- header_admin.html - Reusable admin header component -->
+<!-- header.html - Reusable header component for Admin pages -->
 <header class="admin-header">
   <div class="header-left">
     <button class="menu-toggle" id="menuToggle" onclick="toggleSidebar()">
@@ -6,7 +6,6 @@
     </button>
     <div class="search-container-header">
       <i data-lucide="search"></i>
-      <!-- Inline reset styles keep this input visually consistent across partials -->
       <input
         type="text"
         class="search-input-header"
@@ -18,40 +17,27 @@
           color: inherit;
           outline: none;
           box-shadow: none;
-          transition: none;
         "
       />
     </div>
   </div>
   <div class="header-right">
-    <div class="notification-bell">
+    <div class="notification-bell" title="Notifications">
       <i data-lucide="bell"></i>
       <span class="notification-count">3</span>
     </div>
-    <div class="user-profile-dropdown">
-      <div class="user-profile-toggle">
-        <div class="user-avatar-container">
-          <div class="avatar-icon-circle">
-            <i data-lucide="user"></i>
-          </div>
-          <span class="active-indicator"></span>
-        </div>
-        <span class="user-name"
-          >{{ admin.business_name if admin and admin.business_name else
-          current_user.email }}</span
-        >
-        <i data-lucide="chevron-down" class="dropdown-arrow"></i>
-      </div>
-      <div class="user-dropdown-menu" aria-hidden="true">
-        <a href="#profile" class="profile-link">
+
+    <!-- Non-interactive admin profile display - shows 'Administrator' by default -->
+    <div
+      class="admin-profile"
+      style="display: flex; align-items: center; gap: 10px"
+    >
+      <div class="user-avatar-container">
+        <div class="avatar-icon-circle" aria-hidden="true">
           <i data-lucide="user"></i>
-          <span>Profile</span>
-        </a>
-        <a href="{{ url_for('auth.logout') }}" class="logout-link">
-          <i data-lucide="log-out"></i>
-          <span>Logout</span>
-        </a>
+        </div>
       </div>
+      <div style="font-weight: 600">Administrator</div>
     </div>
   </div>
 </header>

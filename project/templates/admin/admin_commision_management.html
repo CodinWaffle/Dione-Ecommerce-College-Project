@@ -26,12 +26,11 @@ Payouts{% endblock %} {% block extra_css %}
 {% endblock %} {% block admin_content %}
 <body>
   <div class="dashboard-container">
-    <!-- Include the sidebar component -->
-    {% include 'components/sidebar.html' %}
+    <!-- Include the centralized admin sidebar component -->
+    {% include 'admin/partials/_sidebar_admin.html' %}
 
     <div class="main-content" id="main-content">
-      <!-- Include the header component -->
-      {% include 'components/header.html' %}
+      <!-- header is provided by admin/base_admin.html; removed per-page include -->
 
       <div class="dashboard-content">
         <div class="page-header">

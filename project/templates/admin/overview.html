@@ -7,7 +7,6 @@
   href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap"
   rel="stylesheet"
 />
-
 <!-- Boxicons for Outline Icons -->
 <link
   href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
@@ -19,14 +18,17 @@
   rel="stylesheet"
   href="{{ url_for('static', filename='css/admin_styles/admin.css') }}"
 />
-{% endblock} {% block admin_content %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/admin_styles/admin-override.css') }}"
+/>
+{% endblock %} {% block admin_content %}
 <div class="dashboard-container">
   <!-- Include the sidebar component -->
-  {% include 'components/sidebar.html' %}
+  {% include 'admin/partials/_sidebar_admin.html' %}
 
   <div class="main-content" id="main-content">
-    <!-- Include the header component -->
-    {% include 'components/header.html' %}
+    <!-- header is provided by admin/base_admin.html; removed per-page include -->
 
     <div class="dashboard-content">
       <div class="page-header">

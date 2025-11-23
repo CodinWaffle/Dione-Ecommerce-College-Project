@@ -1,0 +1,17 @@
+/* Overrides for admin layout spacing.
+   The main layout now uses CSS variables and sibling selectors to
+   control spacing. Keep a lightweight override here for legacy pages
+   and responsive behavior. */
+
+.dashboard-content {
+  padding: 1rem 2rem;
+}
+
+@media screen and (max-width: 992px) {
+  /* On small screens the sidebar should overlay content, so remove
+     the padded space to allow full-width content */
+  .sidebar + .main-content,
+  .main-content {
+    padding-left: var(--spacing-md);
+  }
+}

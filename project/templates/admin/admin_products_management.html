@@ -42,14 +42,19 @@ endblock %} {% block extra_css %}
   href="{{ url_for('static', filename='css/admin_styles/admin_product_management.css') }}"
 />
 {% endblock %} {% block admin_content %}
+<style>
+  /* Ensure admin main wrapper has adequate padding so content isn't hidden by sidebar */
+  .main-content {
+    padding: 2rem 3rem !important;
+  }
+</style>
 <body>
   <div class="dashboard-container">
     <!-- Include the sidebar component -->
     {% include 'admin/partials/_sidebar_admin.html' %}
 
     <div class="main-content" id="main-content">
-      <!-- Include the header component -->
-      {% include 'admin/partials/_header_admin.html' %}
+      <!-- header is provided by admin/base_admin.html; removed per-page include -->
 
       <div class="dashboard-content">
         <div class="page-header">
