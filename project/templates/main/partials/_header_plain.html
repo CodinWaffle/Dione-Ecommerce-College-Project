@@ -1,0 +1,20 @@
+{# Plain header (non-authenticated / original) extracted from _header_buyer.html
+else branch #}
+<!--Top Banner-->
+<div class="top-banner">
+  Get 20% Cash Back <a href="#" onclick="return false;">Click Here</a>
+</div>
+
+<!--Header-->
+<header class="header-simple">
+  <div class="header-container-simple">
+    <a href="{{ url_for('main.index') }}" class="logo">DIONE</a>
+
+    <!-- Auth Navigation for Non-Logged-In Users -->
+    <nav class="auth-nav">
+      <a href="{{ url_for('main.index') }}" class="auth-nav-link">Home</a>
+      <a href="{{ url_for('auth.login') }}" class="auth-nav-link">Login</a>
+      <a href="{{ url_for('auth.signup') }}" class="auth-nav-link">Signup</a>
+    </nav>
+  </div>
+</header>

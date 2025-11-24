@@ -278,18 +278,28 @@ def payment_methods():
     """Seller payment methods"""
     # Provide a safe default to templates that `tojson` server-side data.
     # In future this should query the Seller's saved payment methods.
+    # Replace seller payment pages with the earnings/payout UI (copied from rider)
     payment_methods = []
     return render_template(
-        'seller/seller_payment_methods.html',
+        'seller/seller_earnings_payout.html',
         active_page='payment-methods',
-        payment_methods=payment_methods,
+        total_earned=0.00,
+        pending_balance=0.00,
+        earnings_history=[],
     )
 
 
 @seller_bp.route('/payouts')
 def payouts():
     """Seller payouts and withdrawals"""
-    return render_template('seller/seller_payout.html', active_page='payouts')
+    # Render the new seller earnings/payout page (shared with payment-methods)
+    return render_template(
+        'seller/seller_earnings_payout.html',
+        active_page='payouts',
+        total_earned=0.00,
+        pending_balance=0.00,
+        earnings_history=[],
+    )
 
 
 @seller_bp.route('/revenue')

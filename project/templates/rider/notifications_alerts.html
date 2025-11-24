@@ -7,37 +7,147 @@ endblock %} {% block content %}
     <button class="btn secondary-btn">Mark All as Read</button>
   </section>
   <section class="dashboard-content">
-    <ul class="notification-list">
-      {% for notification in notifications %}
-      <li
-        class="notification-item {% if not notification.read %}unread{% endif %}"
-      >
-        <div class="notification-icon">
-          {% if notification.type == 'New Delivery' %}
-          <span class="material-symbols-outlined">add_task</span>
-          {% elif notification.type == 'Status Update' %}
-          <span class="material-symbols-outlined">update</span>
-          {% elif notification.type == 'Payout Processed' %}
-          <span class="material-symbols-outlined">payments</span>
-          {% else %}
-          <span class="material-symbols-outlined">info</span>
-          {% endif %}
-        </div>
-        <div class="notification-content">
-          <div class="notification-header">
-            <span class="notification-type">{{ notification.type }}</span>
-            <span class="notification-time">{{ notification.timestamp }}</span>
+    <div class="row">
+      <div class="col-md-7">
+        <ul class="notification-list">
+          {% for notification in notifications %}
+          <li
+            class="notification-item {% if not notification.read %}unread{% endif %}"
+          >
+            <div class="notification-icon">
+              {% if notification.type == 'New Delivery' %}
+              <span class="material-symbols-outlined">add_task</span>
+              {% elif notification.type == 'Status Update' %}
+              <span class="material-symbols-outlined">update</span>
+              {% elif notification.type == 'Payout Processed' %}
+              <span class="material-symbols-outlined">payments</span>
+              {% else %}
+              <span class="material-symbols-outlined">info</span>
+              {% endif %}
+            </div>
+            <div class="notification-content">
+              <div class="notification-header">
+                <span class="notification-type">{{ notification.type }}</span>
+                <span class="notification-time"
+                  >{{ notification.timestamp }}</span
+                >
+              </div>
+              <p class="notification-message">{{ notification.message }}</p>
+            </div>
+            {% if not notification.read %}
+            <button class="action-btn mark-read-btn" title="Mark as Read">
+              <span class="material-symbols-outlined">done</span>
+            </button>
+            {% endif %}
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div class="col-md-5">
+        <div class="card">
+          <div class="card-header">
+            <h2>Notification Preferences</h2>
           </div>
-          <p class="notification-message">{{ notification.message }}</p>
+          <div class="card-body">
+            <form
+              id="rider-notification-settings-form"
+              method="post"
+              action="#"
+            >
+              <div class="notification-group">
+                <h3>Email Notifications</h3>
+                <div class="notification-item">
+                  <div class="notification-info">
+                    <div class="notification-title">Delivery Updates</div>
+                    <div class="notification-description">
+                      Get emails when you are assigned a new delivery or updates
+                      to delivery status
+                    </div>
+                  </div>
+                  <div class="toggle-switch">
+                    <input
+                      type="checkbox"
+                      id="delivery-updates"
+                      {%
+                      if
+                      settings
+                      and
+                      settings.delivery_updates
+                      %}checked{%
+                      endif
+                      %}
+                    />
+                    <label for="delivery-updates" class="toggle-slider"></label>
+                  </div>
+                </div>
+
+                <div class="notification-item">
+                  <div class="notification-info">
+                    <div class="notification-title">Payout Notifications</div>
+                    <div class="notification-description">
+                      Receive email when a payout is processed
+                    </div>
+                  </div>
+                  <div class="toggle-switch">
+                    <input
+                      type="checkbox"
+                      id="payout-notifications"
+                      {%
+                      if
+                      settings
+                      and
+                      settings.payout_notifications
+                      %}checked{%
+                      endif
+                      %}
+                    />
+                    <label
+                      for="payout-notifications"
+                      class="toggle-slider"
+                    ></label>
+                  </div>
+                </div>
+
+                <div class="notification-item">
+                  <div class="notification-info">
+                    <div class="notification-title">Account Alerts</div>
+                    <div class="notification-description">
+                      Important account messages like security alerts and
+                      password changes
+                    </div>
+                  </div>
+                  <div class="toggle-switch">
+                    <input
+                      type="checkbox"
+                      id="account-alerts"
+                      {%
+                      if
+                      settings
+                      and
+                      settings.account_alerts
+                      %}checked{%
+                      endif
+                      %}
+                    />
+                    <label for="account-alerts" class="toggle-slider"></label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button type="submit" class="btn-primary">
+                  Save Preferences
+                </button>
+                <button type="reset" class="btn-secondary">
+                  Reset to Default
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
-        {% if not notification.read %}
-        <button class="action-btn mark-read-btn" title="Mark as Read">
-          <span class="material-symbols-outlined">done</span>
-        </button>
-        {% endif %}
-      </li>
-      {% endfor %}
-    </ul>
+      </div>
+    </div>
   </section>
 </main>
 {% endblock %} {% block scripts %}

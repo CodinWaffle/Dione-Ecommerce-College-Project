@@ -221,11 +221,15 @@ button {
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background-color: var(--color-grey-100);
+  background: transparent;
+  transition: color 0.18s ease, transform 0.12s ease;
 }
 
-.sidebar-toggle:hover {
-  background-color: var(--color-grey-200);
+.sidebar-toggle:hover,
+.sidebar-toggle:active {
+  background: transparent;
+  color: var(--color-primary);
+  transform: translateY(-1px);
 }
 
 .sidebar-content {

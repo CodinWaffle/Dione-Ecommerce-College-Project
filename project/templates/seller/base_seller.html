@@ -179,16 +179,19 @@
         color: var(--gray-600);
         padding: 8px;
         border-radius: 6px;
-        transition: all 0.3s ease;
+        transition: color 0.18s ease, transform 0.12s ease;
         display: flex;
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
       }
 
-      .sidebar-toggle:hover {
-        background-color: var(--color-grey-100);
+      /* Keep hover simple: no background change, only color/transform */
+      .sidebar-toggle:hover,
+      .sidebar-toggle:active {
+        background: transparent;
         color: var(--purple-primary);
+        transform: translateY(-1px);
       }
 
       .sidebar-toggle i {
@@ -337,7 +340,7 @@
         flex: 1;
         display: flex;
         align-items: center;
-        gap: 16px;
+        gap: 28px; /* increased so search sits further from toggle */
       }
 
       .menu-toggle {
@@ -354,8 +357,10 @@
       }
 
       .menu-toggle:hover {
-        background-color: var(--color-grey-100);
+        /* no background change on hover; only icon color becomes purple */
+        background: transparent;
         color: var(--purple-primary);
+        transform: translateY(-1px);
       }
 
       .menu-toggle i {

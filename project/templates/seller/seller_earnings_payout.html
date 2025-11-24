@@ -1,0 +1,71 @@
+{% extends 'seller/base_seller.html' %} {% block title %}Earnings & Payout{%
+endblock %} {% block page_content %}
+<main class="dashboard-main">
+  <section class="dashboard-header">
+    <h1>Earnings & Payout</h1>
+  </section>
+  <section class="dashboard-content">
+    <div class="dashboard-summary-cards">
+      <div class="summary-card">
+        <span class="material-symbols-outlined card-icon"
+          >account_balance_wallet</span
+        >
+        <h3>Total Earned</h3>
+        <p class="card-value">PHP {{ total_earned }}</p>
+      </div>
+      <div class="summary-card">
+        <span class="material-symbols-outlined card-icon">hourglass_empty</span>
+        <h3>Pending Balance</h3>
+        <p class="card-value">PHP {{ pending_balance }}</p>
+      </div>
+      <div class="summary-card">
+        <span class="material-symbols-outlined card-icon">calendar_month</span>
+        <h3>Last Payout</h3>
+        <p class="card-value">PHP 500.00 (Oct 25)</p>
+      </div>
+      <div class="summary-card action-card">
+        <span class="material-symbols-outlined card-icon">request_quote</span>
+        <h3>Request Payout</h3>
+        <button class="btn primary-btn">Request Now</button>
+      </div>
+    </div>
+
+    <h2 class="section-title">Transaction History</h2>
+    <div class="dashboard-table-section">
+      <table class="dashboard-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Reference ID</th>
+            <th>Amount Earned</th>
+            <th>Platform Commission</th>
+            <th>Net Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for earning in earnings_history %}
+          <tr>
+            <td>{{ earning.date }}</td>
+            <td>{{ earning.delivery_id or earning.ref_id }}</td>
+            <td>PHP {{ "%.2f"|format(earning.amount) }}</td>
+            <td>PHP {{ "%.2f"|format(earning.commission) }}</td>
+            <td>PHP {{ "%.2f"|format(earning.net_amount) }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <h2 class="section-title">Payout Schedule</h2>
+    <div class="dashboard-content">
+      <p>Your payouts are processed automatically every Wednesday.</p>
+      <p>Next payout: November 1, 2023</p>
+      <button class="btn secondary-btn">Change Payout Settings</button>
+    </div>
+  </section>
+</main>
+{% endblock %} {% block scripts %}
+<script>
+  // Seller-specific earnings/payout scripts can go here if needed
+</script>
+{% endblock %}
