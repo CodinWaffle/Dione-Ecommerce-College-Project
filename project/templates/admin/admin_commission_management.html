@@ -1,0 +1,378 @@
+{% extends "admin/base_admin.html" %} {% block page_title %}Commission &
+Payouts{% endblock %} {% block extra_css %}
+<!-- Google Fonts - Montserrat and Poppins -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap"
+  rel="stylesheet"
+/>
+
+<!-- Boxicons for Outline Icons -->
+<link
+  href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+  rel="stylesheet"
+/>
+
+<!-- Custom CSS -->
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/admin_styles/admin.css') }}"
+/>
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/admin_styles/admin_commission_management.css') }}"
+/>
+{% endblock %} {% block admin_content %}
+<body>
+  <div class="dashboard-container">
+    <!-- Include the centralized admin sidebar component -->
+    {% include 'admin/partials/_sidebar_admin.html' %}
+
+    <div class="main-content" id="main-content">
+      <!-- header is provided by admin/base_admin.html; removed per-page include -->
+
+      <div class="dashboard-content">
+        <div class="page-header">
+          <h1>Payout Approvals</h1>
+          <p>Review, approve, and process seller and rider payout requests</p>
+        </div>
+
+        <!-- Payout Overview Cards -->
+        <div class="payout-overview">
+          <div class="payout-card">
+            <div class="payout-icon">
+              <i class="bx bx-time"></i>
+            </div>
+            <div class="payout-details">
+              <h3>Pending Payouts</h3>
+              <div class="payout-amount">$24,350.75</div>
+              <div class="payout-meta">32 sellers awaiting payment</div>
+            </div>
+            <button class="payout-action">Process All</button>
+          </div>
+
+          <div class="payout-card">
+            <div class="payout-icon">
+              <i class="bx bx-check-circle"></i>
+            </div>
+            <div class="payout-details">
+              <h3>Completed This Month</h3>
+              <div class="payout-amount">$128,450.60</div>
+              <div class="payout-meta">54 payouts completed</div>
+            </div>
+            <button class="payout-action secondary">View History</button>
+          </div>
+
+          <div class="payout-card">
+            <div class="payout-icon">
+              <i class="bx bx-calendar"></i>
+            </div>
+            <div class="payout-details">
+              <h3>Next Payout Cycle</h3>
+              <div class="payout-date">Oct 31, 2025</div>
+              <div class="payout-meta">Estimated: $35,200</div>
+            </div>
+            <button class="payout-action secondary">Schedule</button>
+          </div>
+        </div>
+
+        <!-- Payout Requests Section -->
+        <div class="payout-requests-section">
+          <div class="section-header">
+            <h2>Pending Payout Requests</h2>
+            <div class="filter-controls">
+              <select class="filter-select">
+                <option value="all">All Types</option>
+                <option value="seller">Sellers Only</option>
+                <option value="rider">Riders Only</option>
+              </select>
+              <select class="filter-select">
+                <option value="all">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="payout-request-table">
+              <thead>
+                <tr>
+                  <th>Type</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Request Date</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="type-badge seller">Seller</span></td>
+                  <td>Tech Gadgets Plus</td>
+                  <td>contact@techgadgets.com</td>
+                  <td>Nov 12, 2025</td>
+                  <td><strong>PHP 5,480.00</strong></td>
+                  <td>
+                    <span class="status-badge pending-badge">Pending</span>
+                  </td>
+                  <td>
+                    <div class="action-buttons">
+                      <button class="action-btn approve" title="Approve">
+                        <i class="bx bx-check"></i>
+                      </button>
+                      <button class="action-btn reject" title="Reject">
+                        <i class="bx bx-x"></i>
+                      </button>
+                      <button class="action-btn view" title="View Details">
+                        <i class="bx bx-show"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td><span class="type-badge rider">Rider</span></td>
+                  <td>John Martinez</td>
+                  <td>john.martinez@riders.com</td>
+                  <td>Nov 12, 2025</td>
+                  <td><strong>PHP 2,150.50</strong></td>
+                  <td>
+                    <span class="status-badge pending-badge">Pending</span>
+                  </td>
+                  <td>
+                    <div class="action-buttons">
+                      <button class="action-btn approve" title="Approve">
+                        <i class="bx bx-check"></i>
+                      </button>
+                      <button class="action-btn reject" title="Reject">
+                        <i class="bx bx-x"></i>
+                      </button>
+                      <button class="action-btn view" title="View Details">
+                        <i class="bx bx-show"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td><span class="type-badge seller">Seller</span></td>
+                  <td>Fashion Forward</td>
+                  <td>admin@fashionforward.com</td>
+                  <td>Nov 11, 2025</td>
+                  <td><strong>PHP 3,720.75</strong></td>
+                  <td>
+                    <span class="status-badge pending-badge">Pending</span>
+                  </td>
+                  <td>
+                    <div class="action-buttons">
+                      <button class="action-btn approve" title="Approve">
+                        <i class="bx bx-check"></i>
+                      </button>
+                      <button class="action-btn reject" title="Reject">
+                        <i class="bx bx-x"></i>
+                      </button>
+                      <button class="action-btn view" title="View Details">
+                        <i class="bx bx-show"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td><span class="type-badge rider">Rider</span></td>
+                  <td>Sarah Chen</td>
+                  <td>sarah.chen@riders.com</td>
+                  <td>Nov 11, 2025</td>
+                  <td><strong>PHP 1,890.25</strong></td>
+                  <td>
+                    <span class="status-badge approved-badge">Approved</span>
+                  </td>
+                  <td>
+                    <div class="action-buttons">
+                      <button class="action-btn process" title="Process Payout">
+                        <i class="bx bx-play-circle"></i>
+                      </button>
+                      <button class="action-btn view" title="View Details">
+                        <i class="bx bx-show"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Commission Main Dashboard -->
+        <div class="commission-main-panel" style="display: none">
+          <!-- Commission Settings Card -->
+          <div class="commission-settings-card">
+            <div class="settings-header">
+              <h2>Platform Commission Configuration</h2>
+              <button class="btn btn-primary">
+                <i class="bx bx-save"></i> Save Changes
+              </button>
+            </div>
+
+            <div class="global-rate-setting">
+              <div class="rate-setting-header">
+                <h3>Global Commission Rate</h3>
+                <div class="toggle-switch">
+                  <input type="checkbox" id="customRatesToggle" checked />
+                  <label for="customRatesToggle"
+                    >Enable Category-specific Rates</label
+                  >
+                </div>
+              </div>
+
+              <div class="rate-slider-container">
+                <div class="slider-header">
+                  <span>Platform Fee:</span>
+                  <div class="rate-display">10%</div>
+                </div>
+                <input
+                  type="range"
+                  class="rate-slider"
+                  min="0"
+                  max="30"
+                  step="0.5"
+                  value="10"
+                />
+                <div class="slider-labels">
+                  <span>0%</span>
+                  <span>15%</span>
+                  <span>30%</span>
+                </div>
+              </div>
+
+              <div class="rate-info">
+                <p>
+                  This is the default commission rate applied to all
+                  transactions unless category-specific rates are set.
+                </p>
+                <div class="last-modified">Last modified: Oct 15, 2025</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Commission Summary -->
+          <div class="commission-summary-card">
+            <h2>Commission Summary</h2>
+            <div class="commission-summary">
+              <div class="commission-metric">
+                <div class="metric-label">
+                  <i class="bx bx-wallet"></i>
+                  <span>Total Commission Revenue</span>
+                </div>
+                <div class="metric-value">$48,756.32</div>
+                <div class="metric-change positive">
+                  <i class="bx bx-up-arrow-alt"></i>
+                  <span>12.5% vs last month</span>
+                </div>
+              </div>
+
+              <div class="commission-metric">
+                <div class="metric-label">
+                  <i class="bx bx-line-chart"></i>
+                  <span>Average Commission Rate</span>
+                </div>
+                <div class="metric-value">10.2%</div>
+                <div class="metric-change negative">
+                  <i class="bx bx-down-arrow-alt"></i>
+                  <span>0.3% vs last month</span>
+                </div>
+              </div>
+
+              <div class="commission-metric">
+                <div class="metric-label">
+                  <i class="bx bx-store"></i>
+                  <span>Top Earning Category</span>
+                </div>
+                <div class="metric-value">Electronics</div>
+                <div class="metric-details">
+                  <span>$12,450 in commissions</span>
+                </div>
+              </div>
+
+              <div class="commission-metric">
+                <div class="metric-label">
+                  <i class="bx bx-user"></i>
+                  <span>Top Earning Seller</span>
+                </div>
+                <div class="metric-value">Tech Gadgets Plus</div>
+                <div class="metric-details">
+                  <span>$3,240 in commissions</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Commission Management Tabs -->
+        <div class="tab-container">
+          <div class="tab-header">
+            <button class="tab-btn active" data-tab="rates">
+              Commission Rates
+            </button>
+            <button class="tab-btn" data-tab="payouts">Pending Payouts</button>
+            <button class="tab-btn" data-tab="history">Payout History</button>
+            <button class="tab-btn" data-tab="logs">Transaction Logs</button>
+          </div>
+
+          <!-- Commission Rates Tab -->
+          <div class="tab-content active" id="rates">
+            <div class="card-header">
+              <h3>Commission Rate Configuration</h3>
+              <div class="header-actions">
+                <button class="btn btn-primary">
+                  <i class="bx bx-plus"></i>
+                  Add New Rate
+                </button>
+              </div>
+            </div>
+
+            <div class="commission-rate-grid">
+              <div class="commission-rate-card">
+                <div class="rate-header">
+                  <div class="rate-category">
+                    <i class="bx bx-store"></i>
+                    <h4>General Platform Rate</h4>
+                  </div>
+                  <div class="rate-actions">
+                    <button class="action-btn edit" title="Edit Rate">
+                      <i class="bx bx-edit"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="rate-value">10%</div>
+                <p class="rate-description">
+                  Default commission rate for all product categories
+                </p>
+                <div class="rate-details">
+                  <span>Last Updated: Oct 10, 2025</span>
+                  <span>Applied to: All Sellers</span>
+                </div>
+              </div>
+
+              <div class="commission-rate-card">
+                <div class="rate-header">
+                  <div class="rate-category">
+                    <i class="bx bx-devices"></i>
+                    <h4>Clothing Category</h4>
+                    ... (file continues)
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+{% endblock %} {% block extra_js %}
+<!-- JavaScript -->
+<script src="{{ url_for('static', filename='js/admin_scripts/admin_commision_management.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,233 @@
+{% extends 'seller/base_seller.html' %} {% block title %}Order Management{%
+endblock %} {% block extra_css %}
+<link
+  href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Poppins:wght@300;400;500;600&display=swap"
+  rel="stylesheet"
+/>
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/lucide-static@0.16.29/font/lucide.min.css"
+/>
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/seller_styles/seller_order_management.css') }}"
+/>
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/seller_styles/partials/_orders_card_preview.css') }}"
+/>
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/seller_styles/partials/_order_management_stats.css') }}"
+/>
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/seller_styles/seller_order_management.css') }}"
+/>
+{% endblock %} {# Import the order card macro at the top of the template #} {%
+from 'seller/partials/_orders_card_preview.html' import render_order_card %} {%
+block page_content %}
+<div class="page-header">
+  <div class="page-header-left-order">
+    <h1>Order Management</h1>
+    <p class="page-subtext">
+      Track and manage all customer orders in one place
+    </p>
+  </div>
+</div>
+
+<div class="order-stats-grid">
+  <div class="order-stat-card">
+    <div class="order-stat-icon purple">
+      <i data-lucide="layout-list"></i>
+    </div>
+    <div class="order-stat-content">
+      <div class="order-stat-value">
+        {{ stats.total_orders if stats else '0' }}
+      </div>
+      <div class="order-stat-label">Total Orders</div>
+    </div>
+  </div>
+  <div class="order-stat-card">
+    <div class="order-stat-icon green">
+      <i data-lucide="clock"></i>
+    </div>
+    <div class="order-stat-content">
+      <div class="order-stat-value">
+        {{ stats.pending_orders if stats else '0' }}
+      </div>
+      <div class="order-stat-label">Pending</div>
+    </div>
+  </div>
+  <div class="order-stat-card">
+    <div class="order-stat-icon orange">
+      <i data-lucide="package"></i>
+    </div>
+    <div class="order-stat-content">
+      <div class="order-stat-value">
+        {{ stats.shipped_orders if stats else '0' }}
+      </div>
+      <div class="order-stat-label">Shipped</div>
+    </div>
+  </div>
+  <div class="order-stat-card">
+    <div class="order-stat-icon red">
+      <i data-lucide="x-circle"></i>
+    </div>
+    <div class="order-stat-content">
+      <div class="order-stat-value">
+        {{ stats.cancelled_orders if stats else '0' }}
+      </div>
+      <div class="order-stat-label">Cancelled</div>
+    </div>
+  </div>
+</div>
+
+<div class="order-management-container">
+  <div class="order-management-header">
+    <div class="nav-tabs">
+      <button class="nav-tab active" data-status="all">
+        <i data-lucide="layout-list"></i>
+        <span>All Orders</span>
+        <span class="count">{{ stats.total_orders if stats else '0' }}</span>
+      </button>
+      <button class="nav-tab" data-status="pending">
+        <i data-lucide="clock"></i>
+        <span>Pending</span>
+        <span class="count">{{ stats.pending_orders if stats else '0' }}</span>
+      </button>
+      <button class="nav-tab" data-status="shipped">
+        <i data-lucide="package"></i>
+        <span>Shipped</span>
+        <span class="count">{{ stats.shipped_orders if stats else '0' }}</span>
+      </button>
+      <button class="nav-tab" data-status="in-transit">
+        <i data-lucide="truck"></i>
+        <span>In Transit</span>
+        <span class="count"
+          >{{ stats.in_transit_orders if stats else '0' }}</span
+        >
+      </button>
+      <button class="nav-tab" data-status="cancelled">
+        <i data-lucide="x-circle"></i>
+        <span>Cancelled</span>
+        <span class="count"
+          >{{ stats.cancelled_orders if stats else '0' }}</span
+        >
+      </button>
+      <button class="nav-tab" data-status="completed">
+        <i data-lucide="check-circle"></i>
+        <span>Completed</span>
+        <span class="count"
+          >{{ stats.completed_orders if stats else '0' }}</span
+        >
+      </button>
+    </div>
+  </div>
+  <div class="order-management-body">
+    <div class="table-controls">
+      <div class="controls-left">
+        <div class="search-filter">
+          <i data-lucide="search" class="search-icon"></i>
+          <input
+            type="text"
+            id="orderSearch"
+            placeholder="Search orders..."
+            class="search-input"
+          />
+        </div>
+        <div class="date-filter">
+          <input type="date" id="dateFrom" class="date-input" />
+          <span>to</span>
+          <input type="date" id="dateTo" class="date-input" />
+        </div>
+      </div>
+      <div class="controls-right">
+        <div class="select-wrapper">
+          <i data-lucide="filter" class="select-icon"></i>
+          <select id="statusFilter" class="status-select">
+            <option value="">Filter by</option>
+            <option value="pending">Pending</option>
+            <option value="shipped">Shipped</option>
+            <option value="in-transit">In Transit</option>
+            <option value="cancelled">Cancelled</option>
+            <option value="completed">Completed</option>
+          </select>
+        </div>
+        <div class="select-wrapper">
+          <i data-lucide="arrow-up-down" class="select-icon"></i>
+          <select id="sortBy" class="sort-dropdown">
+            <option value="">Sort by</option>
+            <option value="date-desc">Sort by: Latest</option>
+            <option value="date-asc">Sort by: Oldest</option>
+            <option value="price-desc">Sort by: Price High</option>
+            <option value="price-asc">Sort by: Price Low</option>
+            <option value="name-asc">Sort by: Name A-Z</option>
+            <option value="name-desc">Sort by: Name Z-A</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="orders-section">
+      <!-- Table Header -->
+      <div
+        class="orders-table-header"
+        style="
+          display: flex;
+          font-weight: 600;
+          color: #6b7280;
+          background: #f8fafc;
+          border-radius: 0.5rem 0.5rem 0 0;
+          padding: 1rem 1.5rem;
+          gap: 1rem;
+        "
+      >
+        <div
+          style="display: flex; align-items: center; flex: 2; min-width: 180px"
+        >
+          <input
+            type="checkbox"
+            id="selectAllOrders"
+            style="margin-right: 0.5rem"
+          />
+          Product
+        </div>
+        <!-- Removed inline styles with negative margins - now using CSS Grid layout -->
+        <div
+          style="
+            flex: 0.9;
+            min-width: 110px;
+            text-align: right;
+            margin-left: 9.5rem;
+          "
+        >
+          Price
+        </div>
+        <div style="flex: 1.2; min-width: 160px; text-align: right">
+          Payment
+        </div>
+        <div style="flex: 1.1; min-width: 140px; text-align: right">Status</div>
+        <div style="flex: 1.4; min-width: 180px; text-align: right">
+          Actions
+        </div>
+      </div>
+      <!-- Render order cards below the table header -->
+      {% if orders %} {% for order in orders %} {{ render_order_card(order,
+      loop.index0) }} {% endfor %} {% else %}
+      <div style="padding: 2rem; text-align: center; color: #888">
+        No orders found.
+      </div>
+      {% endif %}
+    </div>
+
+    {% endblock %} {% block extra_js %}
+    <!-- Initialize Lucide first -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Then load our dashboard JS -->
+    <script src="{{ url_for('static', filename='js/seller_dashboard.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/seller_order_management.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/order_card.js') }}"></script>
+    {% include 'seller/partials/_order_details_modal.html' %} {% include
+    'seller/partials/_order_communication.html' %} {% endblock %}
+  </div>
+</div>

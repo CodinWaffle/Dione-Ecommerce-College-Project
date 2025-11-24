@@ -47,6 +47,10 @@ class ProductCard {
       this.handleHoverEnd(cardWrapper)
     );
 
+    // Add click listener to navigate to product detail page
+    const productCard = this.element.querySelector(".product-card");
+    productCard.addEventListener("click", (e) => this.handleCardClick(e));
+
     // Add button listeners
     const wishlistBtn = this.element.querySelector(".wishlist-btn");
     const cartBtn = this.element.querySelector(".cart-btn");
@@ -65,6 +69,15 @@ class ProductCard {
 
   handleHoverEnd(cardWrapper) {
     cardWrapper.closest(".product-card").classList.remove("hovered");
+  }
+
+  handleCardClick(e) {
+    // Don't navigate if clicking on action buttons
+    if (e.target.closest(".action-button")) {
+      return;
+    }
+    // Navigate to product detail page
+    window.location.href = `/product/${this.product.id}`;
   }
 
   handleWishlist(e, button) {

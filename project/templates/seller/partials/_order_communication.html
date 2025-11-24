@@ -1,0 +1,102 @@
+{# Minimal communication panel partial for order messages/notes #}
+<div
+  id="orderCommunicationPanel"
+  style="
+    display: none;
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    width: 320px;
+    z-index: 2200;
+  "
+>
+  <div
+    style="
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+      overflow: hidden;
+    "
+  >
+    <div
+      style="
+        padding: 0.75rem 1rem;
+        background: #f9fafb;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      "
+    >
+      <strong>Messages</strong>
+      <button
+        onclick="toggleCommunicationPanel()"
+        style="background: none; border: none; font-size: 1rem"
+      >
+        ×
+      </button>
+    </div>
+    <div
+      id="orderMessages"
+      style="max-height: 240px; overflow: auto; padding: 0.5rem"
+    >
+      <div style="color: #666; text-align: center; padding: 1rem">
+        No messages
+      </div>
+    </div>
+    <div
+      style="
+        padding: 0.5rem;
+        border-top: 1px solid #eee;
+        background: #fff;
+        display: flex;
+        gap: 0.5rem;
+      "
+    >
+      <input
+        id="orderMessageInput"
+        placeholder="Write a message..."
+        style="
+          flex: 1;
+          padding: 0.5rem;
+          border-radius: 6px;
+          border: 1px solid #e5e7eb;
+        "
+      />
+      <button
+        onclick="sendOrderMessage()"
+        style="
+          background: #7c3aed;
+          color: white;
+          border: none;
+          padding: 0.5rem 0.75rem;
+          border-radius: 6px;
+        "
+      >
+        Send
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function toggleCommunicationPanel() {
+    var el = document.getElementById("orderCommunicationPanel");
+    el.style.display =
+      el.style.display === "none" || !el.style.display ? "block" : "none";
+  }
+  function sendOrderMessage() {
+    var input = document.getElementById("orderMessageInput");
+    if (!input || !input.value.trim()) return;
+    var container = document.getElementById("orderMessages");
+    var msg = document.createElement("div");
+    msg.style.padding = "0.5rem";
+    msg.style.background = "#f3f4f6";
+    msg.style.borderRadius = "6px";
+    msg.style.marginBottom = "0.5rem";
+    msg.textContent = input.value.trim();
+    container.appendChild(msg);
+    input.value = "";
+    container.scrollTop = container.scrollHeight;
+  }
+</script>

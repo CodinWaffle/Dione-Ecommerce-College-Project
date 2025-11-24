@@ -131,8 +131,6 @@ SELECT * FROM `user` WHERE `email` = 'admin.nigger@gmail.com';
 ```
 
 env\Scripts\activate.ps1
-PATH--
-cd "C:\Users\Precious Rondilla\Documents\VSCODE\Dione\Dione-Ecommerce-College-Project"
 
 6️⃣ Run It!
 

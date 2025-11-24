@@ -20,7 +20,7 @@
       <span>Dashboard</span>
     </a>
     <a
-      href="#orders"
+      href="{{ url_for('seller.orders') }}"
       class="nav-item {{ 'active' if active_page == 'orders' }}"
       data-page="orders"
     >
@@ -36,15 +36,15 @@
       <span>Product Management</span>
     </a>
     <a
-      href="#revenue"
-      class="nav-item {{ 'active' if active_page == 'analytics' }}"
-      data-page="analytics"
+      href="{{ url_for('seller.revenue') }}"
+      class="nav-item {{ 'active' if active_page == 'revenue' }}"
+      data-page="revenue"
     >
       <i data-lucide="trending-up"></i>
       <span>Revenue Analytics</span>
     </a>
     <a
-      href="#customers"
+      href="{{ url_for('seller.customers') }}"
       class="nav-item {{ 'active' if active_page == 'customers' }}"
       data-page="customers"
     >
@@ -52,7 +52,7 @@
       <span>Customer Management</span>
     </a>
     <a
-      href="#reviews"
+      href="{{ url_for('seller.reviews') }}"
       class="nav-item {{ 'active' if active_page == 'reviews' }}"
       data-page="reviews"
     >
@@ -60,7 +60,7 @@
       <span>Reviews & Ratings</span>
     </a>
     <a
-      href="#inventory"
+      href="{{ url_for('seller.inventory') }}"
       class="nav-item {{ 'active' if active_page == 'inventory' }}"
       data-page="inventory"
     >
@@ -68,9 +68,9 @@
       <span>Inventory</span>
     </a>
     <a
-      href="#payment"
-      class="nav-item {{ 'active' if active_page == 'payment_methods' }}"
-      data-page="payment_methods"
+      href="{{ url_for('seller.payment_methods') }}"
+      class="nav-item {{ 'active' if active_page == 'payment-methods' }}"
+      data-page="payment-methods"
     >
       <i data-lucide="credit-card"></i>
       <span>Payment Methods</span>
@@ -89,15 +89,15 @@
         class="dropdown-menu {{ 'show' if active_page in ['settings', 'profile_settings', 'store_settings', 'security_settings', 'notifications_settings'] }}"
       >
         <a
-          href="#settings-profile"
-          class="dropdown-item {{ 'active' if active_page == 'profile_settings' }}"
-          data-page="profile_settings"
+          href="{{ url_for('seller.profile') }}"
+          class="dropdown-item {{ 'active' if active_page == 'profile' }}"
+          data-page="profile"
         >
           <i data-lucide="user"></i>
           <span>Profile</span>
         </a>
         <a
-          href="#settings-store"
+          href="{{ url_for('seller.settings') }}#store"
           class="dropdown-item {{ 'active' if active_page == 'store_settings' }}"
           data-page="store_settings"
         >
@@ -105,7 +105,7 @@
           <span>Store</span>
         </a>
         <a
-          href="#settings-security"
+          href="{{ url_for('seller.settings') }}#security"
           class="dropdown-item {{ 'active' if active_page == 'security_settings' }}"
           data-page="security_settings"
         >
@@ -113,7 +113,7 @@
           <span>Security</span>
         </a>
         <a
-          href="#settings-notifications"
+          href="{{ url_for('seller.settings') }}#notifications"
           class="dropdown-item {{ 'active' if active_page == 'notifications_settings' }}"
           data-page="notifications_settings"
         >

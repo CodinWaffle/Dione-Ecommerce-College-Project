@@ -241,3 +241,39 @@ class Product(db.Model):
     return f'<Product {self.id} - {self.name}>'
 
 
+class Warning(db.Model):
+  """Records warning emails sent to users by admins."""
+  id = db.Column(db.Integer, primary_key=True)
+  user_id = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
+  admin_id = db.Column(db.Integer, db.ForeignKey(User.id), nullable=True)
+  template_key = db.Column(db.String(100))
+  subject = db.Column(db.String(255))
+  body = db.Column(db.Text)
+  created_at = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
+
+  user = db.relationship('User', foreign_keys=[user_id], backref='warnings')
+  admin = db.relationship('User', foreign_keys=[admin_id])
+
+  def __repr__(self):
+    return f'<Warning {self.id} to {self.user_id}>'
+
+
+class ChatMessage(db.Model):
+  """Simple chat messages between users and admin."""
+  __tablename__ = 'chat_messages'
+  id = db.Column(db.Integer, primary_key=True)
+  user_id = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
+  admin_id = db.Column(db.Integer, db.ForeignKey(User.id), nullable=True)
+  sender_name = db.Column(db.String(255))
+  sender_role = db.Column(db.String(50))
+  body = db.Column(db.Text, nullable=False)
+  is_from_admin = db.Column(db.Boolean, default=False)
+  created_at = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
+
+  user = db.relationship('User', foreign_keys=[user_id], backref='chat_messages')
+  admin = db.relationship('User', foreign_keys=[admin_id])
+
+  def __repr__(self):
+    return f'<ChatMessage {self.id} user={self.user_id} admin={self.admin_id}>'
+
+

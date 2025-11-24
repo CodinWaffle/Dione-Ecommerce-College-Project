@@ -1,0 +1,71 @@
+<!-- Rider Job List Page -->
+{% extends 'rider/_base.html' %} {% block title %}Rider Job List{% endblock %}
+{% block content %}
+<main class="dashboard-main">
+  <section class="dashboard-header">
+    <h1>Job List</h1>
+    <div class="dashboard-filters">
+      <button class="filter-btn active" data-filter="today">
+        Today's Deliveries
+      </button>
+      <button class="filter-btn" data-filter="completed">Completed</button>
+      <button class="filter-btn" data-filter="cancelled">Cancelled</button>
+    </div>
+    <div class="dashboard-search">
+      <input
+        type="text"
+        id="jobSearchInput"
+        class="search-bar"
+        placeholder="Search by customer, address, or order #..."
+      />
+    </div>
+  </section>
+  <section class="dashboard-table-section">
+    <table class="dashboard-table">
+      <thead>
+        <tr>
+          <th>Order #</th>
+          <th>Customer</th>
+          <th>Contact</th>
+          <th>Pickup Point</th>
+          <th>Drop-off Point</th>
+          <th>Type</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="jobTableBody">
+        {% for job in jobs %}
+        <tr>
+          <td>{{ job.order_no }}</td>
+          <td>{{ job.customer_name }}</td>
+          <td>{{ job.contact }}</td>
+          <td>{{ job.pickup }}</td>
+          <td>{{ job.dropoff }}</td>
+          <td>{{ job.type }}</td>
+          <td>
+            <span
+              class="status-badge status-{{ job.status|lower|replace(' ', '-') }}"
+              >{{ job.status }}</span
+            >
+          </td>
+          <td>
+            <button class="action-btn view-btn" title="View">
+              <span class="material-symbols-outlined">visibility</span>
+            </button>
+            <button class="action-btn edit-btn" title="Edit">
+              <span class="material-symbols-outlined">edit</span>
+            </button>
+            <button class="action-btn map-btn" title="View Map">
+              <span class="material-symbols-outlined">directions</span>
+            </button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+</main>
+{% endblock %} {% block scripts %}
+<script src="{{ url_for('static', filename='js/job_list.js') }}"></script>
+{% endblock %}

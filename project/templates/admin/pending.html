@@ -1,79 +1,86 @@
-{% extends "admin/base_admin.html" %} {% block page_title %}Pending Approvals{%
-endblock %} {% block admin_content %}
-<section>
-  <h2 class="section-title">
-    <i class="fas fa-clock"></i>
-    Pending Approvals
-  </h2>
-  {% if pending_requests %}
-  <div class="modern-table">
-    <div class="table-responsive">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Requested Role</th>
-            <th>Requested At</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for user in pending_requests %}
-          <tr>
-            <td><strong>{{ user.username }}</strong></td>
-            <td>{{ user.email }}</td>
-            <td>
-              <span
-                class="badge badge-modern badge-{{ 'warning' if user.role_requested == 'seller' else 'info' }}"
-              >
-                {{ user.role_requested|capitalize }}
-              </span>
-            </td>
-            <td>
-              {{ user.created_at.strftime('%Y-%m-%d %H:%M') if user.created_at
-              else 'N/A' }}
-            </td>
-            <td>
-              <button
-                class="btn btn-modern btn-info"
-                type="button"
-                onclick="showSellerDetails({{ user.id }})"
-              >
-                <i class="fas fa-eye"></i> View
-              </button>
-              <form
-                method="post"
-                action="{{ url_for('admin.approve_request', user_id=user.id) }}"
-                class="d-inline"
-              >
-                <button class="btn btn-modern btn-success" type="submit">
-                  <i class="fas fa-check"></i> Approve
-                </button>
-              </form>
-              <form
-                method="post"
-                action="{{ url_for('admin.reject_request', user_id=user.id) }}"
-                class="d-inline"
-              >
-                <button class="btn btn-modern btn-danger" type="submit">
-                  <i class="fas fa-times"></i> Decline
-                </button>
-              </form>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+{% extends "admin/base_admin.html" %} {% block page_title %} Pending Approvals
+{% endblock %} {% block admin_content %}
+<div class="dashboard-container">
+  {% include 'admin/partials/_sidebar_admin.html' %}
+
+  <div class="main-content" id="main-content">
+    <section>
+      <h2 class="section-title">
+        <i class="fas fa-clock"></i>
+        Pending Approvals
+      </h2>
+      {% if pending_requests %}
+      <div class="modern-table">
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Requested Role</th>
+                <th>Requested At</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for user in pending_requests %}
+              <tr>
+                <td><strong>{{ user.username }}</strong></td>
+                <td>{{ user.email }}</td>
+                <td>
+                  <span
+                    class="badge badge-modern badge-{{ 'warning' if user.role_requested == 'seller' else 'info' }}"
+                  >
+                    {{ user.role_requested|capitalize }}
+                  </span>
+                </td>
+                <td>
+                  {{ user.created_at.strftime('%Y-%m-%d %H:%M') if
+                  user.created_at else 'N/A' }}
+                </td>
+                <td>
+                  <button
+                    class="btn btn-modern btn-info"
+                    type="button"
+                    onclick="showSellerDetails({{ user.id }})"
+                  >
+                    <i class="fas fa-eye"></i> View
+                  </button>
+                  <form
+                    method="post"
+                    action="{{ url_for('admin.approve_request', user_id=user.id) }}"
+                    class="d-inline"
+                  >
+                    <button class="btn btn-modern btn-success" type="submit">
+                      <i class="fas fa-check"></i> Approve
+                    </button>
+                  </form>
+                  <form
+                    method="post"
+                    action="{{ url_for('admin.reject_request', user_id=user.id) }}"
+                    class="d-inline"
+                  >
+                    <button class="btn btn-modern btn-danger" type="submit">
+                      <i class="fas fa-times"></i> Decline
+                    </button>
+                  </form>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <i class="fas fa-check-circle"></i>
+        <p>No pending requests at this time.</p>
+      </div>
+      {% endif %}
+    </section>
   </div>
-  {% else %}
-  <div class="empty-state">
-    <i class="fas fa-check-circle"></i>
-    <p>No pending requests at this time.</p>
-  </div>
-  {% endif %}
-</section>
+</div>
+{% endblock %}
 
 <!-- Seller Details Modal -->
 <div
@@ -365,5 +372,3 @@ endblock %} {% block admin_content %}
       });
   }
 </script>
-
-{% endblock %}

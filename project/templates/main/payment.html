@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Checkout - Payment</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/buyer_styles/payment.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/buyer_styles/partials/_header_buyer.css') }}"
+    />
+
+    <style>
+      .icon-svg {
+        width: 20px;
+        height: 20px;
+        display: inline-block;
+        vertical-align: middle;
+      }
+      .check-icon-svg {
+        width: 16px;
+        height: 16px;
+      }
+      .delivery-icon-svg {
+        width: 18px;
+        height: 18px;
+      }
+      .gift-icon-svg {
+        width: 16px;
+        height: 16px;
+      }
+      .card-icon-svg {
+        width: 24px;
+        height: 24px;
+      }
+      .info-icon-svg {
+        width: 14px;
+        height: 14px;
+        cursor: help;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Include Header -->
+    {% include 'main/partials/_header_buyer.html' %}
+
+    <div class="container">
+      <div class="checkout-layout">
+        <!-- Left Column - Checkout Information -->
+        <div class="checkout-info">
+          <h1 class="page-title">Place Order</h1>
+          <!-- Notifications Section -->
+          <div class="info-section">
+            <div class="section-header">
+              <div class="check-icon">
+                <svg
+                  class="check-icon-svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <polyline points="20,6 9,17 4,12"></polyline>
+                </svg>
+              </div>
+              <h3>Notifications to</h3>
+            </div>
+            <div class="section-content">
+              <span class="email"
+                >{{ user.email if user and user.email else 'user@example.com'
+                }}</span
+              >
+              <button class="edit-btn">Edit</button>
+            </div>
+          </div>
+
+          <!-- Shipping Address Section -->
+          <div class="info-section">
+            <div class="section-header">
+              <div class="check-icon">
+                <svg
+                  class="check-icon-svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <polyline points="20,6 9,17 4,12"></polyline>
+                </svg>
+              </div>
+              <h3>Sending to</h3>
+            </div>
+            <div class="section-content">
+              <div class="address-info">
+                <div class="address-line">
+                  {{ shipping_address.name if shipping_address else 'John Doe'
+                  }}
+                </div>
+                <div class="address-line">
+                  {{ shipping_address.address if shipping_address else '123 Main
+                  Street' }}
+                </div>
+                <div class="address-line">
+                  {{ shipping_address.city if shipping_address else 'City' }},
+                  {{ shipping_address.state if shipping_address else 'State' }}
+                  {{ shipping_address.zip_code if shipping_address else '12345'
+                  }}, {{ shipping_address.country if shipping_address else 'USA'
+                  }}
+                </div>
+                <div class="address-line">
+                  {{ shipping_address.phone if shipping_address else '(555)
+                  123-4567' }}
+                </div>
+              </div>
+              <button class="edit-btn">Edit</button>
+            </div>
+          </div>
+
+          <!-- Delivery Section -->
+          <div class="info-section">
+            <div class="section-header">
+              <div class="check-icon">
+                <svg
+                  class="check-icon-svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <polyline points="20,6 9,17 4,12"></polyline>
+                </svg>
+              </div>
+              <h3>Estimated delivery</h3>
+            </div>
+            <div class="section-content">
+              <div class="delivery-info">
+                <svg
+                  class="delivery-icon-svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <rect x="1" y="3" width="15" height="13"></rect>
+                  <path d="m16 8 4 4-4 4"></path>
+                  <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                  <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                </svg>
+                <span class="delivery-text">Mon, Sep 23 (FREE)</span>
+              </div>
+              <button class="edit-btn">Edit</button>
+            </div>
+          </div>
+
+          <!-- Payment Method Section -->
+          <div class="payment-section">
+            <h3 class="payment-title">Payment method</h3>
+
+            Gift Card Option
+            <div class="payment-option gift-card">
+              <svg
+                class="gift-icon-svg icon-svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <polyline points="20,12 20,22 4,22 4,12"></polyline>
+                <rect x="2" y="7" width="20" height="5"></rect>
+                <line x1="12" y1="22" x2="12" y2="7"></line>
+                <path d="m5,7 10,0"></path>
+                <path d="m19,7-10,0"></path>
+                <circle cx="9" cy="5" r="2"></circle>
+                <circle cx="15" cy="5" r="2"></circle>
+              </svg>
+              <span>Use my gift card</span>
+              <button class="add-btn">+ Add a discount/gift card</button>
+            </div>
+
+            Payment Methods
+            <div class="payment-methods">
+              <!-- PayPal -->
+              <div class="payment-method" data-method="paypal">
+                <div class="method-header">
+                  <div class="method-info">
+                    <img
+                      src="/placeholder.svg?height=20&width=60"
+                      alt="PayPal"
+                      class="payment-logo"
+                    />
+                    <span>Pay with PayPal</span>
+                  </div>
+                  <button class="expand-btn">+</button>
+                </div>
+              </div>
+
+              <!-- Afterpay -->
+              <div class="payment-method" data-method="afterpay">
+                <div class="method-header">
+                  <div class="method-info">
+                    <div class="afterpay-logo">$</div>
+                    <div>
+                      <span>Pay with Afterpay</span>
+                      <div class="method-subtitle">
+                        Pay in 4 interest-free payments
+                      </div>
+                    </div>
+                  </div>
+                  <button class="expand-btn">+</button>
+                </div>
+              </div>
+
+              <!-- GCash -->
+              <div class="payment-method" data-method="gcash">
+                <div class="method-header">
+                  <div class="method-info">
+                    <div class="gcash-logo">
+                      <svg viewBox="0 0 100 100" width="24" height="24">
+                        <rect width="100" height="100" rx="15" fill="#004CFF" />
+                        <path d="M20 30h60v40H20z" fill="white" />
+                        <circle cx="35" cy="50" r="8" fill="#004CFF" />
+                        <circle cx="65" cy="50" r="8" fill="#004CFF" />
+                        <path d="M25 60h50" stroke="#004CFF" stroke-width="2" />
+                        <text
+                          x="50"
+                          y="45"
+                          text-anchor="middle"
+                          fill="#004CFF"
+                          font-size="8"
+                          font-weight="bold"
+                        >
+                          G
+                        </text>
+                      </svg>
+                    </div>
+                    <div>
+                      <span>Pay with GCash</span>
+                      <div class="method-subtitle">Secure mobile payment</div>
+                    </div>
+                  </div>
+                  <button class="expand-btn">+</button>
+                </div>
+
+                <div class="method-content">
+                  <div class="gcash-form">
+                    <div class="form-group">
+                      <label for="gcash-number">GCash Mobile Number</label>
+                      <input
+                        type="tel"
+                        id="gcash-number"
+                        placeholder="09XX XXX XXXX"
+                        maxlength="13"
+                      />
+                    </div>
+
+                    <div class="gcash-info">
+                      <div class="info-item">
+                        <svg
+                          class="info-icon"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                        >
+                          <path d="M9 12l2 2 4-4"></path>
+                          <circle cx="12" cy="12" r="10"></circle>
+                        </svg>
+                        <span>Instant payment confirmation</span>
+                      </div>
+                      <div class="info-item">
+                        <svg
+                          class="info-icon"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                        >
+                          <rect
+                            x="2"
+                            y="3"
+                            width="20"
+                            height="14"
+                            rx="2"
+                            ry="2"
+                          ></rect>
+                          <line x1="8" y1="21" x2="16" y2="21"></line>
+                          <line x1="12" y1="17" x2="12" y2="21"></line>
+                        </svg>
+                        <span>No additional fees</span>
+                      </div>
+                      <div class="info-item">
+                        <svg
+                          class="info-icon"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                        >
+                          <rect
+                            x="3"
+                            y="11"
+                            width="18"
+                            height="11"
+                            rx="2"
+                            ry="2"
+                          ></rect>
+                          <path d="m7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                        <span>Bank-level security</span>
+                      </div>
+                    </div>
+
+                    <div class="gcash-steps">
+                      <h4>How to pay with GCash:</h4>
+                      <ol>
+                        <li>Enter your GCash mobile number</li>
+                        <li>You'll receive an SMS with payment details</li>
+                        <li>Open your GCash app and confirm the payment</li>
+                        <li>Your order will be confirmed instantly</li>
+                      </ol>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Credit Card -->
+              <div class="payment-method active" data-method="credit-card">
+                <div class="method-header">
+                  <div class="method-info">
+                    <div class="card-icons">
+                      <svg
+                        class="card-icon-svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                      >
+                        <rect
+                          x="1"
+                          y="4"
+                          width="22"
+                          height="16"
+                          rx="2"
+                          ry="2"
+                        ></rect>
+                        <line x1="1" y1="10" x2="23" y2="10"></line>
+                      </svg>
+                    </div>
+                    <span>Pay with credit card</span>
+                  </div>
+                  <button class="expand-btn">−</button>
+                </div>
+
+                <div class="method-content">
+                  <form class="credit-card-form">
+                    <div class="form-group">
+                      <label for="card-number">Credit card number</label>
+                      <div class="card-input-wrapper">
+                        <input
+                          type="text"
+                          id="card-number"
+                          placeholder="1234 5678 9012 3456"
+                          maxlength="19"
+                        />
+                        <div class="card-types">
+                          <img
+                            src="/placeholder.svg?height=20&width=30"
+                            alt="Visa"
+                          />
+                          <img
+                            src="/placeholder.svg?height=20&width=30"
+                            alt="Mastercard"
+                          />
+                          <img
+                            src="/placeholder.svg?height=20&width=30"
+                            alt="Amex"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="form-row">
+                      <div class="form-group">
+                        <label for="expiry">Expiry (MM / YY)</label>
+                        <input
+                          type="text"
+                          id="expiry"
+                          placeholder="MM / YY"
+                          maxlength="7"
+                        />
+                      </div>
+                      <div class="form-group">
+                        <label for="security-code"
+                          >Security code
+                          <svg
+                            class="info-icon-svg"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                          >
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="16" x2="12" y2="12"></line>
+                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                          </svg>
+                        </label>
+                        <input
+                          type="text"
+                          id="security-code"
+                          placeholder="123"
+                          maxlength="4"
+                        />
+                      </div>
+                    </div>
+
+                    <div class="form-group">
+                      <label for="card-name">Name on card</label>
+                      <input
+                        type="text"
+                        id="card-name"
+                        placeholder="John Doe"
+                      />
+                    </div>
+
+                    <div class="billing-section">
+                      <h4>Billing address</h4>
+                      <div class="checkbox-group">
+                        <input type="checkbox" id="same-address" checked />
+                        <label for="same-address"
+                          >Same as shipping address</label
+                        >
+                      </div>
+
+                      <div class="billing-address">
+                        <div class="address-line">
+                          {{ shipping_address.name if shipping_address else
+                          'John Doe' }}
+                        </div>
+                        <div class="address-line">
+                          {{ shipping_address.address if shipping_address else
+                          '123 Main Street' }}
+                        </div>
+                        <div class="address-line">
+                          {{ shipping_address.city if shipping_address else
+                          'City' }}, {{ shipping_address.state if
+                          shipping_address else 'State' }} {{
+                          shipping_address.zip_code if shipping_address else
+                          '12345' }}, {{ shipping_address.country if
+                          shipping_address else 'USA' }}
+                        </div>
+                      </div>
+
+                      <div class="checkbox-group">
+                        <input type="checkbox" id="save-card" />
+                        <label for="save-card">Save card to my account</label>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column - Order Summary -->
+        <div class="order-summary">
+          <h3>Order summary</h3>
+          <div class="item-count">
+            <svg
+              class="icon-svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              style="margin-right: 8px"
+            >
+              <path d="m7.5 4.27 9 5.15"></path>
+              <path
+                d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"
+              ></path>
+              <path d="m3.3 7 8.7 5 8.7-5"></path>
+              <path d="M12 22V12"></path>
+            </svg>
+            {{ cart_items|length if cart_items else 1 }} item{{ 's' if
+            cart_items|length > 1 else '' }} • ${{
+            "%.2f"|format(subtotal|default(47.00)) }}
+          </div>
+
+          {% if cart_items %} {% for item in cart_items %}
+          <div class="product-item">
+            <img
+              src="{{ item.image_url if item.image_url else url_for('static', filename='images/product_1.jpg') }}"
+              alt="{{ item.name }}"
+              class="product-image"
+            />
+            <div class="product-details">
+              <h4>{{ item.name }}</h4>
+              <div class="product-variant">
+                {{ item.variant if item.variant else 'Standard' }}
+              </div>
+              <div class="product-size">
+                Size: {{ item.size if item.size else 'ONE SIZE' }}
+              </div>
+              <div class="product-quantity">Quantity: {{ item.quantity }}</div>
+            </div>
+            <div class="product-price">
+              ${{ "%.2f"|format(item.price * item.quantity) }}
+            </div>
+          </div>
+          {% endfor %} {% else %}
+          <div class="product-item">
+            <img
+              src="{{ url_for('static', filename='images/product_1.jpg') }}"
+              alt="Product"
+              class="product-image"
+            />
+            <div class="product-details">
+              <h4>Back to Life Sport Bottle 20oz</h4>
+              <div class="product-variant">"Stripe Lid"</div>
+              <div class="product-size">Size: ONE SIZE</div>
+              <div class="product-quantity">Quantity: 1</div>
+            </div>
+            <div class="product-price">$44.00</div>
+          </div>
+          {% endif %}
+
+          <div class="order-totals">
+            <div class="total-line">
+              <span>Subtotal</span>
+              <span>${{ "%.2f"|format(subtotal|default(44.00)) }}</span>
+            </div>
+            <div class="total-line">
+              <span>Shipping</span>
+              <span
+                >{% if delivery_fee and delivery_fee > 0 %} ${{
+                "%.2f"|format(delivery_fee) }} {% else %} FREE {% endif %}</span
+              >
+            </div>
+            <div class="total-line">
+              <span>Tax</span>
+              <span>${{ "%.2f"|format(tax|default(3.96)) }}</span>
+            </div>
+            {% if discount and discount > 0 %}
+            <div class="total-line">
+              <span>Discount</span>
+              <span style="color: #dc3545"
+                >-${{ "%.2f"|format(discount) }}</span
+              >
+            </div>
+            {% endif %}
+            <div class="total-line final-total">
+              <span>Order total</span>
+              <span>USD ${{ "%.2f"|format(total|default(47.96)) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="checkout-actions">
+        <button class="review-order-btn">PLACE ORDER</button>
+        <div class="powered-by">Secure checkout powered by SHOP.CO</div>
+      </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/buyer_scripts/payment.js') }}"></script>
+  </body>
+</html>

@@ -1,0 +1,50 @@
+{% extends 'seller/base_seller.html' %} {% block title %}Reviews & Ratings{%
+endblock %} {% block extra_css %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/seller_styles/seller_dashboard.css') }}"
+/>
+{% endblock %} {% block page_content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <h1>Reviews & Ratings</h1>
+    <p class="page-subtext">
+      Manage product reviews and ratings left by customers.
+    </p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h2>Customer Reviews</h2>
+  </div>
+  <div class="products-table">
+    {% if reviews and reviews|length > 0 %}
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Product</th>
+          <th>Customer</th>
+          <th>Rating</th>
+          <th>Comment</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in reviews %}
+        <tr>
+          <td>{{ r.id }}</td>
+          <td>{{ r.product }}</td>
+          <td>{{ r.customer }}</td>
+          <td>{{ r.rating }}</td>
+          <td>{{ r.comment }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="placeholder-text">No reviews yet.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

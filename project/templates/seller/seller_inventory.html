@@ -1,0 +1,387 @@
+{% extends 'seller/base_seller.html' %} {% block title %}Inventory Management{%
+endblock %} {% block extra_css %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/seller_styles/seller_dashboard.css') }}"
+/>
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/seller_styles/seller_common.css') }}"
+/>
+{% endblock %} {% block page_content %}
+<div class="page-header">
+  <div class="page-header-left-inventory">
+    <h1>Inventory Management</h1>
+    <p class="page-subtext">
+      Track stock levels, set alerts, and manage product inventory efficiently.
+    </p>
+  </div>
+  <div class="page-header-actions"></div>
+</div>
+
+<!-- Stats Overview -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon purple">
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+      </svg>
+    </div>
+    <div class="stat-content">
+      <div class="stat-value" id="totalItems">
+        {{ inventory|length if inventory else 0 }}
+      </div>
+      <div class="stat-label">Total Items</div>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon green">
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </svg>
+    </div>
+    <div class="stat-content">
+      <div class="stat-value" id="inStockItems">
+        {% if inventory %} {% set in_stock_count = 0 %} {% for item in inventory
+        %} {% if item.stock > item.low_stock_threshold %} {% set in_stock_count
+        = in_stock_count + 1 %} {% endif %} {% endfor %} {{ in_stock_count }} {%
+        else %}0{% endif %}
+      </div>
+      <div class="stat-label">In Stock</div>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon orange">
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+    </div>
+    <div class="stat-content">
+      <div class="stat-value" id="lowStockItems">
+        {% if inventory %} {% set low_stock_count = 0 %} {% for item in
+        inventory %} {% if item.stock > 0 and item.stock <=
+        item.low_stock_threshold %} {% set low_stock_count = low_stock_count + 1
+        %} {% endif %} {% endfor %} {{ low_stock_count }} {% else %}0{% endif %}
+      </div>
+      <div class="stat-label">Low Stock</div>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon red">
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="15" y1="9" x2="9" y2="15"></line>
+        <line x1="9" y1="9" x2="15" y2="15"></line>
+      </svg>
+    </div>
+    <div class="stat-content">
+      <div class="stat-value" id="outOfStockItems">
+        {% if inventory %}{{ inventory|selectattr('stock', '==', 0)|list|length
+        }}{% else %}0{% endif %}
+      </div>
+      <div class="stat-label">Out of Stock</div>
+    </div>
+  </div>
+</div>
+
+<!-- Inventory Table Card -->
+<div class="card">
+  <div class="card-header nav-tabs-header">
+    <div class="nav-tabs inventory-nav-tabs">
+      <button
+        class="nav-tab active tab-btn"
+        data-status="all"
+        aria-pressed="true"
+      >
+        <!-- layout-list icon -->
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+        >
+          <rect x="3" y="4" width="18" height="16" rx="2" />
+          <line x1="7" y1="9" x2="17" y2="9" />
+          <line x1="7" y1="13" x2="17" y2="13" />
+        </svg>
+        <span>All</span>
+      </button>
+      <button
+        class="nav-tab tab-btn"
+        data-status="in-stock"
+        aria-pressed="false"
+      >
+        <!-- check-circle icon -->
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+        >
+          <circle cx="12" cy="12" r="9" />
+          <path d="M9 12l2 2 4-4" />
+        </svg>
+        <span>In Stock</span>
+      </button>
+      <button
+        class="nav-tab tab-btn"
+        data-status="low-stock"
+        aria-pressed="false"
+      >
+        <!-- alert-triangle icon -->
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+        >
+          <path
+            d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+          />
+          <line x1="12" y1="9" x2="12" y2="13" />
+          <line x1="12" y1="17" x2="12.01" y2="17" />
+        </svg>
+        <span>Low Stock</span>
+      </button>
+      <button
+        class="nav-tab tab-btn"
+        data-status="out-of-stock"
+        aria-pressed="false"
+      >
+        <!-- x-circle icon -->
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+        >
+          <circle cx="12" cy="12" r="9" />
+          <line x1="15" y1="9" x2="9" y2="15" />
+          <line x1="9" y1="9" x2="15" y2="15" />
+        </svg>
+        <span>Out of Stock</span>
+      </button>
+    </div>
+    <div class="table-actions">
+      <div class="search-filter">
+        <svg
+          class="search-icon"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input
+          type="text"
+          id="inventorySearch"
+          class="search-input"
+          placeholder="Search products..."
+        />
+      </div>
+      <div class="select-wrapper">
+        <select id="sortInventory" class="sort-dropdown">
+          <option value="name_asc">Name (A-Z)</option>
+          <option value="name_desc">Name (Z-A)</option>
+          <option value="stock_asc">Stock (Low to High)</option>
+          <option value="stock_desc">Stock (High to Low)</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-container">
+    {% if inventory and inventory|length > 0 %}
+    <table id="inventoryTable">
+      <thead>
+        <tr>
+          <th width="40px"><input type="checkbox" id="selectAllHeader" /></th>
+          <th>Product</th>
+          <th>SKU</th>
+          <th>Stock</th>
+          <th>Threshold</th>
+          <th>Status</th>
+          <th width="100px">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for i in inventory %}
+        <tr
+          data-id="{{ i.id }}"
+          data-stock="{{ i.stock }}"
+          data-threshold="{{ i.low_stock_threshold }}"
+          data-stock-status="{% if i.stock <= 0 %}out-of-stock{% elif i.stock <= i.low_stock_threshold %}low-stock{% else %}in-stock{% endif %}"
+        >
+          <td><input type="checkbox" class="row-checkbox" /></td>
+          <td>
+            <div class="product-cell">
+              <img
+                class="product-image"
+                src="{{ url_for('static', filename='images/products/' ~ i.image) if i.image else url_for('static', filename='images/placeholder-product.png') }}"
+                alt="{{ i.product }}"
+              />
+              <span class="product-name">{{ i.product }}</span>
+            </div>
+          </td>
+          <td><span class="product-sku">{{ i.sku }}</span></td>
+          <td class="stock-cell">
+            <span class="stock-value">{{ i.stock }}</span>
+            <button
+              class="action-btn quick-edit-btn"
+              title="Quick edit stock"
+              data-field="stock"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
+                ></path>
+                <path
+                  d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
+                ></path>
+              </svg>
+            </button>
+          </td>
+          <td>
+            <span class="threshold-badge">{{ i.low_stock_threshold }}</span>
+          </td>
+          <td>
+            <span
+              class="stock-status {% if i.stock <= 0 %}out-of-stock{% elif i.stock <= i.low_stock_threshold %}low-stock{% else %}in-stock{% endif %}"
+            >
+              {% if i.stock <= 0 %} Out of Stock {% elif i.stock <=
+              i.low_stock_threshold %} Low Stock {% else %} In Stock {% endif %}
+            </span>
+          </td>
+          <td class="action-cell">
+            <div class="action-buttons">
+              <button
+                class="action-btn edit-btn"
+                title="Edit"
+                data-id="{{ i.id }}"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
+                  ></path>
+                  <path
+                    d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
+                  ></path>
+                </svg>
+              </button>
+              <button
+                class="action-btn delete-btn"
+                title="Delete"
+                data-id="{{ i.id }}"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path
+                    d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+                  ></path>
+                  <line x1="10" y1="11" x2="10" y2="17"></line>
+                  <line x1="14" y1="11" x2="14" y2="17"></line>
+                </svg>
+              </button>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div id="emptyState" class="placeholder-text">
+      <svg
+        width="48"
+        height="48"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+      </svg>
+      <p class="empty-title">No inventory items found.</p>
+      <p class="empty-desc">
+        Add your first inventory item to start tracking your stock.
+      </p>
+    </div>
+    {% endif %}
+  </div>
+
+  {# Use shared table footer component (includes scoped CSS + JS) #} {% include
+  'partials/components/_tableFooter.html' %}
+</div>
+
+{% endblock %} {% block extra_js %}
+<script src="{{ url_for('static', filename='js/seller_inventory.js') }}"></script>
+{% endblock %}

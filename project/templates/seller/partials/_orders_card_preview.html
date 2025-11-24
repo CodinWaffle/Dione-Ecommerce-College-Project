@@ -1,0 +1,23 @@
+{# Macro partial to render a compact order preview card used in order management
+#} {% macro render_order_card(order) %} {%- set oid = order.id if order is not
+none and (order.id is defined) else (order.order_id if order is mapping and
+order.order_id is defined else (order.get('id') if order is mapping else 'N/A'))
+-%} {%- set customer = (order.customer_name if order is not none and
+(order.customer_name is defined) else (order.get('customer_name') if order is
+mapping else (order.customer if order is not none and (order.customer is
+defined) else 'Customer'))) -%} {%- set amount = (order.total_amount if order is
+not none and (order.total_amount is defined) else (order.get('total_amount') if
+order is mapping else (order.amount if order is not none and (order.amount is
+defined) else '0.00'))) -%} {%- set status = (order.status if order is not none
+and (order.status is defined) else (order.get('status') if order is mapping else
+'unknown')) -%}
+
+<div class="order-item">
+  <div class="order-info">
+    <span class="order-id">#{{ oid }}</span>
+    <span class="order-customer">{{ customer }}</span>
+  </div>
+  <span class="order-status {{ status|lower }}">{{ status|capitalize }}</span>
+  <span class="order-amount">${{ amount }}</span>
+</div>
+{% endmacro %}

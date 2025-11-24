@@ -1,0 +1,49 @@
+/* Common styles for seller pages */
+
+/* Consistent title margins for all seller pages */
+.page-title,
+.page-header h1,
+.seller-page h1,
+.seller-page h2 {
+  margin-top: 0.7rem;
+  margin-bottom: 0;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+/* Content transition animations */
+.content-wrapper {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+.content-wrapper.loading {
+  opacity: 0;
+  transform: translateY(5px);
+}
+
+/* Enforce consistent seller page spacing and background */
+.main-content {
+  /* keep space for fixed header */
+  padding-top: 82px !important;
+  padding-right: 3rem !important;
+  padding-left: 3rem !important;
+  padding-bottom: 2rem !important;
+  background-color: #f9fafb !important;
+}
+
+/* Allow product-editor flows (product management / add-product) to control inner layout
+   while still receiving the same page background */
+body.product-editor .main-content {
+  padding-right: 0 !important;
+  padding-left: 0 !important;
+  padding-bottom: 0 !important;
+  /* keep top spacing for header */
+  padding-top: 82px !important;
+  background-color: #f9fafb !important;
+}

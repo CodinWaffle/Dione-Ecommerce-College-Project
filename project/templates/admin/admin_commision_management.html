@@ -1,0 +1,1093 @@
+{% extends "admin/base_admin.html" %} {% block page_title %}Commission &
+Payouts{% endblock %} {% block extra_css %}
+<!-- Google Fonts - Montserrat and Poppins -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap"
+  rel="stylesheet"
+/>
+
+<!-- Boxicons for Outline Icons -->
+<link
+  href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+  rel="stylesheet"
+/>
+
+<!-- Custom CSS -->
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/admin_styles/admin.css') }}"
+/>
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/admin_styles/admin_commission_management.css') }}"
+/>
+{% endblock %} {% block admin_content %}
+<body>
+  <div class="dashboard-container">
+    <!-- Include the centralized admin sidebar component -->
+    {% include 'admin/partials/_sidebar_admin.html' %}
+
+    <div class="main-content" id="main-content">
+      <!-- header is provided by admin/base_admin.html; removed per-page include -->
+
+      <div class="dashboard-content">
+        <div class="page-header">
+          <h1>Payout Approvals</h1>
+          <p>Review, approve, and process seller and rider payout requests</p>
+        </div>
+
+        <!-- Payout Overview Cards -->
+        <div class="payout-overview">
+          <div class="payout-card">
+            <div class="payout-icon">
+              <i class="bx bx-time"></i>
+            </div>
+            <div class="payout-details">
+              <h3>Pending Payouts</h3>
+              <div class="payout-amount">$24,350.75</div>
+              <div class="payout-meta">32 sellers awaiting payment</div>
+            </div>
+            <button class="payout-action">Process All</button>
+          </div>
+
+          <div class="payout-card">
+            <div class="payout-icon">
+              <i class="bx bx-check-circle"></i>
+            </div>
+            <div class="payout-details">
+              <h3>Completed This Month</h3>
+              <div class="payout-amount">$128,450.60</div>
+              <div class="payout-meta">54 payouts completed</div>
+            </div>
+            <button class="payout-action secondary">View History</button>
+          </div>
+
+          <div class="payout-card">
+            <div class="payout-icon">
+              <i class="bx bx-calendar"></i>
+            </div>
+            <div class="payout-details">
+              <h3>Next Payout Cycle</h3>
+              <div class="payout-date">Oct 31, 2025</div>
+              <div class="payout-meta">Estimated: $35,200</div>
+            </div>
+            <button class="payout-action secondary">Schedule</button>
+          </div>
+        </div>
+
+        <!-- Payout Requests Section -->
+        <div class="payout-requests-section">
+          <div class="section-header">
+            <h2>Pending Payout Requests</h2>
+            <div class="filter-controls">
+              <select class="filter-select">
+                <option value="all">All Types</option>
+                <option value="seller">Sellers Only</option>
+                <option value="rider">Riders Only</option>
+              </select>
+              <select class="filter-select">
+                <option value="all">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="payout-request-table">
+              <thead>
+                <tr>
+                  <th>Type</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Request Date</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="type-badge seller">Seller</span></td>
+                  <td>Tech Gadgets Plus</td>
+                  <td>contact@techgadgets.com</td>
+                  <td>Nov 12, 2025</td>
+                  <td><strong>PHP 5,480.00</strong></td>
+                  <td>
+                    <span class="status-badge pending-badge">Pending</span>
+                  </td>
+                  <td>
+                    <div class="action-buttons">
+                      <button class="action-btn approve" title="Approve">
+                        <i class="bx bx-check"></i>
+                      </button>
+                      <button class="action-btn reject" title="Reject">
+                        <i class="bx bx-x"></i>
+                      </button>
+                      <button class="action-btn view" title="View Details">
+                        <i class="bx bx-show"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td><span class="type-badge rider">Rider</span></td>
+                  <td>John Martinez</td>
+                  <td>john.martinez@riders.com</td>
+                  <td>Nov 12, 2025</td>
+                  <td><strong>PHP 2,150.50</strong></td>
+                  <td>
+                    <span class="status-badge pending-badge">Pending</span>
+                  </td>
+                  <td>
+                    <div class="action-buttons">
+                      <button class="action-btn approve" title="Approve">
+                        <i class="bx bx-check"></i>
+                      </button>
+                      <button class="action-btn reject" title="Reject">
+                        <i class="bx bx-x"></i>
+                      </button>
+                      <button class="action-btn view" title="View Details">
+                        <i class="bx bx-show"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td><span class="type-badge seller">Seller</span></td>
+                  <td>Fashion Forward</td>
+                  <td>admin@fashionforward.com</td>
+                  <td>Nov 11, 2025</td>
+                  <td><strong>PHP 3,720.75</strong></td>
+                  <td>
+                    <span class="status-badge pending-badge">Pending</span>
+                  </td>
+                  <td>
+                    <div class="action-buttons">
+                      <button class="action-btn approve" title="Approve">
+                        <i class="bx bx-check"></i>
+                      </button>
+                      <button class="action-btn reject" title="Reject">
+                        <i class="bx bx-x"></i>
+                      </button>
+                      <button class="action-btn view" title="View Details">
+                        <i class="bx bx-show"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td><span class="type-badge rider">Rider</span></td>
+                  <td>Sarah Chen</td>
+                  <td>sarah.chen@riders.com</td>
+                  <td>Nov 11, 2025</td>
+                  <td><strong>PHP 1,890.25</strong></td>
+                  <td>
+                    <span class="status-badge approved-badge">Approved</span>
+                  </td>
+                  <td>
+                    <div class="action-buttons">
+                      <button class="action-btn process" title="Process Payout">
+                        <i class="bx bx-play-circle"></i>
+                      </button>
+                      <button class="action-btn view" title="View Details">
+                        <i class="bx bx-show"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Commission Main Dashboard -->
+        <div class="commission-main-panel" style="display: none">
+          <!-- Commission Settings Card -->
+          <div class="commission-settings-card">
+            <div class="settings-header">
+              <h2>Platform Commission Configuration</h2>
+              <button class="btn btn-primary">
+                <i class="bx bx-save"></i> Save Changes
+              </button>
+            </div>
+
+            <div class="global-rate-setting">
+              <div class="rate-setting-header">
+                <h3>Global Commission Rate</h3>
+                <div class="toggle-switch">
+                  <input type="checkbox" id="customRatesToggle" checked />
+                  <label for="customRatesToggle"
+                    >Enable Category-specific Rates</label
+                  >
+                </div>
+              </div>
+
+              <div class="rate-slider-container">
+                <div class="slider-header">
+                  <span>Platform Fee:</span>
+                  <div class="rate-display">10%</div>
+                </div>
+                <input
+                  type="range"
+                  class="rate-slider"
+                  min="0"
+                  max="30"
+                  step="0.5"
+                  value="10"
+                />
+                <div class="slider-labels">
+                  <span>0%</span>
+                  <span>15%</span>
+                  <span>30%</span>
+                </div>
+              </div>
+
+              <div class="rate-info">
+                <p>
+                  This is the default commission rate applied to all
+                  transactions unless category-specific rates are set.
+                </p>
+                <div class="last-modified">Last modified: Oct 15, 2025</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Commission Summary -->
+          <div class="commission-summary-card">
+            <h2>Commission Summary</h2>
+            <div class="commission-summary">
+              <div class="commission-metric">
+                <div class="metric-label">
+                  <i class="bx bx-wallet"></i>
+                  <span>Total Commission Revenue</span>
+                </div>
+                <div class="metric-value">$48,756.32</div>
+                <div class="metric-change positive">
+                  <i class="bx bx-up-arrow-alt"></i>
+                  <span>12.5% vs last month</span>
+                </div>
+              </div>
+
+              <div class="commission-metric">
+                <div class="metric-label">
+                  <i class="bx bx-line-chart"></i>
+                  <span>Average Commission Rate</span>
+                </div>
+                <div class="metric-value">10.2%</div>
+                <div class="metric-change negative">
+                  <i class="bx bx-down-arrow-alt"></i>
+                  <span>0.3% vs last month</span>
+                </div>
+              </div>
+
+              <div class="commission-metric">
+                <div class="metric-label">
+                  <i class="bx bx-store"></i>
+                  <span>Top Earning Category</span>
+                </div>
+                <div class="metric-value">Electronics</div>
+                <div class="metric-details">
+                  <span>$12,450 in commissions</span>
+                </div>
+              </div>
+
+              <div class="commission-metric">
+                <div class="metric-label">
+                  <i class="bx bx-user"></i>
+                  <span>Top Earning Seller</span>
+                </div>
+                <div class="metric-value">Tech Gadgets Plus</div>
+                <div class="metric-details">
+                  <span>$3,240 in commissions</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Commission Management Tabs -->
+        <div class="tab-container">
+          <div class="tab-header">
+            <button class="tab-btn active" data-tab="rates">
+              Commission Rates
+            </button>
+            <button class="tab-btn" data-tab="payouts">Pending Payouts</button>
+            <button class="tab-btn" data-tab="history">Payout History</button>
+            <button class="tab-btn" data-tab="logs">Transaction Logs</button>
+          </div>
+
+          <!-- Commission Rates Tab -->
+          <div class="tab-content active" id="rates">
+            <div class="card-header">
+              <h3>Commission Rate Configuration</h3>
+              <div class="header-actions">
+                <button class="btn btn-primary">
+                  <i class="bx bx-plus"></i>
+                  Add New Rate
+                </button>
+              </div>
+            </div>
+
+            <div class="commission-rate-grid">
+              <div class="commission-rate-card">
+                <div class="rate-header">
+                  <div class="rate-category">
+                    <i class="bx bx-store"></i>
+                    <h4>General Platform Rate</h4>
+                  </div>
+                  <div class="rate-actions">
+                    <button class="action-btn edit" title="Edit Rate">
+                      <i class="bx bx-edit"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="rate-value">10%</div>
+                <p class="rate-description">
+                  Default commission rate for all product categories
+                </p>
+                <div class="rate-details">
+                  <span>Last Updated: Oct 10, 2025</span>
+                  <span>Applied to: All Sellers</span>
+                </div>
+              </div>
+
+              <div class="commission-rate-card">
+                <div class="rate-header">
+                  <div class="rate-category">
+                    <i class="bx bx-devices"></i>
+                    <h4>Clothing Category</h4>
+                  </div>
+                  <div class="rate-actions">
+                    <button class="action-btn edit" title="Edit Rate">
+                      <i class="bx bx-edit"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="rate-value">12%</div>
+                <p class="rate-description">
+                  Commission rate for all electronics products
+                </p>
+                <div class="rate-details">
+                  <span>Last Updated: Oct 12, 2025</span>
+                  <span>Applied to: 28 Sellers</span>
+                </div>
+              </div>
+
+              <div class="commission-rate-card">
+                <div class="rate-header">
+                  <div class="rate-category">
+                    <i class="bx bx-closet"></i>
+                    <h4>Shoes Category</h4>
+                  </div>
+                  <div class="rate-actions">
+                    <button class="action-btn edit" title="Edit Rate">
+                      <i class="bx bx-edit"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="rate-value">8.5%</div>
+                <p class="rate-description">
+                  Commission rate for fashion and apparel products
+                </p>
+                <div class="rate-details">
+                  <span>Last Updated: Oct 15, 2025</span>
+                  <span>Applied to: 42 Sellers</span>
+                </div>
+              </div>
+
+              <div class="commission-rate-card">
+                <div class="rate-header">
+                  <div class="rate-category">
+                    <i class="bx bx-food-menu"></i>
+                    <h4>Accessories Category</h4>
+                  </div>
+                  <div class="rate-actions">
+                    <button class="action-btn edit" title="Edit Rate">
+                      <i class="bx bx-edit"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="rate-value">6%</div>
+                <p class="rate-description">
+                  Commission rate for food and grocery items
+                </p>
+                <div class="rate-details">
+                  <span>Last Updated: Oct 8, 2025</span>
+                  <span>Applied to: 15 Sellers</span>
+                </div>
+              </div>
+
+              <!-- Pending Payouts Tab -->
+              <div class="tab-content" id="payouts">
+                <div class="card-header">
+                  <h3>Pending Seller Payouts</h3>
+                  <div class="header-actions">
+                    <div class="search-mini">
+                      <i class="bx bx-search"></i>
+                      <input type="text" placeholder="Search seller..." />
+                    </div>
+                    <button class="btn btn-primary">
+                      <i class="bx bx-check-double"></i>
+                      Process All
+                    </button>
+                  </div>
+                </div>
+
+                <div class="table-responsive">
+                  <table class="data-table">
+                    <thead>
+                      <tr>
+                        <th>
+                          <input type="checkbox" class="select-all-checkbox" />
+                        </th>
+                        <th>Seller</th>
+                        <th>Sales Period</th>
+                        <th>Order Count</th>
+                        <th>Total Sales</th>
+                        <th>Commission</th>
+                        <th>Payout Amount</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>
+                          <input type="checkbox" class="row-checkbox" />
+                        </td>
+                        <td>
+                          <div class="seller-info">
+                            <div class="seller-avatar">
+                              <img
+                                src="https://via.placeholder.com/40"
+                                alt="James Wilson"
+                              />
+                            </div>
+                            <div>
+                              <p class="seller-name">James Wilson</p>
+                              <p class="seller-email">
+                                james@furnitureloft.com
+                              </p>
+                            </div>
+                          </div>
+                        </td>
+                        <td>Oct 1 - Oct 15, 2025</td>
+                        <td>38</td>
+                        <td>$7,248.50</td>
+                        <td>$652.37 (9%)</td>
+                        <td><strong>$6,596.13</strong></td>
+                        <td>
+                          <span class="status-badge pending"
+                            >Ready for Payment</span
+                          >
+                        </td>
+                        <td>
+                          <div class="action-buttons">
+                            <button
+                              class="action-btn view"
+                              title="View Details"
+                            >
+                              <i class="bx bx-show"></i>
+                            </button>
+                            <button
+                              class="action-btn process"
+                              title="Process Payout"
+                            >
+                              <i class="bx bx-check-circle"></i>
+                            </button>
+                            <button class="action-btn hold" title="Hold Payout">
+                              <i class="bx bx-pause-circle"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <input type="checkbox" class="row-checkbox" />
+                        </td>
+                        <td>
+                          <div class="seller-info">
+                            <div class="seller-avatar">
+                              <img
+                                src="https://via.placeholder.com/40"
+                                alt="Olivia Thompson"
+                              />
+                            </div>
+                            <div>
+                              <p class="seller-name">Olivia Thompson</p>
+                              <p class="seller-email">olivia@beautypro.com</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td>Oct 1 - Oct 15, 2025</td>
+                        <td>52</td>
+                        <td>$5,980.25</td>
+                        <td>$508.32 (8.5%)</td>
+                        <td><strong>$5,471.93</strong></td>
+                        <td>
+                          <span class="status-badge pending"
+                            >Ready for Payment</span
+                          >
+                        </td>
+                        <td>
+                          <div class="action-buttons">
+                            <button
+                              class="action-btn view"
+                              title="View Details"
+                            >
+                              <i class="bx bx-show"></i>
+                            </button>
+                            <button
+                              class="action-btn process"
+                              title="Process Payout"
+                            >
+                              <i class="bx bx-check-circle"></i>
+                            </button>
+                            <button class="action-btn hold" title="Hold Payout">
+                              <i class="bx bx-pause-circle"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <input type="checkbox" class="row-checkbox" />
+                        </td>
+                        <td>
+                          <div class="seller-info">
+                            <div class="seller-avatar">
+                              <img
+                                src="https://via.placeholder.com/40"
+                                alt="David Kim"
+                              />
+                            </div>
+                            <div>
+                              <p class="seller-name">David Kim</p>
+                              <p class="seller-email">david@sportsequip.com</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td>Oct 1 - Oct 15, 2025</td>
+                        <td>64</td>
+                        <td>$12,450.80</td>
+                        <td>$1,245.08 (10%)</td>
+                        <td><strong>$11,205.72</strong></td>
+                        <td>
+                          <span class="status-badge warning"
+                            >Verification Required</span
+                          >
+                        </td>
+                        <td>
+                          <div class="action-buttons">
+                            <button
+                              class="action-btn view"
+                              title="View Details"
+                            >
+                              <i class="bx bx-show"></i>
+                            </button>
+                            <button class="action-btn verify" title="Verify">
+                              <i class="bx bx-check-shield"></i>
+                            </button>
+                            <button class="action-btn hold" title="Hold Payout">
+                              <i class="bx bx-pause-circle"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <input type="checkbox" class="row-checkbox" />
+                        </td>
+                        <td>
+                          <div class="seller-info">
+                            <div class="seller-avatar">
+                              <img
+                                src="https://via.placeholder.com/40"
+                                alt="Sarah Johnson"
+                              />
+                            </div>
+                            <div>
+                              <p class="seller-name">Sarah Johnson</p>
+                              <p class="seller-email">
+                                sarah@homemadegoods.com
+                              </p>
+                            </div>
+                          </div>
+                        </td>
+                        <td>Oct 1 - Oct 15, 2025</td>
+                        <td>28</td>
+                        <td>$4,520.50</td>
+                        <td>$271.23 (6%)</td>
+                        <td><strong>$4,249.27</strong></td>
+                        <td>
+                          <span class="status-badge info">Processing</span>
+                        </td>
+                        <td>
+                          <div class="action-buttons">
+                            <button
+                              class="action-btn view"
+                              title="View Details"
+                            >
+                              <i class="bx bx-show"></i>
+                            </button>
+                            <button
+                              class="action-btn pause disabled"
+                              title="Processing"
+                              disabled
+                            >
+                              <i class="bx bx-loader-alt bx-spin"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="pagination">
+                  <button class="page-btn prev">
+                    <i class="bx bx-chevron-left"></i>
+                  </button>
+                  <button class="page-btn active">1</button>
+                  <button class="page-btn">2</button>
+                  <button class="page-btn">3</button>
+                  <span class="page-separator">...</span>
+                  <button class="page-btn">8</button>
+                  <button class="page-btn next">
+                    <i class="bx bx-chevron-right"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Payout History Tab -->
+              <div class="tab-content" id="history">
+                <div class="card-header">
+                  <h3>Payout History</h3>
+                  <div class="header-actions">
+                    <div class="search-mini">
+                      <i class="bx bx-search"></i>
+                      <input type="text" placeholder="Search payouts..." />
+                    </div>
+                    <div class="date-filter">
+                      <i class="bx bx-calendar"></i>
+                      <input type="date" class="date-input" />
+                      <span>to</span>
+                      <input type="date" class="date-input" />
+                    </div>
+                    <button class="btn btn-outline">
+                      <i class="bx bx-export"></i>
+                      Export
+                    </button>
+                  </div>
+                </div>
+
+                <div class="table-responsive">
+                  <table class="data-table">
+                    <thead>
+                      <tr>
+                        <th>Payout ID</th>
+                        <th>Seller</th>
+                        <th>Payment Method</th>
+                        <th>Period</th>
+                        <th>Total Sales</th>
+                        <th>Commission</th>
+                        <th>Amount Paid</th>
+                        <th>Date Processed</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><span class="id-badge">PO-24853</span></td>
+                        <td>
+                          <div class="seller-info">
+                            <div class="seller-avatar">
+                              <img
+                                src="https://via.placeholder.com/40"
+                                alt="Robert Garcia"
+                              />
+                            </div>
+                            <div>
+                              <p class="seller-name">Robert Garcia</p>
+                              <p class="seller-email">robert@techdeals.com</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td>Bank Transfer</td>
+                        <td>Sept 16 - Sept 30, 2025</td>
+                        <td>$8,540.30</td>
+                        <td>$1,024.84</td>
+                        <td><strong>$7,515.46</strong></td>
+                        <td>Oct 4, 2025</td>
+                        <td>
+                          <span class="status-badge success">Completed</span>
+                        </td>
+                        <td>
+                          <div class="action-buttons">
+                            <button
+                              class="action-btn view"
+                              title="View Details"
+                            >
+                              <i class="bx bx-show"></i>
+                            </button>
+                            <button
+                              class="action-btn receipt"
+                              title="Download Receipt"
+                            >
+                              <i class="bx bx-download"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td><span class="id-badge">PO-24852</span></td>
+                        <td>
+                          <div class="seller-info">
+                            <div class="seller-avatar">
+                              <img
+                                src="https://via.placeholder.com/40"
+                                alt="Linda Martinez"
+                              />
+                            </div>
+                            <div>
+                              <p class="seller-name">Linda Martinez</p>
+                              <p class="seller-email">
+                                linda@fashiontrends.com
+                              </p>
+                            </div>
+                          </div>
+                        </td>
+                        <td>PayPal</td>
+                        <td>Sept 16 - Sept 30, 2025</td>
+                        <td>$6,230.75</td>
+                        <td>$529.61</td>
+                        <td><strong>$5,701.14</strong></td>
+                        <td>Oct 3, 2025</td>
+                        <td>
+                          <span class="status-badge success">Completed</span>
+                        </td>
+                        <td>
+                          <div class="action-buttons">
+                            <button
+                              class="action-btn view"
+                              title="View Details"
+                            >
+                              <i class="bx bx-show"></i>
+                            </button>
+                            <button
+                              class="action-btn receipt"
+                              title="Download Receipt"
+                            >
+                              <i class="bx bx-download"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td><span class="id-badge">PO-24849</span></td>
+                        <td>
+                          <div class="seller-info">
+                            <div class="seller-avatar">
+                              <img
+                                src="https://via.placeholder.com/40"
+                                alt="Michael Chen"
+                              />
+                            </div>
+                            <div>
+                              <p class="seller-name">Michael Chen</p>
+                              <p class="seller-email">
+                                michael@techgadgets.com
+                              </p>
+                            </div>
+                          </div>
+                        </td>
+                        <td>Bank Transfer</td>
+                        <td>Sept 16 - Sept 30, 2025</td>
+                        <td>$15,780.90</td>
+                        <td>$1,893.71</td>
+                        <td><strong>$13,887.19</strong></td>
+                        <td>Oct 3, 2025</td>
+                        <td>
+                          <span class="status-badge success">Completed</span>
+                        </td>
+                        <td>
+                          <div class="action-buttons">
+                            <button
+                              class="action-btn view"
+                              title="View Details"
+                            >
+                              <i class="bx bx-show"></i>
+                            </button>
+                            <button
+                              class="action-btn receipt"
+                              title="Download Receipt"
+                            >
+                              <i class="bx bx-download"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td><span class="id-badge">PO-24845</span></td>
+                        <td>
+                          <div class="seller-info">
+                            <div class="seller-avatar">
+                              <img
+                                src="https://via.placeholder.com/40"
+                                alt="Priya Sharma"
+                              />
+                            </div>
+                            <div>
+                              <p class="seller-name">Priya Sharma</p>
+                              <p class="seller-email">priya@organicfoods.com</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td>PayPal</td>
+                        <td>Sept 16 - Sept 30, 2025</td>
+                        <td>$4,320.50</td>
+                        <td>$259.23</td>
+                        <td><strong>$4,061.27</strong></td>
+                        <td>Oct 2, 2025</td>
+                        <td>
+                          <span class="status-badge success">Completed</span>
+                        </td>
+                        <td>
+                          <div class="action-buttons">
+                            <button
+                              class="action-btn view"
+                              title="View Details"
+                            >
+                              <i class="bx bx-show"></i>
+                            </button>
+                            <button
+                              class="action-btn receipt"
+                              title="Download Receipt"
+                            >
+                              <i class="bx bx-download"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="pagination">
+                  <button class="page-btn prev">
+                    <i class="bx bx-chevron-left"></i>
+                  </button>
+                  <button class="page-btn active">1</button>
+                  <button class="page-btn">2</button>
+                  <button class="page-btn">3</button>
+                  <span class="page-separator">...</span>
+                  <button class="page-btn">12</button>
+                  <button class="page-btn next">
+                    <i class="bx bx-chevron-right"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Transaction Logs Tab -->
+              <div class="tab-content" id="logs">
+                <div class="card-header">
+                  <h3>Transaction Logs</h3>
+                  <div class="header-actions">
+                    <div class="search-mini">
+                      <i class="bx bx-search"></i>
+                      <input type="text" placeholder="Search transactions..." />
+                    </div>
+                    <div class="filter-dropdown">
+                      <button class="filter-btn">
+                        <i class="bx bx-filter-alt"></i>
+                        <span>Filter</span>
+                      </button>
+                    </div>
+                    <button class="btn btn-outline">
+                      <i class="bx bx-export"></i>
+                      Export
+                    </button>
+                  </div>
+                </div>
+
+                <div class="log-filters">
+                  <div class="filter-group">
+                    <label>Transaction Type:</label>
+                    <div class="filter-options">
+                      <button class="filter-option active">All</button>
+                      <button class="filter-option">Sales</button>
+                      <button class="filter-option">Commission</button>
+                      <button class="filter-option">Payouts</button>
+                      <button class="filter-option">Refunds</button>
+                    </div>
+                  </div>
+                  <div class="filter-group">
+                    <label>Date Range:</label>
+                    <div class="date-filter inline">
+                      <input type="date" class="date-input" />
+                      <span>to</span>
+                      <input type="date" class="date-input" />
+                    </div>
+                  </div>
+                </div>
+
+                <div class="table-responsive">
+                  <table class="data-table">
+                    <thead>
+                      <tr>
+                        <th>Transaction ID</th>
+                        <th>Type</th>
+                        <th>Seller</th>
+                        <th>Order ID</th>
+                        <th>Amount</th>
+                        <th>Commission</th>
+                        <th>Date & Time</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><span class="id-badge">TX-186249</span></td>
+                        <td><span class="type-badge sale">Sale</span></td>
+                        <td>James Wilson</td>
+                        <td>ORD-45820</td>
+                        <td>$458.50</td>
+                        <td>$41.27</td>
+                        <td>Oct 18, 2025 10:45 AM</td>
+                        <td>
+                          <span class="status-badge success">Completed</span>
+                        </td>
+                        <td>
+                          <div class="action-buttons">
+                            <button
+                              class="action-btn view"
+                              title="View Details"
+                            >
+                              <i class="bx bx-show"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td><span class="id-badge">TX-186248</span></td>
+                        <td><span class="type-badge payout">Payout</span></td>
+                        <td>Olivia Thompson</td>
+                        <td>PO-24853</td>
+                        <td>$7,515.46</td>
+                        <td>--</td>
+                        <td>Oct 18, 2025 10:32 AM</td>
+                        <td>
+                          <span class="status-badge success">Completed</span>
+                        </td>
+                        <td>
+                          <div class="action-buttons">
+                            <button
+                              class="action-btn view"
+                              title="View Details"
+                            >
+                              <i class="bx bx-show"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td><span class="id-badge">TX-186247</span></td>
+                        <td><span class="type-badge sale">Sale</span></td>
+                        <td>David Kim</td>
+                        <td>ORD-45819</td>
+                        <td>$189.95</td>
+                        <td>$19.00</td>
+                        <td>Oct 18, 2025 10:28 AM</td>
+                        <td>
+                          <span class="status-badge success">Completed</span>
+                        </td>
+                        <td>
+                          <div class="action-buttons">
+                            <button
+                              class="action-btn view"
+                              title="View Details"
+                            >
+                              <i class="bx bx-show"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td><span class="id-badge">TX-186246</span></td>
+                        <td><span class="type-badge refund">Refund</span></td>
+                        <td>Sarah Johnson</td>
+                        <td>ORD-45790</td>
+                        <td>$125.30</td>
+                        <td>-$7.52</td>
+                        <td>Oct 18, 2025 10:15 AM</td>
+                        <td>
+                          <span class="status-badge success">Completed</span>
+                        </td>
+                        <td>
+                          <div class="action-buttons">
+                            <button
+                              class="action-btn view"
+                              title="View Details"
+                            >
+                              <i class="bx bx-show"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td><span class="id-badge">TX-186245</span></td>
+                        <td><span class="type-badge sale">Sale</span></td>
+                        <td>Michael Chen</td>
+                        <td>ORD-45818</td>
+                        <td>$349.99</td>
+                        <td>$42.00</td>
+                        <td>Oct 18, 2025 10:03 AM</td>
+                        <td>
+                          <span class="status-badge success">Completed</span>
+                        </td>
+                        <td>
+                          <div class="action-buttons">
+                            <button
+                              class="action-btn view"
+                              title="View Details"
+                            >
+                              <i class="bx bx-show"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="pagination">
+                  <button class="page-btn prev">
+                    <i class="bx bx-chevron-left"></i>
+                  </button>
+                  <button class="page-btn active">1</button>
+                  <button class="page-btn">2</button>
+                  <button class="page-btn">3</button>
+                  <span class="page-separator">...</span>
+                  <button class="page-btn">24</button>
+                  <button class="page-btn next">
+                    <i class="bx bx-chevron-right"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endblock %} {% block extra_js %}
+  <!-- JavaScript -->
+  <script src="{{ url_for('static', filename='js/admin_scripts/admin_commision_management.js') }}"></script>
+  {% endblock %}
+</body>

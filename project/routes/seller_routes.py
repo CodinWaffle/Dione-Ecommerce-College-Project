@@ -103,7 +103,7 @@ def seller_products():
     product_payload = [product.to_dashboard_dict() for product in seller_products]
 
     return render_template(
-        'seller/seller_product_management.html', 
+        'seller/seller_product_management.html',
         active_page='products',
         products=seller_products,
         categories=CATEGORY_TREE,
@@ -234,7 +234,7 @@ def add_product_preview():
 def dashboard():
     """Seller dashboard overview"""
     return render_template(
-        'seller/dashboard.html',
+        'seller/seller_dashboard.html',
         active_page='dashboard'
     )
 
@@ -243,8 +243,16 @@ def dashboard():
 def orders():
     """Seller orders management"""
     return render_template(
-        'seller/orders.html',
+        'seller/seller_order_management.html',
         active_page='orders'
+    )
+
+@seller_bp.route('/customers')
+def customers():
+    """Seller customers management"""
+    return render_template(
+        'seller/seller_customer_management.html',
+        active_page='customers'
     )
 
 
@@ -253,7 +261,56 @@ def profile():
     """Seller profile management"""
     seller = Seller.query.filter_by(user_id=current_user.id).first()
     return render_template(
-        'seller/profile.html',
+        'seller/seller_profile.html',
         active_page='profile',
         seller=seller
     )
+
+
+@seller_bp.route('/inventory')
+def inventory():
+    """Seller inventory management"""
+    return render_template('seller/seller_inventory.html', active_page='inventory')
+
+
+@seller_bp.route('/payment-methods')
+def payment_methods():
+    """Seller payment methods"""
+    # Provide a safe default to templates that `tojson` server-side data.
+    # In future this should query the Seller's saved payment methods.
+    payment_methods = []
+    return render_template(
+        'seller/seller_payment_methods.html',
+        active_page='payment-methods',
+        payment_methods=payment_methods,
+    )
+
+
+@seller_bp.route('/payouts')
+def payouts():
+    """Seller payouts and withdrawals"""
+    return render_template('seller/seller_payout.html', active_page='payouts')
+
+
+@seller_bp.route('/revenue')
+def revenue():
+    """Seller revenue analytics"""
+    return render_template('seller/seller_revenue_analytics.html', active_page='revenue')
+
+
+@seller_bp.route('/reviews')
+def reviews():
+    """Seller reviews list"""
+    return render_template('seller/seller_reviews.html', active_page='reviews')
+
+
+@seller_bp.route('/reviews/ratings')
+def reviews_ratings():
+    """Seller reviews and ratings"""
+    return render_template('seller/seller_reviews_ratings.html', active_page='reviews-ratings')
+
+
+@seller_bp.route('/settings')
+def settings():
+    """Seller settings page"""
+    return render_template('seller/seller_settings.html', active_page='settings')

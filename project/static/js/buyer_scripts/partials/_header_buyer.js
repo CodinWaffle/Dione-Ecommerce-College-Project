@@ -835,4 +835,13 @@ if (profileBtn && profileDropdown) {
   profileBtn.addEventListener("keydown", function (e) {
     if (e.key === "Escape") closeProfileDropdown();
   });
+
+  // Wishlist button click handler - Navigate to cart page with saved items tab
+  const wishlistBtn = document.getElementById("wishlistBtn");
+  if (wishlistBtn) {
+    wishlistBtn.addEventListener("click", function () {
+      // Navigate to cart page and scroll to saved items section
+      window.location.href = "/cart#saved-items";
+    });
+  }
 }

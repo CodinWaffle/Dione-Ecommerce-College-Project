@@ -1,9 +1,41 @@
-{% extends "base.html" %} {% block header %}{% endblock %} {% block extra_head
-%}
+{% extends "base.html" %} {% block header %}{% include
+'admin/partials/_header_admin.html' %}{% endblock %} {% block extra_head %}
 <link
   rel="stylesheet"
   href="{{ url_for('static', filename='css/admin.css') }}"
 />
+
+<!-- Product Management Specific CSS -->
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/admin_styles/admin.css') }}"
+/>
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/admin_styles/admin_product_management.css') }}"
+/>
+
+<!-- Commision Management Specific CSS -->
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/admin_styles/admin_commission_management.css') }}"
+/>
+
+<!-- Users Management Specific CSS -->
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/admin_styles/admin_users_management.css') }}"
+/>
+<style>
+  /* Hide the site footer on admin pages to prevent duplication and overlap */
+  footer.footer {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+</style>
 {% endblock %} {% block content %}
 <style>
   .navbar {
@@ -15,63 +47,9 @@
   }
 </style>
 <div class="admin-shell">
-  <aside class="admin-sidebar-simple">
-    <div class="sidebar-logo text-center">
-      <strong>Admin Panel</strong>
-    </div>
-    <div class="list-group list-group-flush">
-      <a
-        class="list-group-item list-group-item-action {% if request.endpoint == 'admin.overview' %}active{% endif %}"
-        href="{{ url_for('admin.overview') }}"
-        >Dashboard</a
-      >
-      <a
-        class="list-group-item list-group-item-action {% if request.endpoint == 'admin.users' %}active{% endif %}"
-        href="{{ url_for('admin.users') }}"
-        >Users Management</a
-      >
-      <a
-        class="list-group-item list-group-item-action {% if request.endpoint == 'admin.products' %}active{% endif %}"
-        href="{{ url_for('admin.products') }}"
-        >Product Management</a
-      >
-      <a
-        class="list-group-item list-group-item-action {% if request.endpoint == 'admin.sellers' %}active{% endif %}"
-        href="{{ url_for('admin.sellers') }}"
-        >Sellers Management</a
-      >
-      <a
-        class="list-group-item list-group-item-action {% if request.endpoint == 'admin.riders' %}active{% endif %}"
-        href="{{ url_for('admin.riders') }}"
-        >Riders Management</a
-      >
-      <a
-        class="list-group-item list-group-item-action {% if request.endpoint == 'admin.commission' %}active{% endif %}"
-        href="{{ url_for('admin.commission') }}"
-        >Commission &amp; Payouts</a
-      >
-      <a
-        class="list-group-item list-group-item-action {% if request.endpoint == 'admin.website_settings_page' %}active{% endif %}"
-        href="{{ url_for('admin.website_settings_page') }}"
-        >Website Settings</a
-      >
-      <a
-        class="list-group-item list-group-item-action {% if request.endpoint == 'admin.settings' %}active{% endif %}"
-        href="{{ url_for('admin.settings') }}"
-        >Settings</a
-      >
-      <a
-        class="list-group-item list-group-item-action {% if request.endpoint == 'admin.support_center' %}active{% endif %}"
-        href="{{ url_for('admin.support_center') }}"
-        >Support Center</a
-      >
-      <a
-        class="list-group-item list-group-item-action text-danger"
-        href="{{ url_for('admin.logout') }}"
-        >Logout</a
-      >
-    </div>
-  </aside>
-  <main class="admin-main-simple">{% block admin_content %}{% endblock %}</main>
+  {# Child admin pages include the sidebar themselves to allow per-page layout
+  (avoid double-including sidebar which can overlay content). Child templates
+  should render the sidebar and a `.main-content` element. #} {% block
+  admin_content %}{% endblock %}
 </div>
 {% endblock %}

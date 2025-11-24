@@ -1,0 +1,653 @@
+{% extends 'seller/base_seller.html' %} {% block title %}{{ tab_title|default('Settings') }}{% endblock %}
+{% block extra_css %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/seller_styles/seller_dashboard.css') }}"
+/>
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/seller_styles/seller_settings.css') }}"
+/>
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/seller_styles/seller_settings_profile_banners.css') }}"
+/>
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/seller_styles/seller_forms.css') }}"
+/>
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/seller_styles/security_settings.css') }}"
+/>
+{% endblock %} {% block page_content %}
+<div class="page-header">
+  <div class="page-header-left-settings">
+    <h1>{{ page_header|default('Settings') }}</h1>
+    <p class="page-subtext">{{ page_subtext|default('Update your store and account settings.') }}</p>
+  </div>
+</div>
+
+<div class="settings-container no-sidebar">
+  <!-- Settings content area -->
+  <div class="settings-content">
+    <!-- Profile Settings Tab -->
+    <div class="settings-tab {% if active_tab == 'profile' or not active_tab %}active{% endif %}" id="profile-tab">
+      <div class="profile-banner">
+        <div class="cover-photo-container">
+          <div class="cover-photo" id="cover-photo-preview" style="background-image: url('{{ url_for('static', filename='uploads/sellers/covers/' ~ settings.cover_photo) if settings and settings.cover_photo else url_for('static', filename='images/default-cover.jpg') }}')">
+          </div>
+          <div class="cover-photo-overlay">
+            <button class="btn-secondary btn-edit-cover" id="edit-cover-photo">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+              Change Cover
+            </button>
+          </div>
+          <input type="file" id="cover-photo-input" class="hidden-input" accept="image/*" />
+        </div>
+        
+        <div class="profile-photo-container">
+          <div class="profile-photo" id="profile-photo-preview" style="background-image: url('{{ url_for('static', filename='uploads/sellers/profiles/' ~ settings.profile_photo) if settings and settings.profile_photo else url_for('static', filename='images/default-avatar.jpg') }}')">
+          </div>
+          <div class="profile-photo-overlay">
+            <button class="btn-secondary btn-edit-profile" id="edit-profile-photo">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                <circle cx="12" cy="13" r="4"></circle>
+              </svg>
+              Change Photo
+            </button>
+          </div>
+          <input type="file" id="profile-photo-input" class="hidden-input" accept="image/*" />
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2>Personal Information</h2>
+        </div>
+        <div class="card-body">
+          <form id="personal-info-form">
+            <!-- Name Fields -->
+            <div class="form-row">
+              <div class="form-group">
+                <label for="first-name">First Name</label>
+                <input type="text" id="first-name" class="form-control" value="{{ settings.first_name if settings else '' }}" placeholder="First Name" required>
+              </div>
+              <div class="form-group">
+                <label for="last-name">Last Name</label>
+                <input type="text" id="last-name" class="form-control" value="{{ settings.last_name if settings else '' }}" placeholder="Last Name" required>
+              </div>
+            </div>
+            
+            <!-- Email and Phone in Same Row -->
+            <div class="form-row">
+              <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" class="form-control" value="{{ settings.email if settings else '' }}" placeholder="Email Address" required>
+              </div>
+              <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input type="tel" id="phone" class="form-control" value="{{ settings.phone if settings else '' }}" placeholder="Phone Number">
+              </div>
+            </div>
+            
+            <!-- Philippines Address Dropdowns -->
+            <div class="address-section">
+              <h4>Address Information</h4>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="region">Region</label>
+                  <select id="region" class="form-control" required>
+                    <option value="">Select Region</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="province">Province</label>
+                  <select id="province" class="form-control" required>
+                    <option value="">Select Province</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="city">City/Municipality</label>
+                  <select id="city" class="form-control" required>
+                    <option value="">Select City/Municipality</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="street-address">Street Address</label>
+                  <input type="text" id="street-address" class="form-control" value="{{ settings.street_address if settings else '' }}" placeholder="House/Lot/Unit Number, Street Name">
+                </div>
+              </div>
+              
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="barangay">Barangay</label>
+                  <select id="barangay" class="form-control" required>
+                    <option value="">Select Barangay</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="postal-code">Postal Code</label>
+                  <input type="text" id="postal-code" class="form-control" value="{{ settings.postal_code if settings else '' }}" placeholder="Postal Code">
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="bio">Bio / About Me</label>
+              <textarea id="bio" class="form-control" rows="4" placeholder="Tell customers about yourself">{{ settings.bio if settings else '' }}</textarea>
+            </div>
+            
+            <div class="form-actions">
+              <button type="submit" class="btn-primary">Save Changes</button>
+              <button type="reset" class="btn-secondary">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Store Settings Tab -->
+    <div class="settings-tab {% if active_tab == 'store' %}active{% endif %}" id="store-tab">
+      <div class="profile-banner">
+        <div class="cover-photo-container">
+          <div class="cover-photo" id="store-cover-photo-preview" style="background-image: url('{{ url_for('static', filename='uploads/sellers/covers/' ~ settings.cover_photo) if settings and settings.cover_photo else url_for('static', filename='images/default-cover.jpg') }}')">
+          </div>
+          <div class="cover-photo-overlay">
+            <button class="btn-secondary btn-edit-cover" id="edit-store-cover-photo">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+              Change Store Banner
+            </button>
+          </div>
+          <input type="file" id="store-cover-photo-input" class="hidden-input" accept="image/*" />
+        </div>
+        
+        <div class="profile-photo-container">
+          <div class="profile-photo" id="store-photo-preview" style="background-image: url('{{ url_for('static', filename='uploads/sellers/profiles/' ~ settings.profile_photo) if settings and settings.profile_photo else url_for('static', filename='images/default-avatar.jpg') }}')">
+          </div>
+          <div class="profile-photo-overlay">
+            <button class="btn-secondary btn-edit-profile" id="edit-store-photo">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                <circle cx="12" cy="13" r="4"></circle>
+              </svg>
+              Change Store Logo
+            </button>
+          </div>
+          <input type="file" id="store-photo-input" class="hidden-input" accept="image/*" />
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2>Store Information</h2>
+        </div>
+        <div class="card-body">
+          <form id="store-info-form">
+            <div class="form-group">
+              <label for="store-name">Store Name</label>
+              <input type="text" id="store-name" class="form-control" value="{{ settings.store_name if settings else 'My Store' }}" placeholder="Store Name" required>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label for="store-email">Store Email</label>
+                <input type="email" id="store-email" class="form-control" value="{{ settings.store_email if settings else '' }}" placeholder="Store Email Address">
+              </div>
+              <div class="form-group">
+                <label for="store-phone">Store Phone</label>
+                <input type="tel" id="store-phone" class="form-control" value="{{ settings.store_phone if settings else '' }}" placeholder="Store Phone Number">
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="store-description">Store Description</label>
+              <textarea id="store-description" class="form-control" rows="4" placeholder="Describe your store">{{ settings.store_description if settings else '' }}</textarea>
+            </div>
+            
+            <div class="form-group">
+              <label for="store-url">Store URL (username)</label>
+              <div class="input-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text">apparel.com/shops/</span>
+                </div>
+                <input type="text" id="store-url" class="form-control" value="{{ settings.store_url if settings else '' }}" placeholder="your-store-name">
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="business-type">Business Type</label>
+              <select id="business-type" class="form-control">
+                <option value="individual" {% if settings and settings.business_type == 'individual' %}selected{% endif %}>Individual</option>
+                <option value="registered_business" {% if settings and settings.business_type == 'registered_business' %}selected{% endif %}>Registered Business</option>
+              </select>
+            </div>
+            
+            <!-- Store Address Section -->
+            <div class="address-section">
+              <h4>Store Address</h4>
+              
+              <div class="form-group">
+                <div class="checkbox-item">
+                  <input type="checkbox" id="sync-store-address">
+                  <label for="sync-store-address">Use same address as personal information</label>
+                </div>
+              </div>
+              
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="store-region">Region</label>
+                  <select id="store-region" class="form-control" required>
+                    <option value="">Select Region</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="store-province">Province</label>
+                  <select id="store-province" class="form-control" required>
+                    <option value="">Select Province</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="store-city">City/Municipality</label>
+                  <select id="store-city" class="form-control" required>
+                    <option value="">Select City/Municipality</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="store-street-address">Street Address</label>
+                  <input type="text" id="store-street-address" class="form-control" value="{{ settings.store_street_address if settings else '' }}" placeholder="Building/Office/Unit Number, Street Name">
+                </div>
+              </div>
+              
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="store-barangay">Barangay</label>
+                  <select id="store-barangay" class="form-control" required>
+                    <option value="">Select Barangay</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="store-postal-code">Postal Code</label>
+                  <input type="text" id="store-postal-code" class="form-control" value="{{ settings.store_postal_code if settings else '' }}" placeholder="Postal Code">
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label for="business-address-notes">Additional Address Information</label>
+                <textarea id="business-address-notes" class="form-control" rows="2" placeholder="Additional address details, landmarks, etc.">{{ settings.business_address_notes if settings else '' }}</textarea>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label>Shipping Countries</label>
+              <div class="checkbox-group">
+                <div class="checkbox-item">
+                  <input type="checkbox" id="shipping-domestic" {% if settings and settings.ships_domestic %}checked{% endif %}>
+                  <label for="shipping-domestic">Domestic</label>
+                </div>
+                <div class="checkbox-item">
+                  <input type="checkbox" id="shipping-international" {% if settings and settings.ships_international %}checked{% endif %}>
+                  <label for="shipping-international">International</label>
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-actions">
+              <button type="submit" class="btn-primary">Save Changes</button>
+              <button type="reset" class="btn-secondary">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Security Tab -->
+    <div class="settings-tab {% if active_tab == 'security' %}active{% endif %}" id="security-tab">
+      <!-- Email Security Section -->
+      <div class="card">
+        <div class="card-header">
+          <h2>Email Security</h2>
+        </div>
+        <div class="card-body">
+          <div class="security-info-row">
+            <div class="security-info">
+              <h3>Primary Email</h3>
+              <p class="email-display">{{ settings.email if settings and settings.email else 'example@email.com' }}
+                <span class="verified-badge {% if settings and settings.email_verified %}verified{% else %}not-verified{% endif %}">
+                  {% if settings and settings.email_verified %}Verified{% else %}Not Verified{% endif %}
+                </span>
+              </p>
+              <p class="security-detail">Your primary email is used for account notifications, password resets, and login alerts.</p>
+            </div>
+            <div class="security-actions">
+              <button type="button" class="btn-outline" id="change-email-btn">Change Email</button>
+              {% if not settings or not settings.email_verified %}
+              <button type="button" class="btn-outline" id="verify-email-btn">Verify Email</button>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="email-change-form hidden" id="email-change-form">
+            <div class="form-group">
+              <label for="current-password-email">Current Password</label>
+              <input type="password" id="current-password-email" class="form-control" placeholder="Enter your current password" required>
+              <div class="form-helper">For security, please confirm your password to change your email</div>
+            </div>
+            
+            <div class="form-group">
+              <label for="new-email">New Email Address</label>
+              <input type="email" id="new-email" class="form-control" placeholder="Enter new email address" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="confirm-email">Confirm New Email Address</label>
+              <input type="email" id="confirm-email" class="form-control" placeholder="Confirm new email address" required>
+            </div>
+            
+            <div class="form-actions">
+              <button type="button" class="btn-primary" id="update-email-btn">Update Email</button>
+              <button type="button" class="btn-secondary" id="cancel-email-btn">Cancel</button>
+            </div>
+          </div>
+
+          <div class="verify-email-instructions hidden" id="verify-email-instructions">
+            <div class="info-box">
+              <div class="info-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+              </div>
+              <p>A verification link has been sent to your email address. Please check your inbox and follow the instructions to verify your email.</p>
+            </div>
+            <button type="button" class="btn-outline" id="resend-verification">Resend Verification Email</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Password Security Section -->
+      <div class="card">
+        <div class="card-header">
+          <h2>Change Password</h2>
+        </div>
+        <div class="card-body">
+          <form id="password-change-form">
+            <div class="form-group">
+              <label for="current-password">Current Password</label>
+              <div class="password-input-container">
+                <input type="password" id="current-password" class="form-control" placeholder="Enter current password" required>
+                <button type="button" class="password-toggle-btn" data-target="current-password">
+                  <svg class="eye-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                  <svg class="eye-off-icon hidden" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="new-password">New Password</label>
+              <div class="password-input-container">
+                <input type="password" id="new-password" class="form-control" placeholder="Enter new password" required>
+                <button type="button" class="password-toggle-btn" data-target="new-password">
+                  <svg class="eye-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                  <svg class="eye-off-icon hidden" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                  </svg>
+                </button>
+              </div>
+              <div class="password-requirements">
+                <h4>Password Requirements:</h4>
+                <ul class="requirements-list">
+                  <li id="req-length">At least 8 characters</li>
+                  <li id="req-uppercase">At least 1 uppercase letter</li>
+                  <li id="req-lowercase">At least 1 lowercase letter</li>
+                  <li id="req-number">At least 1 number</li>
+                  <li id="req-special">At least 1 special character</li>
+                </ul>
+              </div>
+              <div class="password-strength-meter">
+                <div class="strength-bar"></div>
+              </div>
+              <div class="strength-text">Password strength: <span id="strength-value">Weak</span></div>
+            </div>
+            
+            <div class="form-group">
+              <label for="confirm-password">Confirm New Password</label>
+              <div class="password-input-container">
+                <input type="password" id="confirm-password" class="form-control" placeholder="Confirm new password" required>
+                <button type="button" class="password-toggle-btn" data-target="confirm-password">
+                  <svg class="eye-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                  <svg class="eye-off-icon hidden" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                  </svg>
+                </button>
+              </div>
+              <div id="password-match-status" class="form-helper"></div>
+            </div>
+            
+            <div class="form-actions">
+              <button type="submit" class="btn-primary" id="update-password-btn" disabled>Update Password</button>
+              <button type="reset" class="btn-secondary">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+      
+      <!-- Two-Factor Authentication Section -->
+      <div class="card">
+        <div class="card-header">
+          <h2>Two-Factor Authentication</h2>
+        </div>
+        <div class="card-body">
+          <div class="toggle-container">
+            <label class="toggle-label">Enable Two-Factor Authentication</label>
+            <div class="toggle-switch">
+              <input type="checkbox" id="two-factor-toggle" {% if settings and settings.two_factor_enabled %}checked{% endif %}>
+              <label for="two-factor-toggle" class="toggle-slider"></label>
+            </div>
+          </div>
+          <div class="form-helper">Add an extra layer of security to your account by requiring a verification code</div>
+          
+          <div class="two-factor-setup {% if not settings or not settings.two_factor_enabled %}hidden{% endif %}">
+            <div class="qr-code-container">
+              <div class="qr-code-placeholder">
+                <img src="{{ url_for('static', filename='images/qr-placeholder.png') }}" alt="QR Code Placeholder">
+              </div>
+              <div class="qr-code-steps">
+                <h4>Setup Instructions:</h4>
+                <ol>
+                  <li>Download an authenticator app like Google Authenticator or Authy</li>
+                  <li>Scan the QR code with the app</li>
+                  <li>Enter the 6-digit code provided by the app below</li>
+                </ol>
+                <div class="form-group">
+                  <label for="verification-code">Verification Code</label>
+                  <input type="text" id="verification-code" class="form-control" placeholder="Enter 6-digit code" maxlength="6">
+                </div>
+                <button type="button" class="btn-primary">Verify & Enable</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Login Activity Section -->
+      <div class="card">
+        <div class="card-header">
+          <h2>Login Activity</h2>
+        </div>
+        <div class="card-body">
+          <div class="login-activity-list">
+            <div class="login-activity-item current">
+              <div class="device-info">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                  <line x1="8" y1="21" x2="16" y2="21"></line>
+                  <line x1="12" y1="17" x2="12" y2="21"></line>
+                </svg>
+                <div>
+                  <h4>Current Session - Windows / Chrome</h4>
+                  <p>Manila, Philippines • IP: 123.456.78.90</p>
+                  <span class="timestamp">Active Now</span>
+                </div>
+              </div>
+              <div class="login-actions">
+                <span class="current-device-badge">Current Device</span>
+              </div>
+            </div>
+            
+            <div class="login-activity-item">
+              <div class="device-info">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                  <line x1="12" y1="18" x2="12.01" y2="18"></line>
+                </svg>
+                <div>
+                  <h4>Mobile - iOS / Safari</h4>
+                  <p>Quezon City, Philippines • IP: 123.456.78.91</p>
+                  <span class="timestamp">Yesterday, 3:45 PM</span>
+                </div>
+              </div>
+              <div class="login-actions">
+                <button type="button" class="btn-danger-small">Sign Out</button>
+              </div>
+            </div>
+            
+            <div class="login-activity-item">
+              <div class="device-info">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                  <line x1="8" y1="21" x2="16" y2="21"></line>
+                  <line x1="12" y1="17" x2="12" y2="21"></line>
+                </svg>
+                <div>
+                  <h4>Windows / Firefox</h4>
+                  <p>Makati, Philippines • IP: 123.456.78.92</p>
+                  <span class="timestamp">June 10, 2023, 10:23 AM</span>
+                </div>
+              </div>
+              <div class="login-actions">
+                <button type="button" class="btn-danger-small">Sign Out</button>
+              </div>
+            </div>
+          </div>
+          
+          <div class="security-actions full-width">
+            <button type="button" class="btn-danger" id="sign-out-all">Sign Out of All Devices</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Notifications Tab -->
+    <div class="settings-tab {% if active_tab == 'notifications' %}active{% endif %}" id="notifications-tab">
+      <div class="card">
+        <div class="card-header">
+          <h2>Notification Preferences</h2>
+        </div>
+        <div class="card-body">
+          <form id="notification-settings-form">
+            <div class="notification-group">
+              <h3>Email Notifications</h3>
+              <div class="notification-item">
+                <div class="notification-info">
+                  <div class="notification-title">Order Updates</div>
+                  <div class="notification-description">Get notified when you receive a new order</div>
+                </div>
+                <div class="toggle-switch">
+                  <input type="checkbox" id="order-notifications" {% if settings and settings.order_notifications %}checked{% endif %}>
+                  <label for="order-notifications" class="toggle-slider"></label>
+                </div>
+              </div>
+              
+              <div class="notification-item">
+                <div class="notification-info">
+                  <div class="notification-title">Customer Messages</div>
+                  <div class="notification-description">Get notified when customers send you messages</div>
+                </div>
+                <div class="toggle-switch">
+                  <input type="checkbox" id="message-notifications" {% if settings and settings.message_notifications %}checked{% endif %}>
+                  <label for="message-notifications" class="toggle-slider"></label>
+                </div>
+              </div>
+              
+              <div class="notification-item">
+                <div class="notification-info">
+                  <div class="notification-title">Reviews & Ratings</div>
+                  <div class="notification-description">Get notified when customers leave reviews for your products</div>
+                </div>
+                <div class="toggle-switch">
+                  <input type="checkbox" id="review-notifications" {% if settings and settings.review_notifications %}checked{% endif %}>
+                  <label for="review-notifications" class="toggle-slider"></label>
+                </div>
+              </div>
+              
+              <div class="notification-item">
+                <div class="notification-info">
+                  <div class="notification-title">Inventory Alerts</div>
+                  <div class="notification-description">Get notified when products are running low or out of stock</div>
+                </div>
+                <div class="toggle-switch">
+                  <input type="checkbox" id="inventory-notifications" {% if settings and settings.inventory_notifications %}checked{% endif %}>
+                  <label for="inventory-notifications" class="toggle-slider"></label>
+                </div>
+              </div>
+              
+              <div class="notification-item">
+                <div class="notification-info">
+                  <div class="notification-title">Platform Updates</div>
+                  <div class="notification-description">Receive updates about platform changes and new features</div>
+                </div>
+                <div class="toggle-switch">
+                  <input type="checkbox" id="platform-notifications" {% if settings and settings.platform_notifications %}checked{% endif %}>
+                  <label for="platform-notifications" class="toggle-slider"></label>
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-actions">
+              <button type="submit" class="btn-primary">Save Preferences</button>
+              <button type="reset" class="btn-secondary">Reset to Default</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    
+   
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/seller_photo_sync.js') }}"></script>
+<script src="{{ url_for('static', filename='js/seller_settings.js') }}"></script>
+<script src="{{ url_for('static', filename='js/ph_address.js') }}"></script>
+<script src="{{ url_for('static', filename='js/security_settings.js') }}"></script>
+{% endblock %}

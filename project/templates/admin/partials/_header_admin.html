@@ -1,0 +1,43 @@
+<!-- header.html - Reusable header component for Admin pages -->
+<header class="admin-header">
+  <div class="header-left">
+    <button class="menu-toggle" id="menuToggle" onclick="toggleSidebar()">
+      <i data-lucide="panel-left-close"></i>
+    </button>
+    <div class="search-container-header">
+      <i data-lucide="search"></i>
+      <input
+        type="text"
+        class="search-input-header"
+        placeholder="Search..."
+        style="
+          background: transparent;
+          border: none;
+          padding: 6px 8px;
+          color: inherit;
+          outline: none;
+          box-shadow: none;
+        "
+      />
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="notification-bell" title="Notifications">
+      <i data-lucide="bell"></i>
+      <span class="notification-count">3</span>
+    </div>
+
+    <!-- Non-interactive admin profile display - shows 'Administrator' by default -->
+    <div
+      class="admin-profile"
+      style="display: flex; align-items: center; gap: 10px"
+    >
+      <div class="user-avatar-container">
+        <div class="avatar-icon-circle" aria-hidden="true">
+          <i data-lucide="user"></i>
+        </div>
+      </div>
+      <div style="font-weight: 600">Administrator</div>
+    </div>
+  </div>
+</header>

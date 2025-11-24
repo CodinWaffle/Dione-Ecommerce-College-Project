@@ -53,7 +53,7 @@ def login_post():
     if role == 'seller':
         return redirect(url_for('seller.dashboard'))
     if role == 'rider':
-        return redirect(url_for('main.rider_dashboard'))
+        return redirect(url_for('rider.rider_dashboard'))
     if role == 'admin':
         return redirect(url_for('admin.overview'))
     return redirect(url_for('main.index'))
@@ -208,7 +208,7 @@ def signup_post():
         return redirect(url_for('seller.dashboard'))
     elif role == 'rider':
         flash('Account created successfully! Welcome to your rider dashboard.', 'success')
-        return redirect(url_for('main.rider_dashboard'))
+        return redirect(url_for('rider.rider_dashboard'))
     
     # Fallback to index
     return redirect(url_for('main.index'))

@@ -1,0 +1,358 @@
+{% extends 'seller/base_seller.html' %} {% block title %}Customer Management -
+Dione Ecommerce{% endblock %} {% block extra_css %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/seller_styles/seller_dashboard.css') }}"
+/>
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/seller_styles/seller_customer_management.css') }}?v={{ range(1, 10000) | random }}"
+/>
+{% endblock %} {% block content %}
+<div class="page-header">
+  <div class="page-header-content">
+    <h1 class="page-title">Customer Management</h1>
+    <p class="page-subtitle">
+      Track, analyze, and manage your customer relationships.
+    </p>
+  </div>
+  <div class="page-actions">
+  </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon purple">
+            <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+        </div>
+        <div class="stat-content">
+        <div class="stat-label">Total Customers</div>
+        <div class="stat-value" id="totalCustomers">0</div>
+        <div class="stat-change positive">
+          <span class="change-indicator">↑</span>
+          <span id="customerGrowth">0%</span> this month
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon blue">
+            <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path>
+            <path d="M12 18V6"></path>
+            </svg>
+        </div>
+        <div class="stat-content">
+        <div class="stat-label">Avg. Spend per Customer</div>
+        <div class="stat-value" id="avgSpend">₱0.00</div>
+        <div class="stat-change positive">
+          <span class="change-indicator">↑</span>
+          <span id="spendGrowth">0%</span> vs last month
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon green">
+            <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+            <line x1="1" y1="10" x2="23" y2="10"></line>
+            </svg>
+        </div>
+        <div class="stat-content">
+        <div class="stat-label">Customer Retention</div>
+        <div class="stat-value" id="retention">0%</div>
+        <div class="stat-change positive">
+          <span class="change-indicator">↑</span>
+          <span id="retentionChange">0%</span> vs last month
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon orange">
+            <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+            </svg>
+        </div>
+        <div class="stat-content">
+        <div class="stat-label">Return Rate</div>
+        <div class="stat-value" id="returnRate">0%</div>
+        <div class="stat-change positive">
+          <span class="change-indicator">↓</span>
+          <span id="returnChange">0%</span> vs last month
+        </div>
+      </div>
+    </div>
+</div>
+
+<div class="dashboard-grid">
+    <div class="chart-card">
+      <div class="chart-header">
+        <h2 class="chart-title">Customer Growth</h2>
+        <select class="time-filter" id="growthTimeFilter">
+          <option value="7">7 days</option>
+          <option value="30" selected>30 days</option>
+          <option value="90">90 days</option>
+        </select>
+      </div>
+      <div class="chart-container">
+        <canvas id="customerGrowthChart"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <h2 class="chart-title">Customer Segments</h2>
+      </div>
+      <div class="chart-container">
+        <canvas id="customerSegmentsChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Customer Table -->
+  <div class="table-card">
+    <div class="table-header">
+      <h2 class="table-title">Customer List</h2>
+      <div class="table-actions" style="flex-wrap: wrap; gap: 12px; align-items: center; margin-left: auto;">
+        <div class="search-wrapper">
+          <input
+            type="text"
+            id="customerSearch"
+            class="search-input"
+            placeholder="Search customers..."
+          />
+          <svg
+            class="search-icon"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </div>
+        <div class="filter-wrapper">
+          <select id="customerFilter" class="filter-select">
+            <option value="all">All Customers</option>
+            <option value="new">New Customers</option>
+            <option value="returning">Returning Customers</option>
+            <option value="inactive">Inactive Customers</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="table-container">
+      {% if customers and customers|length > 0 %}
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Customer ID</th>
+            <th>Customer</th>
+            <th>Email</th>
+            <th>Status</th>
+            <th>Orders</th>
+            <th>Total Spent</th>
+            <th>Last Order</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="customerTableBody">
+          {% for c in customers %}
+          <tr>
+            <td>{{ c.id }}</td>
+            <td>
+              <div class="customer-info">
+                <div class="customer-avatar">{{ c.name[:1] }}</div>
+                <div class="customer-name">{{ c.name }}</div>
+              </div>
+            </td>
+            <td>{{ c.email }}</td>
+            <td>
+              <span class="status-badge active">Active</span>
+            </td>
+            <td>{{ c.orders }}</td>
+            <td>₱{{ c.total_spent }}</td>
+            <td>Oct 15, 2025</td>
+            <td>
+              <div class="action-buttons">
+                <button class="action-btn view-btn" data-customer-id="{{ c.id }}" title="View">
+                  <span class="icon-outline-eye"></span>
+                </button>
+                <button class="action-btn message-btn" data-customer-id="{{ c.id }}" title="Message">
+                  <span class="icon-outline-message"></span>
+                </button>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% include 'partials/components/_tableFooter.html' %}
+      {% else %}
+      <div class="empty-state">
+        <div class="empty-state-icon">
+          <svg
+            width="48"
+            height="48"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1"
+          >
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+        </div>
+        <h3>No customers yet</h3>
+        <p>
+          When you start making sales, your customer information will appear
+          here.
+        </p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Customer Detail Modal -->
+<div class="modal" id="customerDetailModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 class="modal-title">Customer Details</h2>
+      <button class="close-btn" id="closeModal">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="customer-profile">
+        <div class="customer-avatar large" id="modalCustomerAvatar"></div>
+        <div class="customer-profile-details">
+          <h3 id="modalCustomerName"></h3>
+          <p id="modalCustomerEmail"></p>
+          <span class="status-badge active" id="modalCustomerStatus"
+            >Active</span
+          >
+        </div>
+      </div>
+
+      <div class="customer-stats">
+        <div class="stat-item">
+          <div class="stat-value" id="modalCustomerOrders">0</div>
+          <div class="stat-label">Orders</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="modalCustomerSpent">₱0</div>
+          <div class="stat-label">Total Spent</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="modalCustomerAvgOrder">₱0</div>
+          <div class="stat-label">Avg. Order</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="modalCustomerJoined">-</div>
+          <div class="stat-label">Customer Since</div>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <div class="tab active" data-tab="orders">Order History</div>
+        <div class="tab" data-tab="activity">Activity</div>
+        <div class="tab" data-tab="notes">Notes</div>
+      </div>
+
+      <div class="tab-content active" data-content="orders">
+        <table class="modal-table">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Date</th>
+              <th>Items</th>
+              <th>Total</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="customerOrdersTable">
+            <!-- Order history will be populated by JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="tab-content" data-content="activity">
+        <div class="activity-timeline" id="customerActivity">
+          <!-- Activity timeline will be populated by JS -->
+        </div>
+      </div>
+
+      <div class="tab-content" data-content="notes">
+        <div class="notes-container">
+          <div class="notes-list" id="customerNotes">
+            <!-- Notes will be populated by JS -->
+          </div>
+          <div class="add-note">
+            <textarea
+              id="newNote"
+              placeholder="Add a note about this customer..."
+            ></textarea>
+            <button id="saveNote" class="action-btn">Save Note</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %} {% block extra_js %}
+<script src="{{ url_for('static', filename='js/seller_scripts/seller_customer_management.js') }}?v={{ range(1, 10000) | random }}"></script>
+{% endblock %}

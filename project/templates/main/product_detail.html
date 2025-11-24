@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ product.name }} - Product Details</title>
+    <!-- Header styles -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/buyer_styles/partials/_header_buyer.css') }}"
+      type="text/css"
+    />
+    <!-- Core product detail styles -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/buyer_styles/product_detail.css') }}"
+      type="text/css"
+    />
+    <!-- Supporting styles -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/buyer_styles/partials/_add_to_cart_popup.css') }}"
+      type="text/css"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/buyer_styles/partials/_product_dropdown_details.css') }}"
+      type="text/css"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/buyer_styles/components/product_card.css') }}"
+      type="text/css"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/buyer_styles/partials/_reviews_dropdown.css') }}"
+      type="text/css"
+    />
+    <!-- Font Awesome for review icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+
+    <!-- Fallback direct links in case url_for isn't working properly -->
+    <link
+      rel="stylesheet"
+      href="/static/css/buyer_styles/partials/_header_buyer.css"
+      type="text/css"
+    />
+    <link
+      rel="stylesheet"
+      href="/static/css/buyer_styles/product_detail.css"
+      type="text/css"
+    />
+    <link
+      rel="stylesheet"
+      href="/static/css/buyer_styles/partials/_add_to_cart_popup.css"
+      type="text/css"
+    />
+    <link
+      rel="stylesheet"
+      href="/static/css/buyer_styles/partials/_product_dropdown_details.css"
+      type="text/css"
+    />
+    <link
+      rel="stylesheet"
+      href="/static/css/buyer_styles/components/product_card.css"
+      type="text/css"
+    />
+    <link
+      rel="stylesheet"
+      href="/static/css/buyer_styles/partials/_reviews_dropdown.css"
+      type="text/css"
+    />
+
+    <!-- Inline critical CSS to ensure proper display -->
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        background-color: #fff;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 20px auto 0;
+        padding: 20px;
+        display: flex;
+        gap: 40px;
+        flex-wrap: wrap;
+        align-items: flex-start;
+      }
+
+      .product-images {
+        flex: 1;
+        min-width: 400px;
+        max-width: 45%;
+      }
+
+      .main-image {
+        position: relative;
+        margin-bottom: 20px;
+        background-color: #f8f8f8;
+        border-radius: 8px;
+        overflow: hidden;
+      }
+
+      .main-image img {
+        width: 100%;
+        height: auto;
+        object-fit: cover;
+        display: block;
+      }
+
+      .thumbnail-images {
+        display: flex;
+        gap: 10px;
+      }
+
+      .thumbnail {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border: 2px solid #ddd;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .thumbnail.active {
+        border-color: #8e44ad;
+      }
+
+      .product-details {
+        flex: 1;
+        min-width: 400px;
+        position: relative;
+      }
+
+      .breadcrumb {
+        display: flex;
+        gap: 10px;
+        font-size: 14px;
+        margin-bottom: 20px;
+      }
+
+      .breadcrumb a {
+        color: #666;
+        text-decoration: none;
+      }
+
+      .product-title {
+        font-size: 28px;
+        margin-bottom: 15px;
+        font-weight: 700;
+      }
+
+      .price-section {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .price-main {
+        font-size: 24px;
+        font-weight: 700;
+        color: #8e44ad;
+      }
+
+      .currency {
+        font-size: 16px;
+        font-weight: normal;
+      }
+
+      .original-price {
+        text-decoration: line-through;
+        color: #999;
+        margin-left: 10px;
+      }
+
+      .discount-badge {
+        background-color: #8e44ad;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 4px;
+        margin-left: 10px;
+        font-size: 14px;
+      }
+
+      .color-section,
+      .size-section {
+        margin-bottom: 10px;
+      }
+
+      .section-label {
+        display: block;
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 10px;
+      }
+
+      .color-options {
+        display: flex;
+        gap: 12px;
+      }
+
+      .color-option {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        border: 1px solid #ddd;
+        cursor: pointer;
+      }
+
+      .color-option.active {
+        border: 2px solid #8e44ad;
+        box-shadow: 0 0 0 2px white, 0 0 0 4px #8e44ad;
+      }
+
+      .selected-color {
+        font-weight: normal;
+        color: #666;
+      }
+
+      .size-options {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .size-option {
+        padding: 8px 15px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        cursor: pointer;
+        background: white;
+        transition: all 0.2s;
+      }
+
+      .size-option:hover:not([disabled]) {
+        border-color: #8e44ad;
+      }
+
+      .size-option.active {
+        background-color: #8e44ad;
+        color: white;
+        border-color: #8e44ad;
+      }
+
+      .size-option[disabled] {
+        opacity: 0.5;
+        cursor: not-allowed;
+        text-decoration: line-through;
+      }
+
+      .quantity-section {
+        margin-bottom: 25px;
+      }
+
+      .quantity-counter {
+        display: flex;
+        align-items: center;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        width: fit-content;
+      }
+
+      .quantity-btn {
+        width: 40px;
+        height: 40px;
+        background: none;
+        border: none;
+        font-size: 18px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .quantity-btn[disabled] {
+        opacity: 0.3;
+        cursor: not-allowed;
+      }
+
+      .quantity-input {
+        width: 40px;
+        height: 40px;
+        border: none;
+        text-align: center;
+        font-size: 16px;
+      }
+
+      .stock-info {
+        margin-top: 5px;
+        font-size: 14px;
+        color: #666;
+      }
+
+      .add-to-bag-btn {
+        background-color: #8b5a96;
+        color: white;
+        border: none;
+        padding: 15px 30px;
+        font-size: 16px;
+        font-weight: 600;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-top: 20px;
+        width: 100%;
+        transition: background-color 0.2s;
+      }
+
+      .add-to-bag-btn:hover {
+        background-color: #7a4d86;
+      }
+
+      /* Additional styles for product page elements */
+      .shipping-info {
+        margin: 20px 0;
+        padding: 15px 0;
+        border-top: 1px solid #eee;
+        border-bottom: 1px solid #eee;
+        font-size: 14px;
+        color: #666;
+      }
+
+      .shipping-info i {
+        color: #8e44ad;
+        margin-right: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Include Header -->
+    {% include 'main/partials/_header_buyer.html' %}
+
+    <div class="container">
+      <!-- Product Images Section -->
+      <div class="product-images">
+        <div class="main-image">
+          <img
+            id="mainImage"
+            src="{{ product.primaryImage }}"
+            alt="{{ product.name }}"
+            style="max-height: 500px; width: auto; display: block"
+          />
+          <div class="zoom-box" id="zoomBox"></div>
+          <div class="zoom-viewer" id="zoomViewer">
+            <img
+              id="zoomImage"
+              src="{{ product.primaryImage }}"
+              alt="Zoomed view of {{ product.name }}"
+            />
+          </div>
+          <div class="image-overlay-buttons">
+            <button
+              class="wishlist-btn"
+              id="wishlistBtn"
+              style="
+                background: rgba(255, 255, 255, 0.9);
+                border: none;
+                border-radius: 50%;
+                width: 44px;
+                height: 44px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+              "
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+                ></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div
+          class="thumbnail-images"
+          style="
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            justify-content: center;
+          "
+        >
+          <img
+            src="{{ product.primaryImage }}"
+            alt="{{ product.name }} front view"
+            class="thumbnail active"
+            data-index="0"
+            onclick="changeMainImage(this, 0)"
+            style="
+              width: 80px;
+              height: 80px;
+              object-fit: cover;
+              border: 2px solid #8e44ad;
+              border-radius: 4px;
+              cursor: pointer;
+            "
+          />
+          <img
+            src="{{ product.secondaryImage }}"
+            alt="{{ product.name }} side view"
+            class="thumbnail"
+            data-index="1"
+            onclick="changeMainImage(this, 1)"
+            style="
+              width: 80px;
+              height: 80px;
+              object-fit: cover;
+              border: 2px solid #ddd;
+              border-radius: 4px;
+              cursor: pointer;
+            "
+          />
+          <img
+            src="{{ product.primaryImage }}"
+            alt="{{ product.name }} back view"
+            class="thumbnail"
+            data-index="2"
+            onclick="changeMainImage(this, 2)"
+            style="
+              width: 80px;
+              height: 80px;
+              object-fit: cover;
+              border: 2px solid #ddd;
+              border-radius: 4px;
+              cursor: pointer;
+            "
+          />
+        </div>
+      </div>
+
+      <!-- Product Details Section -->
+      <div class="product-details">
+        <!-- Report Button in Upper Right -->
+        <div
+          class="report-container"
+          style="
+            position: absolute;
+            top: 0;
+            right: 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px;
+          "
+        >
+          <span
+            class="report-text"
+            style="
+              font-size: 14px;
+              color: #dc143c;
+              text-decoration: underline;
+              font-weight: 400;
+            "
+            >Report</span
+          >
+          <button
+            class="report-btn-details"
+            onclick="reportProduct()"
+            style="
+              background: none;
+              border: none;
+              cursor: pointer;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            "
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+              ></path>
+              <line x1="12" y1="9" x2="12" y2="13"></line>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Breadcrumb -->
+        <nav
+          class="breadcrumb"
+          style="display: flex; gap: 10px; font-size: 14px; margin-bottom: 20px"
+        >
+          <a
+            href="/"
+            onclick="navigateToHome(event)"
+            style="color: #666; text-decoration: none"
+            >Home</a
+          >
+          <span style="color: #999">></span>
+          <a
+            href="/category/tops"
+            onclick="navigateToCategory(event, 'tops')"
+            style="color: #666; text-decoration: none"
+            >Tops</a
+          >
+          <span style="color: #999">></span>
+          <span style="color: #333">{{ product.name }}</span>
+        </nav>
+
+        <!-- Product Info -->
+        <h1
+          class="product-title"
+          style="font-size: 28px; margin-bottom: 15px; font-weight: 700"
+        >
+          {{ product.name }}
+        </h1>
+
+        <!-- Price Section -->
+        <div
+          class="price-section"
+          style="
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 20px;
+            gap: 10px;
+          "
+        >
+          <div
+            class="price-container"
+            style="display: flex; align-items: baseline; gap: 15px"
+          >
+            <div
+              class="price-main"
+              style="font-size: 42px; font-weight: 700; color: #000"
+            >
+              ₱{{ product.price }}
+              <span
+                class="currency"
+                style="font-size: 16px; font-weight: normal"
+                >PHP</span
+              >
+            </div>
+            <div
+              class="price-details"
+              style="display: flex; align-items: center"
+            >
+              {% if product.originalPrice %}
+              <span
+                class="original-price"
+                style="text-decoration: line-through; color: #999"
+                >₱{{ product.originalPrice }}</span
+              >
+              {% if product.originalPrice > product.price %}
+              <span
+                class="discount-badge"
+                style="
+                  background-color: #8e44ad;
+                  color: white;
+                  padding: 2px 8px;
+                  border-radius: 4px;
+                  margin-left: 10px;
+                  font-size: 14px;
+                "
+                >{{ ((product.originalPrice - product.price) /
+                product.originalPrice * 100) | round | int }}% OFF</span
+              >
+              {% endif %} {% endif %}
+            </div>
+          </div>
+
+          <!-- Ratings and Sales Section -->
+          <div
+            class="ratings-sales-section"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              font-size: 14px;
+              color: #666;
+            "
+          >
+            <!-- Star Rating -->
+            <div
+              class="rating-container"
+              style="display: flex; align-items: center; gap: 4px"
+            >
+              <div class="stars" style="display: flex; gap: 2px">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="#fbbf24"
+                  stroke="#fbbf24"
+                  stroke-width="1"
+                >
+                  <polygon
+                    points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"
+                  ></polygon>
+                </svg>
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="#fbbf24"
+                  stroke="#fbbf24"
+                  stroke-width="1"
+                >
+                  <polygon
+                    points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"
+                  ></polygon>
+                </svg>
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="#fbbf24"
+                  stroke="#fbbf24"
+                  stroke-width="1"
+                >
+                  <polygon
+                    points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"
+                  ></polygon>
+                </svg>
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="#fbbf24"
+                  stroke="#fbbf24"
+                  stroke-width="1"
+                >
+                  <polygon
+                    points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"
+                  ></polygon>
+                </svg>
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="#d1d5db"
+                  stroke="#d1d5db"
+                  stroke-width="1"
+                >
+                  <polygon
+                    points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"
+                  ></polygon>
+                </svg>
+              </div>
+              <span style="font-weight: 600; color: #333">4.0</span>
+            </div>
+
+            <span style="color: #ccc">|</span>
+
+            <!-- Number of Ratings -->
+            <div
+              class="ratings-container"
+              style="display: flex; align-items: center; gap: 4px"
+            >
+              <span style="font-weight: 500">1.2k Ratings</span>
+            </div>
+
+            <span style="color: #ccc">|</span>
+
+            <!-- Sold Container -->
+            <div
+              class="sold-container"
+              style="display: flex; align-items: center; gap: 5px"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#666"
+                stroke-width="2"
+              >
+                <path
+                  d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"
+                ></path>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <path d="M16 10a4 4 0 0 1-8 0"></path>
+              </svg>
+              <span class="sold-text">1.2k Sold</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Color Selection -->
+        <div class="color-section">
+          <label class="section-label"
+            >COLOR <span class="selected-color">Black</span></label
+          >
+          <div class="color-options">
+            {% for color, sizes in stock_data.items() %} {% if color == 'Black'
+            %}
+            <button
+              class="color-option {% if loop.first %}active{% endif %}"
+              data-color="{{ color }}"
+              data-stock="{{ sizes|tojson }}"
+              style="background-color: #000"
+              onclick="selectColor(this)"
+              title="{{ color }}"
+            ></button>
+            {% elif color == 'Yellow' %}
+            <button
+              class="color-option"
+              data-color="{{ color }}"
+              data-stock="{{ sizes|tojson }}"
+              style="background-color: #ffd700"
+              onclick="selectColor(this)"
+              title="{{ color }}"
+            ></button>
+            {% elif color == 'Red' %}
+            <button
+              class="color-option"
+              data-color="{{ color }}"
+              data-stock="{{ sizes|tojson }}"
+              style="background-color: #dc143c"
+              onclick="selectColor(this)"
+              title="{{ color }}"
+            ></button>
+            {% elif color == 'Blue' %}
+            <button
+              class="color-option"
+              data-color="{{ color }}"
+              data-stock="{{ sizes|tojson }}"
+              style="background-color: #0066cc"
+              onclick="selectColor(this)"
+              title="{{ color }}"
+            ></button>
+            {% elif color == 'Brown' %}
+            <button
+              class="color-option"
+              data-color="{{ color }}"
+              data-stock="{{ sizes|tojson }}"
+              style="background-color: #8b4513"
+              onclick="selectColor(this)"
+              title="{{ color }}"
+            ></button>
+            {% else %}
+            <button
+              class="color-option"
+              data-color="{{ color }}"
+              data-stock="{{ sizes|tojson }}"
+              style="background-color: gray"
+              onclick="selectColor(this)"
+              title="{{ color }}"
+            ></button>
+            {% endif %} {% endfor %}
+          </div>
+        </div>
+
+        <!-- Size Selection -->
+        <div class="size-section">
+          <label class="section-label">SIZE</label>
+          <div class="size-options">
+            <button
+              class="size-option active"
+              data-size="XS"
+              onclick="selectSize(this)"
+              style="
+                padding: 8px 15px;
+                border: 1px solid #8e44ad;
+                border-radius: 4px;
+                cursor: pointer;
+                background-color: #8e44ad;
+                color: white;
+              "
+            >
+              XS
+            </button>
+            <button
+              class="size-option"
+              data-size="S"
+              onclick="selectSize(this)"
+              style="
+                padding: 8px 15px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                cursor: pointer;
+                background: white;
+              "
+            >
+              S
+            </button>
+            <button
+              class="size-option"
+              data-size="M"
+              onclick="selectSize(this)"
+              style="
+                padding: 8px 15px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                cursor: pointer;
+                background: white;
+              "
+            >
+              M
+            </button>
+            <button
+              class="size-option"
+              data-size="L"
+              onclick="selectSize(this)"
+              style="
+                padding: 8px 15px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                cursor: pointer;
+                background: white;
+              "
+            >
+              L
+            </button>
+            <button
+              class="size-option"
+              data-size="XL"
+              onclick="selectSize(this)"
+              style="
+                padding: 8px 15px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                cursor: pointer;
+                background: white;
+              "
+            >
+              XL
+            </button>
+            <button
+              class="size-option"
+              data-size="XXL"
+              onclick="selectSize(this)"
+              style="
+                padding: 8px 15px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                cursor: pointer;
+                background: white;
+              "
+            >
+              XXL
+            </button>
+          </div>
+          <div class="size-info">
+            <span>Model is 5'10", wearing a size S</span>
+          </div>
+
+          <!-- Shipping Info -->
+          <div class="shipping-info">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#1565c0"
+              stroke-width="2"
+              class="shipping-icon"
+            >
+              <rect x="1" y="3" width="15" height="13"></rect>
+              <path d="m16 6 4 4v6"></path>
+              <circle cx="5.5" cy="18.5" r="2.5"></circle>
+              <circle cx="18.5" cy="18.5" r="2.5"></circle>
+            </svg>
+            <span
+              >Free shipping on orders over ₱2,000 | Easy returns within 30
+              days</span
+            >
+          </div>
+        </div>
+
+        <!-- Quantity and Stock Section -->
+        <div class="quantity-section">
+          <div class="quantity-stock-header">
+            <div class="quantity-label-group">
+              <label class="section-label">QUANTITY</label>
+              <div class="quantity-selector">
+                <button
+                  class="quantity-btn"
+                  onclick="decreaseQuantity()"
+                  id="decreaseBtn"
+                >
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                </button>
+                <input
+                  type="number"
+                  class="quantity-input"
+                  value="1"
+                  min="1"
+                  max="10"
+                  id="quantityInput"
+                  onchange="updateQuantity()"
+                />
+                <button
+                  class="quantity-btn"
+                  onclick="increaseQuantity()"
+                  id="increaseBtn"
+                >
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div class="stock-size-section">
+              <div class="stock-section">
+                <span class="stock-indicator" id="stockIndicator">
+                  {{ stock_data['Black']['XS'] if stock_data['Black'] and 'XS'
+                  in stock_data['Black'] else 0 }}
+                </span>
+                <span class="stock-label">in stock</span>
+              </div>
+              <div class="size-guide-section">
+                <a
+                  href="#"
+                  class="size-guide-large"
+                  onclick="scrollToSizeGuide(event)"
+                  >SIZE GUIDE</a
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Add to Bag Button -->
+        <button class="add-to-bag-btn" onclick="addToBag()">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="white"
+            stroke-width="2"
+          >
+            <path d="M6 2l3 6v8a2 2 0 002 2h2a2 2 0 002-2V8l3-6" />
+            <path d="M5 8h14l-1 13H6L5 8z" />
+            <path d="M10 10v4" />
+            <path d="M14 10v4" />
+          </svg>
+          ADD TO BAG
+        </button>
+      </div>
+    </div>
+
+    <!-- Bottom Tabs -->
+    <div class="bottom-tabs">
+      <button
+        class="tab-btn active"
+        onclick="switchTab(this, 'product-details')"
+      >
+        Product Details
+      </button>
+      <button class="tab-btn" onclick="switchTab(this, 'ratings-reviews')">
+        Ratings & Reviews
+      </button>
+    </div>
+
+    <div class="tab-content">
+      <div id="product-details" class="tab-panel active">
+        <!-- Include Product Dropdown Details -->
+        {% include 'main/partials/_product_dropdown_details.html' %}
+      </div>
+      <div id="ratings-reviews" class="tab-panel">
+        <!-- Include Reviews Dropdown -->
+        {% include 'main/partials/_reviews_dropdown.html' %}
+      </div>
+    </div>
+
+    <!-- Include Footer -->
+    {% include 'main/partials/_footer.html' %}
+
+    <!-- Include Add to Cart Popup -->
+    {% include 'main/partials/_add_to_cart_pop.html' %}
+
+    <script src="{{ url_for('static', filename='js/buyer_scripts/partials/_product_dropdown_details.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/buyer_scripts/partials/_reviews_dropdown.js') }}"></script>
+    <script>
+      // Initialize zoom functionality on the main image
+      document.addEventListener("DOMContentLoaded", function () {
+        // Add zoom functionality to the main image
+        const mainImage = document.querySelector(".main-image");
+        if (mainImage) {
+          mainImage.addEventListener("mousemove", showZoomBox);
+          mainImage.addEventListener("mouseleave", hideZoomBox);
+        }
+
+        // Initialize thumbnail gallery
+        const thumbnails = document.querySelectorAll(".thumbnail-image");
+        thumbnails.forEach((thumbnail, index) => {
+          thumbnail.addEventListener("click", function () {
+            changeMainImage(this, index);
+          });
+        });
+
+        // Set the first thumbnail as active by default if available
+        if (thumbnails.length > 0) {
+          thumbnails[0].click();
+        }
+
+        // Ensure stock display is updated on page load
+        try {
+          updateSizeAvailability();
+          updateColorAvailability();
+          updateStockDisplay();
+        } catch (e) {
+          console.warn("Error initializing stock display:", e);
+        }
+
+        // Add to bag button functionality
+        const addToBagBtn = document.querySelector(".add-to-bag-btn");
+        if (addToBagBtn) {
+          addToBagBtn.addEventListener("click", addToBag);
+        }
+
+        // Initialize quantity buttons
+        try {
+          updateQuantityButtons();
+        } catch (e) {
+          console.warn("Error initializing quantity buttons:", e);
+        }
+
+        console.log("Product detail scripts initialized");
+      });
+
+      // Add fallback CSS loading check
+      window.addEventListener("load", function () {
+        // Debug information about the page setup
+        console.log("Product data:", {
+          name: "{{ product.name }}",
+          price: "{{ product.price }}",
+          primaryImage: "{{ product.primaryImage }}",
+          secondaryImage: "{{ product.secondaryImage }}",
+        });
+
+        // List all loaded scripts for debugging
+        const scripts = document.querySelectorAll("script");
+        console.log("Loaded scripts:");
+        scripts.forEach((script, index) => {
+          console.log(`Script ${index + 1}:`, script.src || "Inline script");
+        });
+
+        // Check if CSS is loaded correctly
+        const styleSheets = document.styleSheets;
+        console.log("All stylesheets:", styleSheets.length);
+        let cssLoaded = false;
+
+        for (let i = 0; i < styleSheets.length; i++) {
+          try {
+            console.log(`Stylesheet ${i + 1}:`, styleSheets[i].href);
+            if (
+              styleSheets[i].href &&
+              styleSheets[i].href.includes("product_detail.css")
+            ) {
+              cssLoaded = true;
+              break;
+            }
+          } catch (e) {
+            console.error("Error accessing stylesheet:", e);
+          }
+        }
+
+        if (!cssLoaded) {
+          console.warn("Product detail CSS might not be loaded correctly");
+          // Apply minimal styling through JS to ensure the page is still usable
+          const container = document.querySelector(".container");
+          if (container) {
+            container.style.maxWidth = "1200px";
+            container.style.margin = "20px auto 0";
+            container.style.padding = "20px";
+          }
+
+          // Apply basic styling to product images
+          const mainImageContainer = document.querySelector(
+            ".main-image-container"
+          );
+          if (mainImageContainer) {
+            mainImageContainer.style.width = "100%";
+            mainImageContainer.style.maxHeight = "500px";
+            mainImageContainer.style.overflow = "hidden";
+            mainImageContainer.style.position = "relative";
+          }
+
+          // Make sure thumbnails are visible
+          const thumbnailContainer = document.querySelector(
+            ".thumbnail-container"
+          );
+          if (thumbnailContainer) {
+            thumbnailContainer.style.display = "flex";
+            thumbnailContainer.style.flexWrap = "wrap";
+            thumbnailContainer.style.gap = "10px";
+            thumbnailContainer.style.marginTop = "10px";
+          }
+
+          // Apply additional styles if needed
+          document.querySelector(".product-title").style.fontSize = "24px";
+          document.querySelector(".product-title").style.marginTop = "20px";
+          document.querySelector(".price-section").style.marginTop = "10px";
+        } else {
+          console.log("Product detail CSS loaded successfully");
+        }
+      });
+    </script>
+  </body>
+</html>

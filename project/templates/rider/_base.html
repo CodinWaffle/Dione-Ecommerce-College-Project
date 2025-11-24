@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Rider Platform{% endblock %}</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/rider_styles/rider_dashboard.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css?family=Montserrat:400,600|Poppins:400,600&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined"
+    />
+    {% block extra_css %}{% endblock %}
+  </head>
+  <body>
+    <!-- Header -->
+    {% block header %}{% endblock %} {% include 'rider/_rider_header.html' %}
+    <!-- Sidebar -->
+    {% include 'rider/_rider_sidebar.html' %}
+
+    <!-- Main Content Block -->
+    {% block content %}{% endblock %}
+
+    <!-- Common Scripts -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const sidebar = document.getElementById("riderSidebar");
+        const toggleBtn = document.getElementById("sidebarToggle");
+        if (toggleBtn && sidebar) {
+          toggleBtn.addEventListener("click", function () {
+            sidebar.classList.toggle("closed");
+          });
+        }
+
+        // No settings submenu to initialize
+      });
+    </script>
+    {% block scripts %}{% endblock %}
+  </body>
+</html>

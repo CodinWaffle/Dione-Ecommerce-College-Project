@@ -191,10 +191,9 @@ current_user.is_authenticated and (current_user.role|default('buyer') ==
 
       <!-- Cart Icon -->
       <a
-        href="#"
+        href="{{ url_for('main.cart') }}"
         class="icon-btn cart-btn-header"
         aria-label="Shopping Bag"
-        onclick="return false;"
       >
         <!-- Shopping Bag Icon -->
         <svg
@@ -214,7 +213,11 @@ current_user.is_authenticated and (current_user.role|default('buyer') ==
       </a>
 
       <!-- Heart Icon -->
-      <button class="icon-btn" aria-label="Wishlist">
+      <button
+        class="icon-btn wishlist-btn"
+        aria-label="Wishlist"
+        id="wishlistBtn"
+      >
         <!-- Lucide Heart Icon -->
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -255,12 +258,6 @@ current_user.is_authenticated and (current_user.role|default('buyer') ==
           </svg>
         </button>
         <div class="profile-dropdown" id="profileDropdown">
-          <a href="#" class="profile-dropdown-item" onclick="return false;"
-            >My Account</a
-          >
-          <a href="#" class="profile-dropdown-item" onclick="return false;"
-            >My Purchases</a
-          >
           <a
             href="{{ url_for('auth.logout') }}"
             class="profile-dropdown-item logout-item"

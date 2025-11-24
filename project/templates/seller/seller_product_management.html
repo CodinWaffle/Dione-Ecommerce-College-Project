@@ -204,9 +204,6 @@ Dione Ecommerce{% endblock %} {% block extra_css %}
   </div>
 </div>
 {% endblock %} {% block extra_js %}
-<script>
-  window.__SELLER_PRODUCTS__ = {{ (product_payload or []) | tojson }};
-</script>
 <script src="{{ url_for('static', filename='js/seller_scripts/seller_product_management.js') }}?v={{ range(1, 10000) | random }}"></script>
-<script></script>
+
 {% endblock %}

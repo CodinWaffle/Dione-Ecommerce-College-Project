@@ -1,0 +1,204 @@
+{% extends 'seller/base_seller.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block extra_css %}
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lucide-static@0.16.29/font/lucide.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/seller_styles/seller_dashboard.css') }}">
+
+{% endblock %}
+
+{% block page_content %}
+
+    <!-- The user-profile block above already uses Jinja2 for seller info, so remove duplicate here -->
+                    <div class="page-header">
+                        <div class="page-header-left">
+                            <h1>Dashboard Overview</h1>
+                            <small class="page-subtext">Monitor your sales, orders, and store performance at a glance.</small>
+                        </div>
+                    </div>
+
+                    <!-- Stats Cards -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon purple">
+                                <i data-lucide="dollar-sign"></i>
+                            </div>
+                            <div class="stat-content">
+                                <span class="stat-label">Total Revenue</span>
+                                <h3 class="stat-value">$45,231</h3>
+                                <span class="stat-change positive">
+                                    <i data-lucide="trending-up"></i> +12.5%
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon blue">
+                                <i data-lucide="shopping-cart"></i>
+                            </div>
+                            <div class="stat-content">
+                                <span class="stat-label">Total Orders</span>
+                                <h3 class="stat-value">1,234</h3>
+                                <span class="stat-change positive">
+                                    <i data-lucide="trending-up"></i> +8.2%
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon green">
+                                <i data-lucide="package"></i>
+                            </div>
+                            <div class="stat-content">
+                                <span class="stat-label">Products Sold</span>
+                                <h3 class="stat-value">3,456</h3>
+                                <span class="stat-change positive">
+                                    <i data-lucide="trending-up"></i> +15.3%
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon orange">
+                                <i data-lucide="users"></i>
+                            </div>
+                            <div class="stat-content">
+                                <span class="stat-label">New Customers</span>
+                                <h3 class="stat-value">234</h3>
+                                <span class="stat-change negative">
+                                    <i data-lucide="trending-down"></i> -3.1%
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts and Recent Activity -->
+                    <div class="dashboard-grid">
+                        <div class="card chart-card">
+                            <div class="card-header">
+                                <h2>Revenue Overview</h2>
+                                <select class="filter-select">
+                                    <option>Last 7 days</option>
+                                    <option>Last 30 days</option>
+                                    <option>Last 3 months</option>
+                                </select>
+                            </div>
+                            <div class="chart-placeholder">
+                                <canvas id="revenueChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="card orders-card">
+                            <div class="card-header">
+                                <h2>Recent Orders</h2>
+                                <a href="#orders" class="view-all">View All <i data-lucide="chevron-right"></i></a>
+                            </div>
+                            <div class="orders-list">
+                                <div class="order-item">
+                                    <div class="order-info">
+                                        <span class="order-id">#ORD-1234</span>
+                                        <span class="order-customer">Sarah Johnson</span>
+                                    </div>
+                                    <span class="order-status pending">Pending</span>
+                                    <span class="order-amount">$234.00</span>
+                                </div>
+                                <div class="order-item">
+                                    <div class="order-info">
+                                        <span class="order-id">#ORD-1233</span>
+                                        <span class="order-customer">Mike Smith</span>
+                                    </div>
+                                    <span class="order-status completed">Completed</span>
+                                    <span class="order-amount">$156.50</span>
+                                </div>
+                                <div class="order-item">
+                                    <div class="order-info">
+                                        <span class="order-id">#ORD-1232</span>
+                                        <span class="order-customer">Emma Wilson</span>
+                                    </div>
+                                    <span class="order-status processing">Processing</span>
+                                    <span class="order-amount">$89.99</span>
+                                </div>
+                                <div class="order-item">
+                                    <div class="order-info">
+                                        <span class="order-id">#ORD-1231</span>
+                                        <span class="order-customer">David Brown</span>
+                                    </div>
+                                    <span class="order-status completed">Completed</span>
+                                    <span class="order-amount">$445.00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Top Products -->
+                    <div class="card products-card">
+                        <div class="card-header">
+                            <h2>Top Selling Products</h2>
+                            <a href="#products" class="view-all">View All <i data-lucide="chevron-right"></i></a>
+                        </div>
+                        <div class="products-table">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Category</th>
+                                        <th>Sales</th>
+                                        <th>Revenue</th>
+                                        <th>Stock</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <div class="product-cell">
+                                                <img src="/placeholder.svg?height=40&width=40" alt="Product">
+                                                <span>Wireless Headphones</span>
+                                            </div>
+                                        </td>
+                                        <td>Electronics</td>
+                                        <td>456</td>
+                                        <td>$12,345</td>
+                                        <td><span class="stock-badge in-stock">In Stock</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="product-cell">
+                                                <img src="/placeholder.svg?height=40&width=40" alt="Product">
+                                                <span>Smart Watch</span>
+                                            </div>
+                                        </td>
+                                        <td>Electronics</td>
+                                        <td>389</td>
+                                        <td>$10,234</td>
+                                        <td><span class="stock-badge low-stock">Low Stock</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="product-cell">
+                                                <img src="/placeholder.svg?height=40&width=40" alt="Product">
+                                                <span>Running Shoes</span>
+                                            </div>
+                                        </td>
+                                        <td>Fashion</td>
+                                        <td>312</td>
+                                        <td>$8,976</td>
+                                        <td><span class="stock-badge in-stock">In Stock</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Other sections will be added as separate pages -->
+            </div>
+{% endblock %}
+
+{% block extra_js %}
+    <!-- Initialize Lucide first -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Then load our dashboard JS -->
+    <script src="{{ url_for('static', filename='js/seller_dashboard.js') }}"></script>
+{% endblock %}
