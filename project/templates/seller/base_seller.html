@@ -600,5 +600,6 @@
     <script src="{{ url_for('static', filename='js/seller_scripts/partials/_header_seller.js') }}?v={{ range(1, 10000) | random }}"></script>
 
     {% block extra_js %}{% endblock %}
+    {% include 'partials/_chat_bubble.html' %}
   </body>
 </html>

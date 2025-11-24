@@ -1,82 +1,77 @@
-<aside class="rider-sidebar" id="riderSidebar">
-  <div class="sidebar-header">
-    <h2 class="sidebar-title">Navigation</h2>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header-rider">
+    <div class="brand">
+      <i data-lucide="truck"></i>
+      <h2>Rider<span>Panel</span></h2>
+    </div>
   </div>
-  <nav class="sidebar-nav">
-    <ul>
-      <li
-        class="{% if request.path == url_for('main.index') %}active{% endif %}"
-      >
-        <a href="{{ url_for('main.index') }}">
-          <span class="material-symbols-outlined">dashboard</span>
-          Dashboard
-        </a>
-      </li>
-      <li
-        class="{% if request.path == url_for('rider.job_list') %}active{% endif %}"
-      >
-        <a href="{{ url_for('rider.job_list') }}">
-          <span class="material-symbols-outlined">list_alt</span>
-          Job List
-        </a>
-      </li>
-      <li
-        class="{% if request.path == url_for('rider.delivery_management') %}active{% endif %}"
-      >
-        <a href="{{ url_for('rider.delivery_management') }}">
-          <span class="material-symbols-outlined">local_shipping</span>
-          Delivery Management
-        </a>
-      </li>
-      <li
-        class="{% if request.path == url_for('rider.pickup_management') %}active{% endif %}"
-      >
-        <a href="{{ url_for('rider.pickup_management') }}">
-          <span class="material-symbols-outlined">inventory_2</span>
-          Pickup Management
-        </a>
-      </li>
-      <li
-        class="{% if request.path == url_for('rider.earnings') %}active{% endif %}"
-      >
-        <a href="{{ url_for('rider.earnings') }}">
-          <span class="material-symbols-outlined">payments</span>
-          Earnings & Payout
-        </a>
-      </li>
-
-      <li
-        class="{% if request.path == url_for('rider.profile_settings') %}active{% endif %}"
-      >
-        <a href="{{ url_for('rider.profile_settings') }}">
-          <span class="material-symbols-outlined">person</span>
-          Profile
-        </a>
-      </li>
-      <li
-        class="{% if request.path == url_for('rider.notifications') %}active{% endif %}"
-      >
-        <a href="{{ url_for('rider.notifications') }}">
-          <span class="material-symbols-outlined">notifications</span>
-          Notifications
-        </a>
-      </li>
-      <li
-        class="{% if request.path == url_for('rider.communication_tools') %}active{% endif %}"
-      >
-        <a href="{{ url_for('rider.communication_tools') }}">
-          <span class="material-symbols-outlined">chat</span>
-          Communication
-        </a>
-      </li>
-      <!-- Performance link removed per request -->
-
-      <li>
-        <a href="#">
-          <span class="material-symbols-outlined">logout</span>
-          Logout
-        </a>
-      </li>
-    </ul>
-  </nav>
+  <div class="sidebar-content">
+    <nav class="sidebar-nav">
+      <ul class="nav-list">
+        <li
+          class="nav-item {% if request.path == url_for('main.index') %}active{% endif %}"
+        >
+          <a href="{{ url_for('main.index') }}">
+            <i data-lucide="layout-dashboard"></i>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <li
+          class="nav-item {% if request.path == url_for('rider.job_list') %}active{% endif %}"
+        >
+          <a href="{{ url_for('rider.job_list') }}">
+            <i data-lucide="list"></i>
+            <span>Job List</span>
+          </a>
+        </li>
+        <li
+          class="nav-item {% if request.path == url_for('rider.delivery_management') %}active{% endif %}"
+        >
+          <a href="{{ url_for('rider.delivery_management') }}">
+            <i data-lucide="truck"></i>
+            <span>Deliver Parcel</span>
+          </a>
+        </li>
+        <li
+          class="nav-item {% if request.path == url_for('rider.pickup_management') %}active{% endif %}"
+        >
+          <a href="{{ url_for('rider.pickup_management') }}">
+            <i data-lucide="package"></i>
+            <span>Pickup Parcel</span>
+          </a>
+        </li>
+        <li
+          class="nav-item {% if request.path == url_for('rider.earnings') %}active{% endif %}"
+        >
+          <a href="{{ url_for('rider.earnings') }}">
+            <i data-lucide="credit-card"></i>
+            <span>Earnings & Payout</span>
+          </a>
+        </li>
+        <li
+          class="nav-item {% if request.path == url_for('rider.profile_settings') %}active{% endif %}"
+        >
+          <a href="{{ url_for('rider.profile_settings') }}">
+            <i data-lucide="user"></i>
+            <span>Profile</span>
+          </a>
+        </li>
+        <li
+          class="nav-item {% if request.path == url_for('rider.notifications') %}active{% endif %}"
+        >
+          <a href="{{ url_for('rider.notifications') }}">
+            <i data-lucide="bell"></i>
+            <span>Notifications</span>
+          </a>
+        </li>
+        <!-- Communication nav item removed -->
+      </ul>
+    </nav>
+  </div>
+  <div class="sidebar-footer">
+    <a href="{{ url_for('auth.logout') }}" class="logout-btn">
+      <i data-lucide="log-out"></i>
+      <span>Logout</span>
+    </a>
+  </div>
 </aside>

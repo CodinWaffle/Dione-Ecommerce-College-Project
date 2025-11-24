@@ -74,7 +74,10 @@ def performance():
 def profile_settings():
     if not _ensure_rider_access():
         return redirect(url_for('main.profile'))
-    return render_template('rider/profile_settings.html', username=current_user.email)
+    # Provide `profile` to the template (current_user) to avoid UndefinedError in templates
+    return render_template(
+        'rider/profile_settings.html', username=current_user.email, profile=current_user
+    )
 
 
 @rider_bp.route('/rider/map')
@@ -100,4 +103,6 @@ def notifications():
 def communication_tools():
     if not _ensure_rider_access():
         return redirect(url_for('main.profile'))
-    return render_template('rider/communication_tools.html', username=current_user.email)
+    # Communication tools page removed — redirect riders to their dashboard.
+    flash('Communication tools have been removed.', 'info')
+    return redirect(url_for('rider.rider_dashboard'))

@@ -1,0 +1,161 @@
+/* Backup of original rider sidebar CSS */
+
+/* Sidebar Styles */
+.sidebar {
+  grid-area: sidebar;
+  background-color: white;
+  height: 100vh;
+  position: fixed;
+  width: var(--sidebar-width);
+  box-shadow: var(--shadow-md);
+  transition: transform var(--transition-speed);
+  z-index: 1100; /* put sidebar above page but allow header toggle to be raised */
+  padding-top: var(--header-height);
+}
+
+.sidebar-nav li {
+  margin: 0.5rem 0;
+}
+
+.sidebar-nav a {
+  align-items: center;
+  padding: 0.6rem 1.5rem 0.6rem 2.5rem;
+  color: var(--text-primary);
+  text-decoration: none;
+  transition: all var(--transition-speed);
+  border-left: 3px solid transparent;
+  gap: 0.75rem;
+  font-size: 0.95rem;
+}
+
+.has-submenu .submenu a:hover {
+  background-color: white;
+  color: var(--primary-color);
+}
+
+.has-submenu .submenu li.active a {
+  background-color: white;
+  color: var(--primary-color);
+  border-left-color: var(--primary-color);
+}
+
+.sidebar-nav a {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  color: var(--text-primary);
+  text-decoration: none;
+  transition: all var(--transition-speed);
+  border-left: 3px solid transparent;
+  gap: 0.75rem;
+}
+
+.sidebar-nav a:hover {
+  /* Make the sidebar header align with the top header height */
+  height: var(--header-height);
+  display: flex;
+  align-items: center;
+  padding: 0 1.25rem; /* match header horizontal padding */
+  border-bottom: 1px solid rgba(16, 24, 40, 0.04); /* low opacity bottom line like admin */
+
+.sidebar-nav li.active a {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+  font-size: 1.35rem;
+  color: var(--primary-color, #7c3aed);
+}
+
+/* Ensure icons in nav items are visible and inherit text color */
+.sidebar .nav-item i {
+  width: 20px;
+  height: 20px;
+  font-size: 1.25rem;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary-color, #7c3aed);
+  margin-left: 6px;
+  font-weight: 700;
+/* Make sidebar links sit above most page overlays */
+.sidebar {
+  z-index: 1100;
+}
+
+.sidebar .nav-item {
+  position: relative;
+  z-index: 1101;
+}
+
+/* Sidebar Footer */
+.sidebar-footer {
+  position: absolute;
+  bottom: 1.4rem; /* lift logout slightly above very bottom */
+  width: 100%;
+  padding: 0 1.5rem;
+  border-top: 1px solid var(--border-color);
+}
+
+/* Logout button styling: match sidebar links color and spacing */
+.logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  color: var(--text-primary);
+  width: 100%;
+  border-radius: 8px;
+  text-decoration: none;
+}
+.logout-btn i {
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.logout-btn:hover {
+  background-color: var(--background-color);
+  color: var(--primary-color);
+}
+
+/* Collapsed Sidebar */
+.sidebar.closed {
+  transform: translateX(-100%);
+}
+
+/* Match seller/admin collapsed (icons-only) behaviour */
+:root {
+  --sidebar-collapsed-width: 80px;
+}
+
+.sidebar.collapsed {
+  width: var(--sidebar-collapsed-width);
+  overflow: visible;
+}
+
+.sidebar.collapsed .nav-item span {
+  display: none;
+}
+
+.sidebar.collapsed .nav-item a {
+  justify-content: center;
+  padding: 10px 12px;
+}
+
+.sidebar.collapsed .brand h2 {
+  max-width: 0;
+  opacity: 0;
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+  }
+
+  .sidebar.active {
+    transform: translateX(0);
+  }
+}

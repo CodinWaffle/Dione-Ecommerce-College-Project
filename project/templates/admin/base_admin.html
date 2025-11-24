@@ -35,6 +35,67 @@
     margin: 0 !important;
     padding: 0 !important;
   }
+  /* Ensure admin header matches seller header layout and is visible */
+  .seller-header.admin-header-override,
+  .admin-header-override {
+    /* CSS variables to match seller layout */
+    --sidebar-width: 280px;
+    --sidebar-collapsed-width: 80px;
+    height: 82px;
+    background: var(--white, #ffffff);
+    border-bottom: 1px solid rgba(229, 231, 235, 1);
+    position: fixed;
+    top: 0;
+    left: 0; /* extend header background to the left edge */
+    right: 0;
+    z-index: 900;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 12px;
+  }
+  /* Adjust when sidebar is collapsed (use same class as seller header expects) */
+  .seller-header.admin-header-override.expanded,
+  .admin-header-override.expanded {
+    /* when sidebar is collapsed we reduce the header's left padding so
+       the content stays aligned with the collapsed sidebar */
+    padding-left: var(--sidebar-collapsed-width);
+  }
+  /* ensure header content is offset by the sidebar width so the header
+     background reaches the very left but content sits next to the sidebar */
+  .seller-header.admin-header-override,
+  .admin-header-override {
+    padding-left: var(--sidebar-width);
+  }
+  /* Minor header element alignment fixes for admin pages */
+  .admin-header-override .header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .admin-header-override .header-right {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+  /* Keep the header's sidebar toggle button above the sidebar so it remains clickable
+     even when the header background is placed behind the sidebar. */
+  .admin-header-override .sidebar-toggle {
+    position: relative;
+    z-index: 1201;
+    pointer-events: auto;
+  }
+  /* Ensure page content reserves space for the fixed sidebar so header
+     appears glued to it (same behavior as seller header) */
+  .main-content {
+    margin-left: var(--sidebar-width);
+    padding-top: 82px; /* keep space for fixed header */
+    transition: margin-left 0.3s ease;
+  }
+
+  .main-content.expanded {
+    margin-left: var(--sidebar-collapsed-width);
+  }
 </style>
 {% endblock %} {% block content %}
 <style>
@@ -52,4 +113,45 @@
   should render the sidebar and a `.main-content` element. #} {% block
   admin_content %}{% endblock %}
 </div>
+{# Include chat bubble partial so admin pages also render the chat UI #} {%
+include 'partials/_chat_bubble.html' %} {% endblock %} {% block extra_scripts %}
+<script>
+  (function () {
+    const sidebar = document.getElementById("sidebar");
+    const toggle = document.getElementById("sidebarToggle");
+    const header = document.querySelector(".admin-header-override");
+    const main = document.querySelector(".main-content");
+
+    if (!sidebar || !toggle) return;
+
+    // Restore previous state
+    const collapsed = localStorage.getItem("adminSidebarCollapsed") === "true";
+    if (collapsed) {
+      sidebar.classList.add("collapsed");
+      if (header) header.classList.add("expanded");
+      if (main) main.classList.add("expanded");
+    }
+
+    toggle.addEventListener("click", function () {
+      const isCollapsed = sidebar.classList.toggle("collapsed");
+      if (header) header.classList.toggle("expanded");
+      if (main) main.classList.toggle("expanded");
+      localStorage.setItem("adminSidebarCollapsed", isCollapsed);
+    });
+
+    // Hide notification badges that show 0
+    try {
+      document.querySelectorAll(".notification-count").forEach(function (el) {
+        const v = parseInt(el.textContent.trim(), 10);
+        if (!v || v === 0) {
+          el.style.display = "none";
+        } else {
+          el.style.display = "flex";
+        }
+      });
+    } catch (e) {
+      // ignore
+    }
+  })();
+</script>
 {% endblock %}
