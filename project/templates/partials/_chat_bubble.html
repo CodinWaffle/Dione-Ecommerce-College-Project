@@ -9,7 +9,7 @@ true)|lower) in ['buyer','seller','rider'] %}
     width: 60px;
     height: 60px;
     border-radius: 50%;
-    background: #0066ff;
+    background: #7c3aed;
     color: white;
     display: flex;
     align-items: center;
@@ -21,10 +21,11 @@ true)|lower) in ['buyer','seller','rider'] %}
   }
   .chat-bubble-modal {
     position: fixed;
-    right: 90px;
-    bottom: 90px;
-    width: 360px;
+    right: 70px;
+    bottom: 70px;
+    width: 520px;
     max-width: calc(100% - 40px);
+    max-height: 80vh;
     background: white;
     border: 1px solid #e5e5e5;
     border-radius: 8px;
@@ -44,12 +45,39 @@ true)|lower) in ['buyer','seller','rider'] %}
     justify-content: space-between;
   }
   .chat-bubble-messages {
-    max-height: 300px;
+    max-height: 60vh;
     overflow-y: auto;
     padding: 8px 12px;
     display: flex;
     flex-direction: column;
     gap: 8px;
+  }
+  .chat-attachment-preview {
+    display: none;
+    padding: 8px 12px;
+    border-top: 1px solid #f3f4f6;
+    border-bottom: 1px solid #f3f4f6;
+    background: #fafafa;
+    gap: 8px;
+    align-items: center;
+  }
+  .chat-attachment-preview img {
+    max-width: 120px;
+    max-height: 90px;
+    border-radius: 8px;
+    display: block;
+  }
+  .chat-attachment-meta {
+    font-size: 13px;
+    color: #374151;
+  }
+  .chat-attachment-remove {
+    background: none;
+    border: none;
+    color: #ef4444;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 4px 8px;
   }
   .chat-bubble-input {
     display: flex;
@@ -71,8 +99,20 @@ true)|lower) in ['buyer','seller','rider'] %}
   }
   .chat-msg.me {
     align-self: flex-end;
-    background: #0066ff;
+    background: #7c3aed;
     color: white;
+  }
+  .chat-status {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 4px;
+    margin-left: 8px;
+  }
+  .chat-status.seen {
+    color: #10b981; /* green */
+  }
+  .chat-status.failed {
+    color: #ef4444; /* red */
   }
   .chat-msg.them {
     align-self: flex-start;
@@ -91,7 +131,32 @@ true)|lower) in ['buyer','seller','rider'] %}
   <div class="chat-bubble-header">
     <div>
       <strong>Message Admin</strong>
-      <div style="font-size: 12px; color: #6b7280">Support will reply here</div>
+      <div
+        style="
+          font-size: 12px;
+          color: #6b7280;
+          display: flex;
+          gap: 8px;
+          align-items: center;
+        "
+      >
+        <span
+          id="chatAdminStatus"
+          style="display: inline-flex; align-items: center; gap: 6px"
+        >
+          <span
+            id="chatAdminDot"
+            style="
+              width: 8px;
+              height: 8px;
+              border-radius: 50%;
+              background: #9ca3af;
+              display: inline-block;
+            "
+          ></span>
+          <span id="chatAdminLabel">Support will reply here</span>
+        </span>
+      </div>
     </div>
     <button
       id="chatBubbleClose"
@@ -101,8 +166,26 @@ true)|lower) in ['buyer','seller','rider'] %}
     </button>
   </div>
   <div id="chatBubbleMessages" class="chat-bubble-messages"></div>
+  <div
+    id="chatAttachmentPreview"
+    class="chat-attachment-preview"
+    style="display: none"
+  >
+    <div
+      id="chatAttachmentPreviewContent"
+      style="display: flex; gap: 8px; align-items: center; width: 100%"
+    ></div>
+  </div>
   <div class="chat-bubble-input">
     <input id="chatBubbleInput" placeholder="Type a message..." />
+    <input id="chatBubbleFile" type="file" style="display: none" />
+    <button
+      id="chatBubbleAttach"
+      title="Attach file"
+      style="background: none; border: none; font-size: 18px"
+    >
+      📎
+    </button>
     <button id="chatBubbleSend" class="btn btn-primary">Send</button>
   </div>
 </div>
@@ -114,7 +197,11 @@ true)|lower) in ['buyer','seller','rider'] %}
     const closeBtn = document.getElementById("chatBubbleClose");
     const sendBtn = document.getElementById("chatBubbleSend");
     const input = document.getElementById("chatBubbleInput");
+    const fileInput = document.getElementById("chatBubbleFile");
+    const attachBtn = document.getElementById("chatBubbleAttach");
     const messages = document.getElementById("chatBubbleMessages");
+    const adminDot = document.getElementById("chatAdminDot");
+    const adminLabel = document.getElementById("chatAdminLabel");
 
     function openModal() {
       modal.classList.add("active");
@@ -129,10 +216,54 @@ true)|lower) in ['buyer','seller','rider'] %}
     btn.addEventListener("click", openModal);
     closeBtn.addEventListener("click", closeModal);
 
-    sendBtn.addEventListener("click", function () {
+    sendBtn.addEventListener("click", async function (e) {
+      e.preventDefault();
       const text = input.value.trim();
-      if (!text) return;
-      sendMessage(text);
+      // allow sending when there is text OR an attached file
+      if (!text && !(fileInput.files && fileInput.files.length)) return;
+      sendBtn.disabled = true;
+      const prevLabel = sendBtn.textContent;
+      sendBtn.textContent = "Sending...";
+      try {
+        await sendMessage(text);
+      } catch (err) {
+        console.error("chat send failed", err);
+        // append a temporary failed message bubble so user sees the failure inline
+        try {
+          const failedDiv = document.createElement("div");
+          failedDiv.className = "chat-msg me failed";
+          const fbody = document.createElement("div");
+          fbody.textContent =
+            text ||
+            (fileInput.files[0] && fileInput.files[0].name) ||
+            "Failed to send";
+          failedDiv.appendChild(fbody);
+          const fts = document.createElement("div");
+          fts.style.fontSize = "11px";
+          fts.style.opacity = "0.7";
+          fts.style.marginTop = "6px";
+          fts.textContent = new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+          failedDiv.appendChild(fts);
+          const fstatus = document.createElement("div");
+          fstatus.className = "chat-status failed";
+          fstatus.textContent = "Failed";
+          failedDiv.appendChild(fstatus);
+          messages.appendChild(failedDiv);
+          messages.scrollTop = messages.scrollHeight;
+        } catch (e) {
+          // ignore UI error
+        }
+        alert(
+          "Failed to send message: " +
+            (err && err.message ? err.message : "unknown")
+        );
+      } finally {
+        sendBtn.disabled = false;
+        sendBtn.textContent = prevLabel;
+      }
     });
 
     input.addEventListener("keydown", function (e) {
@@ -142,15 +273,115 @@ true)|lower) in ['buyer','seller','rider'] %}
       }
     });
 
+    function formatTimestamp(iso) {
+      try {
+        const dt = new Date(iso);
+        const now = new Date();
+        const sameDay = dt.toDateString() === now.toDateString();
+        const timePart = dt.toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+        return sameDay ? timePart : dt.toLocaleString();
+      } catch (e) {
+        return iso;
+      }
+    }
+
+    function isImageAttachment(url) {
+      if (!url) return false;
+      return /\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(url);
+    }
+
     function renderMsgs(list) {
       messages.innerHTML = "";
+      try {
+        // ensure chronological order: oldest first, newest last
+        list = (list || []).slice().sort((a, b) => {
+          try {
+            return new Date(a.created_at) - new Date(b.created_at);
+          } catch (e) {
+            return 0;
+          }
+        });
+      } catch (e) {
+        // ignore sort errors and render as-is
+      }
       list.forEach((m) => {
         const d = document.createElement("div");
         d.className = "chat-msg " + (m.is_from_admin ? "them" : "me");
-        d.textContent = m.body;
+        // message body
+        const body = document.createElement("div");
+        body.textContent = m.body || "";
+        d.appendChild(body);
+
+        // attachment
+        if (m.attachment) {
+          if (isImageAttachment(m.attachment)) {
+            const img = document.createElement("img");
+            img.src = m.attachment;
+            img.style.maxWidth = "160px";
+            img.style.maxHeight = "120px";
+            img.style.borderRadius = "8px";
+            img.style.display = "block";
+            img.style.marginTop = "6px";
+            img.onclick = () => window.open(m.attachment, "_blank");
+            d.appendChild(img);
+          } else {
+            const a = document.createElement("a");
+            a.href = m.attachment;
+            a.textContent = "Download attachment";
+            a.target = "_blank";
+            a.style.display = "block";
+            a.style.marginTop = "6px";
+            d.appendChild(a);
+          }
+        }
+
+        // timestamp / sender (for user's messages show time only)
+        const ts = document.createElement("div");
+        ts.style.fontSize = "11px";
+        ts.style.opacity = "0.7";
+        ts.style.marginTop = "6px";
+        if (m.is_from_admin) {
+          ts.textContent =
+            (m.sender_name ? m.sender_name + " · " : "") +
+            formatTimestamp(m.created_at);
+        } else {
+          ts.textContent = formatTimestamp(m.created_at);
+        }
+        d.appendChild(ts);
+
+        // delivery/read status for user's messages (rendered outside bubble)
+        if (!m.is_from_admin) {
+          const status = document.createElement("div");
+          status.className = "chat-status " + (m.is_read ? "seen" : "");
+          status.textContent = m.is_read ? "Seen" : "Delivered";
+          d.appendChild(status);
+        }
+
         messages.appendChild(d);
       });
-      messages.scrollTop = messages.scrollHeight;
+      try {
+        // ensure the input/footer area in the modal doesn't cover the last message
+        const modal = messages.closest(".chat-bubble-modal");
+        const inputEl = modal
+          ? modal.querySelector(".chat-bubble-input")
+          : null;
+        const footerH = inputEl ? inputEl.offsetHeight : 0;
+        const gap = 12;
+        messages.style.paddingBottom = footerH + gap + "px";
+        messages.style.setProperty(
+          "scroll-padding-bottom",
+          footerH + gap + "px"
+        );
+        messages.scrollTop = Math.max(
+          0,
+          messages.scrollHeight - messages.clientHeight
+        );
+      } catch (e) {
+        messages.scrollTop = messages.scrollHeight;
+      }
     }
 
     function loadMessages() {
@@ -158,6 +389,14 @@ true)|lower) in ['buyer','seller','rider'] %}
         .then((r) => r.json())
         .then((data) => {
           if (data.messages) renderMsgs(data.messages);
+          // update admin active indicator
+          if (data.admin_online) {
+            adminDot.style.background = "#22c55e"; // green
+            adminLabel.textContent = "Support active";
+          } else {
+            adminDot.style.background = "#9ca3af";
+            adminLabel.textContent = "Support will reply here";
+          }
         })
         .catch((err) => console.error("chat load error", err));
     }
@@ -165,27 +404,100 @@ true)|lower) in ['buyer','seller','rider'] %}
     function sendMessage(text) {
       const form = new FormData();
       form.append("body", text);
-      fetch("/chat/send", {
+      if (fileInput.files && fileInput.files.length) {
+        form.append("file", fileInput.files[0]);
+      }
+      return fetch("/chat/send", {
         method: "POST",
         body: form,
         credentials: "same-origin",
       })
         .then(async (r) => {
+          // Always attempt to read text for richer diagnostics
+          const text = await r.text().catch(() => null);
           let data = {};
           try {
-            data = await r.json();
+            data = text ? JSON.parse(text) : {};
           } catch (e) {
-            console.error("chat send: invalid json response", e);
+            // Not JSON
+            console.debug("chat send: non-json response body:", text);
           }
-          if (r.ok && data.ok) {
+
+          console.debug("chat send response", r.status, data, text);
+
+          if (r.ok && data && data.ok) {
             input.value = "";
+            fileInput.value = "";
+            // clear attachment preview
+            renderAttachmentPreview(null);
             loadMessages();
-          } else {
-            console.error("chat send failed", r.status, data);
+            return data;
           }
+
+          // If server returned useful error info, show it to the user
+          const serverMsg =
+            (data && (data.error || data.message)) ||
+            text ||
+            `HTTP ${r.status}`;
+          console.error("chat send failed:", serverMsg);
+          // surface a helpful message instead of a generic alert
+          alert("Failed to send message: " + serverMsg);
+          throw new Error(serverMsg);
         })
-        .catch((err) => console.error("chat send error", err));
+        .catch((err) => {
+          console.error("chat send error", err);
+          throw err;
+        });
     }
+
+    // Attach button opens file picker
+    attachBtn.addEventListener("click", function (e) {
+      e.preventDefault();
+      fileInput.click();
+    });
+
+    function renderAttachmentPreview(file) {
+      const preview = document.getElementById("chatAttachmentPreview");
+      const content = document.getElementById("chatAttachmentPreviewContent");
+      content.innerHTML = "";
+      if (!file) {
+        preview.style.display = "none";
+        attachBtn.textContent = "📎";
+        return;
+      }
+      const meta = document.createElement("div");
+      meta.className = "chat-attachment-meta";
+      meta.textContent = file.name;
+      if (/\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(file.name)) {
+        const img = document.createElement("img");
+        img.src = URL.createObjectURL(file);
+        img.onload = () => URL.revokeObjectURL(img.src);
+        content.appendChild(img);
+      }
+      content.appendChild(meta);
+      const removeBtn = document.createElement("button");
+      removeBtn.className = "chat-attachment-remove";
+      removeBtn.type = "button";
+      removeBtn.textContent = "Remove";
+      removeBtn.onclick = function () {
+        fileInput.value = "";
+        renderAttachmentPreview(null);
+      };
+      content.appendChild(removeBtn);
+      preview.style.display = "flex";
+    }
+
+    // show preview when a file is selected
+    fileInput.addEventListener("change", function () {
+      if (fileInput.files && fileInput.files.length) {
+        const f = fileInput.files[0];
+        attachBtn.textContent =
+          "📎 " + (f.name.length > 12 ? f.name.slice(0, 12) + "…" : f.name);
+        renderAttachmentPreview(f);
+      } else {
+        renderAttachmentPreview(null);
+      }
+    });
   })();
 </script>
 {% endif %}

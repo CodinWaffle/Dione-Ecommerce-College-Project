@@ -267,7 +267,10 @@ class ChatMessage(db.Model):
   sender_name = db.Column(db.String(255))
   sender_role = db.Column(db.String(50))
   body = db.Column(db.Text, nullable=False)
+  # Optional filename/path for an uploaded attachment (images, files)
+  attachment = db.Column(db.String(512), nullable=True)
   is_from_admin = db.Column(db.Boolean, default=False)
+  is_read = db.Column(db.Boolean, nullable=False, default=False)
   created_at = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
 
   user = db.relationship('User', foreign_keys=[user_id], backref='chat_messages')

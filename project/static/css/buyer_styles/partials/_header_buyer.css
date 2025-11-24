@@ -324,6 +324,30 @@ body {
   position: relative;
   z-index: 1201;
   pointer-events: auto;
+  /* Make wishlist button the same visual size and alignment as other icons */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 8px;
+  /* Override global product-level wishlist styles so header icon matches other icons */
+  background: transparent !important;
+  border: none !important;
+  color: #6b7280 !important; /* default icon color */
+}
+
+.header-actions .wishlist-btn svg {
+  width: 22px !important;
+  height: 22px !important;
+  stroke-width: 2 !important;
+  display: block;
+}
+
+.header-actions .wishlist-btn.active,
+.header-actions .wishlist-btn:active {
+  color: #ef4444 !important; /* show red when active/clicked */
 }
 
 .cart-count {
@@ -936,6 +960,8 @@ html {
   align-items: center;
   margin-left: auto;
 }
+
+/* main-nav-simple removed: non-logged-in header uses only auth-nav */
 
 .auth-nav-link {
   text-decoration: none;

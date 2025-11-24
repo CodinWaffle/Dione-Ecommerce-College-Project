@@ -12,8 +12,8 @@
       }
 
       :root {
-        --primary: #0066ff;
-        --primary-dark: #0052cc;
+        --primary: #6c5ce7;
+        --primary-dark: #7c3aed;
         --background: #ffffff;
         --surface: #f5f5f5;
         --surface-alt: #efefef;
@@ -24,6 +24,17 @@
         --buyer: #ff6b6b;
         --seller: #4ecdc4;
         --rider: #ffd93d;
+      }
+
+      /* SVG outline icon styling */
+      .icon-outline {
+        width: 20px;
+        height: 20px;
+        display: inline-block;
+        vertical-align: middle;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.6px;
       }
 
       body {
@@ -53,6 +64,7 @@
       .sidebar-header {
         padding: 16px;
         border-bottom: 1px solid var(--border);
+        background: #ffffff; /* make contact list header white */
       }
 
       .sidebar-title {
@@ -77,6 +89,8 @@
       .contacts-list {
         flex: 1;
         overflow-y: auto;
+        background: #ffffff; /* white background for contact list */
+        padding: 12px 8px;
       }
 
       .contacts-list::-webkit-scrollbar {
@@ -93,23 +107,32 @@
       }
 
       .contact-item {
-        padding: 8px 8px;
-        margin: 0 8px;
-        border-radius: 8px;
+        padding: 12px 12px;
+        margin: 8px 8px;
+        border-radius: 12px;
         cursor: pointer;
-        transition: background 0.2s;
+        transition: transform 0.12s, box-shadow 0.12s;
         display: flex;
         align-items: center;
         gap: 12px;
+        background: #fff;
+        box-shadow: 0 2px 6px rgba(16, 24, 40, 0.04);
       }
 
       .contact-item:hover {
-        background: var(--surface-alt);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(16, 24, 40, 0.08);
       }
 
       .contact-item.active {
-        background: var(--primary);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(124, 58, 237, 0.18);
+        background: var(--primary-dark); /* stronger visible purple */
         color: white;
+      }
+
+      .contact-item.unread {
+        border-left: 4px solid var(--primary);
       }
 
       .contact-avatar {
@@ -119,10 +142,26 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        font-weight: bold;
+        font-weight: 700;
         color: white;
         font-size: 18px;
         flex-shrink: 0;
+        position: relative;
+        overflow: visible;
+      }
+
+      .avatar-badge {
+        position: absolute;
+        top: -6px;
+        right: -6px;
+        background: #ff3b30;
+        color: white;
+        font-size: 11px;
+        padding: 4px 6px;
+        border-radius: 999px;
+        min-width: 22px;
+        text-align: center;
+        box-shadow: 0 2px 6px rgba(16, 24, 40, 0.12);
       }
 
       .contact-item.buyer .contact-avatar {
@@ -160,6 +199,14 @@
         text-overflow: ellipsis;
       }
 
+      .contact-meta {
+        font-size: 12px;
+        color: var(--text-secondary);
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+
       .contact-item.active .contact-preview {
         color: rgba(255, 255, 255, 0.8);
       }
@@ -195,7 +242,15 @@
         flex: 1;
         display: flex;
         flex-direction: column;
-        background: var(--background);
+        background: #f9fafb; /* main message area background */
+      }
+
+      /* Ensure main chat container fills available height so footer sits at bottom */
+      #mainChatContainer {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 0; /* allow children to shrink for overflow */
       }
 
       .chat-header {
@@ -204,6 +259,25 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
+      }
+
+      .btn-back-admin {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-radius: 8px;
+        background: var(--primary);
+        border: 1px solid transparent;
+        color: white;
+        font-size: 13px;
+        text-decoration: none;
+        font-weight: 600;
+      }
+
+      .btn-back-admin:hover {
+        background: var(--primary-dark);
+        color: white;
       }
 
       .chat-title {
@@ -222,6 +296,74 @@
         flex-direction: column;
         gap: 12px;
         color: var(--text-secondary);
+      }
+
+      /* main chat area when a contact is selected */
+      .main-chat-area {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .main-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        /* ensure last message isn't hidden behind the footer; JS will set a matching padding dynamically */
+        padding-bottom: 180px;
+        /* help scrollIntoView / programmatic scrolling avoid being hidden under the sticky footer */
+        scroll-padding-bottom: 200px;
+      }
+
+      /* Attachment preview shown above the footer when admin selects a file */
+      .attachment-preview {
+        padding: 12px;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        border-top: 1px solid var(--border);
+        background: transparent;
+      }
+
+      .attachment-thumb {
+        width: 84px;
+        height: 84px;
+        border-radius: 8px;
+        object-fit: cover;
+        box-shadow: 0 2px 8px rgba(16, 24, 40, 0.06);
+        border: 1px solid rgba(16, 24, 40, 0.04);
+      }
+
+      .attachment-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .attachment-remove {
+        background: #fff;
+        border: 1px solid var(--border);
+        color: var(--text-secondary);
+        padding: 6px 8px;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+
+      .main-footer {
+        padding: 12px;
+        border-top: 1px solid var(--border);
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        background: var(--background);
+        /* keep footer visible at bottom */
+        flex-shrink: 0;
+        position: sticky;
+        bottom: 0;
+        z-index: 2;
       }
 
       .empty-state-icon {
@@ -366,14 +508,62 @@
       }
 
       .message.sent .message-bubble {
-        background: var(--primary);
+        /* Use a slightly translucent purple so bubbles read softer against the page */
+        background: rgba(124, 58, 237, 0.9); /* semi-transparent purple */
         color: white;
       }
 
+      .message-time {
+        color: rgba(255, 255, 255, 0.92);
+        opacity: 0.95;
+        font-size: 11px;
+      }
+
+      .message-status {
+        font-size: 11px;
+        font-weight: 600;
+        padding: 4px 8px;
+        border-radius: 12px;
+        display: inline-block;
+      }
+
+      /* Sent (purple) bubble styles: high-contrast background pills */
+      .message.sent .message-status.status-delivered {
+        background: rgba(255, 255, 255, 0.16);
+        color: #ffffff;
+      }
+      .message.sent .message-status.status-seen {
+        background: var(--success);
+        color: #ffffff;
+      }
+
+      /* Received (light) bubbles: subtle outlined badges */
+      .message.received .message-time {
+        color: var(--text-secondary);
+        opacity: 0.95;
+      }
+      .message.received .message-status.status-seen {
+        background: rgba(49, 162, 76, 0.12);
+        color: var(--success);
+        border: 1px solid rgba(49, 162, 76, 0.12);
+      }
+      .message.received .message-status.status-delivered {
+        background: rgba(0, 0, 0, 0.04);
+        color: var(--text-secondary);
+        border: 1px solid rgba(0, 0, 0, 0.04);
+      }
+
+      .message.received .message-meta {
+        color: var(--text-secondary);
+      }
+
       .message-image {
-        max-width: 80%;
+        max-width: 220px;
+        max-height: 220px;
         border-radius: 8px;
         cursor: pointer;
+        display: block;
+        margin-top: 8px;
       }
 
       .modal-footer {
@@ -457,11 +647,47 @@
       <!-- Main Chat Area -->
       <div class="main-content">
         <div class="chat-header">
-          <div class="chat-title">Select a conversation to start messaging</div>
+          <div style="display: flex; align-items: center; gap: 10px">
+            <svg
+              class="icon-outline"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <path
+                d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+              ></path>
+            </svg>
+            <div style="display: flex; flex-direction: column">
+              <div class="chat-title" id="mainChatTitle">Chat Support</div>
+              <div style="font-size: 12px; color: var(--text-secondary)">
+                Support active
+              </div>
+            </div>
+          </div>
+          <div>
+            <a href="{{ url_for('admin.overview') }}" class="btn-back-admin"
+              >← Back to Admin</a
+            >
+          </div>
         </div>
-        <div class="empty-state">
-          <div class="empty-state-icon">💬</div>
-          <p>Choose a contact to view messages</p>
+        <div id="mainChatContainer">
+          <div class="empty-state" id="mainEmptyState">
+            <div class="empty-state-icon">
+              <svg
+                class="icon-outline"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+                focusable="false"
+              >
+                <path
+                  d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+                ></path>
+              </svg>
+            </div>
+            <p>Choose a contact to view messages</p>
+          </div>
+          <!-- when a contact is selected, .main-chat-area will be inserted here -->
         </div>
       </div>
     </div>
@@ -499,86 +725,323 @@
       function renderContacts(list) {
         const contactsList = document.getElementById("contactsList");
         contactsList.innerHTML = list
-          .map(
-            (c) => `
-                <div class="contact-item ${c.role || "buyer"}" data-id="${
-              c.id
-            }">
-                    <div class="contact-avatar">${(c.name || "U")
-                      .split(" ")
-                      .map((s) => s[0] || "")
-                      .slice(0, 2)
-                      .join("")}</div>
-                    <div class="contact-info">
-                        <div class="contact-name">${c.name}</div>
-                        <div class="contact-preview">${
-                          c.last_at ? new Date(c.last_at).toLocaleString() : ""
-                        }</div>
-                        <div class="contact-badge">${c.role}</div>
-                    </div>
+          .map((c) => {
+            const initials = (c.name || "U")
+              .split(" ")
+              .map((s) => s[0] || "")
+              .slice(0, 2)
+              .join("");
+            const roleClass = c.role || "buyer";
+            const previewText = c.last_body ? c.last_body : "";
+            // hide time in contact list and only show unread badge when > 0
+            const unreadCount = Number(c.unread) || 0;
+            const unreadClass = unreadCount > 0 ? " unread" : "";
+            const badgeHtml =
+              unreadCount > 0
+                ? `<span class="avatar-badge">${unreadCount}</span>`
+                : "";
+            return `
+              <div class="contact-item ${roleClass}${unreadClass}" data-id="${c.id}">
+                <div class="contact-avatar">${initials}${badgeHtml}</div>
+                <div class="contact-info">
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <div class="contact-name">${c.name}</div>
+                  </div>
+                  <div class="contact-preview">${previewText}</div>
                 </div>
-            `
-          )
+              </div>
+            `;
+          })
           .join("");
 
-        document.querySelectorAll(".contact-item").forEach((item) => {
-          item.addEventListener("click", () =>
-            openChat(parseInt(item.dataset.id))
+        // Use event delegation so clicks on children still resolve to the contact item
+        contactsList.removeEventListener &&
+          contactsList.removeEventListener(
+            "click",
+            contactsList._delegatedClick
           );
-        });
+        contactsList._delegatedClick = function (ev) {
+          const item = ev.target.closest && ev.target.closest(".contact-item");
+          if (!item) return;
+          const id = item.dataset && item.dataset.id;
+          console.debug("Contact clicked", id);
+          if (!id) return;
+          openChat(parseInt(id, 10));
+        };
+        contactsList.addEventListener("click", contactsList._delegatedClick);
       }
 
       function loadContacts() {
         fetch("/admin/chat/contacts")
           .then((r) => r.json())
           .then((data) => {
-            renderContacts(data.contacts || []);
+            const contacts = data.contacts || [];
+            if (contacts.length) {
+              renderContacts(contacts);
+            } else {
+              // Fallback: contacts endpoint returned nothing — use debug endpoint which includes
+              // distinct user ids and user summaries from chat_messages so we can render them.
+              fetch("/admin/chat/debug")
+                .then((r) => r.json())
+                .then((dbg) => {
+                  if (!dbg || !dbg.ok) return renderContacts([]);
+                  // Build contact-like objects from debug users + sample messages
+                  const users = dbg.users || [];
+                  const samples = dbg.sample_messages || [];
+                  const sampleMap = {};
+                  samples.forEach((s) => {
+                    if (!sampleMap[s.user_id]) sampleMap[s.user_id] = s;
+                  });
+                  const built = users.map((u) => ({
+                    id: u.id,
+                    name: u.name,
+                    role: u.role || "buyer",
+                    last_at:
+                      (sampleMap[u.id] && sampleMap[u.id].created_at) || null,
+                    last_body:
+                      (sampleMap[u.id] && sampleMap[u.id].body) || null,
+                    unread: 0,
+                  }));
+                  renderContacts(built);
+                })
+                .catch((err) => {
+                  console.error("debug load error", err);
+                  renderContacts([]);
+                });
+            }
+            // highlight unread and move most recent to top already handled server-side
           })
           .catch((err) => console.error("contacts load error", err));
       }
 
       function openChat(userId) {
+        console.debug("openChat called with", userId);
+        if (!userId) return;
         currentContact = userId;
-        fetch(`/admin/chat/messages/${userId}`)
-          .then((r) => r.json())
-          .then((data) => {
-            document.getElementById("modalContactName").textContent =
-              data.user.name;
-            const avatar = document.getElementById("modalAvatar");
-            avatar.textContent = (data.user.name || "U")
-              .split(" ")
-              .map((s) => s[0] || "")
-              .slice(0, 2)
-              .join("");
-            avatar.style.background =
-              data.user.role === "buyer"
-                ? "var(--buyer)"
-                : data.user.role === "seller"
-                ? "var(--seller)"
-                : "var(--rider)";
 
-            const messagesContainer = document.getElementById("modalMessages");
-            messagesContainer.innerHTML = "";
-            (data.messages || []).forEach((m) => {
+        // optimistic UI: mark selected contact active immediately
+        document
+          .querySelectorAll(".contact-item")
+          .forEach((item) => item.classList.remove("active"));
+        const selectedEl = document.querySelector(`[data-id="${userId}"]`);
+        if (selectedEl) {
+          selectedEl.classList.add("active");
+          // remove unread highlight + badge immediately on open to provide instant feedback
+          selectedEl.classList.remove("unread");
+          const badge = selectedEl.querySelector(".avatar-badge");
+          if (badge) badge.remove();
+        }
+
+        const mainContainer = document.getElementById("mainChatContainer");
+        // show loading state in main area
+        mainContainer.innerHTML = `<div class="empty-state"><div>Loading conversation…</div></div>`;
+
+        fetch(`/admin/chat/messages/${userId}`)
+          .then((r) => {
+            if (!r.ok) throw new Error("Failed to load messages " + r.status);
+            return r.json();
+          })
+          .then((data) => {
+            // Render conversation into main chat area (replace empty state)
+            mainContainer.innerHTML = "";
+            const chatArea = document.createElement("div");
+            chatArea.className = "main-chat-area";
+
+            // messages
+            const messagesDiv = document.createElement("div");
+            messagesDiv.className = "main-messages";
+            // ensure messages render oldest -> newest (newest at bottom)
+            const msgs = (data.messages || []).slice().sort((a, b) => {
+              try {
+                return new Date(a.created_at) - new Date(b.created_at);
+              } catch (e) {
+                return 0;
+              }
+            });
+            msgs.forEach((m) => {
               const div = document.createElement("div");
               div.className =
                 "message " + (m.is_from_admin ? "sent" : "received");
-              div.innerHTML = `<div class="message-bubble">${m.body}</div>`;
-              messagesContainer.appendChild(div);
+
+              const bubble = document.createElement("div");
+              bubble.className = "message-bubble";
+
+              // If there's an attachment image, show it above the text
+              if (m.attachment) {
+                const isImage = /\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(
+                  m.attachment
+                );
+                if (isImage) {
+                  const img = document.createElement("img");
+                  img.src = m.attachment;
+                  img.className = "message-image";
+                  img.alt = "attachment";
+                  img.onclick = () => window.open(m.attachment, "_blank");
+                  bubble.appendChild(img);
+                } else {
+                  const a = document.createElement("a");
+                  a.href = m.attachment;
+                  a.textContent = "Download attachment";
+                  a.target = "_blank";
+                  a.style.display = "block";
+                  bubble.appendChild(a);
+                }
+              }
+
+              // message text
+              if (m.body) {
+                const txt = document.createElement("div");
+                txt.textContent = m.body;
+                bubble.appendChild(txt);
+              }
+
+              // meta: time + status
+              const meta = document.createElement("div");
+              meta.className = "message-meta";
+              const timeSpan = document.createElement("div");
+              timeSpan.className = "message-time";
+              try {
+                timeSpan.textContent = m.created_at
+                  ? new Date(m.created_at).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  : "";
+              } catch (e) {
+                timeSpan.textContent = "";
+              }
+              const statusSpan = document.createElement("div");
+              // Show Seen / Delivered based on is_read flag, with readable styles
+              const seen = Boolean(m.is_read);
+              statusSpan.className =
+                "message-status " + (seen ? "status-seen" : "status-delivered");
+              statusSpan.textContent = seen ? "Seen" : "Delivered";
+              meta.appendChild(timeSpan);
+              meta.appendChild(statusSpan);
+              bubble.appendChild(meta);
+
+              div.appendChild(bubble);
+              messagesDiv.appendChild(div);
             });
-            setTimeout(
-              () =>
-                (messagesContainer.scrollTop = messagesContainer.scrollHeight),
-              0
-            );
-            document.getElementById("chatModal").classList.add("active");
+
+            // footer input
+            const footer = document.createElement("div");
+            footer.className = "main-footer";
+            footer.innerHTML = `
+                    <textarea id="mainMessageInput" class="message-input" placeholder="Type a message"></textarea>
+                    <input type="file" id="mainFileInput" style="display:none" />
+                    <button class="icon-btn" id="mainAttachBtn">📎</button>
+                    <button class="icon-btn" id="mainSendBtn">➤</button>
+                  `;
+
+            chatArea.appendChild(messagesDiv);
+            chatArea.appendChild(footer);
+            mainContainer.appendChild(chatArea);
+
+            // set header title
+            try {
+              document.getElementById("mainChatTitle").textContent =
+                data.user && data.user.name ? data.user.name : "Conversation";
+            } catch (e) {
+              console.warn("Could not set main title", e);
+            }
+
+            // refresh contacts so unread counts reflect the messages just marked read
+            try {
+              loadContacts();
+            } catch (e) {
+              console.warn("Could not refresh contacts", e);
+            }
+
+            // attach event handlers for main footer
             document
-              .querySelectorAll(".contact-item")
-              .forEach((item) => item.classList.remove("active"));
-            const el = document.querySelector(`[data-id="${userId}"]`);
-            if (el) el.classList.add("active");
+              .getElementById("mainAttachBtn")
+              .addEventListener("click", () =>
+                document.getElementById("mainFileInput").click()
+              );
+            const mainSendBtnEl = document.getElementById("mainSendBtn");
+            if (mainSendBtnEl) {
+              mainSendBtnEl.addEventListener("click", async function () {
+                console.debug("mainSendBtn clicked for user", userId);
+                const txtEl = document.getElementById("mainMessageInput");
+                const fileEl = document.getElementById("mainFileInput");
+                const txt = txtEl ? txtEl.value.trim() : "";
+                const hasFile = fileEl && fileEl.files && fileEl.files.length;
+                if (!txt && !hasFile) return;
+                const fm = new FormData();
+                fm.append("body", txt);
+                if (hasFile) fm.append("file", fileEl.files[0]);
+                mainSendBtnEl.disabled = true;
+                const prev = mainSendBtnEl.textContent;
+                mainSendBtnEl.textContent = "Sending...";
+                try {
+                  const resp = await fetch(
+                    `/admin/chat/messages/${userId}/send`,
+                    { method: "POST", body: fm }
+                  );
+                  const data = await resp.json().catch(() => ({}));
+                  if (resp.ok && data.ok) {
+                    if (txtEl) txtEl.value = "";
+                    if (fileEl) {
+                      fileEl.value = "";
+                      // remove preview if present
+                      const p = chatArea.querySelector(".attachment-preview");
+                      if (p) p.remove();
+                    }
+                    openChat(userId);
+                    loadContacts();
+                  } else {
+                    console.error("admin send failed", resp.status, data);
+                    alert(
+                      "Failed to send message: " + (data.error || resp.status)
+                    );
+                  }
+                } catch (err) {
+                  console.error("admin send error", err);
+                  alert("Failed to send message. See console for details.");
+                } finally {
+                  mainSendBtnEl.disabled = false;
+                  mainSendBtnEl.textContent = prev;
+                }
+              });
+            }
+
+            // wire main file input change -> preview
+            const mainFileInputEl = document.getElementById("mainFileInput");
+            if (mainFileInputEl) {
+              mainFileInputEl.addEventListener("change", function (e) {
+                const f = e.target.files && e.target.files[0];
+                handleMainFileSelect(f, chatArea);
+              });
+            }
+
+            // scroll to bottom and make sure last message is visible above footer
+            setTimeout(() => {
+              try {
+                const footerEl = chatArea.querySelector(".main-footer");
+                const footerH = footerEl ? footerEl.offsetHeight : 0;
+                // give a small extra gap so bubble isn't flush against footer
+                const gap = 16;
+                messagesDiv.style.paddingBottom = footerH + gap + "px";
+                messagesDiv.style.setProperty(
+                  "scroll-padding-bottom",
+                  footerH + gap + "px"
+                );
+                // scroll so the bottom-most content is visible above the footer
+                messagesDiv.scrollTop = Math.max(
+                  0,
+                  messagesDiv.scrollHeight - messagesDiv.clientHeight
+                );
+              } catch (e) {
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+              }
+            }, 0);
           })
-          .catch((err) => console.error("load messages error", err));
+          .catch((err) => {
+            console.error("load messages error", err);
+            const mainContainer = document.getElementById("mainChatContainer");
+            mainContainer.innerHTML = `<div class="empty-state"><p style="color:var(--text-secondary)">Unable to load conversation.</p></div>`;
+          });
       }
 
       function closeChat() {
@@ -593,9 +1056,16 @@
       function sendMessage() {
         const input = document.getElementById("messageInput");
         const text = input.value.trim();
-        if (!text || !currentContact) return;
+        const modalFile = document.getElementById("fileInput");
+        const hasModalFile =
+          modalFile && modalFile.files && modalFile.files.length;
+        if (!currentContact || (!text && !hasModalFile)) return;
         const form = new FormData();
         form.append("body", text);
+        // support attaching a file from the modal file input
+        if (hasModalFile) {
+          form.append("file", modalFile.files[0]);
+        }
         fetch(`/admin/chat/messages/${currentContact}/send`, {
           method: "POST",
           body: form,
@@ -604,6 +1074,17 @@
           .then((data) => {
             if (data.ok) {
               input.value = "";
+              // clear modal file input + preview
+              const mf = document.getElementById("fileInput");
+              if (mf) {
+                mf.value = "";
+                const prev =
+                  document.querySelector(".modal-footer") &&
+                  document
+                    .querySelector(".modal-footer")
+                    .parentElement.querySelector(".attachment-preview");
+                if (prev) prev.remove();
+              }
               // reload messages
               openChat(currentContact);
               // also refresh contacts list
@@ -634,7 +1115,8 @@
             document.getElementById("fileInput").click()
           );
         document.getElementById("fileInput").addEventListener("change", (e) => {
-          /* TODO: handle image upload */
+          const f = e.target.files && e.target.files[0];
+          handleModalFileSelect(f);
         });
         document.getElementById("searchBox").addEventListener("input", (e) => {
           const q = e.target.value.toLowerCase();
@@ -653,6 +1135,89 @@
       setupEventListeners();
       // poll contacts periodically for updates
       setInterval(loadContacts, 5000);
+
+      /* Attachment preview helpers for modal and inline footer */
+      function createPreviewElement(file) {
+        if (!file) return null;
+        const wrap = document.createElement("div");
+        wrap.className = "attachment-preview";
+
+        const img = document.createElement("img");
+        img.className = "attachment-thumb";
+        img.alt = file.name || "attachment";
+        // show local preview if possible
+        try {
+          const url = URL.createObjectURL(file);
+          img.src = url;
+          img.onclick = () => window.open(url, "_blank");
+        } catch (e) {}
+
+        const meta = document.createElement("div");
+        meta.className = "attachment-meta";
+        const name = document.createElement("div");
+        name.textContent = file.name || "attachment";
+        name.style.fontSize = "13px";
+        name.style.color = "var(--text-secondary)";
+
+        const removeBtn = document.createElement("button");
+        removeBtn.className = "attachment-remove";
+        removeBtn.type = "button";
+        removeBtn.textContent = "Remove";
+
+        meta.appendChild(name);
+        meta.appendChild(removeBtn);
+
+        wrap.appendChild(img);
+        wrap.appendChild(meta);
+
+        wrap._removeBtn = removeBtn;
+        wrap._img = img;
+        return wrap;
+      }
+
+      function handleModalFileSelect(file) {
+        const modalFooter = document.querySelector(".modal-footer");
+        if (!modalFooter) return;
+        // remove existing preview
+        const existing = modalFooter.parentElement.querySelector(
+          ".attachment-preview"
+        );
+        if (existing) existing.remove();
+        if (!file) return;
+        const preview = createPreviewElement(file);
+        // insert preview just above modal footer
+        modalFooter.parentElement.insertBefore(preview, modalFooter);
+        preview._removeBtn.addEventListener("click", () => {
+          const fi = document.getElementById("fileInput");
+          if (fi) fi.value = "";
+          preview.remove();
+        });
+      }
+
+      function handleMainFileSelect(file, chatArea) {
+        if (!chatArea) return;
+        // find preview slot (between messages and footer)
+        const footer = chatArea.querySelector(".main-footer");
+        if (!footer) return;
+        const existing = chatArea.querySelector(".attachment-preview");
+        if (existing) existing.remove();
+        if (!file) return;
+        const preview = createPreviewElement(file);
+        chatArea.insertBefore(preview, footer);
+        preview._removeBtn.addEventListener("click", () => {
+          const fi = chatArea.querySelector("#mainFileInput");
+          if (fi) fi.value = "";
+          preview.remove();
+        });
+      }
+
+      // Hook up modal file input change to preview (initial setup done above)
+      document.getElementById("fileInput") &&
+        document
+          .getElementById("fileInput")
+          .addEventListener("change", function (e) {
+            handleModalFileSelect(e.target.files && e.target.files[0]);
+          });
     </script>
   </body>
 </html>

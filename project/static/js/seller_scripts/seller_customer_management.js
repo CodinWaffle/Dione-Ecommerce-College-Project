@@ -1,705 +1,1017 @@
-/* Complete CSS rewrite to fix layout issues and match reference design */
-
-.product-management {
-  padding: 2rem 3rem;
-  background-color: #f9fafb;
-  min-height: 100vh;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: left;
-  margin-bottom: 2rem;
-}
-
-.page-header-left-product h1 {
-  font-size: 1.875rem;
-  font-weight: 700;
-  color: #1f2937;
-  margin: 0 0 0.5rem 0;
-}
-
-.page-subtext {
-  font-size: 0.95rem;
-  color: #6b7280;
-  margin: 0;
-}
-
-/* Stats Grid - 3 column layout */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.stat-card {
-  background: white;
-  padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  transition: all 0.3s ease;
-}
-
-.stat-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  transform: translateY(-2px);
-}
-
-.stat-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.stat-icon.blue {
-  background-color: #dbeafe;
-  color: #2563eb;
-}
-
-.stat-icon.orange {
-  background-color: #fed7aa;
-  color: #ea580c;
-}
-
-.stat-icon.green {
-  background-color: #d1fae5;
-  color: #059669;
-}
-
-.stat-icon i {
-  width: 24px;
-  height: 24px;
-}
-
-.stat-content {
-  flex: 1;
-}
-
-.stat-label {
-  font-size: 0.875rem;
-  color: #6b7280;
-  display: block;
-  margin-bottom: 0.25rem;
-}
-
-.stat-value {
-  font-size: 1.875rem;
-  font-weight: 700;
-  color: #7c3aed;
-  margin: 0;
-}
-
-/* Card wrapper */
-.card {
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  overflow: hidden;
-  margin-bottom: 20px;
-}
-
-.card-header {
-  padding: 1.5rem;
-  border-bottom: 1px solid #f3f4f6;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: white;
-}
-
-.card-body {
-  padding: 1.5rem;
-  background: white;
-}
-
-/* Seller nav tabs */
-.seller-nav-tabs {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  overflow-x: auto;
-  padding-bottom: 6px;
-  position: relative;
-  flex: 1;
-}
-
-.seller-nav-tabs .tab {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 16px;
-  background: transparent;
-  border: none;
-  border-bottom: 3px solid transparent;
-  cursor: pointer;
-  color: #6b7280;
-  white-space: nowrap;
-  position: relative;
-  transition: all 0.3s ease;
-  font-size: 0.875rem;
-  font-weight: 500;
-}
-
-.seller-nav-tabs .tab i {
-  width: 18px;
-  height: 18px;
-  stroke-width: 2;
-}
-
-.seller-nav-tabs .tab .tab-label {
-  font-weight: 500;
-  font-size: 0.875rem;
-}
-
-.seller-nav-tabs .tab .tab-count {
-  background: #f3f4f6;
-  color: #6b7280;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  margin-left: 4px;
-  min-width: 24px;
-  text-align: center;
-}
-
-.seller-nav-tabs .tab:hover {
-  color: #1f2937;
-  background-color: #f9fafb;
-}
-
-.seller-nav-tabs .tab:hover .tab-count {
-  background-color: #e5e7eb;
-  color: #374151;
-}
-
-.seller-nav-tabs .tab.active {
-  color: #7c3aed;
-  border-bottom-color: #7c3aed;
-  font-weight: 600;
-}
-
-.seller-nav-tabs .tab.active .tab-count {
-  background-color: #ede9fe;
-  color: #7c3aed;
-}
-
-/* Product controls */
-.product-controls {
-  margin-bottom: 1.5rem;
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: nowrap;
-}
-
-.search-box {
-  position: relative;
-  flex: 0 1 350px;
-  min-width: 250px;
-}
-
-.search-box input {
-  width: 100%;
-  padding: 0.75rem 1rem 0.75rem 2.75rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  background: white;
-  transition: all 0.3s ease;
-}
-
-.search-box input:focus {
-  outline: none;
-  border-color: #7c3aed;
-  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
-}
-
-.search-box::before {
-  content: "";
-  position: absolute;
-  left: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 16px;
-  height: 16px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'%3E%3C/circle%3E%3Cpath d='m21 21-4.35-4.35'%3E%3C/path%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: center;
-  pointer-events: none;
-}
-
-.filter-group {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: nowrap;
-  flex-shrink: 0;
-}
-
-.filter-group select {
-  padding: 0.75rem 2.5rem 0.75rem 1rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  background-color: white;
-  cursor: pointer;
-  appearance: none;
-  min-width: 150px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 0.75rem center;
-  transition: all 0.3s ease;
-}
-
-.filter-group select:focus {
-  outline: none;
-  border-color: #7c3aed;
-  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
-}
-
-/* Bulk actions */
-.bulk-actions {
-  display: flex;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-  padding: 1rem;
-  background: #f9fafb;
-  border-radius: 8px;
-  flex-wrap: wrap;
-}
-
-/* Table Container */
-.product-table-container {
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  margin-top: 1rem;
-}
-
-.product-table {
-  width: 100%;
-  border-collapse: collapse;
-  table-layout: fixed;
-}
-
-.product-table colgroup col:nth-child(1) {
-  width: 40px;
-}
-.product-table colgroup col:nth-child(2) {
-  width: 30%;
-}
-.product-table colgroup col:nth-child(3) {
-  width: 12%;
-}
-.product-table colgroup col:nth-child(4) {
-  width: 12%;
-}
-.product-table colgroup col:nth-child(5) {
-  width: 10%;
-}
-.product-table colgroup col:nth-child(6) {
-  width: 10%;
-}
-.product-table colgroup col:nth-child(7) {
-  width: 12%;
-}
-.product-table colgroup col:nth-child(8) {
-  width: 14%;
-}
-
-.product-table th,
-.product-table td {
-  padding: 1rem 1.25rem;
-  text-align: left;
-  border-bottom: 1px solid #f3f4f6;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.product-table th:first-child,
-.product-table td:first-child {
-  width: 40px;
-  padding: 1rem 0.75rem;
-  text-align: center;
-}
-
-.product-table input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-  accent-color: #7c3aed;
-}
-
-.product-table thead {
-  background-color: #f9fafb;
-  border-bottom: 2px solid #e5e7eb;
-}
-
-.product-table th {
-  font-weight: 600;
-  color: #374151;
-  font-size: 0.875rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 1rem 1.25rem;
-}
-
-.product-table th.col-right {
-  text-align: left;
-}
-
-.product-table td.col-right {
-  text-align: right;
-}
-
-.product-table td {
-  font-size: 0.875rem;
-  color: #1f2937;
-  vertical-align: middle;
-  background: white;
-}
-
-.product-table tbody tr {
-  transition: all 0.2s ease;
-}
-
-.product-table tbody tr:hover {
-  background-color: #f9fafb;
-}
-
-.product-info {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  min-width: 0;
-}
-
-.product-image {
-  width: 48px;
-  height: 48px;
-  border-radius: 8px;
-  object-fit: cover;
-  flex-shrink: 0;
-  border: 1px solid #e5e7eb;
-}
-
-.product-name {
-  display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-weight: 500;
-  color: #1f2937;
-  max-width: calc(100% - 56px);
-}
-
-/* Buttons */
-.btn-primary {
-  background-color: #7c3aed;
-  color: white;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 0.875rem;
-  border: none;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(124, 58, 237, 0.2);
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.btn-primary:hover {
-  background: #6d28d9;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
-}
-
-.btn-primary i {
-  width: 18px;
-  height: 18px;
-}
-
-.btn-secondary {
-  background-color: white;
-  color: #374151;
-  padding: 0.625rem 1.25rem;
-  border-radius: 8px;
-  font-weight: 500;
-  font-size: 0.875rem;
-  border: 1px solid #e5e7eb;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.btn-secondary:hover {
-  background-color: #f9fafb;
-  border-color: #d1d5db;
-}
-
-/* Action buttons in table */
-.action-buttons {
-  display: inline-flex;
-  gap: 0.5rem;
-  justify-content: flex-end;
-}
-
-.btn-icon {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: 6px;
-  background: transparent;
-  border: none;
-  color: #6b7280;
-  cursor: pointer;
-  font-size: 0.875rem;
-  transition: all 0.2s ease;
-}
-
-.btn-icon:hover {
-  background-color: #f3f4f6;
-  color: #1f2937;
-}
-
-.btn-icon i {
-  width: 16px;
-  height: 16px;
-}
-
-.edit-product {
-  color: #7c3aed;
-}
-
-.edit-product:hover {
-  background-color: #f5f3ff;
-  color: #6d28d9;
-}
-
-.delete-product {
-  color: #ef4444;
-}
-
-.delete-product:hover {
-  background-color: #fef2f2;
-  color: #dc2626;
-}
-
-.delete-product span {
-  display: none;
-}
-
-/* Status badges */
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.375rem 0.75rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: capitalize;
-}
-
-.status-active {
-  background-color: #d1fae5;
-  color: #065f46;
-}
-
-.status-inactive {
-  background-color: #fee2e2;
-  color: #991b1b;
-}
-
-.status-out-of-stock {
-  background-color: #fef3c7;
-  color: #92400e;
-}
-
-/* Pagination */
-.pagination {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem 1.5rem;
-  background: white;
-  border-top: 1px solid #f3f4f6;
-}
-
-.pagination-info {
-  font-size: 0.875rem;
-  color: #6b7280;
-}
-
-.pagination-controls {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-.pagination-btn {
-  padding: 0.5rem 0.75rem;
-  border: 1px solid #e5e7eb;
-  background: white;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.875rem;
-  color: #374151;
-  transition: all 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.pagination-btn:hover:not(:disabled) {
-  background-color: #f9fafb;
-  border-color: #7c3aed;
-}
-
-.pagination-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.pagination-btn.active {
-  background-color: #7c3aed;
-  color: white;
-  border-color: #7c3aed;
-}
-
-/* Modal Styles */
-.modal {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 1000;
-  padding: 2rem;
-}
-
-.modal.active {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.modal-content {
-  background: white;
-  border-radius: 0.5rem;
-  width: 100%;
-  max-width: 900px;
-  max-height: 90vh;
-  overflow-y: auto;
-}
-
-.modal-header {
-  padding: 1.5rem;
-  border-bottom: 1px solid #e2e8f0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.modal-header h2 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #0f172a;
-}
-
-.var-chip.selected {
-  background: #7c3aed !important;
-  color: #fff !important;
-}
-
-#productForm {
-  padding: 1.5rem;
-}
-
-.form-group {
-  margin-bottom: 1.5rem;
-}
-
-label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #475569;
-}
-
-.modal-footer {
-  padding: 1.5rem;
-  border-top: 1px solid #e2e8f0;
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-}
-
-/* Responsive design */
-@media (max-width: 1024px) {
-  .stats-grid {
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+// Seller Customer Management JavaScript
+
+document.addEventListener("DOMContentLoaded", function () {
+  // Sample customer data - in a real app, this would come from the server
+  const customerData = generateSampleCustomers();
+  const customerOrders = generateSampleOrders();
+  const customerActivity = generateSampleActivity();
+  const customerNotes = generateSampleNotes();
+
+  let currentPage = 1;
+  const itemsPerPage = 10;
+  let filteredCustomers = [...customerData];
+
+  // Initialize everything
+  initializePage();
+
+  // Main initialization function
+  function initializePage() {
+    // Initialize stats
+    updateCustomerStats();
+
+    // Initialize charts
+    createCustomerGrowthChart();
+    createCustomerSegmentsChart();
+
+    // Initialize customer table
+    updateCustomerTable();
+
+    // Initialize pagination
+    setupPagination();
+    updatePaginationInfo();
+
+    // Setup search functionality
+    document
+      .getElementById("customerSearch")
+      .addEventListener("input", function () {
+        searchCustomers(this.value);
+      });
+
+    // Setup filter functionality
+    document
+      .getElementById("customerFilter")
+      .addEventListener("change", function () {
+        filterCustomers(this.value);
+      });
+
+    // Setup export functionality
+    document
+      .getElementById("exportCustomersBtn")
+      .addEventListener("click", exportCustomerData);
+
+    // Setup customer detail modal
+    setupCustomerDetailModal();
+
+    // Setup tabs in modal
+    setupModalTabs();
   }
 
-  .product-controls {
-    flex-wrap: wrap;
+  // Generate sample customer data
+  function generateSampleCustomers() {
+    const customers = [];
+    const statuses = ["active", "inactive", "new"];
+    const firstNames = [
+      "John",
+      "Jane",
+      "Michael",
+      "Sarah",
+      "David",
+      "Emma",
+      "Robert",
+      "Lisa",
+      "Daniel",
+      "Olivia",
+    ];
+    const lastNames = [
+      "Smith",
+      "Johnson",
+      "Williams",
+      "Jones",
+      "Brown",
+      "Davis",
+      "Miller",
+      "Wilson",
+      "Moore",
+      "Taylor",
+    ];
+
+    for (let i = 1; i <= 50; i++) {
+      const firstName =
+        firstNames[Math.floor(Math.random() * firstNames.length)];
+      const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+      const name = `${firstName} ${lastName}`;
+      const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@example.com`;
+      const status = statuses[Math.floor(Math.random() * statuses.length)];
+      const orders = Math.floor(Math.random() * 10) + 1;
+      const totalSpent = (Math.random() * 1000 + 500).toFixed(2);
+      const lastOrder = new Date(2025, 9, Math.floor(Math.random() * 15) + 1);
+      const joinDate = new Date(
+        2025,
+        Math.floor(Math.random() * 10),
+        Math.floor(Math.random() * 28) + 1
+      );
+
+      customers.push({
+        id: `CUST-${String(i).padStart(5, "0")}`,
+        name,
+        email,
+        status,
+        orders,
+        totalSpent,
+        lastOrder,
+        joinDate,
+        avatar: firstName[0] + lastName[0],
+      });
+    }
+
+    return customers;
   }
 
-  .search-box {
-    flex: 1 1 100%;
-    max-width: 100%;
+  // Generate sample order data
+  function generateSampleOrders() {
+    const orderMap = {};
+    const productNames = [
+      "T-Shirt",
+      "Jeans",
+      "Dress",
+      "Sweater",
+      "Jacket",
+      "Skirt",
+      "Blouse",
+      "Shorts",
+      "Pants",
+      "Hoodie",
+    ];
+
+    customerData.forEach((customer) => {
+      const orders = [];
+      const orderCount = Math.floor(Math.random() * 5) + 1;
+
+      for (let i = 1; i <= orderCount; i++) {
+        const itemCount = Math.floor(Math.random() * 3) + 1;
+        const items = [];
+
+        for (let j = 0; j < itemCount; j++) {
+          items.push(
+            productNames[Math.floor(Math.random() * productNames.length)]
+          );
+        }
+
+        const total = (Math.random() * 200 + 50).toFixed(2);
+        const date = new Date(2025, 9, Math.floor(Math.random() * 30) + 1);
+        const status = ["completed", "shipped", "processing", "cancelled"][
+          Math.floor(Math.random() * 4)
+        ];
+
+        orders.push({
+          id: `ORD-${String(Math.floor(Math.random() * 100000)).padStart(
+            6,
+            "0"
+          )}`,
+          date,
+          items,
+          total,
+          status,
+        });
+      }
+
+      orderMap[customer.id] = orders.sort((a, b) => b.date - a.date);
+    });
+
+    return orderMap;
   }
 
-  .filter-group {
-    flex: 1 1 auto;
-  }
-}
+  // Generate sample activity data
+  function generateSampleActivity() {
+    const activityMap = {};
+    const activityTypes = [
+      "order",
+      "login",
+      "cart",
+      "wishlist",
+      "review",
+      "return",
+    ];
 
-@media (max-width: 768px) {
-  .product-management {
-    padding: 1rem;
+    customerData.forEach((customer) => {
+      const activities = [];
+      const activityCount = Math.floor(Math.random() * 8) + 2;
+
+      for (let i = 1; i <= activityCount; i++) {
+        const type =
+          activityTypes[Math.floor(Math.random() * activityTypes.length)];
+        const date = new Date(
+          2025,
+          9,
+          Math.floor(Math.random() * 30) + 1,
+          Math.floor(Math.random() * 24),
+          Math.floor(Math.random() * 60)
+        );
+
+        let description;
+
+        switch (type) {
+          case "order":
+            description = `Placed an order for ${
+              Math.floor(Math.random() * 5) + 1
+            } items`;
+            break;
+          case "login":
+            description = "Logged in to account";
+            break;
+          case "cart":
+            description = "Added items to cart";
+            break;
+          case "wishlist":
+            description = "Added an item to wishlist";
+            break;
+          case "review":
+            description = "Left a product review";
+            break;
+          case "return":
+            description = "Requested a return";
+            break;
+        }
+
+        activities.push({
+          type,
+          date,
+          description,
+        });
+      }
+
+      activityMap[customer.id] = activities.sort((a, b) => b.date - a.date);
+    });
+
+    return activityMap;
   }
 
-  .page-header-left-product h1 {
-    font-size: 1.5rem;
+  // Generate sample notes
+  function generateSampleNotes() {
+    const notesMap = {};
+
+    customerData.forEach((customer) => {
+      const hasNotes = Math.random() > 0.7;
+
+      if (hasNotes) {
+        const noteCount = Math.floor(Math.random() * 3) + 1;
+        const notes = [];
+
+        for (let i = 1; i <= noteCount; i++) {
+          const date = new Date(2025, 9, Math.floor(Math.random() * 30) + 1);
+          const content = [
+            "Customer requested information about upcoming sales.",
+            "Customer mentioned they were happy with last purchase.",
+            "Customer asked about exchange policy for recent order.",
+            "Followed up on a return request.",
+            "Customer prefers email communication only.",
+          ][Math.floor(Math.random() * 5)];
+
+          notes.push({
+            id: `NOTE-${String(Math.floor(Math.random() * 100000)).padStart(
+              6,
+              "0"
+            )}`,
+            date,
+            author: "You",
+            content,
+          });
+        }
+
+        notesMap[customer.id] = notes.sort((a, b) => b.date - a.date);
+      } else {
+        notesMap[customer.id] = [];
+      }
+    });
+
+    return notesMap;
   }
 
-  .stats-grid {
-    grid-template-columns: 1fr;
+  // Format currency
+  function formatCurrency(amount) {
+    return new Intl.NumberFormat("en-PH", {
+      style: "currency",
+      currency: "PHP",
+      minimumFractionDigits: 2,
+    })
+      .format(amount)
+      .replace("PHP", "₱");
   }
 
-  .product-table-container {
-    overflow-x: auto;
+  // Format date
+  function formatDate(date) {
+    return new Date(date).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
   }
 
-  .product-table {
-    min-width: 800px;
+  // Update customer stats
+  function updateCustomerStats() {
+    const totalCustomers = customerData.length;
+    const activeCustomers = customerData.filter(
+      (c) => c.status === "active"
+    ).length;
+    const newCustomers = customerData.filter((c) => c.status === "new").length;
+
+    const totalSpent = customerData.reduce(
+      (sum, c) => sum + parseFloat(c.totalSpent),
+      0
+    );
+    const avgSpend = totalSpent / totalCustomers;
+
+    const retention = (activeCustomers / totalCustomers) * 100;
+    const returnRate = Math.random() * 5 + 2; // Sample return rate between 2-7%
+
+    document.getElementById("totalCustomers").textContent = totalCustomers;
+    document.getElementById("avgSpend").textContent = formatCurrency(avgSpend);
+    document.getElementById("retention").textContent = `${retention.toFixed(
+      1
+    )}%`;
+    document.getElementById("returnRate").textContent = `${returnRate.toFixed(
+      1
+    )}%`;
+
+    document.getElementById("customerGrowth").textContent = `${(
+      (newCustomers / totalCustomers) *
+      100
+    ).toFixed(1)}%`;
+    document.getElementById("spendGrowth").textContent = "5.2%";
+    document.getElementById("retentionChange").textContent = "2.7%";
+    document.getElementById("returnChange").textContent = "1.5%";
   }
 
-  .pagination {
-    flex-direction: column;
-    gap: 1rem;
-    align-items: stretch;
+  // Create customer growth chart
+  function createCustomerGrowthChart() {
+    const canvas = document.getElementById("customerGrowthChart");
+    const ctx = canvas.getContext("2d");
+
+    // Generate sample data for the last 30 days
+    const labels = [];
+    const newCustomers = [];
+    const totalCustomers = [];
+
+    let runningTotal = 30;
+
+    for (let i = 30; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      labels.push(
+        date.toLocaleDateString("en-US", { month: "short", day: "numeric" })
+      );
+
+      const newCount = Math.floor(Math.random() * 5) + 1;
+      newCustomers.push(newCount);
+
+      runningTotal += newCount;
+      totalCustomers.push(runningTotal);
+    }
+
+    drawChart(ctx, canvas, labels, totalCustomers, newCustomers);
   }
 
-  .pagination-controls {
-    justify-content: center;
+  // Create customer segments chart
+  function createCustomerSegmentsChart() {
+    const canvas = document.getElementById("customerSegmentsChart");
+    const ctx = canvas.getContext("2d");
+
+    // Sample segment data
+    const segments = [
+      { label: "New", value: 15, color: "#3b82f6" },
+      { label: "Returning", value: 45, color: "#6d28d9" },
+      { label: "Regular", value: 25, color: "#10b981" },
+      { label: "VIP", value: 15, color: "#f59e0b" },
+    ];
+
+    drawPieChart(ctx, canvas, segments);
   }
-}
+
+  // Draw line chart
+  function drawChart(ctx, canvas, labels, totalData, newData) {
+    // Set canvas dimensions
+    canvas.width = canvas.offsetWidth * 2;
+    canvas.height = canvas.offsetHeight * 2;
+    ctx.scale(2, 2);
+
+    const width = canvas.width / 2;
+    const height = canvas.height / 2;
+    const padding = 40;
+
+    // Clear canvas
+    ctx.clearRect(0, 0, width, height);
+
+    // Draw grid
+    ctx.strokeStyle = "#e5e7eb";
+    ctx.lineWidth = 1;
+
+    // Find max value for scaling
+    const maxValue = Math.max(...totalData) * 1.1;
+    const yStep = maxValue / 5;
+
+    // Draw horizontal grid lines and y-axis labels
+    for (let i = 0; i <= 5; i++) {
+      const y = height - padding - (i / 5) * (height - padding * 2);
+
+      ctx.beginPath();
+      ctx.moveTo(padding, y);
+      ctx.lineTo(width - padding, y);
+      ctx.stroke();
+
+      ctx.fillStyle = "#9ca3af";
+      ctx.font = "10px sans-serif";
+      ctx.textAlign = "right";
+      ctx.fillText(Math.round(i * yStep).toString(), padding - 8, y + 4);
+    }
+
+    // Draw total customers line
+    const drawLine = (data, color, fill = false) => {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+
+      // Starting point
+      const x0 = padding;
+      const y0 =
+        height - padding - (data[0] / maxValue) * (height - padding * 2);
+      ctx.moveTo(x0, y0);
+
+      // Connect points
+      for (let i = 1; i < data.length; i++) {
+        const x = padding + (i / (data.length - 1)) * (width - padding * 2);
+        const y =
+          height - padding - (data[i] / maxValue) * (height - padding * 2);
+        ctx.lineTo(x, y);
+      }
+
+      ctx.stroke();
+
+      if (fill) {
+        // Fill area under the line
+        ctx.lineTo(padding + (width - padding * 2), height - padding);
+        ctx.lineTo(padding, height - padding);
+        ctx.closePath();
+        ctx.fillStyle = color + "20"; // Add transparency
+        ctx.fill();
+      }
+    };
+
+    // Draw total customers line
+    drawLine(totalData, "#6d28d9", true);
+
+    // Draw new customers line
+    drawLine(newData, "#10b981");
+
+    // Draw x-axis labels (dates)
+    ctx.fillStyle = "#9ca3af";
+    ctx.font = "10px sans-serif";
+    ctx.textAlign = "center";
+
+    // Draw every 5th label to avoid clutter
+    for (let i = 0; i < labels.length; i += 5) {
+      const x = padding + (i / (labels.length - 1)) * (width - padding * 2);
+      ctx.fillText(labels[i], x, height - padding + 16);
+    }
+
+    // Draw legend
+    const legendY = padding / 2;
+
+    // Total customers
+    ctx.fillStyle = "#6d28d9";
+    ctx.fillRect(padding, legendY, 12, 6);
+    ctx.fillStyle = "#111827";
+    ctx.font = "11px sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText("Total Customers", padding + 18, legendY + 6);
+
+    // New customers
+    ctx.fillStyle = "#10b981";
+    ctx.fillRect(padding + 120, legendY, 12, 6);
+    ctx.fillStyle = "#111827";
+    ctx.fillText("New Customers", padding + 138, legendY + 6);
+  }
+
+  // Draw pie chart
+  function drawPieChart(ctx, canvas, segments) {
+    // Set canvas dimensions
+    canvas.width = canvas.offsetWidth * 2;
+    canvas.height = canvas.offsetHeight * 2;
+    ctx.scale(2, 2);
+
+    const width = canvas.width / 2;
+    const height = canvas.height / 2;
+
+    // Clear canvas
+    ctx.clearRect(0, 0, width, height);
+
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const radius = Math.min(centerX, centerY) - 60;
+
+    // Calculate total value
+    const total = segments.reduce((sum, segment) => sum + segment.value, 0);
+
+    // Draw segments
+    let startAngle = -Math.PI / 2; // Start at top (12 o'clock)
+
+    segments.forEach((segment) => {
+      const sliceAngle = (segment.value / total) * Math.PI * 2;
+
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY);
+      ctx.arc(centerX, centerY, radius, startAngle, startAngle + sliceAngle);
+      ctx.closePath();
+
+      ctx.fillStyle = segment.color;
+      ctx.fill();
+
+      // Calculate angle for label position
+      const labelAngle = startAngle + sliceAngle / 2;
+      const labelRadius = radius * 0.7;
+      const labelX = centerX + Math.cos(labelAngle) * labelRadius;
+      const labelY = centerY + Math.sin(labelAngle) * labelRadius;
+
+      // Draw percentage label
+      ctx.fillStyle = "#fff";
+      ctx.font = "bold 12px sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(
+        `${Math.round((segment.value / total) * 100)}%`,
+        labelX,
+        labelY
+      );
+
+      startAngle += sliceAngle;
+    });
+
+    // Draw legend
+    const legendX = width - 100;
+    let legendY = height / 2 - (segments.length * 20) / 2;
+
+    segments.forEach((segment) => {
+      ctx.fillStyle = segment.color;
+      ctx.fillRect(legendX - 20, legendY, 12, 12);
+
+      ctx.fillStyle = "#111827";
+      ctx.font = "11px sans-serif";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.fillText(segment.label, legendX, legendY + 6);
+
+      legendY += 25;
+    });
+  }
+
+  // Update customer table with paginated data
+  function updateCustomerTable() {
+    const tbody = document.getElementById("customerTableBody");
+    const start = (currentPage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    const pageData = filteredCustomers.slice(start, end);
+
+    tbody.innerHTML = "";
+
+    pageData.forEach((customer) => {
+      const row = document.createElement("tr");
+
+      const statusText =
+        customer.status.charAt(0).toUpperCase() + customer.status.slice(1);
+
+      row.innerHTML = `
+        <td>${customer.id}</td>
+        <td>
+          <div class="customer-info">
+            <div class="customer-avatar">${customer.avatar}</div>
+            <div class="customer-name">${customer.name}</div>
+          </div>
+        </td>
+        <td>${customer.email}</td>
+        <td>
+          <span class="status-badge ${customer.status}">${statusText}</span>
+        </td>
+        <td>${customer.orders}</td>
+        <td>${formatCurrency(customer.totalSpent)}</td>
+        <td>${formatDate(customer.lastOrder)}</td>
+        <td>
+            <div class="action-buttons">
+                <button class="action-btn view-btn" title="View Details" data-customer-id="${
+                  customer.id
+                }">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                </button>
+                <button class="action-btn message-btn" title="Send Message" data-customer-id="${
+                  customer.id
+                }">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                        <polyline points="22,6 12,13 2,6"></polyline>
+                    </svg>
+                </button>
+            </div>
+        </td>
+      `;
+
+      tbody.appendChild(row);
+    });
+
+    // Add event listeners to view buttons
+    document.querySelectorAll(".view-btn").forEach((btn) => {
+      btn.addEventListener("click", function () {
+        const customerId = this.getAttribute("data-customer-id");
+        openCustomerModal(customerId);
+      });
+    });
+  }
+
+  // Search customers
+  function searchCustomers(query) {
+    query = query.toLowerCase();
+
+    if (!query) {
+      filteredCustomers = [...customerData];
+    } else {
+      filteredCustomers = customerData.filter(
+        (customer) =>
+          customer.name.toLowerCase().includes(query) ||
+          customer.email.toLowerCase().includes(query) ||
+          customer.id.toLowerCase().includes(query)
+      );
+    }
+
+    currentPage = 1;
+    updateCustomerTable();
+    updatePaginationInfo();
+    setupPagination();
+  }
+
+  // Filter customers
+  function filterCustomers(filterType) {
+    switch (filterType) {
+      case "all":
+        filteredCustomers = [...customerData];
+        break;
+      case "new":
+        filteredCustomers = customerData.filter(
+          (customer) => customer.status === "new"
+        );
+        break;
+      case "returning":
+        filteredCustomers = customerData.filter(
+          (customer) => customer.status === "active" && customer.orders > 1
+        );
+        break;
+      case "inactive":
+        filteredCustomers = customerData.filter(
+          (customer) => customer.status === "inactive"
+        );
+        break;
+    }
+
+    currentPage = 1;
+    updateCustomerTable();
+    updatePaginationInfo();
+    setupPagination();
+  }
+
+  // Setup pagination
+  function setupPagination() {
+    const totalPages = Math.ceil(filteredCustomers.length / itemsPerPage);
+    const paginationEl = document.getElementById("paginationNumbers");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+
+    paginationEl.innerHTML = "";
+
+    // Add page numbers
+    for (let i = 1; i <= totalPages; i++) {
+      if (
+        totalPages <= 7 ||
+        i === 1 ||
+        i === totalPages ||
+        i === currentPage ||
+        i === currentPage - 1 ||
+        i === currentPage + 1
+      ) {
+        const pageEl = document.createElement("span");
+        pageEl.classList.add("page-number");
+
+        if (i === currentPage) {
+          pageEl.classList.add("active");
+        }
+
+        pageEl.textContent = i;
+
+        pageEl.addEventListener("click", () => {
+          currentPage = i;
+          updateCustomerTable();
+          updatePaginationInfo();
+          setupPagination();
+        });
+
+        paginationEl.appendChild(pageEl);
+      } else if (
+        (i === 2 && currentPage > 3) ||
+        (i === totalPages - 1 && currentPage < totalPages - 2)
+      ) {
+        const ellipsis = document.createElement("span");
+        ellipsis.classList.add("page-number");
+        ellipsis.textContent = "...";
+        paginationEl.appendChild(ellipsis);
+      }
+    }
+
+    // Update prev/next buttons
+    prevBtn.disabled = currentPage === 1;
+    nextBtn.disabled = currentPage === totalPages;
+
+    prevBtn.addEventListener("click", () => {
+      if (currentPage > 1) {
+        currentPage--;
+        updateCustomerTable();
+        updatePaginationInfo();
+        setupPagination();
+      }
+    });
+
+    nextBtn.addEventListener("click", () => {
+      if (currentPage < totalPages) {
+        currentPage++;
+        updateCustomerTable();
+        updatePaginationInfo();
+        setupPagination();
+      }
+    });
+  }
+
+  // Update pagination info
+  function updatePaginationInfo() {
+    const totalItems = filteredCustomers.length;
+    const start = (currentPage - 1) * itemsPerPage + 1;
+    const end = Math.min(start + itemsPerPage - 1, totalItems);
+
+    document.getElementById("showingCustomers").textContent =
+      totalItems === 0 ? 0 : `${start}-${end}`;
+    document.getElementById("totalCustomersCount").textContent = totalItems;
+  }
+
+  // Export customer data
+  function exportCustomerData() {
+    // In a real application, this would generate a CSV or Excel file
+    alert(
+      "Customer data export initiated. Your file will be ready for download shortly."
+    );
+  }
+
+  // Setup customer detail modal
+  function setupCustomerDetailModal() {
+    const modal = document.getElementById("customerDetailModal");
+    const closeBtn = document.getElementById("closeModal");
+
+    closeBtn.addEventListener("click", () => {
+      modal.classList.remove("active");
+    });
+
+    // Close modal when clicking outside
+    window.addEventListener("click", (e) => {
+      if (e.target === modal) {
+        modal.classList.remove("active");
+      }
+    });
+
+    // Add note functionality
+    document.getElementById("saveNote").addEventListener("click", () => {
+      const noteText = document.getElementById("newNote").value.trim();
+      const customerId = modal.getAttribute("data-customer-id");
+
+      if (noteText && customerId) {
+        addCustomerNote(customerId, noteText);
+        document.getElementById("newNote").value = "";
+      }
+    });
+  }
+
+  // Open customer modal
+  function openCustomerModal(customerId) {
+    const modal = document.getElementById("customerDetailModal");
+    const customer = customerData.find((c) => c.id === customerId);
+
+    if (customer) {
+      // Set customer ID to modal
+      modal.setAttribute("data-customer-id", customerId);
+
+      // Update customer profile
+      document.getElementById("modalCustomerAvatar").textContent =
+        customer.avatar;
+      document.getElementById("modalCustomerName").textContent = customer.name;
+      document.getElementById("modalCustomerEmail").textContent =
+        customer.email;
+
+      const statusEl = document.getElementById("modalCustomerStatus");
+      statusEl.textContent =
+        customer.status.charAt(0).toUpperCase() + customer.status.slice(1);
+      statusEl.className = "status-badge " + customer.status;
+
+      // Update customer stats
+      document.getElementById("modalCustomerOrders").textContent =
+        customer.orders;
+      document.getElementById("modalCustomerSpent").textContent =
+        formatCurrency(customer.totalSpent);
+
+      // Calculate average order value
+      const avgOrder = customer.totalSpent / customer.orders;
+      document.getElementById("modalCustomerAvgOrder").textContent =
+        formatCurrency(avgOrder);
+
+      document.getElementById("modalCustomerJoined").textContent = formatDate(
+        customer.joinDate
+      );
+
+      // Populate orders tab
+      populateCustomerOrders(customerId);
+
+      // Populate activity tab
+      populateCustomerActivity(customerId);
+
+      // Populate notes tab
+      populateCustomerNotes(customerId);
+
+      // Reset to first tab
+      document.querySelector('.tab[data-tab="orders"]').click();
+
+      // Show modal
+      modal.classList.add("active");
+    }
+  }
+
+  // Setup modal tabs
+  function setupModalTabs() {
+    const tabs = document.querySelectorAll(".tab");
+    const tabContents = document.querySelectorAll(".tab-content");
+
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        const tabId = tab.getAttribute("data-tab");
+
+        // Update active tab
+        tabs.forEach((t) => t.classList.remove("active"));
+        tab.classList.add("active");
+
+        // Show corresponding content
+        tabContents.forEach((content) => {
+          if (content.getAttribute("data-content") === tabId) {
+            content.classList.add("active");
+          } else {
+            content.classList.remove("active");
+          }
+        });
+      });
+    });
+  }
+
+  // Populate customer orders
+  function populateCustomerOrders(customerId) {
+    const orders = customerOrders[customerId] || [];
+    const tableBody = document.getElementById("customerOrdersTable");
+
+    tableBody.innerHTML = "";
+
+    if (orders.length === 0) {
+      tableBody.innerHTML =
+        '<tr><td colspan="5" class="empty-table">No orders yet</td></tr>';
+      return;
+    }
+
+    orders.forEach((order) => {
+      const row = document.createElement("tr");
+
+      row.innerHTML = `
+        <td>${order.id}</td>
+        <td>${formatDate(order.date)}</td>
+        <td>${order.items.join(", ")}</td>
+        <td>${formatCurrency(order.total)}</td>
+        <td><span class="status-badge ${order.status}">${
+        order.status.charAt(0).toUpperCase() + order.status.slice(1)
+      }</span></td>
+      `;
+
+      tableBody.appendChild(row);
+    });
+  }
+
+  // Populate customer activity
+  function populateCustomerActivity(customerId) {
+    const activities = customerActivity[customerId] || [];
+    const activityEl = document.getElementById("customerActivity");
+
+    activityEl.innerHTML = "";
+
+    if (activities.length === 0) {
+      activityEl.innerHTML =
+        '<div class="empty-state"><p>No activity recorded yet</p></div>';
+      return;
+    }
+
+    activities.forEach((activity) => {
+      const activityItem = document.createElement("div");
+      activityItem.className = "activity-item";
+
+      let iconSvg;
+
+      switch (activity.type) {
+        case "order":
+          iconSvg =
+            '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>';
+          break;
+        case "login":
+          iconSvg =
+            '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>';
+          break;
+        case "cart":
+          iconSvg =
+            '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>';
+          break;
+        case "wishlist":
+          iconSvg =
+            '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>';
+          break;
+        case "review":
+          iconSvg =
+            '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>';
+          break;
+        case "return":
+          iconSvg =
+            '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>';
+          break;
+      }
+
+      const formattedDate = new Date(activity.date).toLocaleDateString(
+        "en-US",
+        {
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        }
+      );
+
+      activityItem.innerHTML = `
+        <div class="activity-icon">${iconSvg}</div>
+        <div class="activity-content">
+          <div class="activity-header">
+            <span class="activity-title">${
+              activity.type.charAt(0).toUpperCase() + activity.type.slice(1)
+            } Activity</span>
+            <span class="activity-date">${formattedDate}</span>
+          </div>
+          <p class="activity-description">${activity.description}</p>
+        </div>
+      `;
+
+      activityEl.appendChild(activityItem);
+    });
+  }
+
+  // Populate customer notes
+  function populateCustomerNotes(customerId) {
+    const notes = customerNotes[customerId] || [];
+    const notesEl = document.getElementById("customerNotes");
+
+    notesEl.innerHTML = "";
+
+    if (notes.length === 0) {
+      notesEl.innerHTML =
+        '<div class="empty-state"><p>No notes yet. Add your first note below.</p></div>';
+      return;
+    }
+
+    notes.forEach((note) => {
+      const noteItem = document.createElement("div");
+      noteItem.className = "note-item";
+
+      const formattedDate = formatDate(note.date);
+
+      noteItem.innerHTML = `
+        <div class="note-header">
+          <span class="note-author">${note.author}</span>
+          <span class="note-date">${formattedDate}</span>
+        </div>
+        <p class="note-content">${note.content}</p>
+      `;
+
+      notesEl.appendChild(noteItem);
+    });
+  }
+
+  // Add a new note to a customer
+  function addCustomerNote(customerId, content) {
+    if (!customerNotes[customerId]) {
+      customerNotes[customerId] = [];
+    }
+
+    const note = {
+      id: `NOTE-${String(Math.floor(Math.random() * 100000)).padStart(6, "0")}`,
+      date: new Date(),
+      author: "You",
+      content,
+    };
+
+    customerNotes[customerId].unshift(note);
+
+    // Refresh notes display
+    populateCustomerNotes(customerId);
+  }
+});
