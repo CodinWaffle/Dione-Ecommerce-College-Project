@@ -19,7 +19,9 @@ document.addEventListener("DOMContentLoaded", function () {
       const skuInput = row.querySelector('input[name^="sku_"]');
       const colorInput = row.querySelector('input[name^="color_"]');
       const colorPicker = row.querySelector('input[name^="color_picker_"]');
+      // size: prefer a single select (legacy/original design), fallback to checkbox group
       const sizeSelect = row.querySelector('select[name^="size_"]');
+      const sizeGroup = row.querySelector(".variant-size-group");
       const stockInput = row.querySelector(".variant-stock-input");
       const lowStockInput = row.querySelector(
         'input[type="number"]:not(.variant-stock-input)'
@@ -28,21 +30,41 @@ document.addEventListener("DOMContentLoaded", function () {
       const sku = skuInput?.value || "";
       const color = colorInput?.value || "";
       const colorHex = colorPicker?.value || "#000000";
-      const size = sizeSelect?.value || "";
+      // collect size and per-size stocks if present
+      let size = "";
+      const sizeStocks = [];
+      if (sizeSelect) {
+        size = sizeSelect.value || "";
+      } else if (sizeGroup) {
+        const checked = Array.from(
+          sizeGroup.querySelectorAll(".variant-size-checkbox")
+        )
+          .filter((cb) => cb.checked)
+          .map((cb) => cb.dataset.size);
+        size = checked.join(",");
+        checked.forEach((s) => {
+          const inp = row.querySelector(`.size-stock-input[data-size="${s}"]`);
+          const val = inp ? parseInt(inp.value || "0", 10) : 0;
+          sizeStocks.push({ size: s, stock: isNaN(val) ? 0 : val });
+        });
+      }
       // try to read a preview image src if user selected one
       const photoImg = row.querySelector(".photo-upload-box img.upload-thumb");
       const photo = photoImg ? photoImg.src || "" : "";
-      // If stock input is disabled (no size selected), treat stock as 0
+      // If per-size stocks were provided, derive total stock from them; else fall back to single stock input
       let stock = 0;
-      if (stockInput && !stockInput.disabled) {
-        stock = parseInt(stockInput.value || "0", 10);
-        if (isNaN(stock)) stock = 0;
+      if (sizeStocks.length) {
+        sizeStocks.forEach((ss) => (stock += ss.stock || 0));
+      } else {
+        if (stockInput) {
+          stock = parseInt(stockInput.value || "0", 10) || 0;
+        }
       }
       const lowStock = parseInt(lowStockInput?.value || "0", 10);
 
       // Only include variant if there's identifying info or a selected size
       if (sku || color || size || stock > 0) {
-        variants.push({
+        const v = {
           sku: sku.trim(),
           color: color.trim(),
           colorHex: colorHex,
@@ -50,7 +72,9 @@ document.addEventListener("DOMContentLoaded", function () {
           size: size.trim(),
           stock: stock,
           lowStock: lowStock,
-        });
+        };
+        if (sizeStocks.length) v.sizeStocks = sizeStocks;
+        variants.push(v);
       }
     });
 

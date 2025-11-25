@@ -73,10 +73,10 @@ document.addEventListener("DOMContentLoaded", function () {
         </select>
       </td>
       <td style="padding: 8px; border: 1px solid #e5e7eb; width: 140px;">
-        <input type="number" min="0" placeholder="Stock" class="variant-input compact variant-stock-input" />
+        <input type="number" min="0" placeholder="Stock" name="stock_${rowNumber}" class="variant-input compact variant-stock-input" />
       </td>
       <td style="padding: 8px; border: 1px solid #e5e7eb; width: 140px;">
-        <input type="number" min="0" placeholder="Low Stock" class="variant-input compact" />
+        <input type="number" min="0" placeholder="Low Stock" class="variant-input compact" name="lowStock_${rowNumber}" />
       </td>
       <td style="padding: 8px; border: 1px solid #e5e7eb; text-align: center; width: 60px;">
         <button type="button" class="delete-variant-btn" title="Remove variant">
@@ -109,29 +109,26 @@ document.addEventListener("DOMContentLoaded", function () {
       setupVariantPhoto(photoLabel);
     }
 
-    // Add event listener for the new stock input to update total
-    const stockInput = newRow.querySelector(".variant-stock-input");
-    if (stockInput) {
-      stockInput.addEventListener("input", updateTotalStock);
-      // disable stock input until a size is selected
-      const sizeSelect = newRow.querySelector('select[name^="size_"]');
-      if (sizeSelect && !sizeSelect.value) {
-        stockInput.disabled = true;
-        stockInput.classList.add("disabled");
-      }
-      // when size changes enable/disable stock input and recalc total
-      if (sizeSelect) {
-        sizeSelect.addEventListener("change", function () {
-          if (this.value) {
-            stockInput.disabled = false;
-            stockInput.classList.remove("disabled");
-          } else {
-            stockInput.disabled = true;
-            stockInput.value = "";
-            stockInput.classList.add("disabled");
-          }
-          updateTotalStock();
-        });
+    // wire size select -> enable/disable stock input
+    const sizeSel = newRow.querySelector(`select[name="size_${rowNumber}"]`);
+    const fallbackStock = newRow.querySelector(".variant-stock-input");
+    if (sizeSel && fallbackStock) {
+      // ensure stock enabled only when size selected
+      sizeSel.addEventListener("change", function () {
+        if (this.value) {
+          fallbackStock.disabled = false;
+          fallbackStock.classList.remove("disabled");
+        } else {
+          fallbackStock.disabled = true;
+          fallbackStock.value = "";
+          fallbackStock.classList.add("disabled");
+        }
+        updateTotalStock();
+      });
+      // initial state: disabled until size chosen
+      if (!sizeSel.value) {
+        fallbackStock.disabled = true;
+        fallbackStock.classList.add("disabled");
       }
     }
 
@@ -214,14 +211,20 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!variantTableBody) return;
 
     let total = 0;
+    // Sum per-variant fallback stock inputs
     const stockInputs = variantTableBody.querySelectorAll(
       ".variant-stock-input"
     );
     stockInputs.forEach((input) => {
       const value = parseInt(input.value || "0", 10);
-      if (!isNaN(value)) {
-        total += value;
-      }
+      if (!isNaN(value)) total += value;
+    });
+    // Sum per-size stock inputs
+    const sizeStockInputs =
+      variantTableBody.querySelectorAll(".size-stock-input");
+    sizeStockInputs.forEach((input) => {
+      const value = parseInt(input.value || "0", 10);
+      if (!isNaN(value)) total += value;
     });
 
     const totalStockEl = document.getElementById("totalStock");
@@ -276,6 +279,52 @@ document.addEventListener("DOMContentLoaded", function () {
         updateAddButtonState();
       }
     });
+  });
+
+  // Initialize existing rows: wire up size-select/manage button/size inputs if present
+  const existingRows = variantTableBody
+    ? Array.from(variantTableBody.querySelectorAll("tr"))
+    : [];
+  existingRows.forEach((row) => {
+    const sizeGroup = row.querySelector(".variant-size-group");
+    const sizeContainer = row.querySelector(".size-stock-container");
+    const fallbackStock = row.querySelector(".variant-stock-input");
+    if (!sizeGroup) return;
+
+    function buildSizeInputsForExistingRow() {
+      if (!sizeContainer) return;
+      const selected = Array.from(
+        sizeGroup.querySelectorAll(".variant-size-checkbox")
+      )
+        .filter((cb) => cb.checked)
+        .map((cb) => cb.dataset.size);
+      sizeContainer.innerHTML = "";
+      if (selected.length === 0) {
+        sizeContainer.style.display = "none";
+        if (fallbackStock) fallbackStock.style.display = "";
+        return;
+      }
+      sizeContainer.style.display = "flex";
+      if (fallbackStock) fallbackStock.style.display = "none";
+      selected.forEach((sz) => {
+        const item = document.createElement("div");
+        item.className = "size-stock-item";
+        item.innerHTML = `<span style="font-weight:600">${sz}</span><input type="number" min="0" data-size="${sz}" class="size-stock-input" placeholder="0" style="width:80px;padding:6px;border-radius:6px;border:1px solid #e5e7eb;" />`;
+        sizeContainer.appendChild(item);
+        item
+          .querySelector(".size-stock-input")
+          .addEventListener("input", updateTotalStock);
+      });
+      updateTotalStock();
+    }
+
+    // wire up existing checkboxes
+    const existingCbs = sizeGroup.querySelectorAll(".variant-size-checkbox");
+    existingCbs.forEach((cb) =>
+      cb.addEventListener("change", buildSizeInputsForExistingRow)
+    );
+    // initialize
+    buildSizeInputsForExistingRow();
   });
 
   // Initial button state

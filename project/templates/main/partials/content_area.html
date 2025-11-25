@@ -78,8 +78,8 @@
   </div>
 
   <div class="product-grid" id="productGrid">
-    {% for _ in range(24) %} {% include 'main/components/_product_card.html' %}
-    {% endfor %}
+    {# Include the product card template once; cards will be instantiated by JS
+    #} {% include 'main/components/_product_card.html' %}
   </div>
 
   <!-- Empty State Message -->
@@ -155,21 +155,81 @@
 
 <!-- Connect content area JS -->
 <script src="{{ url_for('static', filename='js/buyer_scripts/partials/content_area.js') }}"></script>
-<script src="{{ url_for('static', filename='js/_product_card.js') }}"></script>
+<script src="{{ url_for('static', filename='js/buyer_scripts/components/product_card.js') }}"></script>
 
 <script>
-  // Initialize product cards after DOM is loaded
-  document.addEventListener("DOMContentLoaded", function () {
-    // Load wishlist state for all products
-    const wishlist = JSON.parse(localStorage.getItem("wishlist") || "[]");
-    const wishlistBtns = document.querySelectorAll(".wishlist-btn");
-
-    wishlistBtns.forEach((btn) => {
-      const productCard = btn.closest(".product-card");
-      const productId = btn.getAttribute("onclick").match(/'([^']+)'/)[1];
-      if (wishlist.includes(productId)) {
-        btn.classList.add("active");
+  // If the parent template provided `category` (and optional `subcategory`),
+  // fetch products from the API and initialize the product grid using the
+  // existing ProductCard component.
+  document.addEventListener('DOMContentLoaded', function () {
+    // Try to detect category from breadcrumb (e.g. Home > Clothing)
+    let categoryFromBreadcrumb = null;
+    const breadcrumb = document.querySelector('.carousel-breadcrumb') || document.querySelector('.breadcrumb');
+    if (breadcrumb) {
+      const links = breadcrumb.querySelectorAll('.breadcrumb-link');
+      if (links && links.length >= 2) {
+        categoryFromBreadcrumb = links[1].textContent.trim().toLowerCase();
       }
+    }
+
+    // Server-provided fallback + server-passed products
+    const serverCategory = {{ (category|tojson) if category is defined else 'null' }};
+    const serverSubcategory = {{ (subcategory|tojson) if subcategory is defined else 'null' }};
+    const serverProducts = {{ (products|tojson) if products is defined else 'null' }};
+
+    const finalCategory = categoryFromBreadcrumb || serverCategory || null;
+
+    // Build query string
+    const params = new URLSearchParams();
+    if (finalCategory) params.set('category', finalCategory);
+    if (serverSubcategory) params.set('subcategory', serverSubcategory);
+    params.set('limit', 48);
+
+    function renderProductsFromList(list) {
+      const prepared = (list || []).map((p) => ({
+        id: p.id,
+        name: p.name || '-',
+        price: p.price || 0,
+        primaryImage: p.primaryImage || p.primary_image || '/static/image/banner.png',
+        secondaryImage: p.secondaryImage || p.secondary_image || p.primaryImage || '/static/image/banner.png',
+        material: p.material || p.materials || 'Premium Material',
+        originalPrice: p.originalPrice || p.compare_at_price || null,
+      }));
+      if (typeof initializeProducts === 'function' && prepared.length) {
+        initializeProducts('productGrid', prepared);
+      }
+      if (typeof updateProductCount === 'function') updateProductCount();
+    }
+
+    function fetchAndRender(qs) {
+      return fetch(`/api/products${qs ? ('?' + qs) : ''}`)
+        .then((r) => r.json())
+        .then((data) => {
+          if (!data || !Array.isArray(data.products)) return [];
+          return data.products;
+        })
+        .catch((err) => {
+          console.warn('Failed to load products for content area', err);
+          return [];
+        });
+    }
+
+    // If server already passed product list, use it (server-rendered data path)
+    if (serverProducts && Array.isArray(serverProducts) && serverProducts.length) {
+      renderProductsFromList(serverProducts);
+      return;
+    }
+
+    // Otherwise, fetch using category/subcategory if provided
+    fetchAndRender(params.toString()).then((products) => {
+      if (products && products.length) {
+        renderProductsFromList(products);
+        return;
+      }
+      // Fallback: fetch any active products regardless of category
+      fetchAndRender('limit=48').then((fallback) => {
+        if (fallback && fallback.length) renderProductsFromList(fallback);
+      });
     });
   });
 </script>

@@ -24,7 +24,7 @@
 
 .product-grid .product-card {
   flex: 0 0 calc(25% - 1.125rem);
-  min-width: 250px;
+  min-width: 200px;
 }
 
 @media (max-width: 1400px) {
@@ -53,16 +53,91 @@
   height: 100%;
 }
 
+/*
+  Scoped overrides when product grid is used inside the page `content-area`.
+  This makes product cards smaller and arranges them into a 4-column grid
+  without changing the global carousel-based layout used elsewhere.
+*/
+.content-area .product-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-top: 0;
+  overflow: visible;
+  padding-bottom: 0;
+}
+
+.content-area .product-grid .product-card {
+  /* let the grid control sizing; ensure cards fill their column */
+  flex: none;
+  min-width: 0;
+  width: 100%;
+}
+
+.content-area .product-grid .card-wrapper {
+  /* keep a slightly smaller card appearance */
+  border-radius: 0.5rem;
+}
+
+.content-area .product-grid .image-container {
+  /* Reduce image height proportionally to make cards smaller */
+  height: 16rem;
+}
+
+.content-area .product-grid .action-button {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+.content-area .product-grid .icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.content-area .product-grid .product-name {
+  font-size: 1rem;
+}
+
+.content-area .product-grid .current-price {
+  font-size: 1.25rem;
+}
+
+.content-area .product-grid .material-badge {
+  font-size: 0.7rem;
+  padding: 0.2rem 0.6rem;
+}
+
+/* Responsive breakpoints for content-area grid */
+@media (max-width: 1400px) {
+  .content-area .product-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 1080px) {
+  .content-area .product-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .content-area .product-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
 .card-wrapper {
   background: white;
   border-radius: 0.5rem;
   overflow: hidden;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  transition: box-shadow 0.3s ease;
+  transition: box-shadow 0.15s ease;
   height: 100%;
   display: flex;
   flex-direction: column;
   cursor: pointer;
+  will-change: box-shadow;
 }
 
 .card-wrapper:hover {
@@ -73,22 +148,23 @@
    IMAGE CONTAINER
    ============================================ */
 
-.image-container {
+.product-card .image-container {
   position: relative;
   width: 100%;
-  height: 24rem;
+  height: 18rem;
   overflow: hidden;
   background-color: #f1f5f9;
 }
 
-.product-image {
+.product-card .product-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: opacity 0.5s ease-in-out;
+  transition: opacity 0.2s ease-in-out;
+  will-change: opacity;
 }
 
-.primary-image {
+.product-card .primary-image {
   opacity: 1;
 }
 
@@ -96,7 +172,7 @@
   opacity: 0;
 }
 
-.secondary-image {
+.product-card .secondary-image {
   position: absolute;
   top: 0;
   left: 0;
@@ -111,17 +187,18 @@
    HOVER ACTIONS
    ============================================ */
 
-.hover-actions {
+.product-card .hover-actions {
   position: absolute;
-  right: 1rem;
-  bottom: 1rem;
+  right: 0.75rem;
+  bottom: 0.75rem;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 1rem;
-  transition: all 0.3s ease;
+  gap: 0.75rem;
+  transition: opacity 0.15s ease, transform 0.15s ease;
   opacity: 0;
   transform: translateX(100%);
+  will-change: opacity, transform;
 }
 
 .product-card.hovered .hover-actions {
@@ -129,63 +206,34 @@
   transform: translateX(0);
 }
 
-.action-button {
-  width: 3rem;
-  height: 3rem;
-  border-radius: 9999px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-  border: none;
-  background-color: white;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  cursor: pointer;
-  position: relative;
-  z-index: 1;
-  flex-shrink: 0;
-}
+/* action-button/icon rules are namespaced to .product-card earlier to avoid global leakage */
 
-.action-button:hover {
-  transform: scale(1.1);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
-}
-
-.icon {
-  width: 1.375rem;
-  height: 1.375rem;
-  pointer-events: none;
-  flex-shrink: 0;
-}
-
-/* Wishlist Button */
-.wishlist-btn {
+/* Wishlist Button (scoped to product-card) */
+.product-card .wishlist-btn {
   color: #ef4444;
 }
 
-.wishlist-btn:hover {
+.product-card .wishlist-btn:hover {
   color: #dc2626;
 }
 
-.wishlist-btn:active {
+.product-card .wishlist-btn:active {
   color: #dc2626;
 }
 
-.wishlist-btn.active .icon {
-  fill: currentColor;
-}
+/* wishlist active icon is namespaced below */
 
-/* Cart Button */
-.cart-btn {
+/* Cart Button (scoped to product-card) */
+.product-card .cart-btn {
   color: #1f2937;
 }
 
-.cart-btn:hover {
+.product-card .cart-btn:hover {
   color: #111827;
 }
 
-/* Tooltips */
-.tooltip {
+/* Tooltips (scoped to product card) */
+.product-card .tooltip {
   position: absolute;
   right: calc(100% + 0.5rem);
   top: 50%;
@@ -203,7 +251,7 @@
   z-index: 10;
 }
 
-.tooltip::after {
+.product-card .tooltip::after {
   content: "";
   position: absolute;
   left: 100%;
@@ -211,7 +259,7 @@
   transform: translateY(-50%);
 }
 
-.action-button:hover .tooltip {
+.product-card .action-button:hover .tooltip {
   opacity: 1;
 }
 
@@ -219,21 +267,22 @@
    CARD CONTENT
    ============================================ */
 
-.card-content {
+.product-card .card-content {
   flex: 1;
-  padding: 1rem;
+  padding: 0.75rem;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
 }
 
-.product-name {
-  font-size: 1.125rem;
+.product-card .product-name {
+  font-size: 1rem;
   font-weight: 600;
   color: #0f172a;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -242,14 +291,14 @@
    MATERIAL BADGE
    ============================================ */
 
-.material-badge-wrapper {
+.product-card .material-badge-wrapper {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
 }
 
-.material-label {
+.product-card .material-label {
   font-size: 0.75rem;
   font-weight: 500;
   color: #475569;
@@ -257,7 +306,7 @@
   letter-spacing: 0.05em;
 }
 
-.material-badge {
+.product-card .material-badge {
   display: inline-block;
   background-color: #f1f5f9;
   color: #475569;
@@ -272,19 +321,19 @@
    PRICE CONTAINER
    ============================================ */
 
-.price-container {
+.product-card .price-container {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-.current-price {
-  font-size: 1.5rem;
+.product-card .current-price {
+  font-size: 1.25rem;
   font-weight: bold;
   color: #0f172a;
 }
 
-.original-price {
+.product-card .original-price {
   font-size: 0.875rem;
   color: #94a3b8;
   text-decoration: line-through;

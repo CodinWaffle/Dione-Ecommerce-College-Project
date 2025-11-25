@@ -150,8 +150,8 @@
 
 .product-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
   margin-bottom: 40px;
 }
 
@@ -294,7 +294,7 @@
 /* Responsive Design */
 @media (max-width: 1400px) {
   .product-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 

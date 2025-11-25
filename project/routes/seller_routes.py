@@ -412,10 +412,17 @@ def product_details(product_id):
         seller_id=current_user.id
     ).first_or_404()
     
-    try:
-        variants = json.loads(product.variants) if product.variants else []
-    except json.JSONDecodeError:
-        variants = []
+    # Variants may be stored as a JSON string or as a Python list (db.JSON).
+    variants = []
+    if product.variants:
+        try:
+            # If it's a string, attempt to decode
+            if isinstance(product.variants, str):
+                variants = json.loads(product.variants)
+            else:
+                variants = product.variants
+        except Exception:
+            variants = []
     
     try:
         attributes = json.loads(product.attributes) if product.attributes else {}
@@ -490,8 +497,38 @@ def product_update(product_id):
             except (TypeError, ValueError):
                 pass
         if variants is not None:
-            # Expect variants as list/dict - store as JSON string
-            product.variants = json.dumps(variants)
+            # Expect variants as list of variant objects. Accept either a
+            # Python list or a JSON-serializable structure. Persist as JSON
+            # string for compatibility with existing stored rows.
+            try:
+                # ensure we have a serializable list
+                if isinstance(variants, str):
+                    # client may have sent a JSON string
+                    parsed = json.loads(variants)
+                else:
+                    parsed = variants
+            except Exception:
+                parsed = []
+            product.variants = json.dumps(parsed)
+            # Recompute total_stock from variants (sum sizeStocks if present)
+            try:
+                total = 0
+                for v in parsed:
+                    if isinstance(v, dict) and v.get('sizeStocks') and isinstance(v.get('sizeStocks'), list):
+                        for ss in v.get('sizeStocks'):
+                            try:
+                                total += int(ss.get('stock', 0))
+                            except Exception:
+                                continue
+                    else:
+                        try:
+                            total += int(v.get('stock', 0) if isinstance(v, dict) else 0)
+                        except Exception:
+                            continue
+                product.total_stock = int(total)
+            except Exception:
+                # ignore failures and leave provided total_stock handling below
+                pass
         if attributes is not None:
             product.attributes = json.dumps(attributes)
         if primary_image is not None:

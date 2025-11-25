@@ -191,9 +191,6 @@ Dione Ecommerce{% endblock %} {% block extra_css %}
               </td>
               <td class="col-right">
                 <div class="action-buttons">
-                  <button class="btn-icon view-product" data-id="{{ p.id }}">
-                    <i data-lucide="eye"></i><span>View</span>
-                  </button>
                   <button class="btn-icon edit-product" data-id="{{ p.id }}">
                     <i data-lucide="edit"></i><span>Edit</span>
                   </button>
@@ -235,17 +232,23 @@ Dione Ecommerce{% endblock %} {% block extra_css %}
       </div>
       <div class="modal-body">
         <div class="product-detail">
-          <div class="product-image-container">
-            <img
-              src=""
-              alt="Product Image"
-              id="modalProductImage"
-              class="product-image"
-            />
-            <div style="margin-top: 8px">
-              <label for="modalProductImageInput" class="btn-secondary"
-                >Change Image</label
+          <div class="product-image-column">
+            <div class="product-image-box">
+              <img
+                src=""
+                alt="Product Image"
+                id="modalProductImage"
+                class="product-image-lg"
+              />
+            </div>
+            <div class="image-actions">
+              <label
+                for="modalProductImageInput"
+                class="btn btn-secondary btn-ghost"
               >
+                <i data-lucide="image"></i>
+                <span>Change Image</span>
+              </label>
               <input
                 type="file"
                 id="modalProductImageInput"
@@ -254,46 +257,73 @@ Dione Ecommerce{% endblock %} {% block extra_css %}
               />
             </div>
           </div>
-          <div class="product-info">
-            <label>Name</label>
-            <input type="text" id="modalProductName" class="modal-input" />
-            <label style="margin-top: 8px">Category / Subcategory</label>
-            <div style="display: flex; gap: 8px; align-items: center">
-              <input
-                type="text"
-                id="modalProductCategory"
-                class="modal-input"
-                placeholder="Category"
-              />
-              <input
-                type="text"
-                id="modalProductSubcategory"
-                class="modal-input"
-                placeholder="Subcategory"
-              />
+          <div class="product-main-column">
+            <div class="form-row">
+              <label for="modalProductName">Name</label>
+              <input type="text" id="modalProductName" class="modal-input" />
             </div>
-            <label style="margin-top: 8px">Price</label>
-            <input
-              type="number"
-              step="0.01"
-              id="modalProductPrice"
-              class="modal-input"
-            />
-            <label style="margin-top: 8px">Total Stock</label>
-            <input type="number" id="modalProductStock" class="modal-input" />
+
+            <div class="form-row form-row-split">
+              <div>
+                <label for="modalProductCategory">Category</label>
+                <input
+                  type="text"
+                  id="modalProductCategory"
+                  class="modal-input"
+                  placeholder="Category"
+                />
+              </div>
+              <div>
+                <label for="modalProductSubcategory">Subcategory</label>
+                <input
+                  type="text"
+                  id="modalProductSubcategory"
+                  class="modal-input"
+                  placeholder="Subcategory"
+                />
+              </div>
+            </div>
+
+            <div class="form-row form-row-split">
+              <div>
+                <label for="modalProductPrice">Price</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  id="modalProductPrice"
+                  class="modal-input"
+                />
+              </div>
+              <div>
+                <label for="modalProductStock">Total Stock</label>
+                <input
+                  type="number"
+                  id="modalProductStock"
+                  class="modal-input"
+                />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <label for="modalProductDescription">Description</label>
+              <textarea
+                id="modalProductDescription"
+                class="modal-textarea"
+                rows="5"
+              ></textarea>
+            </div>
           </div>
-          <div class="product-extra">
-            <h4>Description</h4>
-            <textarea
-              id="modalProductDescription"
-              class="modal-textarea"
-              rows="6"
-            ></textarea>
-            <h4>Variants</h4>
-            <div id="modalProductVariants"></div>
-            <h4>Attributes</h4>
-            <div id="modalProductAttributes"></div>
-          </div>
+
+          <aside class="product-side-column">
+            <section class="side-section">
+              <h4 class="side-title">Variants</h4>
+              <div id="modalProductVariants" class="side-content"></div>
+            </section>
+            <section class="side-section">
+              <h4 class="side-title">Attributes</h4>
+              <div id="modalProductAttributes" class="side-content"></div>
+            </section>
+          </aside>
         </div>
       </div>
       <div

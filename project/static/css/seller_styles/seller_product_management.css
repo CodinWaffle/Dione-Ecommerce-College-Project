@@ -383,6 +383,7 @@
   align-items: center;
   gap: 1rem;
   min-width: 0;
+  justify-content: flex-start; /* ensure image is left-aligned */
 }
 
 .product-image {
@@ -401,7 +402,21 @@
   white-space: nowrap;
   font-weight: 500;
   color: #1f2937;
-  max-width: calc(100% - 56px);
+  text-align: left;
+  max-width: calc(100% - 64px);
+}
+
+@media (max-width: 640px) {
+  .product-name {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+    max-width: 100%;
+  }
+  .product-image {
+    width: 40px;
+    height: 40px;
+  }
 }
 
 /* Buttons */
@@ -530,6 +545,20 @@
   color: #92400e;
 }
 
+.status-low-stocks {
+  background-color: #fff4e6;
+  color: #7c3a00;
+}
+
+.product-table tr.expanded .row-select,
+.product-table tr.expanded .edit-product {
+  display: none !important;
+}
+
+.product-table tr.expanded .action-buttons {
+  opacity: 0.6;
+}
+
 /* Pagination */
 .pagination {
   display: flex;
@@ -650,6 +679,270 @@ label {
   display: flex;
   justify-content: flex-end;
   gap: 1rem;
+}
+
+/* Variant Stocks Modal specific styling */
+.variant-edit-row input {
+  padding: 0.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 0.875rem;
+}
+.variant-edit-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 0;
+}
+.variant-edit-row .variant-size {
+  width: 80px;
+}
+.variant-edit-row .variant-stock {
+  width: 90px;
+}
+
+/* Improved modal layout for product detail and variant stocks */
+.product-detail {
+  display: grid;
+  grid-template-columns: 220px 1fr 300px;
+  gap: 20px;
+  align-items: start;
+  padding: 1rem 1.5rem;
+}
+.product-image-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.product-info {
+  display: flex;
+  flex-direction: column;
+}
+.modal-input {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  background: #fff;
+}
+.modal-textarea {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  resize: vertical;
+}
+
+/* New modal columns (image / main / side) */
+.product-image-column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+.product-image-box {
+  width: 100%;
+  max-width: 220px;
+  aspect-ratio: 1 / 1;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #eef2ff;
+}
+.product-image-lg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.image-actions {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  justify-content: center;
+}
+
+.btn-ghost {
+  background: white;
+  border: 1px solid #e5e7eb;
+  color: #374151;
+  padding: 0.45rem 0.75rem;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+.btn-ghost:hover {
+  background: #f9fafb;
+}
+
+.product-main-column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.form-row {
+  display: flex;
+  flex-direction: column;
+}
+.form-row-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.product-side-column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.side-section {
+  background: #f8fafc;
+  border: 1px solid #eef2ff;
+  padding: 12px;
+  border-radius: 8px;
+}
+.side-title {
+  margin: 0 0 8px 0;
+  font-size: 0.95rem;
+  color: #0f172a;
+}
+.side-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 40vh;
+  overflow-y: auto;
+}
+
+/* Variant stocks rows: card-like inputs */
+.variant-edit-row {
+  background: #ffffff;
+  border: 1px solid #f3f4f6;
+  padding: 10px;
+  border-radius: 8px;
+  align-items: flex-start;
+}
+.variant-edit-row .variant-sku,
+.variant-edit-row .variant-color {
+  width: 140px;
+}
+.variant-size-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-left: 8px;
+}
+.variant-size-wrap .size-edit-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.size-edit-row .size-input,
+.size-edit-row .size-stock-input {
+  padding: 0.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+}
+
+/* Make modal content tighter and visually consistent */
+.modal-content {
+  max-width: 960px;
+  padding: 0;
+}
+.modal-header {
+  padding: 1rem 1.25rem;
+}
+.modal-body {
+  padding: 1rem 1.25rem;
+}
+
+@media (max-width: 980px) {
+  .product-detail {
+    grid-template-columns: 1fr;
+  }
+  .product-side-column {
+    order: 3;
+  }
+  .product-image-column {
+    order: 1;
+    justify-content: center;
+  }
+  .product-main-column {
+    order: 2;
+  }
+}
+
+/* product detail variant rows (read-only preview) */
+.modal-variant-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  background: #f8fafc;
+  padding: 10px 12px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+.modal-variant-row div {
+  font-size: 0.95rem;
+  color: #0f172a;
+}
+
+/* Slightly larger clickable action buttons and visible labels on wider screens */
+.btn-icon {
+  padding: 0.45rem 0.9rem;
+  border-radius: 8px;
+}
+.btn-icon span {
+  display: inline-block;
+  margin-left: 6px;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 900px) {
+  .product-detail {
+    grid-template-columns: 1fr;
+  }
+  .product-image-container {
+    justify-content: center;
+  }
+  .btn-icon span {
+    display: none;
+  }
+}
+
+/* size-stock container inside add stocks page */
+.size-stock-container {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+.size-stock-item {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  background: #f9fafb;
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px solid #f3f4f6;
+}
+
+/* Wider stock column when out-of-stock tab active */
+.product-table-container.out-tab .product-table colgroup col:nth-child(6) {
+  width: 14%;
+}
+.product-table-container.out-tab .product-table colgroup col:nth-child(5) {
+  width: 8%;
 }
 
 /* Responsive design */

@@ -792,9 +792,9 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 });
 // Profile dropdown logic
-const profileBtn = document.getElementById("profileBtn");
-const profileDropdown = document.getElementById("profileDropdown");
-let profileDropdownOpen = false;
+var profileBtn = document.getElementById("profileBtn");
+var profileDropdown = document.getElementById("profileDropdown");
+var profileDropdownOpen = false;
 
 function closeProfileDropdown() {
   if (profileDropdown) {
@@ -837,7 +837,7 @@ if (profileBtn && profileDropdown) {
   });
 
   // Wishlist button click handler - Navigate to cart page with saved items tab
-  const wishlistBtn = document.getElementById("wishlistBtn");
+  var wishlistBtn = document.getElementById("wishlistBtn");
   if (wishlistBtn) {
     wishlistBtn.addEventListener("click", function () {
       // Navigate to cart page and scroll to saved items section

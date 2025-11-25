@@ -89,5 +89,13 @@
 {% endblock %} {% include 'main/components/_product_card.html' %} {% block
 extra_js %}
 <script src="{{ url_for('static', filename='js/buyer_scripts/components/product_card.js') }}"></script>
+<script>
+  // Expose product buckets so `homepage.js` can initialize product grids
+  window.__PRODUCT_BUCKETS__ = {
+    featured: [],
+    trending: [],
+    new_arrivals: {{ (new_arrivals or []) | tojson }}
+  };
+</script>
 <script src="{{ url_for('static', filename='js/buyer_scripts/homepage.js') }}"></script>
 {% endblock %}

@@ -241,6 +241,20 @@
       sessionStorage.getItem(STORAGE_KEY)
     ) {
       clearFormData();
+      // Also clear any per-form localStorage backups so the next add is fresh
+      try {
+        const keysToClear = [
+          "productForm",
+          "productDescriptionForm",
+          "productStocksForm",
+          "productPreviewForm",
+          "products",
+        ];
+        keysToClear.forEach((k) => localStorage.removeItem(k));
+        console.log("Cleared localStorage product form keys");
+      } catch (e) {
+        console.warn("Failed to clear localStorage keys:", e);
+      }
     }
   });
 

@@ -23,6 +23,19 @@ class ProductCard {
     this.element.querySelector(".material-badge").textContent =
       this.product.material;
 
+    // Set rating if present
+    const ratingEl = this.element.querySelector(".rating-value");
+    if (ratingEl) {
+      if (this.product.rating != null) {
+        // Show star and numeric value
+        ratingEl.textContent = `⭐ ${parseFloat(this.product.rating).toFixed(
+          1
+        )}`;
+      } else {
+        ratingEl.textContent = "";
+      }
+    }
+
     // Set price
     const priceContainer = this.element.querySelector(".price-container");
     const currentPriceSpan = priceContainer.querySelector(".current-price");
@@ -103,6 +116,11 @@ function initializeProducts(containerId, products) {
   }
 
   products.forEach((product) => {
+    console.log(
+      `initializeProducts: id=${product.id}, secondaryImage=${
+        product.secondaryImage ? "yes" : "no"
+      }`
+    );
     const card = new ProductCard(product, template);
     const cardElement = card.render();
     productGrid.appendChild(cardElement);

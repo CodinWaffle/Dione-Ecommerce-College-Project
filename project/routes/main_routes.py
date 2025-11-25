@@ -2,9 +2,11 @@
 Main routes for Dione Ecommerce
 """
 from flask import Blueprint, render_template, jsonify, redirect, url_for, flash
+from flask import request
 from flask_login import login_required, current_user, logout_user
 from project import db
-from project.models import Product, User
+from project.models import Product, User, SellerProduct
+from sqlalchemy import func
 
 main = Blueprint('main', __name__)
 
@@ -31,17 +33,148 @@ def index():
     # Navigation items for header
     nav_items = get_nav_items()
     
-    featured = Product.query.filter_by(status='active').order_by(Product.created_at.desc()).limit(8).all()
-    trending = Product.query.filter_by(status='active').order_by(Product.stock.desc()).limit(8).all()
-    new_arrivals = Product.query.filter_by(status='active').order_by(Product.updated_at.desc()).limit(8).all()
+    # Get products from both models
+    featured = Product.query.filter_by(status='active').order_by(Product.created_at.desc()).limit(4).all()
+    trending = Product.query.filter_by(status='active').order_by(Product.stock.desc()).limit(4).all()
+    new_arrivals = Product.query.filter_by(status='active').order_by(Product.updated_at.desc()).limit(4).all()
+    
+    # Get seller products
+    seller_featured = SellerProduct.query.filter_by(status='active').order_by(SellerProduct.created_at.desc()).limit(4).all()
+    seller_trending = SellerProduct.query.filter_by(status='active').order_by(SellerProduct.total_stock.desc()).limit(4).all()
+    seller_new_arrivals = SellerProduct.query.filter_by(status='active').order_by(SellerProduct.updated_at.desc()).limit(4).all()
+
+    def seller_to_public_dict(sp):
+        return {
+            'id': sp.id,
+            'name': sp.name,
+            'primaryImage': sp.primary_image or '/static/image/banner.png',
+            'secondaryImage': sp.secondary_image or sp.primary_image or '/static/image/banner.png',
+            'material': (sp.materials or 'Premium Material').split('\n')[0] if sp.materials else 'Premium Material',
+            'price': float(sp.price or 0),
+            'originalPrice': float(sp.compare_at_price) if sp.compare_at_price and sp.compare_at_price > sp.price else None,
+            'category': sp.category,
+            'subcategory': sp.subcategory,
+        }
 
     product_buckets = {
-        'featured': [product.to_public_dict() for product in featured],
-        'trending': [product.to_public_dict() for product in trending],
-        'new_arrivals': [product.to_public_dict() for product in new_arrivals],
+        'featured': [product.to_public_dict() for product in featured] + [seller_to_public_dict(sp) for sp in seller_featured],
+        'trending': [product.to_public_dict() for product in trending] + [seller_to_public_dict(sp) for sp in seller_trending],
+        'new_arrivals': [product.to_public_dict() for product in new_arrivals] + [seller_to_public_dict(sp) for sp in seller_new_arrivals],
     }
     
     return render_template('main/index.html', nav_items=nav_items, product_buckets=product_buckets)
+
+
+@main.route('/api/products')
+def api_products():
+    """API: Return active products from both Product and SellerProduct models.
+
+    Query params:
+      - category (optional)
+      - subcategory (optional)
+      - limit (optional)
+    """
+    try:
+        category = request.args.get('category')
+        subcategory = request.args.get('subcategory')
+        limit = int(request.args.get('limit') or 48)
+    except Exception:
+        category = None
+        subcategory = None
+        limit = 48
+
+    # Fetch from Product model (legacy products)
+    q1 = Product.query.filter(func.lower(Product.status) == 'active')
+    if category:
+        try:
+            q1 = q1.filter(func.lower(Product.category) == category.lower())
+        except Exception:
+            q1 = q1.filter(Product.category == category)
+    if subcategory:
+        try:
+            q1 = q1.filter(func.lower(Product.subcategory) == subcategory.lower())
+        except Exception:
+            q1 = q1.filter(Product.subcategory == subcategory)
+    
+    # Fetch from SellerProduct model (seller-created products)
+    q2 = SellerProduct.query.filter(func.lower(SellerProduct.status) == 'active')
+    if category:
+        try:
+            q2 = q2.filter(func.lower(SellerProduct.category) == category.lower())
+        except Exception:
+            q2 = q2.filter(SellerProduct.category == category)
+    if subcategory:
+        try:
+            q2 = q2.filter(func.lower(SellerProduct.subcategory) == subcategory.lower())
+        except Exception:
+            q2 = q2.filter(SellerProduct.subcategory == subcategory)
+    
+    # Get products from both models
+    products = q1.order_by(Product.updated_at.desc()).limit(limit // 2).all()
+    seller_products = q2.order_by(SellerProduct.updated_at.desc()).limit(limit // 2).all()
+    
+    # Convert to public dict format
+    items = []
+    for p in products:
+        items.append(p.to_public_dict())
+    
+    for sp in seller_products:
+        # Convert SellerProduct to public dict format compatible with frontend
+        items.append({
+            'id': sp.id,
+            'name': sp.name,
+            'primaryImage': sp.primary_image or '/static/image/banner.png',
+            'secondaryImage': sp.secondary_image or sp.primary_image or '/static/image/banner.png',
+            'material': (sp.materials or 'Premium Material').split('\n')[0] if sp.materials else 'Premium Material',
+            'price': float(sp.price or 0),
+            'originalPrice': float(sp.compare_at_price) if sp.compare_at_price and sp.compare_at_price > sp.price else None,
+            'category': sp.category,
+            'subcategory': sp.subcategory,
+        })
+    
+    # Sort combined results by most recent and limit
+    items = sorted(items, key=lambda x: x.get('id', 0), reverse=True)[:limit]
+    
+    return jsonify({'products': items, 'count': len(items)})
+
+
+@main.route('/homepage')
+def homepage():
+    """Lightweight homepage route that renders the standalone homepage.html template
+    and provides `new_arrivals` products for client-side rendering.
+    """
+    nav_items = get_nav_items()
+    
+    # Get new arrivals from both models
+    new_arrivals_q = Product.query.filter_by(status='active').order_by(Product.updated_at.desc()).limit(4).all()
+    seller_new_arrivals_q = SellerProduct.query.filter_by(status='active').order_by(SellerProduct.updated_at.desc()).limit(4).all()
+    
+    new_arrivals = []
+    
+    # Add products from Product model
+    for p in new_arrivals_q:
+        d = p.to_public_dict()
+        # include rating if the model has it (safe getattr)
+        d['rating'] = getattr(p, 'rating', None)
+        new_arrivals.append(d)
+    
+    # Add products from SellerProduct model
+    for sp in seller_new_arrivals_q:
+        d = {
+            'id': sp.id,
+            'name': sp.name,
+            'primaryImage': sp.primary_image or '/static/image/banner.png',
+            'secondaryImage': sp.secondary_image or sp.primary_image or '/static/image/banner.png',
+            'material': (sp.materials or 'Premium Material').split('\n')[0] if sp.materials else 'Premium Material',
+            'price': float(sp.price or 0),
+            'originalPrice': float(sp.compare_at_price) if sp.compare_at_price and sp.compare_at_price > sp.price else None,
+            'category': sp.category,
+            'subcategory': sp.subcategory,
+            'rating': None  # SellerProduct doesn't have rating field yet
+        }
+        new_arrivals.append(d)
+
+    return render_template('main/homepage.html', nav_items=nav_items, new_arrivals=new_arrivals)
 
 @main.route('/profile')
 @login_required
@@ -293,74 +426,119 @@ def test_db():
 # CLOTHING ROUTES
 # ============================================
 
+
+# Helper: fetch products from SellerProduct or Product models and return
+# a list of lightweight dicts compatible with the product card JS/template.
+def fetch_products(category=None, subcategory=None, limit=48):
+    results = []
+    try:
+        # Prefer SellerProduct (detailed seller table) when available
+        q = SellerProduct.query.filter(SellerProduct.status == 'active')
+        if category:
+            q = q.filter(func.lower(SellerProduct.category) == category.lower())
+        if subcategory:
+            q = q.filter(func.lower(SellerProduct.subcategory) == subcategory.lower())
+        q = q.order_by(SellerProduct.updated_at.desc()).limit(limit)
+        seller_items = q.all()
+        for s in seller_items:
+            d = s.to_dict()
+            # Normalize keys to match Product.to_public_dict shape used by frontend
+            results.append({
+                'id': d.get('id'),
+                'name': d.get('name'),
+                'price': d.get('price') or 0,
+                'primaryImage': d.get('primary_image') or '/static/image/banner.png',
+                'secondaryImage': getattr(s, 'secondary_image', None) or d.get('primary_image') or '/static/image/banner.png',
+                'material': (getattr(s, 'materials', None) or 'Premium Material').split('\n')[0],
+                'originalPrice': d.get('compare_at_price') or None,
+            })
+
+        # If no seller items found, fallback to Product model
+        if not results:
+            pq = Product.query.filter(func.lower(Product.status) == 'active')
+            if category:
+                pq = pq.filter(func.lower(Product.category) == category.lower())
+            if subcategory:
+                pq = pq.filter(func.lower(Product.subcategory) == subcategory.lower())
+            pq = pq.order_by(Product.updated_at.desc()).limit(limit)
+            for p in pq.all():
+                pd = p.to_public_dict()
+                results.append(pd)
+
+    except Exception:
+        # On error, return empty list (page will continue gracefully)
+        return []
+
+    return results
+
 @main.route('/shop/all/clothing')
 def shop_all_clothing():
     """Shop all clothing items"""
-    products = []  # TODO: Fetch from database
     nav_items = get_nav_items()
+    products = fetch_products(category='clothing', limit=48)
     return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='clothing', selected_category='clothing')
 
 @main.route('/shop/clothing/tops')
 def shop_clothing_tops():
     """Shop clothing tops"""
-    products = []
     nav_items = get_nav_items()
+    products = fetch_products(category='clothing', subcategory='tops', limit=48)
     return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='clothing', subcategory='tops', selected_category='clothing')
 
 @main.route('/shop/clothing/bottoms')
 def shop_clothing_bottoms():
     """Shop clothing bottoms"""
-    products = []
     nav_items = get_nav_items()
+    products = fetch_products(category='clothing', subcategory='bottoms', limit=48)
     return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='clothing', subcategory='bottoms', selected_category='clothing')
 
 @main.route('/shop/clothing/dresses')
 def shop_clothing_dresses():
     """Shop dresses"""
-    products = []
     nav_items = get_nav_items()
+    products = fetch_products(category='clothing', subcategory='dresses', limit=48)
     return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='clothing', subcategory='dresses', selected_category='clothing')
 
 @main.route('/shop/clothing/outwear')
 def shop_clothing_outwear():
     """Shop outerwear"""
-    products = []
     nav_items = get_nav_items()
+    products = fetch_products(category='clothing', subcategory='outwear', limit=48)
     return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='clothing', subcategory='outwear', selected_category='clothing')
 
 @main.route('/shop/clothing/activewear')
 def shop_clothing_activewear():
     """Shop activewear"""
-    products = []
     nav_items = get_nav_items()
+    products = fetch_products(category='clothing', subcategory='activewear', limit=48)
     return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='clothing', subcategory='activewear', selected_category='clothing')
 
 @main.route('/shop/clothing/sleepwear')
 def shop_clothing_sleepwear():
     """Shop sleepwear"""
-    products = []
     nav_items = get_nav_items()
+    products = fetch_products(category='clothing', subcategory='sleepwear', limit=48)
     return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='clothing', subcategory='sleepwear', selected_category='clothing')
 
 @main.route('/shop/clothing/undergarments')
 def shop_clothing_undergarments():
     """Shop undergarments"""
-    products = []
     nav_items = get_nav_items()
+    products = fetch_products(category='clothing', subcategory='undergarments', limit=48)
     return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='clothing', subcategory='undergarments', selected_category='clothing')
 
 @main.route('/shop/clothing/swimwear')
 def shop_clothing_swimwear():
     """Shop swimwear"""
-    products = []
     nav_items = get_nav_items()
+    products = fetch_products(category='clothing', subcategory='swimwear', limit=48)
     return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='clothing', subcategory='swimwear', selected_category='clothing')
 
 @main.route('/shop/clothing/occasionwear')
 def shop_clothing_occasionwear():
     """Shop occasionwear"""
-    products = []
     nav_items = get_nav_items()
+    products = fetch_products(category='clothing', subcategory='occasionwear', limit=48)
     return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='clothing', subcategory='occasionwear', selected_category='clothing')
 
 
@@ -371,57 +549,57 @@ def shop_clothing_occasionwear():
 @main.route('/shop/all/shoes')
 def shop_all_shoes():
     """Shop all shoes"""
-    products = []
     nav_items = get_nav_items()
+    products = fetch_products(category='shoes', limit=48)
     return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='shoes', selected_category='shoes')
 
 @main.route('/shop/shoes/heels')
 def shop_shoes_heels():
     """Shop heels"""
-    products = []
     nav_items = get_nav_items()
+    products = fetch_products(category='shoes', subcategory='heels', limit=48)
     return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='shoes', subcategory='heels', selected_category='shoes')
 
 @main.route('/shop/shoes/flats')
 def shop_shoes_flats():
     """Shop flats"""
-    products = []
     nav_items = get_nav_items()
+    products = fetch_products(category='shoes', subcategory='flats', limit=48)
     return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='shoes', subcategory='flats', selected_category='shoes')
 
 @main.route('/shop/shoes/sandals')
 def shop_shoes_sandals():
     """Shop sandals"""
-    products = []
     nav_items = get_nav_items()
+    products = fetch_products(category='shoes', subcategory='sandals', limit=48)
     return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='shoes', subcategory='sandals', selected_category='shoes')
 
 @main.route('/shop/shoes/sneakers')
 def shop_shoes_sneakers():
     """Shop sneakers"""
-    products = []
     nav_items = get_nav_items()
+    products = fetch_products(category='shoes', subcategory='sneakers', limit=48)
     return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='shoes', subcategory='sneakers', selected_category='shoes')
 
 @main.route('/shop/shoes/boots')
 def shop_shoes_boots():
     """Shop boots"""
-    products = []
     nav_items = get_nav_items()
+    products = fetch_products(category='shoes', subcategory='boots', limit=48)
     return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='shoes', subcategory='boots', selected_category='shoes')
 
 @main.route('/shop/shoes/slippers')
 def shop_shoes_slippers():
     """Shop slippers & comfort wear"""
-    products = []
     nav_items = get_nav_items()
+    products = fetch_products(category='shoes', subcategory='slippers', limit=48)
     return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='shoes', subcategory='slippers', selected_category='shoes')
 
 @main.route('/shop/shoes/occasion-shoes')
 def shop_shoes_occasion_shoes():
     """Shop occasion/dress shoes"""
-    products = []
     nav_items = get_nav_items()
+    products = fetch_products(category='shoes', subcategory='occasion-shoes', limit=48)
     return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='shoes', subcategory='occasion-shoes', selected_category='shoes')
 
 
@@ -432,78 +610,78 @@ def shop_shoes_occasion_shoes():
 @main.route('/shop/all/accessories')
 def shop_all_accessories():
     """Shop all accessories"""
-    products = []
     nav_items = get_nav_items()
+    products = fetch_products(category='accessories', limit=48)
     return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='accessories', selected_category='accessories')
 
 @main.route('/shop/accessories/bags')
 def shop_accessories_bags():
     """Shop bags"""
-    products = []
     nav_items = get_nav_items()
+    products = fetch_products(category='accessories', subcategory='bags', limit=48)
     return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='accessories', subcategory='bags', selected_category='accessories')
 
 @main.route('/shop/accessories/jewelry')
 def shop_accessories_jewelry():
     """Shop jewelry"""
-    products = []
     nav_items = get_nav_items()
+    products = fetch_products(category='accessories', subcategory='jewelry', limit=48)
     return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='accessories', subcategory='jewelry', selected_category='accessories')
 
 @main.route('/shop/accessories/hair-accessories')
 def shop_accessories_hair_accessories():
     """Shop hair accessories"""
-    products = []
     nav_items = get_nav_items()
+    products = fetch_products(category='accessories', subcategory='hair-accessories', limit=48)
     return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='accessories', subcategory='hair-accessories', selected_category='accessories')
 
 @main.route('/shop/accessories/belts')
 def shop_accessories_belts():
     """Shop belts"""
-    products = []
     nav_items = get_nav_items()
+    products = fetch_products(category='accessories', subcategory='belts', limit=48)
     return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='accessories', subcategory='belts', selected_category='accessories')
 
 @main.route('/shop/accessories/scarves-wraps')
 def shop_accessories_scarves_wraps():
     """Shop scarves & wraps"""
-    products = []
     nav_items = get_nav_items()
+    products = fetch_products(category='accessories', subcategory='scarves-wraps', limit=48)
     return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='accessories', subcategory='scarves-wraps', selected_category='accessories')
 
 @main.route('/shop/accessories/hats-caps')
 def shop_accessories_hats_caps():
     """Shop hats & caps"""
-    products = []
     nav_items = get_nav_items()
+    products = fetch_products(category='accessories', subcategory='hats-caps', limit=48)
     return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='accessories', subcategory='hats-caps', selected_category='accessories')
 
 @main.route('/shop/accessories/eyewear')
 def shop_accessories_eyewear():
     """Shop eyewear"""
-    products = []
     nav_items = get_nav_items()
+    products = fetch_products(category='accessories', subcategory='eyewear', limit=48)
     return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='accessories', subcategory='eyewear', selected_category='accessories')
 
 @main.route('/shop/accessories/watches')
 def shop_accessories_watches():
     """Shop watches"""
-    products = []
     nav_items = get_nav_items()
+    products = fetch_products(category='accessories', subcategory='watches', limit=48)
     return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='accessories', subcategory='watches', selected_category='accessories')
 
 @main.route('/shop/accessories/gloves')
 def shop_accessories_gloves():
     """Shop gloves"""
-    products = []
     nav_items = get_nav_items()
+    products = fetch_products(category='accessories', subcategory='gloves', limit=48)
     return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='accessories', subcategory='gloves', selected_category='accessories')
 
 @main.route('/shop/accessories/others')
 def shop_accessories_others():
     """Shop other accessories"""
-    products = []
     nav_items = get_nav_items()
+    products = fetch_products(category='accessories', subcategory='others', limit=48)
     return render_template('main/shop_category.html', products=products, nav_items=nav_items, category='accessories', subcategory='others', selected_category='accessories')
 
 
