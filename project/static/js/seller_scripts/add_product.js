@@ -402,7 +402,11 @@ function updatePhotoPreview(box, dataUrl) {
 
 function setupPhotoUploads() {
   const boxes = document.querySelectorAll(".photo-upload-box");
-  if (!boxes.length) return;
+  if (!boxes.length) {
+    console.warn("No photo upload boxes found");
+    return;
+  }
+  console.log(`Setting up ${boxes.length} photo upload boxes`);
   boxes.forEach((box) => {
     const input = box.querySelector(".photo-input");
     const removeBtn = box.querySelector(".remove-photo");
@@ -462,16 +466,88 @@ function setupPhotoUploads() {
     const makeClickable = (target) => {
       if (!target) return;
       target.addEventListener("click", (event) => {
-        if (event.target?.classList?.contains("remove-photo")) {
+        // Don't trigger if clicking the remove button
+        if (event.target?.classList?.contains("remove-photo") || 
+            event.target?.closest(".remove-photo")) {
           return;
         }
         event.preventDefault();
-        input?.click();
+        event.stopPropagation();
+        console.log("Photo upload area clicked, triggering file input");
+        if (input) {
+          input.click();
+        } else {
+          console.error("No file input found for photo upload box");
+        }
+      });
+      
+      // Add visual feedback
+      target.style.cursor = "pointer";
+    };
+    
+    // Make the entire box clickable
+    makeClickable(box);
+    
+    // Make the label clickable (this should already work with the 'for' attribute)
+    if (label) {
+      makeClickable(label);
+    }
+    
+    // Make the preview area clickable when image is shown
+    if (previewArea) {
+      makeClickable(previewArea);
+      
+      // Also make the preview image itself clickable
+      const previewImg = previewArea.querySelector("img");
+      if (previewImg) {
+        makeClickable(previewImg);
+      }
+      
+      // Make the overlay clickable too
+      const overlay = previewArea.querySelector(".photo-overlay");
+      if (overlay) {
+        makeClickable(overlay);
+      }
+    }
+
+    // Make the upload box and label keyboard accessible (Enter/Space triggers file picker)
+    const makeAccessibleButton = (el) => {
+      if (!el) return;
+      try {
+        el.setAttribute("tabindex", "0");
+        el.setAttribute("role", "button");
+      } catch (e) {}
+      el.addEventListener("keydown", (evt) => {
+        const key = evt.key || evt.keyCode;
+        if (key === "Enter" || key === " " || key === 13 || key === 32) {
+          evt.preventDefault();
+          input?.click();
+        }
       });
     };
-    makeClickable(box);
-    makeClickable(label);
-    makeClickable(previewArea);
+    makeAccessibleButton(box);
+    makeAccessibleButton(label);
+    makeAccessibleButton(previewArea);
+
+    // Make the preview image itself keyboard accessible and visibly clickable
+    if (previewArea) {
+      const previewImg = previewArea.querySelector("img");
+      if (previewImg) {
+        // Visual affordance
+        previewImg.style.cursor = "pointer";
+        // Accessibility: make focusable and respond to Enter/Space
+        previewImg.setAttribute("tabindex", "0");
+        previewImg.setAttribute("role", "button");
+        previewImg.setAttribute("aria-label", "Upload photo");
+        previewImg.addEventListener("keydown", (evt) => {
+          const code = evt.key || evt.keyCode;
+          if (code === "Enter" || code === " " || code === 13 || code === 32) {
+            evt.preventDefault();
+            input?.click();
+          }
+        });
+      }
+    }
 
     const toggleDragState = (state) => {
       if (!box) return;
@@ -580,6 +656,20 @@ function setupRequiredUI() {
     "discountType",
     "voucherType",
   ];
+  // Do not mark photo inputs/hidden fields as required (remove asterisk)
+  skipIds.push(
+    "primaryImageField",
+    "secondaryImageField",
+    "photoInput0",
+    "photoInput1"
+  );
+  // Do not mark photo inputs/hidden fields as required (remove asterisk)
+  skipIds.push(
+    "primaryImageField",
+    "secondaryImageField",
+    "photoInput0",
+    "photoInput1"
+  );
 
   controls.forEach((el) => {
     // For fields in skip list, ensure they don't have required attribute

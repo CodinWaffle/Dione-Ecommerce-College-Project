@@ -258,6 +258,19 @@ current_user.is_authenticated and (current_user.role|default('buyer') ==
           </svg>
         </button>
         <div class="profile-dropdown" id="profileDropdown">
+          <a href="{{ url_for('main.profile') }}" class="profile-dropdown-item">
+            <span>My Account</span>
+          </a>
+          <a
+            href="{{ url_for('main.profile') }}?tab=purchases"
+            class="profile-dropdown-item"
+          >
+            <span>My purchase</span>
+          </a>
+          <div
+            class="dropdown-separator"
+            style="height: 1px; background: #eef2ff; margin: 6px 0"
+          ></div>
           <a
             href="{{ url_for('auth.logout') }}"
             class="profile-dropdown-item logout-item"

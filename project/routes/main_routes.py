@@ -138,6 +138,130 @@ def api_products():
     return jsonify({'products': items, 'count': len(items)})
 
 
+@main.route('/api/product/<int:product_id>/variant/<variant_id>')
+def api_product_variant(product_id, variant_id):
+    """Return variant-specific data for AJAX updates."""
+    try:
+        sp = SellerProduct.query.get(product_id)
+        if not sp or not sp.variants:
+            return jsonify({'error': 'Product or variant not found'}), 404
+            
+        # Find the specific variant
+        if isinstance(sp.variants, list):
+            variant = None
+            for v in sp.variants:
+                if str(v.get('color', '')) == str(variant_id):
+                    variant = v
+                    break
+            
+            if not variant:
+                return jsonify({'error': 'Variant not found'}), 404
+                
+            return jsonify({
+                'variant': {
+                    'color': variant.get('color'),
+                    'images': {
+                        'primary': sp.primary_image or '/static/image/banner.png',
+                        'secondary': sp.secondary_image or sp.primary_image or '/static/image/banner.png'
+                    },
+                    'stock': {variant.get('size', 'OS'): variant.get('stock', 0)}
+                }
+            })
+        
+        return jsonify({'error': 'Invalid variant structure'}), 400
+    except Exception as e:
+        return jsonify({'error': 'Server error', 'detail': str(e)}), 500
+
+@main.route('/api/product/<int:product_id>')
+def api_product(product_id):
+    """Return a single product (Product or SellerProduct) as JSON for client-side detail updates."""
+    try:
+        # Try SellerProduct first (more detailed)
+        sp = SellerProduct.query.get(product_id)
+        if sp:
+            # Build variant_photos and stock_data from variants JSON
+            variant_photos = {}
+            stock_data = {}
+            try:
+                if isinstance(sp.variants, list):
+                    # Convert list of variants to structured data
+                    for variant in sp.variants:
+                        if isinstance(variant, dict):
+                            color = variant.get('color', 'Unknown')
+                            size = variant.get('size', 'OS')
+                            stock = variant.get('stock', 0)
+                            color_hex = variant.get('colorHex', '#000000')
+                            
+                            # Initialize color in stock_data if not exists
+                            if color not in stock_data:
+                                stock_data[color] = {}
+                            
+                            # Add size stock for this color
+                            stock_data[color][size] = stock
+                            
+                            # Set color hex for styling (store in variant_photos for now)
+                            if color not in variant_photos:
+                                variant_photos[color] = {
+                                    'primary': sp.primary_image or '/static/image/banner.png',
+                                    'secondary': sp.secondary_image or sp.primary_image or '/static/image/banner.png',
+                                    'color_hex': color_hex
+                                }
+                elif isinstance(sp.variants, dict):
+                    # Handle existing dict structure
+                    for k, v in sp.variants.items():
+                        # v might be { 'images': [...], 'stock': { 'XS': 3, ... } }
+                        if isinstance(v, dict):
+                            if 'images' in v and v['images']:
+                                primary = v['images'][0]
+                                secondary = v['images'][1] if len(v['images']) > 1 else None
+                                variant_photos[k] = {'primary': primary, 'secondary': secondary}
+                            if 'stock' in v and isinstance(v['stock'], dict):
+                                stock_data[k] = v['stock']
+                        elif isinstance(v, list):
+                            # list of images
+                            variant_photos[k] = {'primary': v[0], 'secondary': v[1] if len(v) > 1 else None}
+            except Exception:
+                variant_photos = {}
+                stock_data = {}
+
+            # fallback to top-level images
+            primary = sp.primary_image or sp.primary_image
+            secondary = sp.secondary_image or sp.primary_image
+
+            payload = {
+                'id': sp.id,
+                'name': sp.name,
+                'description': sp.description,
+                'price': float(sp.price or 0),
+                'originalPrice': float(sp.compare_at_price) if sp.compare_at_price and sp.compare_at_price > sp.price else None,
+                'primaryImage': primary or '/static/image/banner.png',
+                'secondaryImage': secondary or primary or '/static/image/banner.png',
+                'materials': sp.materials,
+                'variants': sp.variants or {},
+                'variant_photos': variant_photos,
+                'stock_data': stock_data,
+                'type': 'seller'
+            }
+            return jsonify({'product': payload})
+
+        # Try legacy Product model
+        p = Product.query.get(product_id)
+        if p:
+            payload = p.to_public_dict()
+            payload.update({
+                'description': p.description,
+                'materials': p.materials,
+                'variant_photos': {},
+                'stock_data': {},
+                'type': 'legacy'
+            })
+            return jsonify({'product': payload})
+
+        return jsonify({'error': 'Product not found'}), 404
+    except Exception as e:
+        return jsonify({'error': 'Server error', 'detail': str(e)}), 500
+
+
 @main.route('/homepage')
 def homepage():
     """Lightweight homepage route that renders the standalone homepage.html template
@@ -312,27 +436,122 @@ def payment():
 def product_detail(product_id):
     """Display product detail page"""
     nav_items = get_nav_items()
-    product = {}  # TODO: Fetch product from database by ID
-    
-    # Stock data structure: color -> sizes -> quantity
-    stock_data = {
-        'Black': {'XS': 5, 'S': 8, 'M': 10, 'L': 7, 'XL': 4},
-        'White': {'XS': 3, 'S': 6, 'M': 9, 'L': 5, 'XL': 2},
-        'Navy': {'XS': 4, 'S': 7, 'M': 8, 'L': 6, 'XL': 3},
-        'Yellow': {'XS': 2, 'S': 5, 'M': 6, 'L': 4, 'XL': 1}
-    }
-    
-    # Product pricing and cart popup data
-    product_price = 99.99  # TODO: Fetch actual price from database
+    # Attempt to load product from SellerProduct first, then legacy Product
+    variant_photos = {}
+    stock_data = {}
+    product = {}
+    product_price = 0
     selected_quantity = 1
-    
+
+    try:
+        # Try SellerProduct (more detailed model)
+        try:
+            sp = SellerProduct.query.get(int(product_id))
+        except Exception:
+            sp = None
+
+        if sp:
+            # Build variant_photos and stock_data from variants JSON
+            try:
+                if isinstance(sp.variants, list):
+                    # Convert list of variants to structured data
+                    for variant in sp.variants:
+                        if isinstance(variant, dict):
+                            color = variant.get('color', 'Unknown')
+                            size = variant.get('size', 'OS')
+                            stock = variant.get('stock', 0)
+                            color_hex = variant.get('colorHex', '#000000')
+                            
+                            # Initialize color in stock_data if not exists
+                            if color not in stock_data:
+                                stock_data[color] = {}
+                            
+                            # Add size stock for this color
+                            stock_data[color][size] = stock
+                            
+                            # Set color hex for styling (store in variant_photos for now)
+                            if color not in variant_photos:
+                                variant_photos[color] = {
+                                    'primary': sp.primary_image or '/static/image/banner.png',
+                                    'secondary': sp.secondary_image or sp.primary_image or '/static/image/banner.png',
+                                    'color_hex': color_hex
+                                }
+                elif isinstance(sp.variants, dict):
+                    # Handle existing dict structure
+                    for color_key, v in sp.variants.items():
+                        if isinstance(v, dict):
+                            imgs = v.get('images') or v.get('photos') or []
+                            if imgs:
+                                variant_photos[color_key] = {
+                                    'primary': imgs[0],
+                                    'secondary': imgs[1] if len(imgs) > 1 else None,
+                                }
+                            if isinstance(v.get('stock'), dict):
+                                stock_data[color_key] = v.get('stock')
+                        elif isinstance(v, list):
+                            variant_photos[color_key] = {
+                                'primary': v[0],
+                                'secondary': v[1] if len(v) > 1 else None,
+                            }
+            except Exception:
+                variant_photos = {}
+                stock_data = {}
+
+            primary = sp.primary_image or '/static/image/banner.png'
+            secondary = sp.secondary_image or primary
+            product = {
+                'id': sp.id,
+                'name': sp.name,
+                'description': sp.description or '',
+                'price': float(sp.price or 0),
+                'originalPrice': float(sp.compare_at_price) if sp.compare_at_price and sp.compare_at_price > sp.price else None,
+                'primaryImage': primary,
+                'secondaryImage': secondary,
+                'materials': sp.materials,
+                'variants': sp.variants or {},
+            }
+            product_price = float(sp.price or 0)
+
+        else:
+            # Try legacy Product model
+            try:
+                p = Product.query.get(int(product_id))
+            except Exception:
+                p = None
+
+            if p:
+                product = p.to_public_dict()
+                product.update({
+                    'description': p.description or '',
+                    'materials': p.materials,
+                    'variants': {},
+                })
+                variant_photos = {}
+                stock_data = {}
+                product_price = float(p.price or 0)
+            else:
+                # Not found: keep product empty — template should handle missing data
+                product = {
+                    'id': product_id,
+                    'name': 'Product not found',
+                    'description': '',
+                    'price': 0,
+                    'primaryImage': '/static/image/banner.png',
+                    'secondaryImage': '/static/image/banner.png',
+                }
+
+    except Exception:
+        # Ensure we always return a usable template even on errors
+        product = product or {}
+
     return render_template(
         'main/product_detail.html',
         nav_items=nav_items,
         product=product,
         stock_data=stock_data,
+        variant_photos=variant_photos,
         product_price=product_price,
-        selected_quantity=selected_quantity
+        selected_quantity=selected_quantity,
     )
 
 

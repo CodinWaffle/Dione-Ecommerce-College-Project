@@ -9,6 +9,8 @@
   width: calc(100% - 48px);
   transition: box-shadow 0.18s ease;
   position: relative;
+  overflow: visible;
+  padding: 0 60px; /* Add padding for navigation buttons */
 
   .card:hover {
     /* remove pop-up translate; use subtle shadow */
@@ -79,6 +81,15 @@
   margin-left: 0;
   margin-right: 0;
   box-sizing: border-box;
+}
+
+/* Add a viewport container to handle overflow */
+.carousel-viewport {
+  overflow: hidden;
+  width: 100%;
+  position: relative;
+  margin: 0 -60px; /* Negative margin to offset container padding */
+  padding: 0 60px; /* Restore padding inside viewport */
 }
 
 .card {
@@ -156,7 +167,8 @@
   justify-content: center;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   transition: background 0.12s ease, transform 0.12s ease;
-  z-index: 10;
+  z-index: 100;
+  pointer-events: auto;
 }
 
 .nav-button:hover {
@@ -169,13 +181,48 @@
 }
 
 .nav-button.prev {
-  /* Moved arrow buttons inside container to prevent cropping */
-  left: 10px;
+  left: -25px;
 }
 
 .nav-button.next {
-  /* Push the next button further inside for better visibility */
-  right: 10px;
+  right: -25px;
+}
+
+/* Ensure buttons are visible on all screen sizes */
+@media (max-width: 1200px) {
+  .carousel-container {
+    padding: 0 50px;
+  }
+  .carousel-viewport {
+    margin: 0 -50px;
+    padding: 0 50px;
+  }
+  .nav-button.prev {
+    left: 5px;
+  }
+  .nav-button.next {
+    right: 5px;
+  }
+}
+
+@media (max-width: 768px) {
+  .carousel-container {
+    padding: 0 40px;
+  }
+  .carousel-viewport {
+    margin: 0 -40px;
+    padding: 0 40px;
+  }
+  .nav-button {
+    width: 40px;
+    height: 40px;
+  }
+  .nav-button.prev {
+    left: 10px;
+  }
+  .nav-button.next {
+    right: 10px;
+  }
 }
 
 .nav-button svg {

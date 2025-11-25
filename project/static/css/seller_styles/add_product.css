@@ -92,6 +92,8 @@ body {
   position: sticky;
   top: 2rem;
   height: fit-content;
+  min-width: 0;
+  width: 100%;
 }
 
 .side-section {
@@ -350,6 +352,14 @@ small {
 .photo-upload-box:hover {
   border-color: #667eea;
   background: #f9fafb;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+}
+
+.photo-upload-box:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 .photo-input {
@@ -366,6 +376,12 @@ small {
   color: #6b7280;
   padding: 1rem;
   text-align: center;
+  transition: all 0.2s ease;
+}
+
+.photo-label:hover {
+  color: #667eea;
+  transform: scale(1.05);
 }
 
 .photo-label i {
@@ -374,6 +390,45 @@ small {
 }
 
 .photo-label span {
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.photo-label small {
+  font-size: 0.65rem;
+  color: #9ca3af;
+  margin-top: 0.25rem;
+  font-weight: 400;
+}
+
+/* Photo overlay for preview images */
+.photo-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  cursor: pointer;
+}
+
+.photo-preview:hover .photo-overlay {
+  opacity: 1;
+}
+
+.photo-overlay i {
+  font-size: 1.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.photo-overlay span {
   font-size: 0.75rem;
   font-weight: 500;
 }
@@ -403,6 +458,30 @@ small {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+/* Make preview image show clickable pointer */
+.photo-preview img {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.photo-preview img:hover {
+  opacity: 0.8;
+  transform: scale(1.02);
+}
+
+.photo-preview {
+  cursor: pointer;
+}
+
+/* Make entire upload box show clickable pointer and focus outline for keyboard users */
+.photo-upload-box {
+  cursor: pointer;
+}
+.photo-upload-box:focus {
+  outline: 3px solid rgba(108, 92, 231, 0.12);
+  outline-offset: 2px;
 }
 
 .photo-preview .remove-photo {
@@ -808,31 +887,24 @@ small {
   box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.06) !important;
 }
 
-/* Responsive Design */
-@media (max-width: 1200px) {
+/* Ensure sidebar stays on right side for larger screens */
+@media (min-width: 769px) {
   .form-container {
-    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    display: grid;
+    grid-template-columns: minmax(0, 1.8fr) minmax(0, 1.2fr);
+  }
+  
+  .form-section-right {
+    grid-column: 2 / 3;
+    position: sticky;
+    top: 2rem;
   }
 }
 
-@media (max-width: 968px) {
+/* Responsive Design */
+@media (max-width: 1200px) and (min-width: 769px) {
   .form-container {
-    grid-template-columns: 1fr;
-    padding: 1.5rem;
-  }
-
-  .form-section-right {
-    grid-column: 1 / -1;
-    position: relative;
-    top: 0;
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1.5rem;
-    width: 100%;
-  }
-
-  .side-section {
-    grid-column: span 1;
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
   }
 }
 
@@ -868,9 +940,22 @@ small {
   }
 
   .form-section-right {
+    grid-column: 1 / -1;
+    position: relative;
+    top: 0;
+    display: grid;
     grid-template-columns: 1fr;
+    gap: 1.5rem;
+    width: 100%;
+    margin-top: 2rem;
+  }
+
+  .side-section {
+    grid-column: span 1;
   }
 }
+
+/* This section is now merged with the previous 768px breakpoint */
 
 @media (max-width: 480px) {
   .add-product-page {

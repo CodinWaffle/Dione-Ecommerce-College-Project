@@ -61,19 +61,13 @@ document.addEventListener("DOMContentLoaded", function () {
           <input type="color" name="color_picker_${rowNumber}" class="color-picker-input" value="#000000" style="width: 32px; height: 32px; border: 1px solid #e5e7eb; border-radius: 4px; cursor: pointer; padding: 2px;" />
         </div>
       </td>
-      <td style="padding: 8px; border: 1px solid #e5e7eb; width: 140px;">
-        <select name="size_${rowNumber}" class="variant-input compact">
-          <option value="">Select</option>
-          <option value="XS">XS</option>
-          <option value="S">S</option>
-          <option value="M">M</option>
-          <option value="L">L</option>
-          <option value="XL">XL</option>
-          <option value="XXL">XXL</option>
-        </select>
-      </td>
-      <td style="padding: 8px; border: 1px solid #e5e7eb; width: 140px;">
-        <input type="number" min="0" placeholder="Stock" name="stock_${rowNumber}" class="variant-input compact variant-stock-input" />
+      <td style="padding: 8px; border: 1px solid #e5e7eb; width: 200px;">
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <button type="button" class="btn btn-secondary btn-select-sizes" data-row="${rowNumber}">Select Sizes</button>
+          <div class="variant-size-summary" style="font-size:0.9rem;color:#374151"></div>
+          <div class="variant-size-group" style="display:none"></div>
+          <div class="size-stock-container" style="display:none;gap:6px;margin-top:6px;"></div>
+        </div>
       </td>
       <td style="padding: 8px; border: 1px solid #e5e7eb; width: 140px;">
         <input type="number" min="0" placeholder="Low Stock" class="variant-input compact" name="lowStock_${rowNumber}" />
@@ -111,26 +105,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // wire size select -> enable/disable stock input
     const sizeSel = newRow.querySelector(`select[name="size_${rowNumber}"]`);
-    const fallbackStock = newRow.querySelector(".variant-stock-input");
-    if (sizeSel && fallbackStock) {
-      // ensure stock enabled only when size selected
-      sizeSel.addEventListener("change", function () {
-        if (this.value) {
-          fallbackStock.disabled = false;
-          fallbackStock.classList.remove("disabled");
-        } else {
-          fallbackStock.disabled = true;
-          fallbackStock.value = "";
-          fallbackStock.classList.add("disabled");
-        }
-        updateTotalStock();
-      });
-      // initial state: disabled until size chosen
-      if (!sizeSel.value) {
-        fallbackStock.disabled = true;
-        fallbackStock.classList.add("disabled");
-      }
-    }
+    // No single fallback stock column — stocks are per-size only.
 
     updateAddButtonState();
     console.log(`Added variant row ${rowNumber}`);
@@ -212,14 +187,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let total = 0;
     // Sum per-variant fallback stock inputs
-    const stockInputs = variantTableBody.querySelectorAll(
-      ".variant-stock-input"
-    );
-    stockInputs.forEach((input) => {
-      const value = parseInt(input.value || "0", 10);
-      if (!isNaN(value)) total += value;
-    });
-    // Sum per-size stock inputs
+    // Sum per-size stock inputs only
     const sizeStockInputs =
       variantTableBody.querySelectorAll(".size-stock-input");
     sizeStockInputs.forEach((input) => {
@@ -235,33 +203,10 @@ document.addEventListener("DOMContentLoaded", function () {
     return total;
   }
 
-  // Attach input listeners to existing stock inputs
-  const existingStockInputs = document.querySelectorAll(".variant-stock-input");
-  existingStockInputs.forEach((input) => {
-    input.addEventListener("input", updateTotalStock);
-    // disable if no corresponding size select value
-    const row = input.closest("tr");
-    if (row) {
-      const sizeSel = row.querySelector('select[name^="size_"]');
-      if (sizeSel && !sizeSel.value) {
-        input.disabled = true;
-        input.classList.add("disabled");
-      }
-      if (sizeSel) {
-        sizeSel.addEventListener("change", function () {
-          if (this.value) {
-            input.disabled = false;
-            input.classList.remove("disabled");
-          } else {
-            input.disabled = true;
-            input.value = "";
-            input.classList.add("disabled");
-          }
-          updateTotalStock();
-        });
-      }
-    }
-  });
+  // Expose updater globally so other scripts can call it after DOM changes
+  window.updateTotalStock = updateTotalStock;
+
+  // No single fallback stock inputs to wire — per-size stocks are handled elsewhere.
 
   // Attach photo preview handlers to existing photo upload boxes
   const existingPhotoLabels = document.querySelectorAll(".photo-upload-box");
@@ -288,7 +233,6 @@ document.addEventListener("DOMContentLoaded", function () {
   existingRows.forEach((row) => {
     const sizeGroup = row.querySelector(".variant-size-group");
     const sizeContainer = row.querySelector(".size-stock-container");
-    const fallbackStock = row.querySelector(".variant-stock-input");
     if (!sizeGroup) return;
 
     function buildSizeInputsForExistingRow() {
@@ -301,11 +245,9 @@ document.addEventListener("DOMContentLoaded", function () {
       sizeContainer.innerHTML = "";
       if (selected.length === 0) {
         sizeContainer.style.display = "none";
-        if (fallbackStock) fallbackStock.style.display = "";
         return;
       }
       sizeContainer.style.display = "flex";
-      if (fallbackStock) fallbackStock.style.display = "none";
       selected.forEach((sz) => {
         const item = document.createElement("div");
         item.className = "size-stock-item";

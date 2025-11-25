@@ -16,8 +16,8 @@ function initCarousel() {
     if (!track || !items.length) return;
 
     let currentIndex = 0;
-    const itemsToShow = getItemsToShow();
-    const maxIndex = Math.max(0, items.length - itemsToShow);
+    let itemsToShow = getItemsToShow();
+    let maxIndex = Math.max(0, items.length - itemsToShow);
 
     function getItemsToShow() {
       const width = window.innerWidth;
@@ -33,26 +33,33 @@ function initCarousel() {
       const offset = -(currentIndex * (itemWidth + gap));
       track.style.transform = `translateX(${offset}px)`;
 
-      // Update button states
-      if (prevBtn) prevBtn.disabled = currentIndex === 0;
-      if (nextBtn) nextBtn.disabled = currentIndex >= maxIndex;
+      // In looping mode buttons remain active unless there is nothing to scroll
+      const shouldDisable = maxIndex === 0;
+      if (prevBtn) prevBtn.disabled = !!shouldDisable;
+      if (nextBtn) nextBtn.disabled = !!shouldDisable;
     }
 
     if (prevBtn) {
       prevBtn.addEventListener("click", () => {
+        if (items.length === 0) return;
         if (currentIndex > 0) {
           currentIndex--;
-          updateCarousel();
+        } else {
+          currentIndex = maxIndex;
         }
+        updateCarousel();
       });
     }
 
     if (nextBtn) {
       nextBtn.addEventListener("click", () => {
+        if (items.length === 0) return;
         if (currentIndex < maxIndex) {
           currentIndex++;
-          updateCarousel();
+        } else {
+          currentIndex = 0;
         }
+        updateCarousel();
       });
     }
 
@@ -61,10 +68,10 @@ function initCarousel() {
     window.addEventListener("resize", () => {
       clearTimeout(resizeTimeout);
       resizeTimeout = setTimeout(() => {
-        const newItemsToShow = getItemsToShow();
-        const newMaxIndex = Math.max(0, items.length - newItemsToShow);
-        if (currentIndex > newMaxIndex) {
-          currentIndex = newMaxIndex;
+        itemsToShow = getItemsToShow();
+        maxIndex = Math.max(0, items.length - itemsToShow);
+        if (currentIndex > maxIndex) {
+          currentIndex = maxIndex;
         }
         updateCarousel();
       }, 250);

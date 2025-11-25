@@ -72,17 +72,23 @@ class HeelsCarousel {
   }
 
   prev() {
+    if (!this.cards || this.cards.length === 0) return;
     if (this.currentIndex > 0) {
       this.currentIndex--;
-      this.updateCarousel();
+    } else {
+      this.currentIndex = this.maxIndex;
     }
+    this.updateCarousel();
   }
 
   next() {
+    if (!this.cards || this.cards.length === 0) return;
     if (this.currentIndex < this.maxIndex) {
       this.currentIndex++;
-      this.updateCarousel();
+    } else {
+      this.currentIndex = 0;
     }
+    this.updateCarousel();
   }
 
   updateCarousel() {
@@ -92,8 +98,10 @@ class HeelsCarousel {
   }
 
   updateButtons() {
-    this.prevBtn.disabled = this.currentIndex === 0;
-    this.nextBtn.disabled = this.currentIndex >= this.maxIndex;
+    // In looping mode buttons remain active unless there is nothing to scroll
+    const shouldDisable = this.maxIndex === 0;
+    if (this.prevBtn) this.prevBtn.disabled = !!shouldDisable;
+    if (this.nextBtn) this.nextBtn.disabled = !!shouldDisable;
   }
 }
 

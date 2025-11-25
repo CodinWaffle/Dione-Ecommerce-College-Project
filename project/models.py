@@ -299,6 +299,8 @@ class SellerProduct(db.Model):
       'total_stock': self.total_stock,
       'primary_image': (self.primary_image if (self.primary_image and (str(self.primary_image).startswith('/') or str(self.primary_image).startswith('http'))) else (('/static/' + str(self.primary_image).lstrip('/')) if self.primary_image else None)),
       'status': self.status,
+      'variants': self.variants if self.variants is not None else [],
+      'attributes': self.attributes if self.attributes is not None else {},
       'created_at': self.created_at.isoformat() if self.created_at else None,
     }
 

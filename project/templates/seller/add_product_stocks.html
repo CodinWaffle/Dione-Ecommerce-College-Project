@@ -10,6 +10,10 @@ block title %}Inventory Management{% endblock %} {% block extra_css %}
 />
 <link
   rel="stylesheet"
+  href="{{ url_for('static', filename='css/seller_styles/seller_product_management.css') }}"
+/>
+<link
+  rel="stylesheet"
   href="{{ url_for('static', filename='css/seller_styles/product_preview.css') }}"
 />
 <link
@@ -60,7 +64,6 @@ block title %}Inventory Management{% endblock %} {% block extra_css %}
                   <th>SKU</th>
                   <th>Color</th>
                   <th>Size</th>
-                  <th>Stock</th>
                   <th>Low Stock</th>
                   <th>Actions</th>
                 </tr>
@@ -148,19 +151,32 @@ block title %}Inventory Management{% endblock %} {% block extra_css %}
                     style="
                       padding: 8px;
                       border: 1px solid #e5e7eb;
-                      width: 140px;
+                      width: 200px;
                     "
                   >
-                    <select name="size_1" class="variant-input compact">
-                      <option value="">Select</option>
-                      <option value="XS">XS</option>
-                      <option value="S">S</option>
-                      <option value="M">M</option>
-                      <option value="L">L</option>
-                      <option value="XL">XL</option>
-                      <option value="XXL">XXL</option>
-                    </select>
+                    <div
+                      style="display: flex; flex-direction: column; gap: 6px"
+                    >
+                      <button
+                        type="button"
+                        class="btn btn-secondary btn-select-sizes"
+                        data-row="1"
+                      >
+                        Select Sizes
+                      </button>
+                      <div
+                        class="variant-size-summary"
+                        style="font-size: 0.9rem; color: #374151"
+                      >
+                        <!-- selected sizes will render here, e.g. XS (10), S (5) -->
+                      </div>
+                      <div
+                        class="variant-size-group"
+                        style="display: none"
+                      ></div>
+                    </div>
                   </td>
+
                   <td
                     style="
                       padding: 8px;
@@ -170,20 +186,7 @@ block title %}Inventory Management{% endblock %} {% block extra_css %}
                   >
                     <input
                       type="number"
-                      min="0"
-                      placeholder="Stock"
-                      class="variant-input compact"
-                    />
-                  </td>
-                  <td
-                    style="
-                      padding: 8px;
-                      border: 1px solid #e5e7eb;
-                      width: 140px;
-                    "
-                  >
-                    <input
-                      type="number"
+                      name="lowStock_1"
                       min="0"
                       placeholder="Low Stock"
                       class="variant-input compact"
@@ -247,6 +250,40 @@ block title %}Inventory Management{% endblock %} {% block extra_css %}
 <script src="{{ url_for('static', filename='js/seller_scripts/product_preview.js') }}"></script>
 <script src="{{ url_for('static', filename='js/seller_scripts/variant_table.js') }}"></script>
 <script src="{{ url_for('static', filename='js/seller_scripts/add_product_stocks.js') }}"></script>
-<script src="{{ url_for('static', filename='js/seller_scripts/add_product_stocks_fix.js') }}"></script>
 <script src="{{ url_for('static', filename='js/seller_scripts/progress_bar.js') }}"></script>
+<!-- Size selection modal -->
+<div id="sizeSelectModal" class="modal">
+  <div class="modal-content size-modal-content">
+    <div class="modal-header">
+      <div class="modal-header-content">
+        <div class="modal-icon">
+          <i data-lucide="ruler"></i>
+        </div>
+        <div class="modal-title-section">
+          <h2 class="modal-title">Select Sizes & Stock</h2>
+          <p class="modal-subtitle">Choose sizes and set stock quantities</p>
+        </div>
+      </div>
+      <button class="close-btn" id="sizeModalClose">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="size-modal-note">
+        Select the sizes you want to offer and set stock quantities for each
+      </div>
+      <div id="sizeOptionsContainer" class="size-options-area"></div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" id="sizeModalCancel" class="btn-secondary" title="Cancel changes">
+        <i data-lucide="x"></i>
+        Cancel
+      </button>
+      <button type="button" id="sizeModalSave" class="btn-primary" title="Save size selections">
+        <i data-lucide="save"></i>
+        Save Changes
+      </button>
+    </div>
+  </div>
+</div>
 {% endblock %}

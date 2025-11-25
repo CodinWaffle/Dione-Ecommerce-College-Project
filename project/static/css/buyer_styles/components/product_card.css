@@ -2,6 +2,16 @@
    PRODUCT CARD COMPONENT STYLES
    ============================================ */
 
+/* Performance optimizations */
+.product-grid {
+  contain: layout style;
+}
+
+.product-card {
+  contain: layout style;
+  transform: translateZ(0); /* Force hardware acceleration */
+}
+
 /* Grid Container - Carousel Layout */
 .product-grid {
   display: flex;
@@ -201,6 +211,27 @@
   will-change: opacity, transform;
 }
 
+/* Action buttons: white circular background, centered icon */
+.product-card .action-button {
+  position: relative; /* needed for tooltip absolute positioning */
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid rgba(15, 23, 42, 0.04);
+  box-shadow: 0 4px 12px rgba(2, 6, 23, 0.06);
+  cursor: pointer;
+}
+
+.product-card .action-button .icon {
+  width: 18px;
+  height: 18px;
+}
+
 .product-card.hovered .hover-actions {
   opacity: 1;
   transform: translateX(0);
@@ -235,20 +266,21 @@
 /* Tooltips (scoped to product card) */
 .product-card .tooltip {
   position: absolute;
-  right: calc(100% + 0.5rem);
+  right: calc(100% + 8px);
   top: 50%;
   transform: translateY(-50%);
-  background-color: #1e293b;
-  color: white;
+  background-color: #111827;
+  color: #ffffff;
   font-size: 0.75rem;
   font-weight: 500;
-  padding: 0.5rem 0.75rem;
-  border-radius: 0.375rem;
+  padding: 6px 8px;
+  border-radius: 6px;
   white-space: nowrap;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.2s ease;
-  z-index: 10;
+  transition: opacity 0.12s ease, transform 0.12s ease;
+  z-index: 40;
+  will-change: opacity, transform;
 }
 
 .product-card .tooltip::after {
@@ -257,10 +289,17 @@
   left: 100%;
   top: 50%;
   transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-left: 6px solid #111827;
 }
 
-.product-card .action-button:hover .tooltip {
+.product-card .action-button:hover .tooltip,
+.product-card .action-button:focus .tooltip {
   opacity: 1;
+  transform: translateY(-50%) translateX(-4px);
 }
 
 /* ============================================
@@ -337,4 +376,12 @@
   font-size: 0.875rem;
   color: #94a3b8;
   text-decoration: line-through;
+}
+
+/* small visual feedback when add-to-cart is clicked */
+.product-card .cart-btn.added {
+  transform: scale(0.96);
+  opacity: 0.9;
+  box-shadow: 0 6px 18px rgba(124, 58, 237, 0.12);
+  transition: transform 0.12s ease, opacity 0.12s ease;
 }

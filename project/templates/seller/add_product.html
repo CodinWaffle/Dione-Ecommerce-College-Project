@@ -55,30 +55,70 @@ block title %}Add New Product{% endblock %} {% block extra_css %}
                 Section)</label
               >
               <input type="hidden" name="primaryImage" id="primaryImageField" />
-              <input type="hidden" name="secondaryImage" id="secondaryImageField" />
-                <div class="photo-upload-container">
-                  <div class="photo-upload-box" data-index="0">
-                    <input type="file" class="photo-input" accept="image/*" id="photoInput0" />
-                    <label class="photo-label" for="photoInput0">
-                      <i class="ri-image-add-line"></i>
-                      <span>Main Photo</span>
-                    </label>
+              <input
+                type="hidden"
+                name="secondaryImage"
+                id="secondaryImageField"
+              />
+              <div class="photo-upload-container">
+                <div
+                  class="photo-upload-box"
+                  data-index="0"
+                  title="Click to upload main product photo"
+                >
+                  <input
+                    type="file"
+                    class="photo-input"
+                    accept="image/*"
+                    id="photoInput0"
+                  />
+                  <label class="photo-label" for="photoInput0">
+                    <i class="ri-image-add-line"></i>
+                    <span>Main Photo</span>
+                    <small>Click to upload</small>
+                  </label>
                   <div class="photo-preview">
-                    <img src="#" alt="Preview" />
-                    <button type="button" class="remove-photo">
+                    <img src="#" alt="Preview" title="Click to change photo" />
+                    <div class="photo-overlay">
+                      <i class="ri-camera-line"></i>
+                      <span>Change Photo</span>
+                    </div>
+                    <button
+                      type="button"
+                      class="remove-photo"
+                      title="Remove photo"
+                    >
                       <i class="ri-close-line"></i>
                     </button>
                   </div>
                 </div>
-                  <div class="photo-upload-box" data-index="1">
-                    <input type="file" class="photo-input" accept="image/*" id="photoInput1" />
-                    <label class="photo-label" for="photoInput1">
+                <div
+                  class="photo-upload-box"
+                  data-index="1"
+                  title="Click to upload secondary product photo"
+                >
+                  <input
+                    type="file"
+                    class="photo-input"
+                    accept="image/*"
+                    id="photoInput1"
+                  />
+                  <label class="photo-label" for="photoInput1">
                     <i class="ri-image-add-line"></i>
-                    <span>Product Photo</span>
+                    <span>Secondary Photo</span>
+                    <small>Click to upload</small>
                   </label>
                   <div class="photo-preview">
-                    <img src="#" alt="Preview" />
-                    <button type="button" class="remove-photo">
+                    <img src="#" alt="Preview" title="Click to change photo" />
+                    <div class="photo-overlay">
+                      <i class="ri-camera-line"></i>
+                      <span>Change Photo</span>
+                    </div>
+                    <button
+                      type="button"
+                      class="remove-photo"
+                      title="Remove photo"
+                    >
                       <i class="ri-close-line"></i>
                     </button>
                   </div>

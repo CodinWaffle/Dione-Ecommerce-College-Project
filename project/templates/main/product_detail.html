@@ -257,10 +257,34 @@
         border-color: #8e44ad;
       }
 
-      .size-option[disabled] {
+      .size-option[disabled],
+      .size-option.disabled,
+      .size-option.out-of-stock {
         opacity: 0.5;
         cursor: not-allowed;
         text-decoration: line-through;
+        pointer-events: none;
+      }
+
+      .color-option.disabled,
+      .color-option.out-of-stock {
+        opacity: 0.3;
+        cursor: not-allowed;
+        pointer-events: none;
+        position: relative;
+      }
+
+      .oos-label {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: #dc143c;
+        color: white;
+        font-size: 8px;
+        padding: 1px 3px;
+        border-radius: 2px;
+        font-weight: bold;
+        z-index: 1;
       }
 
       .quantity-section {
@@ -707,157 +731,61 @@
         <!-- Color Selection -->
         <div class="color-section">
           <label class="section-label"
-            >COLOR <span class="selected-color">Black</span></label
+            >COLOR <span class="selected-color">{% if stock_data %}{{ stock_data.keys()|list|first }}{% else %}Select Color{% endif %}</span></label
           >
           <div class="color-options">
-            {% for color, sizes in stock_data.items() %} {% if color == 'Black'
-            %}
+            {% for color, sizes in stock_data.items() %}
+            {% set total_stock = sizes.values()|sum %}
+            {% set color_hex = variant_photos.get(color, {}).get('color_hex', '#000000') %}
             <button
-              class="color-option {% if loop.first %}active{% endif %}"
+              class="color-option {% if loop.first %}active{% endif %} {% if total_stock == 0 %}disabled out-of-stock{% endif %}"
               data-color="{{ color }}"
               data-stock="{{ sizes|tojson }}"
-              style="background-color: #000"
-              onclick="selectColor(this)"
-              title="{{ color }}"
-            ></button>
-            {% elif color == 'Yellow' %}
-            <button
-              class="color-option"
-              data-color="{{ color }}"
-              data-stock="{{ sizes|tojson }}"
-              style="background-color: #ffd700"
-              onclick="selectColor(this)"
-              title="{{ color }}"
-            ></button>
-            {% elif color == 'Red' %}
-            <button
-              class="color-option"
-              data-color="{{ color }}"
-              data-stock="{{ sizes|tojson }}"
-              style="background-color: #dc143c"
-              onclick="selectColor(this)"
-              title="{{ color }}"
-            ></button>
-            {% elif color == 'Blue' %}
-            <button
-              class="color-option"
-              data-color="{{ color }}"
-              data-stock="{{ sizes|tojson }}"
-              style="background-color: #0066cc"
-              onclick="selectColor(this)"
-              title="{{ color }}"
-            ></button>
-            {% elif color == 'Brown' %}
-            <button
-              class="color-option"
-              data-color="{{ color }}"
-              data-stock="{{ sizes|tojson }}"
-              style="background-color: #8b4513"
-              onclick="selectColor(this)"
-              title="{{ color }}"
-            ></button>
-            {% else %}
-            <button
-              class="color-option"
-              data-color="{{ color }}"
-              data-stock="{{ sizes|tojson }}"
-              style="background-color: gray"
-              onclick="selectColor(this)"
-              title="{{ color }}"
-            ></button>
-            {% endif %} {% endfor %}
+              data-total-stock="{{ total_stock }}"
+              style="background-color: {{ color_hex }}; {% if total_stock == 0 %}opacity: 0.3; pointer-events: none;{% endif %}"
+              {% if total_stock > 0 %}onclick="selectColor(this)"{% endif %}
+              title="{{ color }}{% if total_stock == 0 %} - Out of Stock{% endif %}"
+            >
+              {% if total_stock == 0 %}
+              <span class="oos-label" style="position: absolute; top: -8px; right: -8px; background: #dc143c; color: white; font-size: 8px; padding: 1px 3px; border-radius: 2px;">OOS</span>
+              {% endif %}
+            </button>
+            {% endfor %}
           </div>
         </div>
 
         <!-- Size Selection -->
         <div class="size-section">
           <label class="section-label">SIZE</label>
-          <div class="size-options">
-            <button
-              class="size-option active"
-              data-size="XS"
-              onclick="selectSize(this)"
-              style="
-                padding: 8px 15px;
-                border: 1px solid #8e44ad;
-                border-radius: 4px;
-                cursor: pointer;
-                background-color: #8e44ad;
-                color: white;
-              "
-            >
-              XS
-            </button>
-            <button
-              class="size-option"
-              data-size="S"
-              onclick="selectSize(this)"
-              style="
-                padding: 8px 15px;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-                cursor: pointer;
-                background: white;
-              "
-            >
-              S
-            </button>
-            <button
-              class="size-option"
-              data-size="M"
-              onclick="selectSize(this)"
-              style="
-                padding: 8px 15px;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-                cursor: pointer;
-                background: white;
-              "
-            >
-              M
-            </button>
-            <button
-              class="size-option"
-              data-size="L"
-              onclick="selectSize(this)"
-              style="
-                padding: 8px 15px;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-                cursor: pointer;
-                background: white;
-              "
-            >
-              L
-            </button>
-            <button
-              class="size-option"
-              data-size="XL"
-              onclick="selectSize(this)"
-              style="
-                padding: 8px 15px;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-                cursor: pointer;
-                background: white;
-              "
-            >
-              XL
-            </button>
-            <button
-              class="size-option"
-              data-size="XXL"
-              onclick="selectSize(this)"
-              style="
-                padding: 8px 15px;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-                cursor: pointer;
-                background: white;
-              "
-            >
-              XXL
-            </button>
+          <div class="size-options" id="sizeOptions">
+            {% if stock_data %}
+              {% set first_color = stock_data.keys()|list|first %}
+              {% set first_color_sizes = stock_data[first_color] %}
+              {% for size, stock in first_color_sizes.items() %}
+              <button
+                class="size-option {% if loop.first %}active{% endif %} {% if stock == 0 %}disabled out-of-stock{% endif %}"
+                data-size="{{ size }}"
+                data-stock="{{ stock }}"
+                {% if stock > 0 %}onclick="selectSize(this)"{% endif %}
+                style="
+                  padding: 8px 15px;
+                  border: 1px solid {% if loop.first and stock > 0 %}#8e44ad{% else %}#ddd{% endif %};
+                  border-radius: 4px;
+                  cursor: {% if stock > 0 %}pointer{% else %}not-allowed{% endif %};
+                  background: {% if loop.first and stock > 0 %}#8e44ad{% else %}white{% endif %};
+                  color: {% if loop.first and stock > 0 %}white{% else %}#333{% endif %};
+                  {% if stock == 0 %}opacity: 0.5; text-decoration: line-through;{% endif %}
+                "
+              >
+                {{ size }}
+              </button>
+              {% endfor %}
+            {% else %}
+              <!-- Fallback sizes if no variant data -->
+              <button class="size-option active" data-size="OS" onclick="selectSize(this)" style="padding: 8px 15px; border: 1px solid #8e44ad; border-radius: 4px; cursor: pointer; background-color: #8e44ad; color: white;">
+                One Size
+              </button>
+            {% endif %}
           </div>
           <div class="size-info">
             <span>Model is 5'10", wearing a size S</span>
@@ -939,8 +867,13 @@
             <div class="stock-size-section">
               <div class="stock-section">
                 <span class="stock-indicator" id="stockIndicator">
-                  {{ stock_data['Black']['XS'] if stock_data['Black'] and 'XS'
-                  in stock_data['Black'] else 0 }}
+                  {% if stock_data %}
+                    {% set first_color = stock_data.keys()|list|first %}
+                    {% set first_size = stock_data[first_color].keys()|list|first %}
+                    {{ stock_data[first_color][first_size] }}
+                  {% else %}
+                    0
+                  {% endif %}
                 </span>
                 <span class="stock-label">in stock</span>
               </div>
@@ -1005,6 +938,12 @@
 
     <!-- Include Add to Cart Popup -->
     {% include 'main/partials/_add_to_cart_pop.html' %}
+
+    <!-- Variant photo map: mapping color -> photo url(s). Backend should pass `variant_photos` dict. -->
+    <script>
+      // Example shape from backend: { "Black": {"primary": "/static/uploads/black1.jpg","secondary": "/static/uploads/black2.jpg"}, "Red": "/static/uploads/red.jpg" }
+      window.variantPhotoMap = {{ variant_photos | default({}) | tojson | safe }};
+    </script>
 
     <script src="{{ url_for('static', filename='js/buyer_scripts/partials/_product_dropdown_details.js') }}"></script>
     <script src="{{ url_for('static', filename='js/buyer_scripts/partials/_reviews_dropdown.js') }}"></script>

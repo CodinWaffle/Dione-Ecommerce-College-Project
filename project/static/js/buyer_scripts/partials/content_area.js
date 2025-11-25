@@ -7,49 +7,62 @@ let displayedProducts = 12;
 let currentPage = 1;
 let totalPages = Math.ceil(totalProducts / displayedProducts);
 
+// Performance optimization: debounce function
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
 // Initialize products in the grid from API data (optimized)
 function initializeProducts(gridId, products) {
   const productGrid = document.getElementById(gridId);
-  const template = document.getElementById('productCardTemplate');
-  
+  const template = document.getElementById("productCardTemplate");
+
   if (!productGrid || !template) {
-    console.warn('Product grid or template not found');
+    console.warn("Product grid or template not found");
     return;
   }
 
   // Use DocumentFragment for better performance
   const fragment = document.createDocumentFragment();
-  
+
   // Update total products count
   totalProducts = products.length;
-  
+
   // Create product cards in batches to avoid blocking UI
   const batchSize = 8;
   let currentIndex = 0;
-  
+
   function processBatch() {
     const endIndex = Math.min(currentIndex + batchSize, products.length);
-    
+
     for (let i = currentIndex; i < endIndex; i++) {
       const productCard = createProductCard(products[i], template);
       if (productCard) {
         fragment.appendChild(productCard);
       }
     }
-    
+
     currentIndex = endIndex;
-    
+
     if (currentIndex < products.length) {
       // Process next batch on next frame
       requestAnimationFrame(processBatch);
     } else {
       // All products processed, add to DOM at once
-      productGrid.innerHTML = '';
+      productGrid.innerHTML = "";
       productGrid.appendChild(fragment);
       updateProductCount();
     }
   }
-  
+
   // Start processing
   processBatch();
 }
@@ -59,96 +72,112 @@ function createProductCard(product, template) {
   try {
     // Clone the template
     const cardElement = template.content.cloneNode(true);
-    
+
     // Cache DOM queries for better performance
-    const images = cardElement.querySelectorAll('.product-image');
-    const nameEl = cardElement.querySelector('.product-name');
-    const materialEl = cardElement.querySelector('.material-badge');
-    const ratingEl = cardElement.querySelector('.rating-value');
-    const priceContainer = cardElement.querySelector('.price-container');
-    const cardWrapper = cardElement.querySelector('.card-wrapper');
-    
+    const images = cardElement.querySelectorAll(".product-image");
+    const nameEl = cardElement.querySelector(".product-name");
+    const materialEl = cardElement.querySelector(".material-badge");
+    const ratingEl = cardElement.querySelector(".rating-value");
+    const priceContainer = cardElement.querySelector(".price-container");
+    const cardWrapper = cardElement.querySelector(".card-wrapper");
+
     // Set images with lazy loading
     if (images.length >= 2) {
-      images[0].src = product.primaryImage || '/static/image/banner.png';
+      images[0].src = product.primaryImage || "/static/image/banner.png";
       images[0].alt = `${product.name} - Front`;
-      images[0].loading = 'lazy';
-      images[1].src = product.secondaryImage || product.primaryImage || '/static/image/banner.png';
+      images[0].loading = "lazy";
+      images[1].src =
+        product.secondaryImage ||
+        product.primaryImage ||
+        "/static/image/banner.png";
       images[1].alt = `${product.name} - Back`;
-      images[1].loading = 'lazy';
+      images[1].loading = "lazy";
     }
-    
+
     // Set product info
-    if (nameEl) nameEl.textContent = product.name || 'Product';
-    if (materialEl) materialEl.textContent = product.material || 'Premium Material';
-    
+    if (nameEl) nameEl.textContent = product.name || "Product";
+    if (materialEl)
+      materialEl.textContent = product.material || "Premium Material";
+
     // Set rating if present
     if (ratingEl) {
-      ratingEl.textContent = product.rating != null ? `⭐ ${parseFloat(product.rating).toFixed(1)}` : '';
+      ratingEl.textContent =
+        product.rating != null
+          ? `⭐ ${parseFloat(product.rating).toFixed(1)}`
+          : "";
     }
-    
+
     // Set price
     if (priceContainer) {
-      const currentPriceEl = priceContainer.querySelector('.current-price');
-      const originalPriceEl = priceContainer.querySelector('.original-price');
-      
+      const currentPriceEl = priceContainer.querySelector(".current-price");
+      const originalPriceEl = priceContainer.querySelector(".original-price");
+
       if (currentPriceEl) {
-        currentPriceEl.textContent = `₱${parseFloat(product.price || 0).toLocaleString()}`;
+        currentPriceEl.textContent = `₱${parseFloat(
+          product.price || 0
+        ).toLocaleString()}`;
       }
-      
+
       if (originalPriceEl) {
         if (product.originalPrice && product.originalPrice > product.price) {
-          originalPriceEl.textContent = `₱${parseFloat(product.originalPrice).toLocaleString()}`;
+          originalPriceEl.textContent = `₱${parseFloat(
+            product.originalPrice
+          ).toLocaleString()}`;
         } else {
-          originalPriceEl.style.display = 'none';
+          originalPriceEl.style.display = "none";
         }
       }
     }
-    
+
     // Add optimized hover functionality using event delegation
     if (cardWrapper) {
-      cardWrapper.addEventListener('mouseenter', handleCardHover, { passive: true });
-      cardWrapper.addEventListener('mouseleave', handleCardLeave, { passive: true });
+      cardWrapper.addEventListener("mouseenter", handleCardHover, {
+        passive: true,
+      });
+      cardWrapper.addEventListener("mouseleave", handleCardLeave, {
+        passive: true,
+      });
     }
-    
+
     // Add click handlers for action buttons with event delegation
-    const wishlistBtn = cardElement.querySelector('.wishlist-btn');
-    const cartBtn = cardElement.querySelector('.cart-btn');
-    
+    const wishlistBtn = cardElement.querySelector(".wishlist-btn");
+    const cartBtn = cardElement.querySelector(".cart-btn");
+
     if (wishlistBtn) {
-      wishlistBtn.addEventListener('click', handleWishlistClick, { passive: false });
+      wishlistBtn.addEventListener("click", handleWishlistClick, {
+        passive: false,
+      });
       wishlistBtn.dataset.productId = product.id;
       wishlistBtn.dataset.productName = product.name;
     }
-    
+
     if (cartBtn) {
-      cartBtn.addEventListener('click', handleCartClick, { passive: false });
+      cartBtn.addEventListener("click", handleCartClick, { passive: false });
       cartBtn.dataset.productId = product.id;
       cartBtn.dataset.productName = product.name;
     }
-    
+
     return cardElement;
-    
   } catch (error) {
-    console.error('Error creating product card:', error);
+    console.error("Error creating product card:", error);
     return null;
   }
 }
 
 // Optimized event handlers (defined once, reused)
 function handleCardHover() {
-  this.closest('.product-card')?.classList.add('hovered');
+  this.closest(".product-card")?.classList.add("hovered");
 }
 
 function handleCardLeave() {
-  this.closest('.product-card')?.classList.remove('hovered');
+  this.closest(".product-card")?.classList.remove("hovered");
 }
 
 function handleWishlistClick(e) {
   e.stopPropagation();
   const productId = this.dataset.productId;
   const productName = this.dataset.productName;
-  console.log('Added to wishlist:', productName);
+  console.log("Added to wishlist:", productName);
   // Add wishlist functionality here
 }
 
@@ -156,33 +185,39 @@ function handleCartClick(e) {
   e.stopPropagation();
   const productId = this.dataset.productId;
   const productName = this.dataset.productName;
-  console.log('Added to cart:', productName);
+  console.log("Added to cart:", productName);
   // Add cart functionality here
 }
 
+// Debounced version of updateProductCount for better performance
+const debouncedUpdateProductCount = debounce(updateProductCount, 100);
+
 function updateProductCount() {
-  const productCountElement = document.getElementById("productCount");
-  const viewMoreElement = document.getElementById("viewMore");
-  const totalProductsElement = document.getElementById("totalProducts");
-  const emptyState = document.getElementById("emptyState");
-  const productGrid = document.getElementById("productGrid");
-  const paginationContainer = document.querySelector(".pagination-container");
+  // Cache DOM elements to avoid repeated queries
+  const elements = {
+    productCount: document.getElementById("productCount"),
+    viewMore: document.getElementById("viewMore"),
+    totalProducts: document.getElementById("totalProducts"),
+    emptyState: document.getElementById("emptyState"),
+    productGrid: document.getElementById("productGrid"),
+    paginationContainer: document.querySelector(".pagination-container"),
+  };
+  // Pull elements into local variables for clarity
+  const productCountElement = elements.productCount;
+  const viewMoreElement = elements.viewMore;
+  const totalProductsElement = elements.totalProducts;
+  const emptyState = elements.emptyState;
+  const productGrid = elements.productGrid;
+  const paginationContainer = elements.paginationContainer;
 
-  // Calculate filtered products based on active filters
-  let filteredCount = totalProducts;
-  if (Object.keys(activeFilters).length > 0) {
-    filteredCount = Math.floor(totalProducts * 0.6);
-  }
-
-  // If the DOM product grid exists, prefer its actual product-card count when available
+  // Determine the number of products actually rendered in the grid (preferred)
+  let filteredCount = 0;
   if (productGrid) {
-    const domCount = productGrid.querySelectorAll(".product-card").length;
-    if (typeof domCount === "number") {
-      // If DOM has zero product cards, treat as empty regardless of totalProducts
-      if (domCount === 0) filteredCount = 0;
-      // If DOM count differs and is more realistic use it
-      if (domCount > 0 && domCount !== totalProducts) filteredCount = domCount;
-    }
+    filteredCount = productGrid.querySelectorAll(".product-card").length;
+  }
+  // Fallback to server-side totalProducts if DOM isn't available
+  if (typeof filteredCount !== "number" || filteredCount === 0) {
+    filteredCount = totalProducts || 0;
   }
 
   // Update total pages based on filtered results (ensure at least 1 to avoid divide by zero)
@@ -201,11 +236,13 @@ function updateProductCount() {
   } else {
     if (emptyState) emptyState.style.display = "none";
     if (productGrid) productGrid.style.display = "grid";
+    // productCount shows how many items are currently visible on the page (page size or remaining items)
+    const itemsOnCurrentPage = Math.min(
+      displayedProducts,
+      Math.max(0, filteredCount - (currentPage - 1) * displayedProducts)
+    );
     if (productCountElement) {
-      productCountElement.textContent = Math.min(
-        displayedProducts,
-        filteredCount
-      );
+      productCountElement.textContent = itemsOnCurrentPage;
     }
     if (totalProductsElement) {
       totalProductsElement.textContent = filteredCount;

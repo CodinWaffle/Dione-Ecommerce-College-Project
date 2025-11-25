@@ -75,17 +75,23 @@ class SleepwearCarousel {
   }
 
   prev() {
+    if (!this.cards || this.cards.length === 0) return;
     if (this.currentIndex > 0) {
       this.currentIndex--;
-      this.updateCarousel();
+    } else {
+      this.currentIndex = this.maxIndex;
     }
+    this.updateCarousel();
   }
 
   next() {
+    if (!this.cards || this.cards.length === 0) return;
     if (this.currentIndex < this.maxIndex) {
       this.currentIndex++;
-      this.updateCarousel();
+    } else {
+      this.currentIndex = 0;
     }
+    this.updateCarousel();
   }
 
   updateCarousel() {
@@ -95,18 +101,19 @@ class SleepwearCarousel {
   }
 
   updateButtons() {
-    this.prevBtn.disabled = this.currentIndex === 0;
-    this.nextBtn.disabled =
-      this.currentIndex >= this.maxIndex || this.maxIndex === 0;
+    // In looping mode we keep buttons active unless there is nothing to scroll
+    const shouldDisable = this.maxIndex === 0;
+    if (this.prevBtn) this.prevBtn.disabled = !!shouldDisable;
+    if (this.nextBtn) this.nextBtn.disabled = !!shouldDisable;
 
     // Always show navigation buttons for sleepwear carousel (7 cards)
     // Only hide if there are very few cards (3 or less)
     if (this.cards.length <= 3) {
-      this.prevBtn.style.display = "none";
-      this.nextBtn.style.display = "none";
+      if (this.prevBtn) this.prevBtn.style.display = "none";
+      if (this.nextBtn) this.nextBtn.style.display = "none";
     } else {
-      this.prevBtn.style.display = "flex";
-      this.nextBtn.style.display = "flex";
+      if (this.prevBtn) this.prevBtn.style.display = "flex";
+      if (this.nextBtn) this.nextBtn.style.display = "flex";
     }
   }
 }

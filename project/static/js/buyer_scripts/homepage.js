@@ -16,8 +16,7 @@ function normalizeProduct(product) {
   return {
     id: product.id || `product-${Math.random().toString(36).slice(2)}`,
     name: product.name || "New Product",
-    primaryImage:
-      product.primaryImage || "/static/image/banner.png",
+    primaryImage: product.primaryImage || "/static/image/banner.png",
     secondaryImage:
       product.secondaryImage ||
       product.primaryImage ||
@@ -73,7 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
       btn.addEventListener("click", (e) => {
         e.preventDefault();
         const originalText = btn.textContent;
-        btn.textContent = "?o" Added!";
+        btn.textContent = "Added!";
         btn.style.backgroundColor = "var(--primary-color)";
         btn.style.color = "white";
 

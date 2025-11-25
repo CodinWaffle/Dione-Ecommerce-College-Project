@@ -89,7 +89,41 @@ class ProductCard {
     if (e.target.closest(".action-button")) {
       return;
     }
-    // Navigate to product detail page
+    // If we're on a product detail page, fetch product JSON and populate the page
+    const isDetail =
+      document.querySelector(".product-details") ||
+      document.getElementById("product-details") ||
+      document.getElementById("mainImage");
+    if (isDetail && window.fetch) {
+      e.preventDefault();
+      e.stopPropagation();
+      const id = this.product.id;
+      fetch(`/api/product/${id}`)
+        .then((res) => {
+          if (!res.ok) throw new Error("Fetch error");
+          return res.json();
+        })
+        .then((json) => {
+          if (json && json.product) {
+            // populate detail view using global helper if available
+            if (typeof window.populateProductDetail === "function") {
+              window.populateProductDetail(json.product);
+            } else {
+              // fallback: navigate to detail page
+              window.location.href = `/product/${id}`;
+            }
+          } else {
+            window.location.href = `/product/${id}`;
+          }
+        })
+        .catch((err) => {
+          console.error("Error loading product detail", err);
+          window.location.href = `/product/${this.product.id}`;
+        });
+      return;
+    }
+
+    // Default behavior: Navigate to product detail page
     window.location.href = `/product/${this.product.id}`;
   }
 
@@ -100,8 +134,59 @@ class ProductCard {
   }
 
   handleAddToCart(e) {
+    // Prevent the card click navigation and other propagation
     e.stopPropagation();
-    alert(`Added "${this.product.name}" to cart`);
+    e.preventDefault();
+
+    // Default quantity (cards add one item)
+    const qty = 1;
+    const size = this.product.size || "";
+    const color = this.product.color || "";
+
+    // Use global addToBag (which calls addToCart + updates badge)
+    if (typeof addToBag === "function") {
+      addToBag(
+        this.product.id,
+        this.product.name,
+        this.product.price,
+        size,
+        color,
+        qty
+      );
+    } else if (typeof addToCart === "function") {
+      // fallback: call addToCart directly
+      addToCart(
+        this.product.id,
+        this.product.name,
+        this.product.price,
+        size,
+        color,
+        qty
+      );
+      // increment visible badge locally as fallback
+      const current =
+        parseInt(
+          (document.querySelector(".cart-count") || { textContent: 0 })
+            .textContent
+        ) || 0;
+      if (typeof updateCartCount === "function") updateCartCount(current + qty);
+    } else {
+      // Last resort: show native alert
+      alert(`Added "${this.product.name}" to cart`);
+      const current =
+        parseInt(
+          (document.querySelector(".cart-count") || { textContent: 0 })
+            .textContent
+        ) || 0;
+      if (typeof updateCartCount === "function") updateCartCount(current + qty);
+    }
+
+    // Visual feedback on the button
+    const btn = e.currentTarget;
+    if (btn) {
+      btn.classList.add("added");
+      setTimeout(() => btn.classList.remove("added"), 700);
+    }
   }
 }
 

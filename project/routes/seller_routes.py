@@ -339,12 +339,12 @@ def add_product_preview():
                 secondary_image=step1.get('secondaryImage'),
                 total_stock=step3.get('totalStock', 0),
                 low_stock_threshold=_to_int(request.form.get('lowStockThreshold'), 0),
-                variants=json.dumps(step3.get('variants', [])),
-                attributes=json.dumps({
+                variants=step3.get('variants', []),
+                attributes={
                     'subitems': step1.get('subitem', []),
                     'size_guides': step2.get('sizeGuide', []),
                     'certifications': step2.get('certifications', []),
-                }),
+                },
                 created_at=datetime.utcnow(),
             )
             
@@ -425,8 +425,11 @@ def product_details(product_id):
             variants = []
     
     try:
-        attributes = json.loads(product.attributes) if product.attributes else {}
-    except json.JSONDecodeError:
+        if isinstance(product.attributes, str):
+            attributes = json.loads(product.attributes)
+        else:
+            attributes = product.attributes or {}
+    except Exception:
         attributes = {}
     
     product_details = {
@@ -509,7 +512,8 @@ def product_update(product_id):
                     parsed = variants
             except Exception:
                 parsed = []
-            product.variants = json.dumps(parsed)
+            # store as a JSON-serializable Python object (SQLAlchemy JSON column)
+            product.variants = parsed
             # Recompute total_stock from variants (sum sizeStocks if present)
             try:
                 total = 0
@@ -530,7 +534,8 @@ def product_update(product_id):
                 # ignore failures and leave provided total_stock handling below
                 pass
         if attributes is not None:
-            product.attributes = json.dumps(attributes)
+            # attributes may already be a dict/object; store directly
+            product.attributes = attributes
         if primary_image is not None:
             product.primary_image = primary_image
 

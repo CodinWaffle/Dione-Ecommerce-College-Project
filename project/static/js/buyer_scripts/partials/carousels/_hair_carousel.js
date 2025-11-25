@@ -74,17 +74,23 @@ class HairCarousel {
   }
 
   prev() {
+    if (!this.cards || this.cards.length === 0) return;
     if (this.currentIndex > 0) {
       this.currentIndex--;
-      this.updateCarousel();
+    } else {
+      this.currentIndex = this.maxIndex;
     }
+    this.updateCarousel();
   }
 
   next() {
+    if (!this.cards || this.cards.length === 0) return;
     if (this.currentIndex < this.maxIndex) {
       this.currentIndex++;
-      this.updateCarousel();
+    } else {
+      this.currentIndex = 0;
     }
+    this.updateCarousel();
   }
 
   updateCarousel() {
@@ -94,8 +100,9 @@ class HairCarousel {
   }
 
   updateButtons() {
-    this.prevBtn.disabled = this.currentIndex === 0;
-    this.nextBtn.disabled = this.currentIndex >= this.maxIndex;
+    const shouldDisable = this.maxIndex === 0;
+    if (this.prevBtn) this.prevBtn.disabled = !!shouldDisable;
+    if (this.nextBtn) this.nextBtn.disabled = !!shouldDisable;
   }
 }
 

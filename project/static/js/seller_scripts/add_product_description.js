@@ -101,20 +101,62 @@ document.addEventListener("DOMContentLoaded", function () {
       const placeholder = parentLabel.querySelector(
         ".cert-upload-placeholder, .sizeguide-placeholder"
       );
-      // remove existing thumb if present
+      
+      // remove existing elements
       const existing = parentLabel.querySelector("img.upload-thumb");
+      const existingOverlay = parentLabel.querySelector(".photo-change-overlay");
+      const existingRemoveBtn = parentLabel.querySelector(".upload-remove-btn");
+      
       if (existing) existing.remove();
+      if (existingOverlay) existingOverlay.remove();
+      if (existingRemoveBtn) existingRemoveBtn.remove();
 
       if (file && file.type && file.type.startsWith("image/")) {
         const reader = new FileReader();
         reader.onload = function (e) {
+          // Create image element
           const img = document.createElement("img");
           img.className = "upload-thumb";
           img.src = e.target.result;
           img.alt = "Upload preview";
+          
+          // Create overlay for changing photo
+          const overlay = document.createElement("div");
+          overlay.className = "photo-change-overlay";
+          overlay.innerHTML = `
+            <i class="ri-camera-line"></i>
+            <span>Change Photo</span>
+          `;
+          
+          // Create remove button
+          const removeBtn = document.createElement("button");
+          removeBtn.className = "upload-remove-btn";
+          removeBtn.type = "button";
+          removeBtn.innerHTML = '<i class="ri-close-line"></i>';
+          removeBtn.title = "Remove photo";
+          
+          // Add click handlers
+          overlay.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            input.click();
+          });
+          
+          removeBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            input.value = "";
+            setPreviewFromFile(null);
+            updateAddButtonStates();
+          });
+          
           // hide placeholder content
           if (placeholder) placeholder.style.display = "none";
+          
+          // Add elements to parent
           parentLabel.appendChild(img);
+          parentLabel.appendChild(overlay);
+          parentLabel.appendChild(removeBtn);
         };
         reader.readAsDataURL(file);
         parentLabel.classList.add("has-file");
@@ -137,6 +179,8 @@ document.addEventListener("DOMContentLoaded", function () {
       } else {
         setPreviewFromFile(null);
       }
+      // Update button states when file changes
+      updateAddButtonStates();
     });
   }
 
@@ -157,6 +201,7 @@ document.addEventListener("DOMContentLoaded", function () {
   ) {
     const label = document.createElement("label");
     label.className = boxClass;
+    label.title = "Click to upload photo";
 
     const input = document.createElement("input");
     input.type = "file";
@@ -175,13 +220,62 @@ document.addEventListener("DOMContentLoaded", function () {
     label.appendChild(input);
     label.appendChild(placeholder);
 
+    // Add click handler to label for better UX
+    label.addEventListener("click", function(e) {
+      // Don't trigger if clicking remove button or overlay
+      if (e.target.closest('.upload-remove-btn') || e.target.closest('.photo-change-overlay')) {
+        return;
+      }
+      input.click();
+    });
+
     // insert before the add button if present, otherwise append
     const addBtn = container.querySelector(".cert-add-box, .sizeguide-add-box");
     if (addBtn) container.insertBefore(label, addBtn);
     else container.appendChild(label);
 
     setupFileInput(input);
+    
+    // Update button states after adding
+    setTimeout(updateAddButtonStates, 10);
+    
     return input;
+  }
+
+  // Function to update add button states based on current count
+  function updateAddButtonStates() {
+    const certContainer = document.getElementById("certificationsContainer");
+    const certAddBtn = document.getElementById("certAddBtn");
+    const sizeguideContainer = document.getElementById("sizeguideContainer");
+    const sizeguideAddBtn = document.getElementById("sizeguideAddBtn");
+    
+    // Update certification add button
+    if (certAddBtn && certContainer) {
+      const certCount = certContainer.querySelectorAll(".cert-upload-box").length;
+      if (certCount >= 5) {
+        certAddBtn.disabled = true;
+        certAddBtn.classList.add("disabled");
+        certAddBtn.title = "Maximum 5 photos allowed";
+      } else {
+        certAddBtn.disabled = false;
+        certAddBtn.classList.remove("disabled");
+        certAddBtn.title = `Add certification photo (${certCount}/5)`;
+      }
+    }
+    
+    // Update size guide add button
+    if (sizeguideAddBtn && sizeguideContainer) {
+      const sizeCount = sizeguideContainer.querySelectorAll(".sizeguide-box").length;
+      if (sizeCount >= 5) {
+        sizeguideAddBtn.disabled = true;
+        sizeguideAddBtn.classList.add("disabled");
+        sizeguideAddBtn.title = "Maximum 5 photos allowed";
+      } else {
+        sizeguideAddBtn.disabled = false;
+        sizeguideAddBtn.classList.remove("disabled");
+        sizeguideAddBtn.title = `Add size guide photo (${sizeCount}/5)`;
+      }
+    }
   }
 
   // Handle cert add button
@@ -191,6 +285,7 @@ document.addEventListener("DOMContentLoaded", function () {
     certAddBtn.addEventListener("click", function () {
       const current = certContainer.querySelectorAll(".cert-upload-box").length;
       if (current >= 5) return;
+      
       const input = addUploadSlot(
         certContainer,
         "certifications[]",
@@ -198,52 +293,34 @@ document.addEventListener("DOMContentLoaded", function () {
       );
       // open file dialog for new input
       input.click();
-      // disable add button when reach max
-      const after = certContainer.querySelectorAll(".cert-upload-box").length;
-      if (after >= 5) {
-        // Sizeguide add button handling
-        const sizeguideContainer =
-          document.getElementById("sizeguideContainer");
-        const sizeguideAddBtn = document.getElementById("sizeguideAddBtn");
-        if (sizeguideAddBtn && sizeguideContainer) {
-          sizeguideAddBtn.addEventListener("click", function () {
-            const current =
-              sizeguideContainer.querySelectorAll(".sizeguide-box").length;
-            if (current >= 5) return;
-            const input = addUploadSlot(
-              sizeguideContainer,
-              "sizeGuide[]",
-              "sizeguide-box",
-              "sizeguide-placeholder"
-            );
-            // open file dialog for new input
-            input.click();
-            // disable add button when reach max
-            const after =
-              sizeguideContainer.querySelectorAll(".sizeguide-box").length;
-            if (after >= 5) {
-              sizeguideAddBtn.disabled = true;
-              sizeguideAddBtn.classList.add("disabled");
-            }
-          });
-          // initialize disabled state
-          if (
-            sizeguideContainer.querySelectorAll(".sizeguide-box").length >= 5
-          ) {
-            sizeguideAddBtn.disabled = true;
-            sizeguideAddBtn.classList.add("disabled");
-          }
-        }
-        certAddBtn.disabled = true;
-        certAddBtn.classList.add("disabled");
-      }
+      // update button states
+      updateAddButtonStates();
     });
-    // initialize disabled state
-    if (certContainer.querySelectorAll(".cert-upload-box").length >= 5) {
-      certAddBtn.disabled = true;
-      certAddBtn.classList.add("disabled");
-    }
   }
+
+  // Sizeguide add button handling
+  const sizeguideContainer = document.getElementById("sizeguideContainer");
+  const sizeguideAddBtn = document.getElementById("sizeguideAddBtn");
+  if (sizeguideAddBtn && sizeguideContainer) {
+    sizeguideAddBtn.addEventListener("click", function () {
+      const current = sizeguideContainer.querySelectorAll(".sizeguide-box").length;
+      if (current >= 5) return;
+      
+      const input = addUploadSlot(
+        sizeguideContainer,
+        "sizeGuide[]",
+        "sizeguide-box",
+        "sizeguide-placeholder"
+      );
+      // open file dialog for new input
+      input.click();
+      // update button states
+      updateAddButtonStates();
+    });
+  }
+
+  // Initialize button states
+  updateAddButtonStates();
 
   // Back button handler
   document.getElementById("backBtn").addEventListener("click", function () {
