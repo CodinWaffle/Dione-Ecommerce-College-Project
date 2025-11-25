@@ -203,6 +203,55 @@ def product_detail(product_id):
     )
 
 
+@main.route('/store/<store_name>')
+def store_page(store_name):
+    """Render a storefront page for the given store name (simple lookup by name).
+
+    This is a lightweight route so clicking the store name in product dropdown
+    can display the `main/store_page.html` template. In a full implementation
+    this should lookup a Seller/Store model by id or slug.
+    """
+    nav_items = get_nav_items()
+    display_name = (store_name or 'Store').replace('-', ' ')
+    # For now use a default location; real data should come from the DB
+    store_location = 'Makati City, Metro Manila'
+
+    # Sample stats (replace with DB lookups for real data)
+    products_sold = 1200
+    followers = 8500
+
+    def fmt_count(n):
+        try:
+            n = int(n)
+        except Exception:
+            return str(n)
+        if n >= 1_000_000:
+            v = round(n / 1_000_000, 1)
+            return f"{v:g}M"
+        if n >= 1000:
+            v = round(n / 1000, 1)
+            # remove trailing .0
+            s = f"{v}K"
+            if s.endswith('.0K'):
+                s = s.replace('.0K', 'K')
+            return s
+        return str(n)
+
+    products_sold_display = fmt_count(products_sold)
+    followers_display = fmt_count(followers)
+
+    return render_template(
+        'main/store_page.html',
+        nav_items=nav_items,
+        store_name=display_name,
+        store_location=store_location,
+        products_sold_display=products_sold_display,
+        followers_display=followers_display,
+        products_sold=products_sold,
+        followers=followers,
+    )
+
+
 
 @main.route('/health')
 def health():

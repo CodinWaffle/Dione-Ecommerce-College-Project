@@ -1,57 +1,28 @@
-<!-- Communication Tools Page -->
-{% extends 'rider/_base.html' %} {% block title %}Communication Tools{% endblock
-%} {% block content %}
+{# Communication tools removed for riders. This stub redirects back to the
+dashboard. #} {% extends 'rider/_base.html' %} {% block title %}Communication
+Removed{% endblock %} {% block content %}
 <main class="dashboard-main">
   <section class="dashboard-header">
-    <h1>Communication Tools</h1>
+    <h1>Communication Tools Removed</h1>
   </section>
   <section class="dashboard-content">
-    <h2 class="section-title">Contact Options</h2>
-    <div class="communication-options">
-      <div class="option-card">
-        <span class="material-symbols-outlined card-icon">person</span>
-        <h3>Customer Support</h3>
-        <p>Chat or call directly with your assigned customer.</p>
-        <button class="btn primary-btn">
-          <span class="material-symbols-outlined">chat</span> Chat
-        </button>
-        <button class="btn secondary-btn">
-          <span class="material-symbols-outlined">call</span> Call
-        </button>
-      </div>
-      <div class="option-card">
-        <span class="material-symbols-outlined card-icon">store</span>
-        <h3>Seller Support</h3>
-        <p>Contact the seller for pickup or delivery inquiries.</p>
-        <button class="btn primary-btn">
-          <span class="material-symbols-outlined">chat</span> Chat
-        </button>
-        <button class="btn secondary-btn">
-          <span class="material-symbols-outlined">call</span> Call
-        </button>
-      </div>
-      <div class="option-card">
-        <span class="material-symbols-outlined card-icon">support_agent</span>
-        <h3>Platform Support</h3>
-        <p>Reach out to the platform's dispatcher or support team.</p>
-        <button class="btn primary-btn">
-          <span class="material-symbols-outlined">chat</span> Chat
-        </button>
-        <button class="btn secondary-btn">
-          <span class="material-symbols-outlined">call</span> Call
-        </button>
-      </div>
-    </div>
-
-    <h2 class="section-title">Auto-Message Templates</h2>
-    <div class="dashboard-content">
-      <p>Quickly send pre-defined messages to customers or sellers.</p>
-      <button class="btn tertiary-btn">"On my way!"</button>
-      <button class="btn tertiary-btn">"Arrived at location."</button>
-      <button class="btn tertiary-btn">"Running late by 10 mins."</button>
-    </div>
+    <p>
+      The Communication Tools page has been removed. You will be redirected to
+      your dashboard.
+    </p>
+    <p>
+      If you are not redirected,
+      <a href="{{ url_for('rider.rider_dashboard') }}"
+        >click here to go to the dashboard</a
+      >.
+    </p>
   </section>
 </main>
 {% endblock %} {% block scripts %}
-<!-- Add any specific JS for communication here if needed -->
+<script>
+  // Auto-redirect after a short delay to avoid broken links if someone bookmarked this page.
+  setTimeout(function () {
+    window.location = '{{ url_for("rider.rider_dashboard") }}';
+  }, 1000);
+</script>
 {% endblock %}

@@ -1,19 +1,79 @@
-<header class="rider-header">
+<!-- Rider header — updated to match seller header structure exactly -->
+<header class="seller-header rider-header rider-header-override">
   <div class="header-left">
-    <button class="sidebar-toggle" id="sidebarToggle">
-      <span class="material-symbols-outlined">menu</span>
+    <button
+      class="menu-toggle icon-only-toggle"
+      id="sidebarToggle"
+      aria-label="Toggle sidebar"
+      title="Toggle sidebar"
+      aria-controls="sidebar"
+      aria-expanded="false"
+      style="
+        background: transparent !important;
+        border: none !important;
+        padding: 6px !important;
+        box-shadow: none !important;
+      "
+    >
+      <!-- collapse icon matching seller header (uses lucide) -->
+      <i data-lucide="panel-left-close"></i>
     </button>
-    <div class="logo-text">Rider<span class="logo-highlight">Panel</span></div>
+
+    <div class="search-container-header left-search">
+      <i data-lucide="search"></i>
+      <input
+        type="text"
+        class="search-input-header"
+        placeholder="Search..."
+        style="
+          background: transparent;
+          border: none;
+          padding: 6px 8px;
+          color: inherit;
+          outline: none;
+          box-shadow: none;
+          transition: none;
+        "
+      />
+    </div>
   </div>
-  <div class="header-center">
-    <!-- This space can be used for a global search bar if needed,
-         but currently the job list has its own search. -->
-  </div>
+
   <div class="header-right">
-    <span class="material-symbols-outlined notif-icon">notifications</span>
-    <div class="user-info">
-      <div class="user-avatar">JR</div>
-      <span class="user-name">John Rider</span>
+    <div class="notification-bell" id="notificationBell" title="Notifications">
+      <i data-lucide="bell"></i>
+      <span class="notification-count">0</span>
+    </div>
+
+    <div class="user-profile-dropdown">
+      <div
+        class="user-profile-toggle"
+        role="button"
+        aria-haspopup="true"
+        aria-expanded="false"
+      >
+        <div class="user-avatar-container">
+          <div class="avatar-icon-circle">
+            <i data-lucide="user"></i>
+          </div>
+          <span class="active-indicator"></span>
+        </div>
+        <span class="user-name"
+          >{{ (current_user.name or current_user.email or current_user.username)
+          if current_user and current_user.is_authenticated else 'Rider'
+          }}</span
+        >
+        <i data-lucide="chevron-down" class="dropdown-arrow"></i>
+      </div>
+      <div class="user-dropdown-menu" aria-hidden="true">
+        <a href="{{ url_for('rider.profile_settings') }}" class="profile-link">
+          <i data-lucide="user"></i>
+          <span>Profile</span>
+        </a>
+        <a href="{{ url_for('auth.logout') }}" class="logout-link">
+          <i data-lucide="log-out"></i>
+          <span>Logout</span>
+        </a>
+      </div>
     </div>
   </div>
 </header>

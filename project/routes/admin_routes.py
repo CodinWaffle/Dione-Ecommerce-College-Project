@@ -8,6 +8,9 @@ from project import db, mail
 from project.models import User, SiteSetting, Seller, Rider, Warning
 from project.models import ChatMessage
 from project.services.auth_service import AuthService
+from werkzeug.utils import secure_filename
+import os
+from datetime import datetime
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -439,71 +442,187 @@ def chat_support():
 @login_required
 def chat_contacts():
     """Return list of users who have chatted (most recent first)"""
-    # get users who have messages
+    # Robust fallback: explicitly find distinct user_ids from chat_messages, then load Users
     from sqlalchemy import func
-    sub = db.session.query(
-        ChatMessage.user_id,
-        func.max(ChatMessage.created_at).label('last_at'),
-        func.count(func.nullif(ChatMessage.is_from_admin, True)).label('unread')
-    ).group_by(ChatMessage.user_id).subquery()
-
-    # Users who have messages (ordered by last message desc)
-    rows = db.session.query(User, sub.c.last_at, sub.c.unread).join(sub, User.id == sub.c.user_id).order_by(sub.c.last_at.desc()).all()
-
     out = []
     seen_ids = set()
-    for user, last_at, unread in rows:
-        if user.id == current_user.id:
-            continue
-        if (getattr(user, 'role', '') or '').lower() == 'admin':
-            continue
-        seen_ids.add(user.id)
-        out.append({
-            'id': user.id,
-            'name': (user.username or user.email),
-            'role': (user.role or '').lower(),
-            'last_at': last_at.isoformat() if last_at else None,
-            'unread': int(unread) if unread is not None else 0,
-        })
+    try:
+        # Get distinct user_ids who appear in chat_messages
+        uids = [r[0] for r in db.session.query(ChatMessage.user_id).distinct().all()]
+        # Load last message and unread count per user
+        for uid in uids:
+            if uid == current_user.id:
+                continue
+            user = User.query.get(uid)
+            if not user:
+                continue
+            # find last message
+            last_msg = ChatMessage.query.filter_by(user_id=user.id).order_by(ChatMessage.created_at.desc()).first()
+            if not last_msg:
+                continue
+            # unread count (user->admin messages that are not read)
+            try:
+                unread = ChatMessage.query.filter_by(user_id=user.id, is_from_admin=False).filter(ChatMessage.is_read.is_(False)).count()
+            except Exception:
+                # fallback: count all user messages if is_read not available
+                unread = ChatMessage.query.filter_by(user_id=user.id, is_from_admin=False).count()
 
-    # Include recent users (new users) who haven't chatted yet so admin can start a conversation
-    recent_users = User.query.filter(User.id != current_user.id).filter((getattr(User, 'role') != 'admin')).order_by(User.created_at.desc()).limit(50).all()
-    for u in recent_users:
-        if u.id in seen_ids:
-            continue
-        seen_ids.add(u.id)
-        out.append({
-            'id': u.id,
-            'name': (u.username or u.email),
-            'role': (u.role or '').lower(),
-            'last_at': None,
-            'unread': 0,
-        })
+            out.append({
+                'id': user.id,
+                'name': (user.username or user.email),
+                'role': (user.role or '').lower(),
+                'last_at': last_msg.created_at.isoformat() if last_msg.created_at else None,
+                'last_body': (last_msg.body[:120] if last_msg and last_msg.body else None),
+                'unread': int(unread) if unread is not None else 0,
+            })
+            seen_ids.add(user.id)
+    except Exception:
+        current_app.logger.exception('Error building contact list from chat_messages')
 
-    # Ensure list is ordered by most recent activity first (users with last_at first, then recent users)
-    def sort_key(item):
-        # Items with last_at should come before None; use ISO string -> parse not necessary, compare None
-        return (0 if item['last_at'] else 1, item['last_at'] or '')
+    # If no users found from messages, fall back to recent non-admin users (so admin can start chats)
+    if not out:
+        other_users = User.query.filter(User.id != current_user.id, User.role != 'admin').order_by(User.created_at.desc()).limit(200).all()
+        for u in other_users:
+            if u.id in seen_ids:
+                continue
+            seen_ids.add(u.id)
+            out.append({
+                'id': u.id,
+                'name': (u.username or u.email),
+                'role': (u.role or '').lower(),
+                'last_at': None,
+                'last_body': None,
+                'unread': 0,
+            })
 
-    out.sort(key=sort_key)
+    # sort by last_at desc, placing None at the end
+    out.sort(key=lambda item: item['last_at'] or '', reverse=True)
     return jsonify({'contacts': out})
+
+
+@admin_bp.get('/chat/debug')
+@login_required
+def chat_debug():
+    """Temporary debug endpoint: shows chat_messages and user stats for debugging contact list."""
+    try:
+        total_users = User.query.count()
+        non_admin_users = User.query.filter(User.role != 'admin').count()
+        total_messages = ChatMessage.query.count()
+        # distinct user ids appearing in chat_messages
+        distinct_uids = [r[0] for r in db.session.query(ChatMessage.user_id).distinct().limit(50).all()]
+        sample_msgs = []
+        rows = db.session.query(ChatMessage).order_by(ChatMessage.created_at.desc()).limit(20).all()
+        for m in rows:
+            sample_msgs.append({'id': m.id, 'user_id': m.user_id, 'admin_id': m.admin_id, 'is_from_admin': bool(m.is_from_admin), 'created_at': (m.created_at.isoformat() if m.created_at else None), 'body': (m.body[:120] if m.body else None), 'attachment': getattr(m, 'attachment', None), 'is_read': bool(getattr(m, 'is_read', False))})
+        # Build user summaries for the distinct user ids so the client can render them
+        users = []
+        try:
+            for uid in distinct_uids:
+                u = User.query.get(uid)
+                if not u:
+                    continue
+                users.append({
+                    'id': u.id,
+                    'name': (u.username or u.email),
+                    'email': u.email,
+                    'username': u.username,
+                    'role': (u.role or '').lower(),
+                    'created_at': (u.created_at.isoformat() if u.created_at else None),
+                })
+        except Exception:
+            current_app.logger.exception('Error building user summaries in chat_debug')
+
+        return jsonify({
+            'ok': True,
+            'total_users': total_users,
+            'non_admin_users': non_admin_users,
+            'total_messages': total_messages,
+            'distinct_user_ids_in_messages': distinct_uids,
+            'users': users,
+            'sample_messages': sample_msgs,
+            'current_admin_id': current_user.id,
+        })
+    except Exception:
+        current_app.logger.exception('Error in chat_debug')
+        return jsonify({'ok': False, 'error': 'debug failed'})
 
 
 @admin_bp.get('/chat/messages/<int:user_id>')
 @login_required
 def chat_messages(user_id):
     user = User.query.get_or_404(user_id)
-    msgs = ChatMessage.query.filter_by(user_id=user.id).order_by(ChatMessage.created_at.asc()).all()
     out = []
-    for m in msgs:
-        out.append({
-            'id': m.id,
-            'body': m.body,
-            'is_from_admin': bool(m.is_from_admin),
-            'created_at': m.created_at.isoformat(),
-            'sender_name': m.sender_name or (user.username or user.email),
-            'sender_role': m.sender_role,
-        })
+    try:
+        msgs = ChatMessage.query.filter_by(user_id=user.id).order_by(ChatMessage.created_at.asc()).all()
+        for m in msgs:
+            out.append({
+                'id': m.id,
+                'body': m.body,
+                'is_from_admin': bool(m.is_from_admin),
+                'created_at': m.created_at.isoformat(),
+                'attachment': getattr(m, 'attachment', None),
+                'is_read': bool(getattr(m, 'is_read', False)),
+                'sender_name': m.sender_name or (user.username or user.email),
+                'sender_role': m.sender_role,
+            })
+        # mark user messages as read when admin opens the conversation
+        try:
+            (ChatMessage.query.filter_by(user_id=user.id, is_from_admin=False)
+                .filter(ChatMessage.is_read.is_(False)).update({ 'is_read': True }))
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+    except Exception:
+        # Fallback: DB schema might be missing columns (e.g. attachment/is_read).
+        # Inspect available columns and SELECT only those to avoid errors.
+        try:
+            from sqlalchemy import inspect
+            inspector = inspect(db.engine)
+            cols = [c.get('name') for c in inspector.get_columns('chat_messages')] if 'chat_messages' in inspector.get_table_names() else []
+            fields = ['id', 'body', 'is_from_admin', 'created_at', 'sender_name', 'sender_role']
+            if 'attachment' in cols:
+                fields.insert(4, 'attachment')
+            if 'is_read' in cols and 'is_read' not in fields:
+                # ensure is_read is present so we can show seen/delivered
+                fields.insert( (4 if 'attachment' in cols else 4) + 1, 'is_read')
+            sql = f"SELECT {', '.join(fields)} FROM chat_messages WHERE user_id = :uid ORDER BY created_at ASC"
+            rows = db.session.execute(sql, {'uid': user.id}).fetchall()
+            for r in rows:
+                # map columns back to names
+                idx = 0
+                _id = r[idx]; idx += 1
+                _body = r[idx]; idx += 1
+                _is_from_admin = bool(r[idx]); idx += 1
+                _created = r[idx]; idx += 1
+                _attachment = None
+                _is_read = False
+                if 'attachment' in cols:
+                    _attachment = r[idx]; idx += 1
+                if 'is_read' in cols:
+                    _is_read = bool(r[idx]); idx += 1
+                _sender_name = r[idx] if idx < len(r) else None; idx += 1
+                _sender_role = r[idx] if idx < len(r) else None
+                out.append({
+                    'id': _id,
+                    'body': _body,
+                    'is_from_admin': _is_from_admin,
+                    'created_at': (_created.isoformat() if _created else None),
+                    'attachment': _attachment,
+                    'is_read': _is_read,
+                    'sender_name': _sender_name or (user.username or user.email),
+                    'sender_role': _sender_role,
+                })
+            # If we were able to read is_read column, mark user->admin messages as read
+            try:
+                if 'is_read' in cols:
+                    from sqlalchemy import text
+                    db.session.execute(text("UPDATE chat_messages SET is_read = 1 WHERE user_id = :uid AND is_from_admin = 0 AND (is_read = 0 OR is_read IS NULL)"), {'uid': user.id})
+                    db.session.commit()
+            except Exception:
+                db.session.rollback()
+        except Exception:
+            current_app.logger.exception('Error fetching chat messages for admin view')
+
     return jsonify({'messages': out, 'user': {'id': user.id, 'name': (user.username or user.email), 'role': user.role}})
 
 
@@ -511,20 +630,129 @@ def chat_messages(user_id):
 @login_required
 def admin_send_message(user_id):
     user = User.query.get_or_404(user_id)
-    body = request.form.get('body') or (request.json.get('body') if request.json else None)
-    if not body:
-        return jsonify({'error': 'Missing body'}), 400
+    # Accept body from form or JSON, and also allow a file-only send (no body)
+    body = None
     try:
-        msg = ChatMessage(
-            user_id=user.id,
-            admin_id=current_user.id,
-            sender_name=(getattr(current_user, 'username', None) or getattr(current_user, 'email', None)),
-            sender_role='admin',
-            body=body,
-            is_from_admin=True,
-        )
-        db.session.add(msg)
-        db.session.commit()
+        if request.form and request.form.get('body'):
+            body = request.form.get('body')
+        else:
+            data = request.get_json(silent=True)
+            if isinstance(data, dict):
+                body = data.get('body')
+    except Exception:
+        current_app.logger.exception('Error parsing admin chat send payload')
+
+    # normalize uploaded file (allow file-only sends)
+    uploaded = request.files.get('file')
+    if uploaded and getattr(uploaded, 'filename', '') == '':
+        uploaded = None
+
+    if not body and not uploaded:
+        return jsonify({'error': 'Missing body or attachment'}), 400
+    try:
+        # Inspect DB schema and fall back to a raw INSERT if optional columns (like
+        # `is_read`) are not present to avoid SQL errors on schemaversion mismatch.
+        from sqlalchemy import inspect, text
+        inspector = inspect(db.engine)
+        table_names = inspector.get_table_names()
+        cols = [c.get('name') for c in inspector.get_columns('chat_messages')] if 'chat_messages' in table_names else []
+        has_is_read = 'is_read' in cols
+        has_attachment_col = 'attachment' in cols
+
+        # Handle optional file uploaded by admin (client sends as 'file')
+        attachment_path = None
+        attachment_skipped = False
+        if uploaded:
+            filename = secure_filename(uploaded.filename)
+            upload_dir = os.path.join(current_app.root_path, 'static', 'uploads', 'chat')
+            os.makedirs(upload_dir, exist_ok=True)
+            save_path = os.path.join(upload_dir, filename)
+            if os.path.exists(save_path):
+                name, ext = os.path.splitext(filename)
+                filename = f"{name}-{int(datetime.now().timestamp())}{ext}"
+                save_path = os.path.join(upload_dir, filename)
+            uploaded.save(save_path)
+            attachment_path = f"/static/uploads/chat/{filename}"
+            try:
+                if 'chat_messages' in table_names:
+                    if 'attachment' not in cols:
+                        attachment_skipped = True
+                    else:
+                        attachment_skipped = False
+            except Exception:
+                attachment_skipped = False
+
+        # ensure body is never NULL in DB insert
+        safe_body = body or ''
+
+        if 'chat_messages' not in table_names or not has_is_read:
+            insert_cols = ['user_id', 'admin_id', 'sender_name', 'sender_role', 'body', 'is_from_admin']
+            params = {
+                'user_id': user.id,
+                'admin_id': current_user.id,
+                'sender_name': (getattr(current_user, 'username', None) or getattr(current_user, 'email', None)),
+                'sender_role': 'admin',
+                'body': safe_body,
+                'is_from_admin': True,
+            }
+            if has_attachment_col and not attachment_skipped and attachment_path:
+                insert_cols.insert(-1, 'attachment')
+                params['attachment'] = attachment_path
+
+            sql = f"INSERT INTO chat_messages ({', '.join(insert_cols)}) VALUES ({', '.join(':' + c for c in insert_cols)})"
+            db.session.execute(text(sql), params)
+            db.session.commit()
+            try:
+                row = db.session.execute(text("SELECT id, created_at, sender_name, body, attachment, is_from_admin, is_read FROM chat_messages WHERE user_id = :uid AND admin_id = :aid ORDER BY id DESC LIMIT 1"), {'uid': user.id, 'aid': current_user.id}).fetchone()
+                msg_id = row[0] if row else None
+                created_at = row[1] if row and row[1] else None
+                sender_name = row[2] if row else (getattr(current_user, 'username', None) or getattr(current_user, 'email', None))
+                body_text = row[3] if row and len(row) > 3 else None
+                attachment_val = row[4] if row and len(row) > 4 else None
+                is_from_admin_val = bool(row[5]) if row and len(row) > 5 else True
+                is_read_val = bool(row[6]) if row and len(row) > 6 else False
+            except Exception:
+                msg_id = None
+                created_at = None
+                sender_name = (getattr(current_user, 'username', None) or getattr(current_user, 'email', None))
+            class _R: pass
+            msg = _R()
+            msg.id = msg_id
+            msg.created_at = created_at
+            msg.sender_name = sender_name
+            # attach optional attributes to msg for convenience
+            try:
+                msg.body = body_text
+                msg.attachment = attachment_val
+                msg.is_from_admin = is_from_admin_val
+                msg.is_read = is_read_val
+            except Exception:
+                pass
+        else:
+            common = dict(
+                user_id=user.id,
+                admin_id=current_user.id,
+                sender_name=(getattr(current_user, 'username', None) or getattr(current_user, 'email', None)),
+                sender_role='admin',
+                body=safe_body,
+                is_from_admin=True,
+            )
+            if not attachment_skipped and has_attachment_col and attachment_path:
+                common['attachment'] = attachment_path
+            msg = ChatMessage(**common)
+            db.session.add(msg)
+            db.session.commit()
+            # after ORM insert, ensure we return the persisted values
+            try:
+                refreshed = ChatMessage.query.get(msg.id)
+                if refreshed:
+                    msg.body = refreshed.body
+                    msg.attachment = getattr(refreshed, 'attachment', None)
+                    msg.is_from_admin = bool(refreshed.is_from_admin)
+                    msg.is_read = bool(getattr(refreshed, 'is_read', False))
+                    msg.created_at = refreshed.created_at
+            except Exception:
+                pass
     except Exception as exc:
         db.session.rollback()
         current_app.logger.exception('Error saving admin chat message')

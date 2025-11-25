@@ -15,7 +15,7 @@
 }
 
 .sidebar.collapsed {
-  width: 70px;
+  width: 80px;
 }
 
 .sidebar-header {
@@ -39,22 +39,57 @@
   margin: 0;
 }
 
+/* Make the brand text collapsible when the sidebar is collapsed */
+.brand h2 {
+  display: inline-block;
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: max-width 0.22s ease, opacity 0.18s ease, margin 0.18s ease;
+}
+
+.sidebar.collapsed .brand h2 {
+  max-width: 0;
+  opacity: 0;
+  margin: 0;
+}
+
+/* Strong hide for title and inner span to avoid other styles overriding it */
+.sidebar.collapsed .brand h2,
+.sidebar.collapsed .brand h2 span {
+  display: inline-block !important;
+  max-width: 0 !important;
+  width: 0 !important;
+  opacity: 0 !important;
+  overflow: hidden !important;
+  visibility: hidden !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  pointer-events: none !important;
+}
+
 .brand span {
   color: var(--color-primary, #6c5ce7);
 }
 
 .sidebar-toggle {
-  display: none;
+  display: flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background-color: var(--color-grey-100);
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  transition: color 0.18s ease, transform 0.12s ease;
 }
 
-.sidebar-toggle:hover {
-  background-color: var(--color-grey-200);
+/* keep hover simple: only color transforms to purple */
+.sidebar-toggle:hover,
+.sidebar-toggle:active {
+  background: transparent;
+  color: var(--color-primary, #6c5ce7);
+  transform: translateY(-1px);
 }
 
 .sidebar-content {
@@ -74,7 +109,7 @@
 
 .sidebar.collapsed .user-info {
   flex-direction: column;
-  padding: var(--spacing-sm);
+  padding: 12px;
 }
 
 .avatar {
@@ -154,7 +189,7 @@
 
 .sidebar.collapsed .nav-item a {
   justify-content: center;
-  padding: var(--spacing-md);
+  padding: 10px 12px;
 }
 
 .sidebar-footer {

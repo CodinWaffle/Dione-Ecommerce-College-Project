@@ -103,5 +103,39 @@ def create_app(config_name='default'):
     app.register_blueprint(chat_bp)
     app.register_blueprint(seller_bp)
     app.register_blueprint(rider_bp)
+    # Ensure DB has chat_messages.attachment column for file uploads.
+    try:
+        with app.app_context():
+            from sqlalchemy import inspect, text
+            inspector = inspect(db.engine)
+            if 'chat_messages' in inspector.get_table_names():
+                cols = [c.get('name') for c in inspector.get_columns('chat_messages')]
+                if 'attachment' not in cols:
+                    # Add nullable attachment column if missing. Use raw SQL to be safe
+                    with db.engine.connect() as conn:
+                        conn.execute(text('ALTER TABLE chat_messages ADD COLUMN attachment VARCHAR(512) NULL'))
+                        conn.commit()
+                    app.logger.info('Added missing chat_messages.attachment column')
+    except Exception:
+        # If automatic migration fails, log and continue; developer can run alembic
+        app.logger.exception('Automatic check/create for chat_messages.attachment failed')
+
+    # Ensure DB has chat_messages.is_read column for read receipts (boolean)
+    try:
+        with app.app_context():
+            from sqlalchemy import inspect, text
+            inspector = inspect(db.engine)
+            if 'chat_messages' in inspector.get_table_names():
+                cols = [c.get('name') for c in inspector.get_columns('chat_messages')]
+                if 'is_read' not in cols:
+                    # Add nullable/boolean is_read column if missing. Use raw SQL to be safe
+                    # MySQL uses TINYINT(1) for booleans
+                    with db.engine.connect() as conn:
+                        conn.execute(text("ALTER TABLE chat_messages ADD COLUMN is_read TINYINT(1) NOT NULL DEFAULT 0"))
+                        conn.commit()
+                    app.logger.info('Added missing chat_messages.is_read column')
+    except Exception:
+        # If automatic migration fails, log and continue; developer can run alembic
+        app.logger.exception('Automatic check/create for chat_messages.is_read failed')
 
     return app

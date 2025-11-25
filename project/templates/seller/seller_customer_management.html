@@ -229,28 +229,59 @@ Dione Ecommerce{% endblock %} {% block extra_css %}
       </table>
       {% include 'partials/components/_tableFooter.html' %}
       {% else %}
-      <div class="empty-state">
-        <div class="empty-state-icon">
-          <svg
-            width="48"
-            height="48"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1"
-          >
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-            <circle cx="9" cy="7" r="4"></circle>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-          </svg>
-        </div>
-        <h3>No customers yet</h3>
-        <p>
-          When you start making sales, your customer information will appear
-          here.
-        </p>
-      </div>
+      {# Render sample customers so the seller can see the table populated in dev/demo mode #}
+      {% set sample_customers = [
+        {'id': 'C-1001', 'name': 'Precious Hanny', 'email': 'precious@example.com', 'orders': 5, 'total_spent': '3,250.00'},
+        {'id': 'C-1002', 'name': 'Miguel Santos', 'email': 'miguel.s@example.com', 'orders': 2, 'total_spent': '1,120.50'},
+        {'id': 'C-1003', 'name': 'Aisha Cruz', 'email': 'aisha.cruz@example.com', 'orders': 8, 'total_spent': '5,430.75'},
+        {'id': 'C-1004', 'name': 'Liam Reyes', 'email': 'liam.reyes@example.com', 'orders': 1, 'total_spent': '299.99'},
+        {'id': 'C-1005', 'name': 'Sophia Velasquez', 'email': 'sophia.v@example.com', 'orders': 3, 'total_spent': '760.20'}
+      ] %}
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Customer ID</th>
+            <th>Customer</th>
+            <th>Email</th>
+            <th>Status</th>
+            <th>Orders</th>
+            <th>Total Spent</th>
+            <th>Last Order</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="customerTableBody">
+          {% for c in sample_customers %}
+          <tr>
+            <td>{{ c.id }}</td>
+            <td>
+              <div class="customer-info">
+                <div class="customer-avatar">{{ c.name[:1] }}</div>
+                <div class="customer-name">{{ c.name }}</div>
+              </div>
+            </td>
+            <td>{{ c.email }}</td>
+            <td>
+              <span class="status-badge active">Active</span>
+            </td>
+            <td>{{ c.orders }}</td>
+            <td>₱{{ c.total_spent }}</td>
+            <td>Nov 20, 2025</td>
+            <td>
+              <div class="action-buttons">
+                <button class="action-btn view-btn" data-customer-id="{{ c.id }}" title="View">
+                  <span class="icon-outline-eye"></span>
+                </button>
+                <button class="action-btn message-btn" data-customer-id="{{ c.id }}" title="Message">
+                  <span class="icon-outline-message"></span>
+                </button>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% include 'partials/components/_tableFooter.html' %}
       {% endif %}
     </div>
   </div>

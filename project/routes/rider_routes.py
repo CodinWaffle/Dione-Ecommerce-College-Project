@@ -1,5 +1,8 @@
-from flask import Blueprint, render_template, redirect, url_for, flash
+from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
+from ..models import Rider, User
+from .. import db
+from project.services.auth_service import AuthService
 
 rider_bp = Blueprint('rider', __name__)
 
@@ -69,12 +72,74 @@ def performance():
     return redirect(url_for('rider.rider_dashboard'))
 
 
-@rider_bp.route('/rider/profile')
+@rider_bp.route('/rider/profile', methods=['GET', 'POST'])
 @login_required
 def profile_settings():
     if not _ensure_rider_access():
         return redirect(url_for('main.profile'))
-    return render_template('rider/profile_settings.html', username=current_user.email)
+
+    # Load or create the Rider profile record
+    rider = Rider.query.filter_by(user_id=current_user.id).first()
+    if request.method == 'POST':
+        # If the user clicked the "send password reset" button
+        if request.form.get('action') == 'send_reset':
+            user = AuthService.get_user_by_email(current_user.email)
+            if user:
+                success, error = AuthService.send_password_reset_email(user)
+                if success:
+                    flash('A password reset email has been sent to your email address.', 'info')
+                else:
+                    flash(f'Error sending reset email: {error}', 'danger')
+            else:
+                # Don't reveal whether an account exists
+                flash('A password reset email has been sent to your email address.', 'info')
+            return redirect(url_for('rider.profile_settings'))
+
+        # Otherwise treat as profile update
+        # Basic editable fields (safe, minimal validation)
+        name = request.form.get('name') or request.form.get('username')
+        phone = request.form.get('phone')
+        license_number = request.form.get('license_number')
+        vehicle_type = request.form.get('vehicle_type')
+        vehicle_number = request.form.get('vehicle_number')
+
+        # Update User name/username if provided
+        if name:
+            # prefer 'username' field on User model
+            try:
+                current_user.username = name
+            except Exception:
+                pass
+
+        # Ensure rider row exists
+        if not rider:
+            rider = Rider(user_id=current_user.id)
+            db.session.add(rider)
+
+        # Update rider fields
+        if phone is not None:
+            rider.phone = phone
+        if license_number is not None:
+            rider.license_number = license_number
+        if vehicle_type is not None:
+            rider.vehicle_type = vehicle_type
+        if vehicle_number is not None:
+            rider.vehicle_number = vehicle_number
+
+        # Persist changes
+        try:
+            db.session.commit()
+            flash('Profile updated successfully.', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash('Could not save profile. Please try again.', 'danger')
+
+        return redirect(url_for('rider.profile_settings'))
+
+    # GET: render editable form
+    return render_template(
+        'rider/profile_settings.html', username=current_user.email, user=current_user, rider=rider
+    )
 
 
 @rider_bp.route('/rider/map')
@@ -100,4 +165,6 @@ def notifications():
 def communication_tools():
     if not _ensure_rider_access():
         return redirect(url_for('main.profile'))
-    return render_template('rider/communication_tools.html', username=current_user.email)
+    # Communication tools page removed — redirect riders to their dashboard.
+    flash('Communication tools have been removed.', 'info')
+    return redirect(url_for('rider.rider_dashboard'))

@@ -45,6 +45,8 @@
   /* Sidebar widths for layout spacing */
   --sidebar-width: 250px;
   --sidebar-collapsed-width: 70px;
+  /* Fixed header height used across admin pages */
+  --header-height: 82px;
 }
 
 * {
@@ -96,6 +98,43 @@ button {
   display: flex;
   min-height: 100vh;
 }
+.main-content-admin-dashboard {
+  flex: 1;
+  /* Match seller page spacing: roomy horizontal padding */
+  padding: 2rem 3rem;
+  transition: all 0.3s ease;
+  margin-left: 0;
+  margin-top: 5rem;
+  padding-left: calc(var(--sidebar-width) + var(--spacing-md) + 2rem);
+}
+.main-content-settings {
+  flex: 1;
+  /* Match seller page spacing: roomy horizontal padding */
+  padding: 3rem 3rem;
+  transition: all 0.3s ease;
+  margin-left: 0;
+  margin-top: 5rem;
+  padding-left: calc(var(--sidebar-width) + var(--spacing-md) + 2rem);
+}
+.main-content-payout {
+  flex: 1;
+  /* Match seller page spacing: roomy horizontal padding */
+  padding: 2rem 3rem;
+  transition: all 0.3s ease;
+  margin-left: 0;
+  margin-top: 5rem;
+  padding-left: calc(var(--sidebar-width) + var(--spacing-md) + 2rem);
+}
+
+.main-content-users {
+  flex: 1;
+  /* Match seller page spacing: roomy horizontal padding */
+  padding: 3rem 3rem;
+  transition: all 0.3s ease;
+  margin-left: 0;
+  margin-top: 5rem;
+  padding-left: calc(var(--sidebar-width) + var(--spacing-md) + 2rem);
+}
 
 .main-content {
   flex: 1;
@@ -103,6 +142,7 @@ button {
   padding: 2rem 3rem;
   transition: all 0.3s ease;
   margin-left: 0;
+  margin-top: 5rem;
   /* Keep left offset based on sidebar width so fixed sidebar doesn't overlap content */
   padding-left: calc(var(--sidebar-width) + var(--spacing-md));
 }
@@ -123,6 +163,13 @@ button {
   padding-left: calc(var(--sidebar-collapsed-width) + var(--spacing-md));
 }
 
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-grey-900);
+  margin-bottom: 1rem !important;
+}
+
 /* ==================== SIDEBAR ==================== */
 .sidebar {
   width: 250px;
@@ -131,7 +178,7 @@ button {
   position: fixed;
   left: 0;
   top: 0;
-  z-index: 100;
+  z-index: 1100; /* ensure sidebar sits above header */
   box-shadow: var(--shadow-md);
   transition: width 0.3s ease;
   display: flex;
@@ -174,11 +221,15 @@ button {
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background-color: var(--color-grey-100);
+  background: transparent;
+  transition: color 0.18s ease, transform 0.12s ease;
 }
 
-.sidebar-toggle:hover {
-  background-color: var(--color-grey-200);
+.sidebar-toggle:hover,
+.sidebar-toggle:active {
+  background: transparent;
+  color: var(--color-primary);
+  transform: translateY(-1px);
 }
 
 .sidebar-content {
@@ -558,6 +609,93 @@ button {
 
 .filter-btn:hover {
   background-color: var(--color-grey-200);
+}
+
+/* Global search box for admin tables and cards: rounded pill style */
+.search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background-color: var(--color-white);
+  border: 1px solid #e6e8eb;
+  padding: 6px 12px;
+  border-radius: 999px;
+  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.04);
+  max-width: 420px;
+}
+.search-box i {
+  position: absolute;
+  left: 12px;
+  color: #9ca3af;
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.search-box input {
+  border: none;
+  outline: none;
+  padding: 8px 12px 8px 36px; /* leave space for icon */
+  background: transparent;
+  width: 100%;
+  font-size: 0.95rem;
+  color: var(--color-grey-800);
+}
+.search-box input:focus {
+  box-shadow: 0 4px 12px rgba(16, 24, 40, 0.06);
+  border-radius: 999px;
+}
+
+/* Filter button: icon on left and chevron/down arrow on the right */
+.filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--color-grey-100);
+  border-radius: 8px;
+  border: 1px solid #e6e8eb;
+  color: var(--color-grey-700);
+  font-size: 0.95rem;
+}
+.filter-btn i:first-child {
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-grey-600);
+}
+.filter-btn::after {
+  content: "\25BE"; /* small down arrow */
+  font-size: 10px;
+  margin-left: 6px;
+  color: var(--color-grey-600);
+}
+.filter-btn:hover {
+  background: #f3f4f6;
+}
+
+/* small utility to keep search+filter consistent in card header */
+.card-actions .search-box {
+  max-width: 320px;
+}
+
+/* Admin header: small admin icon to left of name */
+.admin-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-right: 8px;
+  color: var(--color-primary-dark, #5541d7);
+}
+.user-profile-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .time-filter {

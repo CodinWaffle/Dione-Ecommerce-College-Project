@@ -8,6 +8,25 @@
       rel="stylesheet"
       href="{{ url_for('static', filename='css/rider_styles/rider_dashboard.css') }}"
     />
+    <!-- Lucide Icons (used by seller/rider header & sidebar) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Include seller sidebar/header styles so rider matches seller UI -->
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{{ url_for('static', filename='css/seller_styles/partials/_sidebar_seller.css') }}?v={{ range(1, 10000) | random }}"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{{ url_for('static', filename='css/seller_styles/partials/_header_seller.css') }}?v={{ range(1, 10000) | random }}"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{{ url_for('static', filename='css/seller_styles/seller_common.css') }}?v={{ range(1, 10000) | random }}"
+    />
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css?family=Montserrat:400,600|Poppins:400,600&display=swap"
@@ -21,26 +40,250 @@
   <body>
     <!-- Header -->
     {% block header %}{% endblock %} {% include 'rider/_rider_header.html' %}
+    <style>
+      /* Ensure rider header matches seller header layout and is visible */
+      .seller-header.rider-header-override,
+      .rider-header-override {
+        height: var(--header-height);
+        background: var(--white, #ffffff);
+        border-bottom: 1px solid rgba(229, 231, 235, 1);
+        position: fixed;
+        top: 0;
+        left: var(--sidebar-width); /* leave space for rider sidebar */
+        right: 0;
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 20px;
+      }
+      .seller-header.rider-header-override.expanded,
+      .rider-header-override.expanded {
+        left: var(--sidebar-collapsed-width);
+      }
+      .rider-header-override .header-left {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .rider-header-override .header-right {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+      /* When sidebar collapses, hide the textual logo (Rider Panel) */
+      .sidebar.collapsed .logo-text {
+        max-width: 0 !important;
+        opacity: 0 !important;
+        overflow: hidden !important;
+        white-space: nowrap !important;
+        transition: max-width 0.22s ease, opacity 0.18s ease;
+      }
+      /* Responsive: transform sidebar into dropdown on small screens */
+      @media (max-width: 768px) {
+        .seller-header.rider-header-override,
+        .rider-header-override {
+          left: 0; /* header spans full width on mobile */
+          padding: 0 12px;
+        }
+
+        /* Hide desktop search on small screens */
+        .search-container-header {
+          display: none !important;
+        }
+
+        /* Sidebar becomes an overlay dropdown under the header */
+        .sidebar {
+          position: absolute;
+          top: var(--header-height);
+          left: 0;
+          right: 0;
+          width: 100%;
+          height: auto;
+          max-height: calc(100vh - var(--header-height));
+          transform-origin: top center;
+          transform: translateY(-8px) scaleY(0.98);
+          opacity: 0;
+          visibility: hidden;
+          transition: transform 0.22s ease, opacity 0.18s ease, visibility 0.18s;
+          box-shadow: 0 8px 24px rgba(16, 24, 40, 0.08);
+          border-radius: 8px;
+          overflow: auto;
+          z-index: 10005;
+        }
+
+        .sidebar.mobile-open {
+          transform: translateY(0) scaleY(1);
+          opacity: 1;
+          visibility: visible;
+        }
+
+        /* When in mobile dropdown mode, collapsed state shouldn't hide the sidebar icon-only */
+        .sidebar.collapsed {
+          width: 100%;
+        }
+      }
+    </style>
     <!-- Sidebar -->
     {% include 'rider/_rider_sidebar.html' %}
 
     <!-- Main Content Block -->
-    {% block content %}{% endblock %}
+    <!-- Flash Messages -->
+    {% block flash_messages %} {% with messages =
+    get_flashed_messages(with_categories=true) %} {% if messages %}
+    <div class="p-3">
+      {% for category, message in messages %} {% set alert_class = 'warning' if
+      category == 'message' else category %}
+      <div
+        class="alert alert-{{ alert_class }} alert-dismissible fade show"
+        role="alert"
+      >
+        {{ message }}
+        <button
+          type="button"
+          class="close"
+          data-dismiss="alert"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %} {% endwith %} {% endblock %} {% block content %}{% endblock %}
 
     <!-- Common Scripts -->
     <script>
+      // Initialize Lucide icons for rider templates
       document.addEventListener("DOMContentLoaded", function () {
-        const sidebar = document.getElementById("riderSidebar");
-        const toggleBtn = document.getElementById("sidebarToggle");
-        if (toggleBtn && sidebar) {
-          toggleBtn.addEventListener("click", function () {
-            sidebar.classList.toggle("closed");
-          });
+        if (typeof lucide !== "undefined") {
+          lucide.createIcons();
+        }
+      });
+
+      (function () {
+        const sidebar = document.getElementById("sidebar");
+        const toggle = document.getElementById("sidebarToggle");
+        const header = document.querySelector(".rider-header-override");
+        const main =
+          document.querySelector(".dashboard-main") ||
+          document.querySelector(".main-content");
+        const search = document.querySelector(
+          ".search-container-header.left-search"
+        );
+
+        if (!sidebar || !toggle) return;
+
+        // Restore previous state (sidebar + header + main)
+        const collapsed =
+          localStorage.getItem("riderSidebarCollapsed") === "true";
+        if (collapsed) {
+          sidebar.classList.add("collapsed");
+          if (header) header.classList.add("expanded");
+          if (main) main.classList.add("expanded");
         }
 
-        // No settings submenu to initialize
-      });
+        function positionControls() {
+          try {
+            const sw =
+              sidebar.getBoundingClientRect().width ||
+              parseInt(
+                getComputedStyle(document.documentElement).getPropertyValue(
+                  "--sidebar-width"
+                )
+              );
+            // We rely on header left shifting (.rider-header-override.expanded)
+            // so that the toggle and search move in sync with the header.
+            // Clear any inline left positioning that may be set from prior runs.
+            if (toggle) toggle.style.left = null;
+            if (search) search.style.left = null;
+          } catch (err) {}
+        }
+
+        // Initial position
+        positionControls();
+        window.addEventListener("resize", positionControls);
+
+        toggle.addEventListener("click", function (e) {
+          const isMobile =
+            window.matchMedia &&
+            window.matchMedia("(max-width: 768px)").matches;
+          if (isMobile) {
+            // Mobile dropdown behavior: show/hide the full sidebar under the header
+            const isOpen = sidebar.classList.toggle("mobile-open");
+            if (header) header.classList.toggle("mobile-open");
+            if (main) main.classList.toggle("mobile-open");
+            // When opened, listen for outside clicks to close
+            if (isOpen) {
+              setTimeout(() => {
+                const outsideClickListener = function (ev) {
+                  if (!sidebar.contains(ev.target) && ev.target !== toggle) {
+                    sidebar.classList.remove("mobile-open");
+                    if (header) header.classList.remove("mobile-open");
+                    if (main) main.classList.remove("mobile-open");
+                    document.removeEventListener("click", outsideClickListener);
+                  }
+                };
+                document.addEventListener("click", outsideClickListener);
+              }, 50);
+            }
+            // Recreate lucide icons after toggle
+            if (typeof lucide !== "undefined") {
+              setTimeout(() => lucide.createIcons(), 80);
+            }
+            return;
+          }
+
+          // Desktop behavior: collapse to icon-only sidebar
+          const isCollapsed = sidebar.classList.toggle("collapsed");
+          if (header) header.classList.toggle("expanded");
+          if (main) main.classList.toggle("expanded");
+          localStorage.setItem("riderSidebarCollapsed", isCollapsed);
+          if (typeof lucide !== "undefined") {
+            setTimeout(() => lucide.createIcons(), 80);
+          }
+          setTimeout(positionControls, 160);
+        });
+
+        // User profile dropdown handling (notifications/profile/logout)
+        const profileToggle = document.querySelector(".user-profile-toggle");
+        const profileMenu = document.querySelector(".user-dropdown-menu");
+        if (profileToggle && profileMenu) {
+          profileToggle.addEventListener("click", function (e) {
+            e.stopPropagation();
+            const isOpen = profileMenu.classList.toggle("open");
+            profileMenu.setAttribute("aria-hidden", isOpen ? "false" : "true");
+            // Update the toggle button aria-expanded state
+            try {
+              profileToggle.setAttribute(
+                "aria-expanded",
+                isOpen ? "true" : "false"
+              );
+            } catch (err) {}
+          });
+
+          // Close dropdown when clicking outside
+          document.addEventListener("click", function (e) {
+            if (!profileMenu.classList.contains("open")) return;
+            if (
+              !profileMenu.contains(e.target) &&
+              !profileToggle.contains(e.target)
+            ) {
+              profileMenu.classList.remove("open");
+              profileMenu.setAttribute("aria-hidden", "true");
+            }
+          });
+
+          // Close on Escape
+          document.addEventListener("keydown", function (e) {
+            if (e.key === "Escape" && profileMenu.classList.contains("open")) {
+              profileMenu.classList.remove("open");
+              profileMenu.setAttribute("aria-hidden", "true");
+            }
+          });
+        }
+      })();
     </script>
-    {% block scripts %}{% endblock %}
+    {% block scripts %}{% endblock %} {% include 'partials/_chat_bubble.html' %}
   </body>
 </html>

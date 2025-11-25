@@ -9,9 +9,10 @@
   justify-content: space-between;
   position: fixed;
   top: 0;
-  left: 280px; /* Position next to sidebar */
+  left: 0; /* header background extends to left edge; content offset via padding-left */
   right: 0;
   z-index: 1000;
+  padding-left: calc(var(--sidebar-width, 280px) + 37px);
 }
 
 .header-left {
@@ -183,4 +184,44 @@
 
 .user-profile-dropdown.active .dropdown-arrow {
   transform: rotate(180deg);
+}
+
+/* Responsive tweaks to keep header-right icons visible on small screens */
+@media screen and (max-width: 992px) {
+  .seller-header {
+    padding-left: calc(var(--sidebar-collapsed-width, 70px) + 20px);
+  }
+
+  .header-right {
+    gap: 12px;
+  }
+
+  .search-container-header {
+    max-width: 200px;
+  }
+
+  /* hide long labels but keep icons */
+  .user-name {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 576px) {
+  .seller-header {
+    padding-left: calc(var(--sidebar-collapsed-width, 70px) + 12px);
+    padding-right: 12px;
+  }
+
+  .header-right {
+    gap: 8px;
+  }
+
+  .search-container-header {
+    display: none;
+  }
+
+  /* keep avatar and icons visible; hide username */
+  .user-name {
+    display: none;
+  }
 }

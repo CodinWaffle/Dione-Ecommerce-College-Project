@@ -7,13 +7,79 @@
   rel="stylesheet"
   href="{{ url_for('static', filename='css/buyer_styles/components/product_card.css') }}"
 />
+<style>
+  /* Carousel slides: keep the same hero-banner size and behavior */
+  .hero-banner {
+    position: relative;
+    height: 500px;
+    overflow: hidden;
+  }
+  .hero-slides {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+  .hero-slide {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+  .hero-slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .hero-slide.active {
+    opacity: 1;
+  }
+  .hero-dots {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 18px;
+    display: flex;
+    gap: 8px;
+    z-index: 30;
+  }
+  .hero-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+  }
+  .hero-dot.active {
+    background: var(--primary-color, #000);
+  }
+</style>
 {% endblock %} {% block content %}
 <!-- Hero Banner -->
 <section class="hero-banner">
-  <img
-    src="{{ url_for('static', filename='image/banner.png') }}"
-    alt="Hero Banner"
-  />
+  <div class="hero-slides" id="heroSlides">
+    <div class="hero-slide active">
+      <img
+        src="{{ url_for('static', filename='image/banner.png') }}"
+        alt="Hero Banner 1"
+      />
+    </div>
+    <div class="hero-slide">
+      <img
+        src="{{ url_for('static', filename='image/banner.png') }}"
+        alt="Hero Banner 2"
+      />
+    </div>
+    <div class="hero-slide">
+      <img
+        src="{{ url_for('static', filename='image/banner.png') }}"
+        alt="Hero Banner 3"
+      />
+    </div>
+  </div>
+  <div class="hero-dots" id="heroDots" aria-hidden="false"></div>
 </section>
 
 <!-- Shop by Category -->
@@ -84,6 +150,67 @@
 </section>
 {% endblock %} {% include 'main/components/_product_card.html' %} {% block
 extra_js %}
+<script>
+  (function () {
+    // Auto-rotating hero banner carousel (keeps original size)
+    document.addEventListener("DOMContentLoaded", function () {
+      const slides = Array.from(document.querySelectorAll(".hero-slide"));
+      const dotsWrap = document.getElementById("heroDots");
+      if (!slides.length || !dotsWrap) return;
+
+      let active = slides.findIndex((s) => s.classList.contains("active"));
+      if (active < 0) active = 0;
+
+      // build dots
+      const dots = slides.map((_, i) => {
+        const d = document.createElement("button");
+        d.type = "button";
+        d.className = "hero-dot" + (i === active ? " active" : "");
+        d.setAttribute("aria-label", "Slide " + (i + 1));
+        d.addEventListener("click", function () {
+          goTo(i);
+          resetTimer();
+        });
+        dotsWrap.appendChild(d);
+        return d;
+      });
+
+      function goTo(i) {
+        slides[active].classList.remove("active");
+        dots[active].classList.remove("active");
+        active = i;
+        slides[active].classList.add("active");
+        dots[active].classList.add("active");
+      }
+
+      function next() {
+        goTo((active + 1) % slides.length);
+      }
+
+      let timer = setInterval(next, 5000);
+      function resetTimer() {
+        clearInterval(timer);
+        timer = setInterval(next, 5000);
+      }
+
+      // pause on hover/focus
+      const wrapper = document.querySelector(".hero-slides");
+      wrapper.addEventListener("mouseenter", function () {
+        clearInterval(timer);
+      });
+      wrapper.addEventListener("mouseleave", function () {
+        resetTimer();
+      });
+      wrapper.addEventListener("focusin", function () {
+        clearInterval(timer);
+      });
+      wrapper.addEventListener("focusout", function () {
+        resetTimer();
+      });
+    });
+  })();
+</script>
+
 <script>
   window.__PRODUCT_BUCKETS__ = {{ (product_buckets or {}) | tojson }};
 </script>

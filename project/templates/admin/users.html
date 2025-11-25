@@ -455,6 +455,15 @@ endblock %} {% block admin_content %}
     color: #6c5ce7;
   }
 
+  /* Subtitle under section titles */
+  .section-subtext {
+    margin-top: -0.25rem;
+    margin-bottom: 1.5rem;
+    color: #6b7280;
+    font-size: 1rem;
+    max-width: 900px;
+  }
+
   .stats-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -599,12 +608,13 @@ endblock %} {% block admin_content %}
 <div class="dashboard-container">
   {% include 'admin/partials/_sidebar_admin.html' %}
 
-  <div class="main-content" id="main-content">
+  <div class="main-content-users" id="main-content">
     <section>
-      <h2 class="section-title">
-        <i class="fas fa-users"></i>
-        User Management
-      </h2>
+      <h2 class="section-title">User Management</h2>
+      <p class="section-subtext">
+        Manage user approvals, roles, suspensions and account actions from this
+        panel.
+      </p>
       <!-- <CHANGE> Added stats cards section at the top -->
       <div class="stats-container">
         <div class="stats-card">

@@ -5,6 +5,14 @@
   margin-top: 1rem;
   margin-bottom: 1rem;
 }
+
+:root {
+  /* Use admin-like sizes */
+  --sidebar-width: 280px;
+  --sidebar-collapsed-width: 80px;
+  --header-height: 82px;
+  --primary: #7c3aed;
+}
 .dashboard-search.left {
   margin-top: 1rem;
   margin-bottom: 1rem;
@@ -52,26 +60,44 @@ h6 {
   align-items: center;
   justify-content: space-between;
   background: #fff;
-  padding: 0 2rem;
-  height: 64px;
+  padding: 0 1.25rem;
+  height: var(--header-height);
   box-shadow: 0 2px 8px rgba(80, 0, 180, 0.06);
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  z-index: 1001;
+  /* Put header behind sidebar; sidebar will visually overlap header */
+  z-index: 900;
 }
 .header-left {
   display: flex;
   align-items: center;
 }
 .sidebar-toggle {
-  background: none;
+  background: #f3f4f6; /* light neutral background, not purple */
   border: none;
-  font-size: 2rem;
-  color: #7c3aed;
+  font-size: 1.9rem; /* slightly larger icon */
+  color: #374151; /* neutral dark gray color */
   cursor: pointer;
-  margin-right: 1rem;
+  margin-right: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed; /* allow toggle to float above the sidebar */
+  top: calc(var(--header-height) / 2 - 22px);
+  left: calc(var(--sidebar-width) + 12px);
+  z-index: 1400; /* ensure toggle sits above sidebar */
+  width: 44px; /* larger touch target */
+  height: 44px;
+  border-radius: 10px;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+}
+/* Ensure the lucide SVG inside the button scales to the button size */
+.sidebar-toggle svg,
+.sidebar-toggle i[data-lucide] {
+  width: 20px;
+  height: 20px;
 }
 .logo-text {
   font-family: "Montserrat", sans-serif;
@@ -87,7 +113,8 @@ h6 {
   display: flex;
   justify-content: center;
 }
-.search-bar {
+.search-bar,
+.search-input-header {
   width: 320px;
   padding: 0.5rem 1rem;
   border: 1px solid #e0e0e0;
@@ -96,6 +123,15 @@ h6 {
   background: #fafaff;
   outline: none;
   transition: border 0.2s;
+}
+
+/* Ensure left search container sits above the sidebar so it's not hidden */
+.search-container-header.left-search {
+  position: fixed; /* keep search visible above the sidebar */
+  top: calc(var(--header-height) / 2 - 20px);
+  left: calc(var(--sidebar-width) + 56px);
+  z-index: 1400;
+  width: 520px;
 }
 .search-bar:focus {
   border-color: #7c3aed;
@@ -134,30 +170,46 @@ h6 {
 }
 
 /* Sidebar */
-.rider-sidebar {
+.sidebar {
   position: fixed;
-  top: 64px;
+  top: 0; /* let sidebar reach the very top */
   left: 0;
-  width: 220px;
-  height: calc(100vh - 64px);
+  width: var(--sidebar-width);
+  height: 100vh; /* full viewport height */
   background: #fff;
   box-shadow: 2px 0 8px rgba(80, 0, 180, 0.06);
-  z-index: 1000;
+  z-index: 1000; /* sit above header */
   display: flex;
   flex-direction: column;
-  transition: transform 0.2s;
+  transition: transform 0.2s, width 0.2s;
 }
-.rider-sidebar.closed {
+.sidebar.closed {
   transform: translateX(-100%);
 }
 .sidebar-header {
-  padding: 0.75rem 1rem 0.5rem 1.5rem;
+  padding: 1rem 1rem 1rem 1.25rem; /* increase padding to match admin spacing */
+  border-bottom: 1px solid rgba(16, 24, 40, 0.04); /* low opacity bottom line like admin */
 }
-.sidebar-title {
+.sidebar-header .brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.sidebar-header .brand i {
+  font-size: 1.35rem;
+  color: var(--primary);
+}
+.sidebar-header .brand h2 {
+  margin: 0;
   font-family: "Montserrat", sans-serif;
   font-weight: 700;
-  color: #7c3aed;
-  font-size: 1.1rem;
+  color: #222;
+  font-size: 1.25rem;
+}
+.sidebar-header .brand h2 span {
+  color: var(--primary);
+  margin-left: 6px;
+  font-weight: 700;
 }
 .sidebar-nav ul {
   list-style: none;
@@ -187,15 +239,98 @@ h6 {
 
 /* Main Content */
 .dashboard-main {
-  margin-left: 220px;
-  margin-top: 70px;
+  margin-left: var(--sidebar-width);
+  margin-top: var(--header-height);
   padding: 1rem 2rem 2rem 2rem;
-  min-height: calc(100vh - 64px);
+  min-height: calc(100vh - var(--header-height));
   background: #f7f7fa;
   transition: margin-left 0.2s;
 }
 .rider-sidebar.closed ~ .dashboard-main {
   margin-left: 0;
+}
+
+/* When sidebar is collapsed to icon-only use smaller margin */
+.sidebar.collapsed {
+  width: var(--sidebar-collapsed-width);
+}
+.sidebar.collapsed ~ .dashboard-main {
+  margin-left: var(--sidebar-collapsed-width);
+}
+
+/* Sidebar nav hover/active styles (admin-like) */
+.sidebar-nav a {
+  transition: background 0.12s, color 0.12s, padding-left 0.12s;
+}
+.sidebar-nav a:hover {
+  background: rgba(124, 58, 237, 0.06);
+  color: var(--primary);
+  padding-left: 1.75rem;
+}
+.sidebar-nav li.active a {
+  background: rgba(124, 58, 237, 0.08);
+  color: var(--primary);
+  /* Ensure active items keep the same padding as other items (prevent extra left offset) */
+  padding: 0.75rem 1.5rem;
+}
+
+/* Icon-only collapsed sidebar behavior */
+.sidebar.collapsed .sidebar-nav a {
+  justify-content: center;
+  padding-left: 0.6rem;
+}
+.sidebar.collapsed .sidebar-nav a span {
+  display: none;
+}
+.sidebar.collapsed .sidebar-header .brand h2 span {
+  display: none;
+}
+.sidebar.collapsed .sidebar-header .brand h2 {
+  font-size: 0;
+}
+.sidebar .brand i {
+  min-width: 28px;
+  text-align: center;
+}
+
+/* Header notification and profile styling */
+.notification-bell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  color: var(--primary);
+}
+.notification-bell i {
+  color: var(--primary);
+}
+.notification-bell .notification-count {
+  background: #ef4444;
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+}
+.user-profile-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+}
+.user-profile-toggle .avatar-icon-circle {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
 }
 
 /* Dashboard Content (for simplified dashboard) */
@@ -629,28 +764,7 @@ input:checked + .slider:before {
 }
 
 /* Communication Options */
-.communication-options {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
-.option-card {
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 2px 8px rgba(80, 0, 180, 0.06);
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.8rem;
-}
-.option-card h3 {
-  margin: 0;
-}
-.option-card .btn {
-  margin-top: 0.5rem;
-}
+/* Communication options removed for rider UI. */
 
 /* Responsive */
 @media (max-width: 900px) {
@@ -673,9 +787,7 @@ input:checked + .slider:before {
   .dashboard-summary-cards {
     grid-template-columns: 1fr;
   }
-  .communication-options {
-    grid-template-columns: 1fr;
-  }
+  /* Communication options removed for rider UI. */
   .dashboard-table-section {
     padding: 1rem 0.2rem;
   }
@@ -691,4 +803,44 @@ input:checked + .slider:before {
     left: 0;
     transform: none;
   }
+}
+
+/* User profile dropdown styles */
+.user-profile-dropdown {
+  position: relative;
+}
+.user-dropdown-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 8px 24px rgba(16, 24, 40, 0.08);
+  border-radius: 10px;
+  min-width: 220px;
+  padding: 8px 0;
+  display: none;
+  z-index: 1200;
+}
+.user-dropdown-menu.open {
+  display: block;
+}
+.user-dropdown-menu a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  color: #222;
+  text-decoration: none;
+}
+.user-dropdown-menu a:hover {
+  background: rgba(124, 58, 237, 0.04);
+}
+.user-dropdown-menu .notification-count {
+  background: #ef4444;
+  color: #fff;
+  font-size: 0.75rem;
+  padding: 2px 6px;
+  border-radius: 999px;
+  margin-left: auto;
 }

@@ -1,7 +1,11 @@
-<!-- header.html - Reusable header component for Admin pages -->
-<header class="admin-header">
+<!-- Admin header aligned with seller header structure for consistent look -->
+<header class="seller-header admin-header-override">
   <div class="header-left">
-    <button class="menu-toggle" id="menuToggle" onclick="toggleSidebar()">
+    <button
+      class="sidebar-toggle"
+      id="sidebarToggle"
+      aria-label="Toggle sidebar"
+    >
       <i data-lucide="panel-left-close"></i>
     </button>
     <div class="search-container-header">
@@ -22,22 +26,44 @@
     </div>
   </div>
   <div class="header-right">
-    <div class="notification-bell" title="Notifications">
+    <div class="notification-bell">
       <i data-lucide="bell"></i>
       <span class="notification-count">3</span>
     </div>
 
-    <!-- Non-interactive admin profile display - shows 'Administrator' by default -->
-    <div
-      class="admin-profile"
-      style="display: flex; align-items: center; gap: 10px"
-    >
-      <div class="user-avatar-container">
-        <div class="avatar-icon-circle" aria-hidden="true">
-          <i data-lucide="user"></i>
+    <div class="user-profile-dropdown">
+      <div class="user-profile-toggle">
+        <div class="user-avatar-container">
+          <div
+            class="avatar-icon-circle"
+            aria-hidden="true"
+            style="
+              width: 40px;
+              height: 40px;
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              background: #6c5ce7;
+              color: #ffffff;
+            "
+          >
+            <i data-lucide="user"></i>
+          </div>
+          <span class="active-indicator"></span>
         </div>
+        <span class="user-name">Administrator</span>
       </div>
-      <div style="font-weight: 600">Administrator</div>
+      <div class="user-dropdown-menu" aria-hidden="true">
+        <a href="#profile" class="profile-link">
+          <i data-lucide="user"></i>
+          <span>Profile</span>
+        </a>
+        <a href="{{ url_for('auth.logout') }}" class="logout-link">
+          <i data-lucide="log-out"></i>
+          <span>Logout</span>
+        </a>
+      </div>
     </div>
   </div>
 </header>
