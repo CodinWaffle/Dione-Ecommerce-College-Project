@@ -7,7 +7,40 @@ filename='css/seller_styles/add_product_preview.css') }}" / >
   href="{{ url_for('static', filename='css/seller_styles/progress_bar.css') }}"
 />
 {% endblock %} {% block content %} {% set progress_step = 4 %} {% include
-'seller/partials/_progress_bar.html' %}
+'seller/partials/_progress_bar.html' %} {% if product_data %}
+<script>
+  // If server provided product_data (from session), mirror it into localStorage
+  (function () {
+    try {
+      const pd = {{ product_data | tojson | safe }} || {};
+      const step1 = pd.step1 || {};
+      const step2 = pd.step2 || {};
+      const step3 = pd.step3 || {};
+
+      // map step1 to productForm expected keys
+      const productForm = {
+        productName: step1.productName || '',
+        price: step1.price || '',
+        discountPercentage: step1.discountPercentage || '',
+        discountType: step1.discountType || '',
+        voucherType: step1.voucherType || '',
+        category: step1.category || '',
+        subcategory: step1.subcategory || '',
+        subitem: step1.subitem || [],
+        primaryImage: step1.primaryImage || '',
+        secondaryImage: step1.secondaryImage || ''
+      };
+      localStorage.setItem('productForm', JSON.stringify(productForm));
+      localStorage.setItem('productDescriptionForm', JSON.stringify(step2));
+      localStorage.setItem('productStocksForm', JSON.stringify(step3));
+      // flag to indicate server-backed preview
+      window.__SERVER_PREVIEW = true;
+    } catch (err) {
+      console.warn('Failed to mirror server product_data to localStorage', err);
+    }
+  })();
+</script>
+{% endif %}
 <div class="container-fluid preview-page">
   <div class="preview-section">
     <div class="page-header">
@@ -124,6 +157,16 @@ filename='css/seller_styles/add_product_preview.css') }}" / >
                     background-color: #f5f5f5;
                   "
                 >
+                  <th
+                    style="
+                      padding: 10px;
+                      text-align: left;
+                      font-weight: 600;
+                      color: #333;
+                    "
+                  >
+                    Photo
+                  </th>
                   <th
                     style="
                       padding: 10px;

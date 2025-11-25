@@ -1,5 +1,6 @@
 import os
 import json
+from datetime import datetime
 from . import db
 from flask_login import UserMixin
 from flask_dance.consumer.storage.sqla import OAuthConsumerMixin
@@ -239,6 +240,67 @@ class Product(db.Model):
 
   def __repr__(self):
     return f'<Product {self.id} - {self.name}>'
+
+
+class SellerProduct(db.Model):
+  """Model for storing seller products with complete details"""
+  __tablename__ = 'seller_product_management'
+
+  id = db.Column(db.Integer, primary_key=True)
+
+  # reference to user table (seller)
+  seller_id = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False, index=True)
+
+  # Basic Information
+  name = db.Column(db.String(255), nullable=False)
+  description = db.Column(db.Text)
+  category = db.Column(db.String(100), nullable=False, index=True)
+  subcategory = db.Column(db.String(100))
+
+  # Pricing
+  price = db.Column(db.Numeric(10, 2), nullable=False)
+  compare_at_price = db.Column(db.Numeric(10, 2))
+  discount_type = db.Column(db.String(50))
+  discount_value = db.Column(db.Numeric(10, 2))
+  voucher_type = db.Column(db.String(50))
+
+  # Product Details
+  materials = db.Column(db.Text)
+  details_fit = db.Column(db.Text)
+
+  # Images
+  primary_image = db.Column(db.String(500))
+  secondary_image = db.Column(db.String(500))
+
+  # Inventory
+  total_stock = db.Column(db.Integer, default=0)
+  low_stock_threshold = db.Column(db.Integer, default=5)
+
+  # JSON fields for complex data
+  variants = db.Column(db.JSON)
+  attributes = db.Column(db.JSON)
+
+  # Status & Timestamps
+  status = db.Column(db.String(20), default='active')
+  created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+  updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+  def __repr__(self):
+    return f'<SellerProduct {self.name}>'
+
+  def to_dict(self):
+    """Convert to dictionary for API responses"""
+    return {
+      'id': self.id,
+      'name': self.name,
+      'subcategory': self.subcategory,
+      'category': self.category,
+      'price': float(self.price) if self.price else 0,
+      'total_stock': self.total_stock,
+      'primary_image': (self.primary_image if (self.primary_image and (str(self.primary_image).startswith('/') or str(self.primary_image).startswith('http'))) else (('/static/' + str(self.primary_image).lstrip('/')) if self.primary_image else None)),
+      'status': self.status,
+      'created_at': self.created_at.isoformat() if self.created_at else None,
+    }
 
 
 class Warning(db.Model):

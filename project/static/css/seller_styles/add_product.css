@@ -378,6 +378,14 @@ small {
   font-weight: 500;
 }
 
+/* Thumbnails inside the photo upload boxes should fully cover the box */
+.photo-upload-box img.upload-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
 .photo-preview {
   display: none;
   position: absolute;

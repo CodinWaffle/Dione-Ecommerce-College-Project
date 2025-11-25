@@ -2,7 +2,20 @@
 
 function getFormData(key) {
   try {
-    const raw = localStorage.getItem(key);
+    // Prefer localStorage (used by flow mirroring), but fall back to sessionStorage
+    let raw = null;
+    try {
+      raw = localStorage.getItem(key);
+    } catch (e) {
+      raw = null;
+    }
+    if (!raw) {
+      try {
+        raw = sessionStorage.getItem(key);
+      } catch (e) {
+        raw = null;
+      }
+    }
     return raw ? JSON.parse(raw) : null;
   } catch (e) {
     console.warn("Failed to parse localStorage", key, e);
@@ -193,6 +206,8 @@ function updatePreview() {
   setText("previewTotalStock", stock.totalStock);
 
   const previewVariantsList = document.getElementById("previewVariantsList");
+  if (previewVariantsList) {
+    if (
       stock.variants &&
       Array.isArray(stock.variants) &&
       stock.variants.length > 0
@@ -201,6 +216,13 @@ function updatePreview() {
         .map(
           (v) => `
         <tr style="border-bottom: 1px solid #e5e7eb;">
+          <td style="padding: 10px; border-right: 1px solid #e5e7eb; width: 72px; text-align: center;">
+            ${
+              v.photo
+                ? `<div style="width:56px;height:56px;overflow:hidden;border-radius:6px;border:1px solid #e5e7eb"><img src="${v.photo}" style="width:100%;height:100%;object-fit:cover" alt="Variant"></div>`
+                : `<div style="width:56px;height:56px;display:flex;align-items:center;justify-content:center;color:#999;background:#fafafa;border-radius:6px;border:1px dashed #e6e9ee">No</div>`
+            }
+          </td>
           <td style="padding: 10px; border-right: 1px solid #e5e7eb;">${
             v.sku || "-"
           }</td>
@@ -255,58 +277,97 @@ if (document.readyState === "loading") {
   const submitBtn = document.getElementById("submitBtn");
   if (!submitBtn) return;
   submitBtn.addEventListener("click", function () {
-    const basicInfo = safeParse("productForm") || {};
-    const description = safeParse("productDescriptionForm") || {};
-    const stock = safeParse("productStocksForm") || {};
+    // Attempt server-side save first (send JSON); if it fails, fall back to client-local flow
+    (async function tryServerSave() {
+      try {
+        const basicInfo = safeParse("productForm") || {};
+        const description = safeParse("productDescriptionForm") || {};
+        const stock = safeParse("productStocksForm") || {};
 
-    // Build product object for the management list (keep full details inside object)
-    const products = JSON.parse(localStorage.getItem("products") || "[]");
-    const nextId =
-      (products.reduce((m, p) => Math.max(m, Number(p.id || 0)), 0) || 0) + 1;
+        const payload = {
+          step1: basicInfo,
+          step2: description,
+          step3: stock,
+        };
 
-    const product = {
-      id: nextId,
-      name:
-        basicInfo.productName || description.productName || "Untitled Product",
-      image:
-        basicInfo.primaryImage ||
-        basicInfo.secondaryImage ||
-        "/static/image/banner.png",
-      images: collectPreviewImages(basicInfo),
-      price: Number(basicInfo.price) || 0,
-      stock:
-        Number(stock.totalStock) ||
-        (stock.variants
-          ? stock.variants.reduce((s, v) => s + (Number(v.stock) || 0), 0)
-          : 0),
-      status: "active",
-      category:
-        basicInfo.category ||
-        description.category ||
-        stock.category ||
-        "Uncategorized",
-      // store full payload for preview/details modal
-      _full: {
-        basicInfo: basicInfo,
-        description: description,
-        stock: stock,
-      },
-      variants: stock.variants || [],
-    };
+        const res = await fetch(window.location.pathname, {
+          method: "POST",
+          credentials: "same-origin",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json, text/html",
+          },
+          body: JSON.stringify(payload),
+        });
 
-    products.push(product);
-    localStorage.setItem("products", JSON.stringify(products));
+        if (res.ok) {
+          const loc = res.url || "/seller/products";
+          window.location.href = loc;
+          return;
+        }
+      } catch (err) {
+        console.warn(
+          "Server save failed, falling back to client-only save",
+          err
+        );
+      }
 
-    // Clear draft forms
-    try {
-      localStorage.removeItem("productForm");
-      localStorage.removeItem("productDescriptionForm");
-      localStorage.removeItem("productStocksForm");
-    } catch (e) {
-      console.warn("Failed to clear draft after add", e);
-    }
+      // Client-only localStorage flow (fallback)
+      const basicInfo = safeParse("productForm") || {};
+      const description = safeParse("productDescriptionForm") || {};
+      const stock = safeParse("productStocksForm") || {};
 
-    // Redirect to product management page where the list reads from localStorage
-    window.location.href = "/seller/products";
+      // Build product object for the management list (keep full details inside object)
+      const products = JSON.parse(localStorage.getItem("products") || "[]");
+      const nextId =
+        (products.reduce((m, p) => Math.max(m, Number(p.id || 0)), 0) || 0) + 1;
+
+      const product = {
+        id: nextId,
+        name:
+          basicInfo.productName ||
+          description.productName ||
+          "Untitled Product",
+        image:
+          basicInfo.primaryImage ||
+          basicInfo.secondaryImage ||
+          "/static/image/banner.png",
+        images: collectPreviewImages(basicInfo),
+        price: Number(basicInfo.price) || 0,
+        stock:
+          Number(stock.totalStock) ||
+          (stock.variants
+            ? stock.variants.reduce((s, v) => s + (Number(v.stock) || 0), 0)
+            : 0),
+        status: "active",
+        category:
+          basicInfo.category ||
+          description.category ||
+          stock.category ||
+          "Uncategorized",
+        // store full payload for preview/details modal
+        _full: {
+          basicInfo: basicInfo,
+          description: description,
+          stock: stock,
+        },
+        variants: stock.variants || [],
+      };
+
+      products.push(product);
+      localStorage.setItem("products", JSON.stringify(products));
+
+      // Clear draft forms
+      try {
+        localStorage.removeItem("productForm");
+        localStorage.removeItem("productDescriptionForm");
+        localStorage.removeItem("productStocksForm");
+      } catch (e) {
+        console.warn("Failed to clear draft after add", e);
+      }
+
+      // Redirect to product management page where the list reads from localStorage
+      window.location.href = "/seller/products";
+    })();
   });
 })();

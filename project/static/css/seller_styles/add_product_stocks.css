@@ -337,3 +337,12 @@ textarea:focus,
 .photo-upload-box:hover .photo-upload-content i {
   color: #6c5ce7 !important;
 }
+
+/* Make uploaded thumbnails fill the upload box and crop nicely */
+.photo-upload-box img.upload-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 8px;
+}

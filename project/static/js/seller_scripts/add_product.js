@@ -373,7 +373,10 @@ function getHiddenPhotoInput(index) {
 }
 
 function persistProductFormDraft() {
-  if (window.ProductFormFlow && typeof window.ProductFormFlow.saveFormData === "function") {
+  if (
+    window.ProductFormFlow &&
+    typeof window.ProductFormFlow.saveFormData === "function"
+  ) {
     window.ProductFormFlow.saveFormData("productForm");
   }
 }
@@ -441,80 +444,82 @@ function setupPhotoUploads() {
     }
 
     if (removeBtn) {
-        removeBtn.addEventListener("click", (event) => {
-          event.preventDefault();
-          if (input) {
-            input.value = "";
-          }
-          if (hiddenInput) {
-            hiddenInput.value = "";
-          }
-          updatePhotoPreview(box, "");
-          persistProductFormDraft();
-        });
-      }
-
-      const label = box.querySelector(".photo-label");
-      const previewArea = box.querySelector(".photo-preview");
-      const makeClickable = (target) => {
-        if (!target) return;
-        target.addEventListener("click", (event) => {
-          if (event.target?.classList?.contains("remove-photo")) {
-            return;
-          }
-          event.preventDefault();
-          input?.click();
-        });
-      };
-      makeClickable(box);
-      makeClickable(label);
-      makeClickable(previewArea);
-
-      const toggleDragState = (state) => {
-        if (!box) return;
-        if (state) {
-          box.classList.add("dragover");
-        } else {
-          box.classList.remove("dragover");
+      removeBtn.addEventListener("click", (event) => {
+        event.preventDefault();
+        if (input) {
+          input.value = "";
         }
-      };
-
-      ["dragenter", "dragover"].forEach((eventName) => {
-        box.addEventListener(
-          eventName,
-          (event) => {
-            event.preventDefault();
-            toggleDragState(true);
-          },
-          false
-        );
+        if (hiddenInput) {
+          hiddenInput.value = "";
+        }
+        updatePhotoPreview(box, "");
+        persistProductFormDraft();
       });
+    }
 
-      ["dragleave", "dragend"].forEach((eventName) => {
-        box.addEventListener(
-          eventName,
-          (event) => {
-            event.preventDefault();
-            toggleDragState(false);
-          },
-          false
-        );
+    const label = box.querySelector(".photo-label");
+    const previewArea = box.querySelector(".photo-preview");
+    const makeClickable = (target) => {
+      if (!target) return;
+      target.addEventListener("click", (event) => {
+        if (event.target?.classList?.contains("remove-photo")) {
+          return;
+        }
+        event.preventDefault();
+        input?.click();
       });
+    };
+    makeClickable(box);
+    makeClickable(label);
+    makeClickable(previewArea);
 
+    const toggleDragState = (state) => {
+      if (!box) return;
+      if (state) {
+        box.classList.add("dragover");
+      } else {
+        box.classList.remove("dragover");
+      }
+    };
+
+    ["dragenter", "dragover"].forEach((eventName) => {
       box.addEventListener(
-        "drop",
+        eventName,
         (event) => {
           event.preventDefault();
-          toggleDragState(false);
-          const file =
-            (event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0]) ||
-            null;
-          handleFileSelection(file);
+          toggleDragState(true);
         },
         false
       );
     });
-  }
+
+    ["dragleave", "dragend"].forEach((eventName) => {
+      box.addEventListener(
+        eventName,
+        (event) => {
+          event.preventDefault();
+          toggleDragState(false);
+        },
+        false
+      );
+    });
+
+    box.addEventListener(
+      "drop",
+      (event) => {
+        event.preventDefault();
+        toggleDragState(false);
+        const file =
+          (event.dataTransfer &&
+            event.dataTransfer.files &&
+            event.dataTransfer.files[0]) ||
+          null;
+        handleFileSelection(file);
+      },
+      false
+    );
+  });
+}
 
 // DOM Elements
 const pages = document.querySelectorAll(".form-page");
@@ -921,13 +926,61 @@ function setupCategoryChange() {
         }
       } else {
         // No sub-items div for this subcategory, hide container
-        if (subItemsContainer) subItemsContainer.style.display = "none";
+        // If there are mapped subItems data for this subcategory, render them dynamically
+        if (subItems && subItems[subcategory] && subItemsContainer) {
+          renderSubItems(subcategory);
+          subItemsContainer.style.display = "block";
+        } else if (subItemsContainer) {
+          subItemsContainer.style.display = "none";
+        }
       }
     } else {
       if (filtersSection) filtersSection.style.display = "none";
       if (subItemsContainer) subItemsContainer.style.display = "none";
     }
   });
+}
+
+// Render sub-items dynamically into `subItemsContainer` when no hard-coded block exists
+function renderSubItems(subcategory) {
+  if (!subItemsContainer) return;
+  const items = subItems[subcategory];
+  if (!items || !items.length) {
+    subItemsContainer.innerHTML = "";
+    return;
+  }
+
+  // Build a simple grid of checkbox options
+  const wrapper = document.createElement("div");
+  wrapper.className = "sub-items-grid dynamic";
+
+  items.forEach((labelText, idx) => {
+    const opt = document.createElement("div");
+    opt.className = "sub-item-option";
+
+    const idSafe = `subitem-${subcategory}-${idx}`
+      .toLowerCase()
+      .replace(/[^a-z0-9\-]+/g, "-");
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.id = idSafe;
+    input.name = "subitem";
+    input.value = labelText;
+
+    const label = document.createElement("label");
+    label.htmlFor = idSafe;
+    label.textContent = labelText;
+
+    opt.appendChild(input);
+    opt.appendChild(label);
+    wrapper.appendChild(opt);
+  });
+
+  // Replace container contents but keep any header or structural wrappers
+  // If the container already has existing child nodes for static content, remove them
+  // and insert the dynamic wrapper
+  subItemsContainer.innerHTML = "";
+  subItemsContainer.appendChild(wrapper);
 }
 
 function loadFilters(category, subcategory) {

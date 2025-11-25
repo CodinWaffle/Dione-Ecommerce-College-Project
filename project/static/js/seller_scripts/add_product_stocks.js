@@ -29,14 +29,24 @@ document.addEventListener("DOMContentLoaded", function () {
       const color = colorInput?.value || "";
       const colorHex = colorPicker?.value || "#000000";
       const size = sizeSelect?.value || "";
-      const stock = parseInt(stockInput?.value || "0", 10);
+      // try to read a preview image src if user selected one
+      const photoImg = row.querySelector(".photo-upload-box img.upload-thumb");
+      const photo = photoImg ? photoImg.src || "" : "";
+      // If stock input is disabled (no size selected), treat stock as 0
+      let stock = 0;
+      if (stockInput && !stockInput.disabled) {
+        stock = parseInt(stockInput.value || "0", 10);
+        if (isNaN(stock)) stock = 0;
+      }
       const lowStock = parseInt(lowStockInput?.value || "0", 10);
 
+      // Only include variant if there's identifying info or a selected size
       if (sku || color || size || stock > 0) {
         variants.push({
           sku: sku.trim(),
           color: color.trim(),
           colorHex: colorHex,
+          photo: photo,
           size: size.trim(),
           stock: stock,
           lowStock: lowStock,

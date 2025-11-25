@@ -69,6 +69,7 @@ document.addEventListener("DOMContentLoaded", function () {
           <option value="M">M</option>
           <option value="L">L</option>
           <option value="XL">XL</option>
+          <option value="XXL">XXL</option>
         </select>
       </td>
       <td style="padding: 8px; border: 1px solid #e5e7eb; width: 140px;">
@@ -102,14 +103,88 @@ document.addEventListener("DOMContentLoaded", function () {
     const colorPicker = newRow.querySelector(".color-picker-input");
     syncColorPicker(colorInput, colorPicker);
 
+    // Setup photo upload preview for the new row
+    const photoLabel = newRow.querySelector(".photo-upload-box");
+    if (photoLabel) {
+      setupVariantPhoto(photoLabel);
+    }
+
     // Add event listener for the new stock input to update total
     const stockInput = newRow.querySelector(".variant-stock-input");
     if (stockInput) {
       stockInput.addEventListener("input", updateTotalStock);
+      // disable stock input until a size is selected
+      const sizeSelect = newRow.querySelector('select[name^="size_"]');
+      if (sizeSelect && !sizeSelect.value) {
+        stockInput.disabled = true;
+        stockInput.classList.add("disabled");
+      }
+      // when size changes enable/disable stock input and recalc total
+      if (sizeSelect) {
+        sizeSelect.addEventListener("change", function () {
+          if (this.value) {
+            stockInput.disabled = false;
+            stockInput.classList.remove("disabled");
+          } else {
+            stockInput.disabled = true;
+            stockInput.value = "";
+            stockInput.classList.add("disabled");
+          }
+          updateTotalStock();
+        });
+      }
     }
 
     updateAddButtonState();
     console.log(`Added variant row ${rowNumber}`);
+  }
+
+  // Setup image preview behavior for a variant photo upload label
+  function setupVariantPhoto(labelEl) {
+    if (!labelEl) return;
+    const input = labelEl.querySelector('input[type="file"]');
+    const placeholder = labelEl.querySelector(".photo-upload-content");
+
+    // clicking label should open file dialog
+    labelEl.addEventListener("click", function (e) {
+      // ignore clicks on a remove button if present
+      if (
+        e.target &&
+        e.target.classList &&
+        e.target.classList.contains("remove-photo")
+      )
+        return;
+      if (input) input.click();
+    });
+
+    function setPreview(file) {
+      // remove existing img if any
+      const existing = labelEl.querySelector("img.upload-thumb");
+      if (existing) existing.remove();
+
+      if (file && file.type && file.type.startsWith("image/")) {
+        const reader = new FileReader();
+        reader.onload = function (ev) {
+          const img = document.createElement("img");
+          img.className = "upload-thumb";
+          img.src = ev.target.result;
+          img.alt = "Variant photo";
+          if (placeholder) placeholder.style.display = "none";
+          labelEl.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        if (placeholder) placeholder.style.display = "";
+      }
+    }
+
+    if (input) {
+      input.addEventListener("change", function () {
+        const file = input.files && input.files[0];
+        if (file) setPreview(file);
+        else setPreview(null);
+      });
+    }
   }
 
   function renumberRows() {
@@ -161,7 +236,33 @@ document.addEventListener("DOMContentLoaded", function () {
   const existingStockInputs = document.querySelectorAll(".variant-stock-input");
   existingStockInputs.forEach((input) => {
     input.addEventListener("input", updateTotalStock);
+    // disable if no corresponding size select value
+    const row = input.closest("tr");
+    if (row) {
+      const sizeSel = row.querySelector('select[name^="size_"]');
+      if (sizeSel && !sizeSel.value) {
+        input.disabled = true;
+        input.classList.add("disabled");
+      }
+      if (sizeSel) {
+        sizeSel.addEventListener("change", function () {
+          if (this.value) {
+            input.disabled = false;
+            input.classList.remove("disabled");
+          } else {
+            input.disabled = true;
+            input.value = "";
+            input.classList.add("disabled");
+          }
+          updateTotalStock();
+        });
+      }
+    }
   });
+
+  // Attach photo preview handlers to existing photo upload boxes
+  const existingPhotoLabels = document.querySelectorAll(".photo-upload-box");
+  existingPhotoLabels.forEach((lbl) => setupVariantPhoto(lbl));
 
   // Attach delete button listeners to existing rows (except first row)
   const existingDeleteBtns = document.querySelectorAll(".delete-variant-btn");

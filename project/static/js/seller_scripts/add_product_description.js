@@ -95,27 +95,66 @@ document.addEventListener("DOMContentLoaded", function () {
   function setupFileInput(input) {
     const parentLabel = input.closest(".cert-upload-box, .sizeguide-box");
     // initialize state
-    if (input.files && input.files.length > 0) {
-      if (parentLabel) parentLabel.classList.add("has-file");
+    // helper to update visual preview inside the label
+    function setPreviewFromFile(file) {
+      if (!parentLabel) return;
+      const placeholder = parentLabel.querySelector(
+        ".cert-upload-placeholder, .sizeguide-placeholder"
+      );
+      // remove existing thumb if present
+      const existing = parentLabel.querySelector("img.upload-thumb");
+      if (existing) existing.remove();
+
+      if (file && file.type && file.type.startsWith("image/")) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const img = document.createElement("img");
+          img.className = "upload-thumb";
+          img.src = e.target.result;
+          img.alt = "Upload preview";
+          // hide placeholder content
+          if (placeholder) placeholder.style.display = "none";
+          parentLabel.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+        parentLabel.classList.add("has-file");
+      } else {
+        // no file -> show placeholder
+        if (placeholder) placeholder.style.display = "flex";
+        parentLabel.classList.remove("has-file");
+      }
     }
+
+    // initialize state
+    if (input.files && input.files.length > 0) {
+      setPreviewFromFile(input.files[0]);
+    }
+
     input.addEventListener("change", function () {
       if (this.files && this.files.length > 0) {
-        if (parentLabel) parentLabel.classList.add("has-file");
+        setPreviewFromFile(this.files[0]);
         clearErrorFor(this);
       } else {
-        if (parentLabel) parentLabel.classList.remove("has-file");
+        setPreviewFromFile(null);
       }
     });
   }
 
   // Initialize any existing certification or sizeguide inputs
   document
-    .querySelectorAll('input[name="certifications[]"]')
+    .querySelectorAll(
+      'input[name="certifications[]"], input[name="sizeGuide[]"]'
+    )
     .forEach(setupFileInput);
   // Size guide inputs removed
 
   // Utility to add a new upload slot to a container (returns the created input)
-  function addUploadSlot(container, inputName, boxClass) {
+  function addUploadSlot(
+    container,
+    inputName,
+    boxClass,
+    placeholderClass = "cert-upload-placeholder"
+  ) {
     const label = document.createElement("label");
     label.className = boxClass;
 
@@ -125,8 +164,7 @@ document.addEventListener("DOMContentLoaded", function () {
     input.accept = "image/*";
 
     const placeholder = document.createElement("div");
-    placeholder.className =
-      "cert-upload-placeholder";
+    placeholder.className = placeholderClass;
     const icon = document.createElement("i");
     icon.className = "ri-image-line";
     const small = document.createElement("small");
@@ -163,6 +201,39 @@ document.addEventListener("DOMContentLoaded", function () {
       // disable add button when reach max
       const after = certContainer.querySelectorAll(".cert-upload-box").length;
       if (after >= 5) {
+        // Sizeguide add button handling
+        const sizeguideContainer =
+          document.getElementById("sizeguideContainer");
+        const sizeguideAddBtn = document.getElementById("sizeguideAddBtn");
+        if (sizeguideAddBtn && sizeguideContainer) {
+          sizeguideAddBtn.addEventListener("click", function () {
+            const current =
+              sizeguideContainer.querySelectorAll(".sizeguide-box").length;
+            if (current >= 5) return;
+            const input = addUploadSlot(
+              sizeguideContainer,
+              "sizeGuide[]",
+              "sizeguide-box",
+              "sizeguide-placeholder"
+            );
+            // open file dialog for new input
+            input.click();
+            // disable add button when reach max
+            const after =
+              sizeguideContainer.querySelectorAll(".sizeguide-box").length;
+            if (after >= 5) {
+              sizeguideAddBtn.disabled = true;
+              sizeguideAddBtn.classList.add("disabled");
+            }
+          });
+          // initialize disabled state
+          if (
+            sizeguideContainer.querySelectorAll(".sizeguide-box").length >= 5
+          ) {
+            sizeguideAddBtn.disabled = true;
+            sizeguideAddBtn.classList.add("disabled");
+          }
+        }
         certAddBtn.disabled = true;
         certAddBtn.classList.add("disabled");
       }
@@ -200,6 +271,28 @@ document.addEventListener("DOMContentLoaded", function () {
       materials: document.getElementById("materials").value,
       detailsFit: document.getElementById("detailsFit").value,
     };
+    // Collect size guide and certification preview images (data URLs if available)
+    function collectPreviewList(containerSelector, imgSelector) {
+      const container = document.querySelector(containerSelector);
+      if (!container) return [];
+      const imgs = Array.from(container.querySelectorAll(imgSelector));
+      return imgs
+        .map((img) => img.src)
+        .filter(
+          (s) => (s && s.indexOf("data:") === 0) || (s && s.indexOf("/") === 0)
+        );
+    }
+
+    // sizeGuide inputs are inside #sizeguideContainer
+    formData.sizeGuide = collectPreviewList(
+      "#sizeguideContainer",
+      "img.upload-thumb"
+    );
+    // certifications inputs are inside #certificationsContainer
+    formData.certifications = collectPreviewList(
+      "#certificationsContainer",
+      "img.upload-thumb"
+    );
 
     storeFormData("productDescriptionForm", formData);
     window.location.href = "/seller/add_product_stocks";

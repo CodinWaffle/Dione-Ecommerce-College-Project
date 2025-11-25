@@ -5,6 +5,14 @@ Dione Ecommerce{% endblock %} {% block extra_css %}
   href="{{ url_for('static', filename='css/seller_styles/seller_product_management.css') }}?v={{ range(1, 10000) | random }}"
 />
 {% endblock %} {% block content %}
+<script>
+  // Provide server products to client JS in a safe JSON form
+  window.__SELLER_PRODUCTS__ = [
+    {% for p in products %}
+      {{ p.to_dict() | tojson }}{% if not loop.last %},{% endif %}
+    {% endfor %}
+  ];
+</script>
 <!-- Wrapper div with product-management class for consistent styling -->
 <div class="product-management">
   <div class="page-header">
@@ -28,8 +36,9 @@ Dione Ecommerce{% endblock %} {% block extra_css %}
       <div class="stat-content">
         <span class="stat-label">Out of Stock</span>
         <h3 class="stat-value">
-          {{ products|selectattr('stock', 'defined')|selectattr('stock',
-          'equalto', 0)|list|length if products else 0 }}
+          {{ products|selectattr('total_stock',
+          'defined')|selectattr('total_stock', 'equalto', 0)|list|length if
+          products else 0 }}
         </h3>
       </div>
     </div>
@@ -160,7 +169,7 @@ Dione Ecommerce{% endblock %} {% block extra_css %}
               <td>
                 <div class="product-info">
                   <img
-                    src="{{ p.image if p.image else url_for('static', filename='image/banner.png') }}"
+                    src="{{ p.primary_image if p.primary_image else url_for('static', filename='image/banner.png') }}"
                     class="product-image"
                     alt="{{ p.name }}"
                   />
@@ -173,7 +182,7 @@ Dione Ecommerce{% endblock %} {% block extra_css %}
               </td>
               <td class="col-right">${{ '%.2f'|format(p.price or 0) }}</td>
               <td class="col-right">
-                {{ p.stock if p.stock is defined else '—' }}
+                {{ p.total_stock if p.total_stock is defined else '—' }}
               </td>
               <td class="col-right">
                 <span class="status-badge status-{{ p.status }}"
@@ -182,6 +191,9 @@ Dione Ecommerce{% endblock %} {% block extra_css %}
               </td>
               <td class="col-right">
                 <div class="action-buttons">
+                  <button class="btn-icon view-product" data-id="{{ p.id }}">
+                    <i data-lucide="eye"></i><span>View</span>
+                  </button>
                   <button class="btn-icon edit-product" data-id="{{ p.id }}">
                     <i data-lucide="edit"></i><span>Edit</span>
                   </button>
@@ -202,8 +214,164 @@ Dione Ecommerce{% endblock %} {% block extra_css %}
       </div>
     </div>
   </div>
-</div>
-{% endblock %} {% block extra_js %}
-<script src="{{ url_for('static', filename='js/seller_scripts/seller_product_management.js') }}?v={{ range(1, 10000) | random }}"></script>
+  <!-- Product Detail Modal -->
+  <div class="modal" id="productDetailModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">Product Details</h2>
+        <button class="close-btn" id="closeProductDetailModal">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="product-detail">
+          <div class="product-image-container">
+            <img
+              src=""
+              alt="Product Image"
+              id="modalProductImage"
+              class="product-image"
+            />
+            <div style="margin-top: 8px">
+              <label for="modalProductImageInput" class="btn-secondary"
+                >Change Image</label
+              >
+              <input
+                type="file"
+                id="modalProductImageInput"
+                accept="image/*"
+                style="display: none"
+              />
+            </div>
+          </div>
+          <div class="product-info">
+            <label>Name</label>
+            <input type="text" id="modalProductName" class="modal-input" />
+            <label style="margin-top: 8px">Category / Subcategory</label>
+            <div style="display: flex; gap: 8px; align-items: center">
+              <input
+                type="text"
+                id="modalProductCategory"
+                class="modal-input"
+                placeholder="Category"
+              />
+              <input
+                type="text"
+                id="modalProductSubcategory"
+                class="modal-input"
+                placeholder="Subcategory"
+              />
+            </div>
+            <label style="margin-top: 8px">Price</label>
+            <input
+              type="number"
+              step="0.01"
+              id="modalProductPrice"
+              class="modal-input"
+            />
+            <label style="margin-top: 8px">Total Stock</label>
+            <input type="number" id="modalProductStock" class="modal-input" />
+          </div>
+          <div class="product-extra">
+            <h4>Description</h4>
+            <textarea
+              id="modalProductDescription"
+              class="modal-textarea"
+              rows="6"
+            ></textarea>
+            <h4>Variants</h4>
+            <div id="modalProductVariants"></div>
+            <h4>Attributes</h4>
+            <div id="modalProductAttributes"></div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="modal-footer"
+        style="
+          display: flex;
+          gap: 8px;
+          justify-content: flex-end;
+          padding: 12px 20px;
+          border-top: 1px solid #eee;
+        "
+      >
+        <button
+          class="btn-secondary close-btn"
+          id="closeProductDetailModalFooter"
+        >
+          Close
+        </button>
+        <button class="btn-primary" id="saveProductDetails">
+          Save Changes
+        </button>
+      </div>
+    </div>
+  </div>
 
-{% endblock %}
+  <!-- Variant Stocks Modal -->
+  <div class="modal" id="variantStockModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">Manage Variant Stocks</h2>
+        <button class="close-btn" id="closeVariantStockModal">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div id="variantStockContainer">
+          <div style="margin-bottom: 8px">
+            <strong id="variantModalProductName">-</strong>
+          </div>
+          <div
+            id="variantStockList"
+            style="display: flex; flex-direction: column; gap: 8px"
+          ></div>
+        </div>
+      </div>
+      <div
+        class="modal-footer"
+        style="
+          display: flex;
+          gap: 8px;
+          justify-content: flex-end;
+          padding: 12px 20px;
+          border-top: 1px solid #eee;
+        "
+      >
+        <button
+          class="btn-secondary close-btn"
+          id="closeVariantStockModalFooter"
+        >
+          Close
+        </button>
+        <button class="btn-primary" id="saveVariantStocks">Save Stocks</button>
+      </div>
+    </div>
+  </div>
+
+  {% endblock %} {% block extra_js %}
+  <script src="{{ url_for('static', filename='js/seller_scripts/seller_product_management.js') }}?v={{ range(1, 10000) | random }}"></script>
+
+  {% endblock %}
+</div>

@@ -11,7 +11,7 @@
   box-sizing: border-box; /* include padding in width calculation */
   width: 100%; /* fluid to viewport */
   margin: 0 auto; /* center on large screens */
-  padding: 20px; /* fixed padding in px */
+  padding: 16px; /* slightly reduced padding */
   border-radius: 10px;
   background: #fff;
   box-shadow: 0 6px 18px rgba(12, 12, 12, 0.06);
@@ -30,19 +30,21 @@
 }
 
 .preview-group h3 {
-  margin-bottom: 0.75rem;
-  color: #333;
-  font-size: 1.125rem;
+  margin-bottom: 0.5rem;
+  color: #111827;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.2px;
 }
 
 .preview-content {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem 2rem;
+  grid-template-columns: 1fr 340px;
+  gap: 1rem 1.25rem;
   background: #fff;
-  border: 1px solid #eee;
-  padding: 1rem;
-  border-radius: 8px;
+  border: 1px solid #f1f5f9;
+  padding: 0.85rem;
+  border-radius: 10px;
 }
 
 .preview-item {
@@ -71,7 +73,9 @@
 }
 
 .preview-images .image-grid {
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: 8px;
+  align-items: start;
 }
 
 .preview-images {
@@ -120,7 +124,7 @@
 }
 
 .preview-navigation .btn {
-  min-width: 140px;
+  min-width: 120px;
 }
 
 @media (max-width: 900px) {
@@ -138,15 +142,19 @@
 
 .preview-image-box {
   aspect-ratio: 1;
-  border: 2px dashed #ccc;
+  border: 2px dashed #e6e9ee;
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f5f5f5;
+  background: #fafafa;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.18s ease;
   overflow: hidden;
+  min-width: 56px;
+  min-height: 56px;
+  max-width: 180px;
+  max-height: 180px;
 }
 
 .preview-image-box:hover {
@@ -158,6 +166,24 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
+}
+
+/* Make product photo boxes smaller in the main images area */
+.preview-images .preview-image-box {
+  width: 80px;
+  height: 80px;
+  min-width: 64px;
+  min-height: 64px;
+  border-radius: 6px;
+  border: 1px solid #e6e9ee;
+}
+
+/* Slightly larger for size guides and certifications */
+#previewSizeGuide .preview-image-box,
+#previewCertifications .preview-image-box {
+  width: 110px;
+  height: 110px;
 }
 
 .preview-filters {

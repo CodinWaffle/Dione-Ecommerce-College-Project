@@ -9,6 +9,10 @@ document.addEventListener("DOMContentLoaded", function () {
   // DOM Elements
   const addProductBtn = document.getElementById("addProductBtn");
   const productModal = document.getElementById("productModal");
+  const productDetailModal = document.getElementById("productDetailModal");
+  const closeProductDetailBtn = document.getElementById(
+    "closeProductDetailModal"
+  );
   const closeModalBtns = document.querySelectorAll(".close-modal");
   const productForm = document.getElementById("productForm");
   const imageUpload = document.getElementById("imageUpload");
@@ -33,6 +37,44 @@ document.addEventListener("DOMContentLoaded", function () {
     ? JSON.parse(JSON.stringify(preloaded))
     : [];
 
+  // If no preloaded data, try to parse server-rendered table rows so JS doesn't wipe them.
+  function parseServerRenderedRows() {
+    const rows = Array.from(document.querySelectorAll("#productTableBody tr"));
+    const parsed = rows
+      .map((row) => {
+        const id = parseInt(row.dataset.id) || null;
+        const nameEl = row.querySelector(".product-name");
+        const imgEl = row.querySelector(".product-image");
+        const tds = row.querySelectorAll("td");
+        const category = (tds[2] && tds[2].textContent.trim()) || "";
+        const subcategory = (tds[3] && tds[3].textContent.trim()) || "";
+        const priceText =
+          (tds[4] && tds[4].textContent.replace(/[^0-9.\-]/g, "").trim()) ||
+          "0";
+        const price = parseFloat(priceText) || 0;
+        const stockText = (tds[5] && tds[5].textContent.trim()) || "";
+        const stock =
+          stockText === "—" || stockText === ""
+            ? null
+            : parseInt(stockText) || 0;
+        const statusEl = row.querySelector(".status-badge");
+        const status = statusEl ? statusEl.textContent.trim() : "";
+
+        return {
+          id: id,
+          name: nameEl ? nameEl.textContent.trim() : "",
+          primary_image: imgEl ? imgEl.src : "/static/image/banner.png",
+          category: category,
+          subcategory: subcategory === "—" ? "" : subcategory,
+          price: price,
+          total_stock: stock,
+          status: status,
+        };
+      })
+      .filter((p) => p.id !== null);
+    return parsed;
+  }
+
   // Tab elements
   const tabAll = document.getElementById("tabAll");
   const tabOut = document.getElementById("tabOut");
@@ -52,7 +94,9 @@ document.addEventListener("DOMContentLoaded", function () {
   function updateCounts() {
     const total = products.length;
     const out = products.filter(
-      (p) => p.stock === 0 || p.status === "out-of-stock"
+      (p) =>
+        (p.total_stock !== undefined ? p.total_stock === 0 : p.stock === 0) ||
+        p.status === "out-of-stock"
     ).length;
     const active = products.filter((p) => p.status === "active").length;
     document.getElementById("countAll").textContent = total;
@@ -90,7 +134,19 @@ document.addEventListener("DOMContentLoaded", function () {
       const matchesSearch = product.name.toLowerCase().includes(searchTerm);
       const matchesCategory =
         !categoryValue || product.category === categoryValue;
-      const matchesStatus = !statusValue || product.status === statusValue;
+      let matchesStatus = false;
+      if (!statusValue) {
+        matchesStatus = true;
+      } else if (statusValue === "out-of-stock") {
+        // treat out-of-stock tab as products with zero stock OR explicit out-of-stock status
+        const stockVal =
+          product.total_stock !== undefined
+            ? product.total_stock
+            : product.stock;
+        matchesStatus = stockVal === 0 || product.status === "out-of-stock";
+      } else {
+        matchesStatus = product.status === statusValue;
+      }
       return matchesSearch && matchesCategory && matchesStatus;
     });
 
@@ -111,7 +167,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 <td>
                     <div class="product-info">
                         <img src="${
-                          product.image || "/static/image/banner.png"
+                          product.primary_image ||
+                          product.image ||
+                          "/static/image/banner.png"
                         }" alt="${product.name}" class="product-image">
                         <span class="product-name">${product.name}</span>
                     </div>
@@ -121,7 +179,24 @@ document.addEventListener("DOMContentLoaded", function () {
                 <td>$${
                   product.price ? parseFloat(product.price).toFixed(2) : "0.00"
                 }</td>
-                <td>${product.stock}</td>
+                <td>
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <input type="number" min="0" class="stock-edit" data-id="${
+                      product.id
+                    }" value="${
+        product.total_stock !== undefined
+          ? product.total_stock
+          : product.stock !== undefined
+          ? product.stock
+          : 0
+      }" style="width:80px;padding:6px;border-radius:6px;border:1px solid #e5e7eb;" />
+                    <button class="btn-icon open-variants" data-id="${
+                      product.id
+                    }" title="Edit variants">
+                      <i data-lucide="layers"></i>
+                    </button>
+                  </div>
+                </td>
                 <td><span class="status-badge status-${product.status}">${
         product.status
       }</span></td>
@@ -149,7 +224,163 @@ document.addEventListener("DOMContentLoaded", function () {
     updateCounts();
   }
 
+  // If there were no preloaded products, parse server-rendered rows and use those
+  if (!Array.isArray(products) || products.length === 0) {
+    const fromDom = parseServerRenderedRows();
+    if (fromDom && fromDom.length > 0) products = fromDom;
+  }
   renderProducts(products);
+
+  // Handle inline stock edits via delegation
+  document
+    .getElementById("productTableBody")
+    ?.addEventListener("change", function (e) {
+      const input = e.target;
+      if (input && input.classList && input.classList.contains("stock-edit")) {
+        const id = parseInt(input.dataset.id);
+        const newVal = parseInt(input.value || "0", 10) || 0;
+        const idx = products.findIndex((p) => p.id === id);
+        if (idx !== -1) {
+          // Update total_stock or stock depending on schema
+          if (products[idx].hasOwnProperty("total_stock")) {
+            products[idx].total_stock = newVal;
+          } else {
+            products[idx].stock = newVal;
+          }
+          updateCounts();
+        }
+      }
+    });
+
+  // Open variant-stock modal when open-variants button clicked
+  document
+    .getElementById("productTableBody")
+    ?.addEventListener("click", function (e) {
+      const btn = e.target.closest(".open-variants");
+      if (btn) {
+        const id = parseInt(btn.dataset.id);
+        if (!id) return;
+        // fetch product details then populate modal
+        fetch(`/seller/product/${id}/details`)
+          .then((res) => {
+            if (!res.ok) throw new Error("Network response was not ok");
+            return res.json();
+          })
+          .then((data) => {
+            const modal = document.getElementById("variantStockModal");
+            const nameEl = document.getElementById("variantModalProductName");
+            const listEl = document.getElementById("variantStockList");
+            listEl.innerHTML = "";
+            nameEl.textContent = data.name || "-";
+
+            const variants = Array.isArray(data.variants) ? data.variants : [];
+            if (variants.length === 0) {
+              const msg = document.createElement("div");
+              msg.textContent = "No variants available for this product.";
+              listEl.appendChild(msg);
+            } else {
+              variants.forEach((v, idx) => {
+                const row = document.createElement("div");
+                row.className = "variant-edit-row";
+                row.style = "display:flex;gap:8px;align-items:center;";
+                row.innerHTML = `
+                  <input data-idx="${idx}" class="variant-sku" placeholder="SKU" value="${
+                  v.sku || ""
+                }" />
+                  <input data-idx="${idx}" class="variant-color" placeholder="Color" value="${
+                  v.color || ""
+                }" />
+                  <input data-idx="${idx}" class="variant-size" placeholder="Size" value="${
+                  v.size || ""
+                }" />
+                  <input data-idx="${idx}" type="number" min="0" class="variant-stock" placeholder="Stock" value="${
+                  v.stock != null ? v.stock : 0
+                }" style="width:80px" />
+                `;
+                listEl.appendChild(row);
+              });
+            }
+
+            // show modal
+            if (modal) modal.classList.add("active");
+
+            // attach close handlers
+            document
+              .getElementById("closeVariantStockModal")
+              ?.addEventListener("click", () =>
+                modal.classList.remove("active")
+              );
+            document
+              .getElementById("closeVariantStockModalFooter")
+              ?.addEventListener("click", () =>
+                modal.classList.remove("active")
+              );
+
+            // Save stocks handler
+            const saveBtn = document.getElementById("saveVariantStocks");
+            if (saveBtn) {
+              // remove previous click handlers to avoid duplicates
+              saveBtn.replaceWith(saveBtn.cloneNode(true));
+            }
+            const freshSave = document.getElementById("saveVariantStocks");
+            freshSave.addEventListener("click", function () {
+              // collect updated variants
+              const rows = listEl.querySelectorAll(".variant-edit-row");
+              const updated = [];
+              let total = 0;
+              rows.forEach((r) => {
+                const sku = r.querySelector(".variant-sku")?.value || "";
+                const color = r.querySelector(".variant-color")?.value || "";
+                const size = r.querySelector(".variant-size")?.value || "";
+                const stock =
+                  parseInt(
+                    r.querySelector(".variant-stock")?.value || "0",
+                    10
+                  ) || 0;
+                updated.push({ sku, color, size, stock });
+                total += stock;
+              });
+
+              const payload = { variants: updated, total_stock: total };
+
+              fetch(`/seller/product/${id}/update`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+              })
+                .then((res) => res.json())
+                .then((resp) => {
+                  if (resp && resp.success) {
+                    // update local products array
+                    const idx = products.findIndex((p) => p.id === id);
+                    if (idx !== -1) {
+                      products[idx] = Object.assign(
+                        {},
+                        products[idx],
+                        resp.product
+                      );
+                    }
+                    renderProducts(products);
+                    document
+                      .getElementById("variantStockModal")
+                      ?.classList.remove("active");
+                    alert("Variant stocks updated");
+                  } else {
+                    alert("Failed to update variant stocks");
+                  }
+                })
+                .catch((err) => {
+                  console.error("Update failed", err);
+                  alert("Failed to update variant stocks");
+                });
+            });
+          })
+          .catch((err) => {
+            console.error("Failed to load product variants", err);
+            alert("Failed to load product variants");
+          });
+      }
+    });
 
   // sliding underline handling
   const tabsUnderline = document.querySelector(".tabs-underline");
@@ -224,6 +455,20 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
+  // Close product detail modal
+  if (closeProductDetailBtn) {
+    closeProductDetailBtn.addEventListener("click", () => {
+      if (productDetailModal) productDetailModal.classList.remove("active");
+    });
+  }
+
+  if (productDetailModal) {
+    productDetailModal.addEventListener("click", (e) => {
+      if (e.target === productDetailModal)
+        productDetailModal.classList.remove("active");
+    });
+  }
+
   // Close modal when clicking outside
   if (productModal) {
     productModal.addEventListener("click", (e) => {
@@ -244,8 +489,7 @@ document.addEventListener("DOMContentLoaded", function () {
         stock: parseInt(document.getElementById("productStock").value) || 0,
         status: "active",
         image:
-          imagePreview.querySelector("img")?.src ||
-          "/static/image/banner.png",
+          imagePreview.querySelector("img")?.src || "/static/image/banner.png",
       };
       products.unshift(product);
       renderProducts(products);
@@ -312,8 +556,207 @@ document.addEventListener("DOMContentLoaded", function () {
   document
     .getElementById("productTableBody")
     ?.addEventListener("click", function (e) {
+      const viewBtn = e.target.closest(".view-product");
       const editBtn = e.target.closest(".edit-product");
       const delBtn = e.target.closest(".delete-product");
+      if (viewBtn) {
+        const id = parseInt(viewBtn.dataset.id);
+        if (!id) return;
+        fetch(`/seller/product/${id}/details`)
+          .then((res) => {
+            if (!res.ok) throw new Error("Network response was not ok");
+            return res.json();
+          })
+          .then((data) => {
+            // Populate editable modal fields
+            document.getElementById("modalProductImage").src =
+              data.primary_image || "/static/image/banner.png";
+            document.getElementById("modalProductName").value = data.name || "";
+            document.getElementById("modalProductCategory").value =
+              data.category || "";
+            document.getElementById("modalProductSubcategory").value =
+              data.subcategory || "";
+            document.getElementById("modalProductPrice").value =
+              data.price != null ? parseFloat(data.price) : "";
+            document.getElementById("modalProductStock").value =
+              data.total_stock != null
+                ? data.total_stock
+                : data.total_stock === 0
+                ? 0
+                : "";
+            document.getElementById("modalProductDescription").value =
+              data.description || "";
+
+            // Variants - render editable rows
+            const variantsEl = document.getElementById("modalProductVariants");
+            variantsEl.innerHTML = "";
+            if (Array.isArray(data.variants) && data.variants.length) {
+              data.variants.forEach((v, idx) => {
+                const row = document.createElement("div");
+                row.className = "modal-variant-row";
+                row.style =
+                  "display:flex;gap:8px;align-items:center;margin-bottom:6px";
+                row.innerHTML = `
+                  <input data-idx="${idx}" class="variant-sku" placeholder="SKU" value="${
+                  v.sku || ""
+                }" />
+                  <input data-idx="${idx}" class="variant-color" placeholder="Color" value="${
+                  v.color || ""
+                }" />
+                  <input data-idx="${idx}" class="variant-size" placeholder="Size" value="${
+                  v.size || ""
+                }" />
+                  <input data-idx="${idx}" type="number" min="0" class="variant-stock" placeholder="Stock" value="${
+                  v.stock != null ? v.stock : 0
+                }" style="width:80px" />
+                `;
+                variantsEl.appendChild(row);
+              });
+            } else {
+              variantsEl.textContent = "No variants";
+            }
+
+            // Attributes - render JSON editor (simple textarea)
+            const attrEl = document.getElementById("modalProductAttributes");
+            try {
+              attrEl.innerHTML = "";
+              const ta = document.createElement("textarea");
+              ta.id = "modalProductAttributesInput";
+              ta.rows = 6;
+              ta.className = "modal-textarea";
+              ta.value = data.attributes
+                ? JSON.stringify(data.attributes, null, 2)
+                : "";
+              attrEl.appendChild(ta);
+            } catch (err) {
+              attrEl.textContent = "-";
+            }
+
+            // Attach image input handler to preview selected file
+            const imageInput = document.getElementById(
+              "modalProductImageInput"
+            );
+            imageInput.value = null;
+            imageInput.onchange = function (ev) {
+              const file = ev.target.files && ev.target.files[0];
+              if (file && file.type && file.type.startsWith("image/")) {
+                const reader = new FileReader();
+                reader.onload = function (e2) {
+                  document.getElementById("modalProductImage").src =
+                    e2.target.result;
+                  // store data URL temporarily on the element for save
+                  document.getElementById("modalProductImage").dataset.pending =
+                    e2.target.result;
+                };
+                reader.readAsDataURL(file);
+              }
+            };
+
+            // Show modal
+            if (productDetailModal) productDetailModal.classList.add("active");
+
+            // wire close footer button
+            const closeFooter = document.getElementById(
+              "closeProductDetailModalFooter"
+            );
+            if (closeFooter)
+              closeFooter.onclick = () =>
+                productDetailModal.classList.remove("active");
+
+            // wire save button
+            const saveBtn = document.getElementById("saveProductDetails");
+            if (saveBtn) {
+              saveBtn.onclick = function () {
+                // collect data
+                const payload = {};
+                payload.name =
+                  document.getElementById("modalProductName").value;
+                payload.description = document.getElementById(
+                  "modalProductDescription"
+                ).value;
+                payload.category = document.getElementById(
+                  "modalProductCategory"
+                ).value;
+                payload.subcategory = document.getElementById(
+                  "modalProductSubcategory"
+                ).value;
+                payload.price =
+                  parseFloat(
+                    document.getElementById("modalProductPrice").value
+                  ) || 0;
+                payload.total_stock = parseInt(
+                  document.getElementById("modalProductStock").value || "0",
+                  10
+                );
+                // variants
+                const vs = [];
+                const rows = variantsEl.querySelectorAll(".modal-variant-row");
+                rows.forEach((r) => {
+                  const sku = r.querySelector(".variant-sku")?.value || "";
+                  const color = r.querySelector(".variant-color")?.value || "";
+                  const size = r.querySelector(".variant-size")?.value || "";
+                  const stock =
+                    parseInt(
+                      r.querySelector(".variant-stock")?.value || "0",
+                      10
+                    ) || 0;
+                  vs.push({ sku, color, size, stock });
+                });
+                payload.variants = vs;
+                // attributes
+                try {
+                  const attrText =
+                    document.getElementById("modalProductAttributesInput")
+                      .value || "";
+                  payload.attributes = attrText ? JSON.parse(attrText) : {};
+                } catch (err) {
+                  alert("Attributes JSON is invalid");
+                  return;
+                }
+                // primary_image (use pending data URL if present)
+                const pending =
+                  document.getElementById("modalProductImage").dataset.pending;
+                if (pending) payload.primary_image = pending;
+
+                fetch(`/seller/product/${id}/update`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(payload),
+                })
+                  .then((res) => res.json())
+                  .then((resp) => {
+                    if (resp && resp.success) {
+                      // update local products array and re-render
+                      const idx = products.findIndex((p) => p.id === id);
+                      if (idx !== -1) {
+                        products[idx] = Object.assign(
+                          {},
+                          products[idx],
+                          resp.product
+                        );
+                      } else {
+                        products.unshift(resp.product);
+                      }
+                      renderProducts(products);
+                      productDetailModal.classList.remove("active");
+                      alert("Product updated successfully");
+                    } else {
+                      alert("Failed to save product");
+                    }
+                  })
+                  .catch((err) => {
+                    console.error("Save failed", err);
+                    alert("Failed to save product");
+                  });
+              };
+            }
+          })
+          .catch((err) => {
+            console.error("Failed to load product details", err);
+            alert("Failed to load product details");
+          });
+        return;
+      }
       if (editBtn) {
         const id = parseInt(editBtn.dataset.id);
         const p = products.find((x) => x.id === id);
@@ -362,7 +805,13 @@ document.addEventListener("DOMContentLoaded", function () {
       const ids = getSelectedIds();
       products = products.map((p) =>
         ids.includes(p.id)
-          ? Object.assign({}, p, { stock: (p.stock || 0) + 10 })
+          ? Object.assign(
+              {},
+              p,
+              p.total_stock !== undefined
+                ? { total_stock: (p.total_stock || 0) + 10 }
+                : { stock: (p.stock || 0) + 10 }
+            )
           : p
       );
       renderProducts(products);
