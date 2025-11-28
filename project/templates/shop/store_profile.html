@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="jumbotron text-white" style="background-color: {{ store.theme_color or '#111827' }}">
+  <h1 class="display-4">{{ store.name }}</h1>
+  <p class="lead">{{ store.tagline }}</p>
+  <p>{{ store.description }}</p>
+  <p>
+    <span class="badge badge-light mr-2">{{ products|length }} Products</span>
+    <span class="badge badge-light">Rating {{ '%.1f'|format(rating.average) }} ({{ rating.total }} reviews)</span>
+  </p>
+</div>
+<div class="row">
+  {% for product in products %}
+  <div class="col-md-4 mb-4">
+    <div class="card h-100 shadow-sm">
+      {% if product.primary_image %}
+      <img src="{{ url_for('static', filename=product.primary_image.path) }}" class="card-img-top" alt="{{ product.name }}">
+      {% endif %}
+      <div class="card-body d-flex flex-column">
+        <h5>{{ product.name }}</h5>
+        <p class="text-muted">₱{{ '%.2f'|format(product.price) }}</p>
+        <a class="btn btn-outline-primary btn-sm mt-auto" href="{{ url_for('shop.product_detail', product_id=product.id) }}">View</a>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="col-12">
+    <div class="alert alert-light text-center">No products yet.</div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

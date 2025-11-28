@@ -4,6 +4,7 @@ Authentication service for Dione Ecommerce
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_mail import Message
 from flask import render_template
+import json
 from project.models import User
 from project import db, mail
 
@@ -11,7 +12,7 @@ class AuthService:
     """Service class for authentication operations"""
 
     @staticmethod
-    def create_user(username, email, password, role='buyer'):
+    def create_user(username, email, password, role='buyer', role_details=None):
         """Create a new user"""
         # Validate required fields
         if not username or not email or not password:
@@ -33,7 +34,8 @@ class AuthService:
                 password=hashed_password,
                 role='buyer',
                 role_requested=desired_role,
-                is_approved=False
+                is_approved=False,
+                role_request_details=json.dumps(role_details) if role_details else None
             )
         else:
             # For buyer/admin: set active role immediately (admin creation should be restricted in production)
@@ -43,7 +45,8 @@ class AuthService:
                 password=hashed_password,
                 role=desired_role if desired_role in {'buyer', 'admin'} else 'buyer',
                 role_requested=None,
-                is_approved=True
+                is_approved=True,
+                role_request_details=None
             )
 
         try:
@@ -64,7 +67,7 @@ class AuthService:
 
         # Check if this is an OAuth user (no password set)
         if not user.password:
-            return None, "This account uses social login (Google/Facebook). Please use the 'Sign in with Google' button"
+            return None, "This account uses Google social login. Please use the 'Sign in with Google' button"
 
         # Verify password
         if not check_password_hash(user.password, password):

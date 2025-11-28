@@ -1,4 +1,7 @@
 import itertools
+import io
+from decimal import Decimal
+from pathlib import Path
 from typing import Dict, Iterable, Tuple
 
 import pytest
@@ -7,7 +10,17 @@ from sqlalchemy.exc import IntegrityError
 from werkzeug.security import generate_password_hash
 
 from project import create_app, db
-from project.models import OAuth, SiteSetting, User
+from project.models import (
+    Category,
+    OAuth,
+    Order,
+    OrderTrackingEvent,
+    Product,
+    Review,
+    SiteSetting,
+    StoreProfile,
+    User,
+)
 from project.utils.validators import Validators
 
 
@@ -107,6 +120,17 @@ def _hash(password: str) -> str:
     return generate_password_hash(password, method="pbkdf2:sha256")
 
 
+def _cleanup_product_uploads(app, product: Product):
+    upload_root = Path(app.config["UPLOAD_FOLDER"])
+    for image in product.images:
+        file_path = upload_root / Path(image.path).name
+        if file_path.exists():
+            try:
+                file_path.unlink()
+            except PermissionError:
+                pass
+
+
 def login(client, email: str, password: str):
     return client.post(
         "/login",
@@ -204,6 +228,7 @@ def authenticated_client(client, user_factory):
     "path,status_code",
     [
         ("/", 200),
+        ("/shop/", 200),
         ("/login", 200),
         ("/signup", 200),
         ("/reset", 200),
@@ -231,6 +256,7 @@ def test_public_routes_render(client, path, status_code):
         ("/rider/dashboard", "/login"),
         ("/rider/deliveries", "/login"),
         ("/pending", "/login"),
+        ("/shop/cart", "/login"),
         ("/admin/overview", "/admin/login"),
         ("/admin/users", "/admin/login"),
         ("/admin/pending", "/admin/login"),
@@ -391,6 +417,129 @@ def test_seller_dashboard_allowed_for_seller(client, user_factory):
     assert b"Seller Dashboard" in response.data
 
 
+def test_seller_can_create_product_with_images(client, app, user_factory):
+    seller = user_factory(email="maker@example.com", role="seller", is_approved=True)
+    login(client, seller.email, DEFAULT_PASSWORD)
+    data = {
+        "name": "Camera",
+        "price": "199.99",
+        "stock": "10",
+        "description": "Mirrorless camera",
+        "new_category": "Electronics",
+        "is_featured": "on",
+        "images": [
+            (io.BytesIO(b"img-one"), "camera1.jpg"),
+            (io.BytesIO(b"img-two"), "camera2.jpg"),
+        ],
+    }
+    response = client.post(
+        "/seller/products/new",
+        data=data,
+        content_type="multipart/form-data",
+        follow_redirects=True,
+    )
+    assert b"Product created successfully" in response.data
+    with app.app_context():
+        product = Product.query.filter_by(name="Camera").first()
+        assert product is not None
+        assert product.category is not None
+        assert product.category.name == "Electronics"
+        assert product.is_featured is True
+        assert len(product.images) == 2
+        _cleanup_product_uploads(app, product)
+
+
+def test_product_image_limit_enforced(client, user_factory):
+    seller = user_factory(email="limit@example.com", role="seller", is_approved=True)
+    login(client, seller.email, DEFAULT_PASSWORD)
+    data = {
+        "name": "Bulk Upload",
+        "price": "50",
+        "stock": "5",
+        "description": "Too many images",
+        "images": [(io.BytesIO(b"data"), f"img{i}.jpg") for i in range(6)],
+    }
+    response = client.post(
+        "/seller/products/new",
+        data=data,
+        content_type="multipart/form-data",
+        follow_redirects=True,
+    )
+    assert b"only store up to 5 images" in response.data
+
+
+def test_manual_order_creation_updates_inventory(client, app, user_factory):
+    seller = user_factory(email="orders@example.com", role="seller", is_approved=True)
+    login(client, seller.email, DEFAULT_PASSWORD)
+    with app.app_context():
+        product = Product(
+            seller_id=seller.id,
+            name="Widget",
+            price=Decimal("100.00"),
+            stock=5,
+        )
+        db.session.add(product)
+        db.session.commit()
+        product_id = product.id
+    response = client.post(
+        "/seller/orders",
+        data={"product_id": product_id, "quantity": 2},
+        follow_redirects=True,
+    )
+    assert b"Manual order recorded" in response.data
+    with app.app_context():
+        refreshed = db.session.get(Product, product_id)
+        assert refreshed.stock == 3
+        order = Order.query.filter_by(seller_id=seller.id).one()
+        assert float(order.total_amount) == pytest.approx(200.0, rel=1e-3)
+
+
+def test_seller_can_update_order_status(client, app, user_factory):
+    seller = user_factory(email="status@example.com", role="seller", is_approved=True)
+    login(client, seller.email, DEFAULT_PASSWORD)
+    with app.app_context():
+        order = Order(seller_id=seller.id, status="pending", total_amount=100)
+        db.session.add(order)
+        db.session.commit()
+        order_id = order.id
+    response = client.post(
+        f"/seller/orders/{order_id}/status",
+        data={"status": "completed"},
+        follow_redirects=True,
+    )
+    assert b"Order status updated" in response.data
+    with app.app_context():
+        refreshed = db.session.get(Order, order_id)
+        assert refreshed.status == "completed"
+
+
+def test_store_profile_auto_created_on_dashboard(client, app, user_factory):
+    seller = user_factory(email="autostore@example.com", role="seller", is_approved=True)
+    login(client, seller.email, DEFAULT_PASSWORD)
+    client.get("/seller/dashboard")
+    with app.app_context():
+        store = StoreProfile.query.filter_by(seller_id=seller.id).first()
+        assert store is not None
+        assert store.slug
+
+
+def test_store_profile_update(client, app, user_factory):
+    seller = user_factory(email="storeupdate@example.com", role="seller", is_approved=True)
+    login(client, seller.email, DEFAULT_PASSWORD)
+    payload = {
+        "name": "Updated Store",
+        "slug": "updated-store",
+        "tagline": "Tagline",
+        "contact_email": "store@example.com",
+    }
+    response = client.post("/seller/store/profile", data=payload, follow_redirects=True)
+    assert response.status_code == 200
+    with app.app_context():
+        store = StoreProfile.query.filter_by(seller_id=seller.id).first()
+        assert store.name == "Updated Store"
+        assert store.contact_email == "store@example.com"
+
+
 def test_rider_dashboard_allowed_for_rider(client, user_factory):
     rider = user_factory(email="rider@example.com", role="rider", is_approved=True)
     login(client, rider.email, DEFAULT_PASSWORD)
@@ -524,7 +673,7 @@ def test_admin_login_logout_flow(client, admin_credentials, admin_user):
 
 @pytest.mark.parametrize(
     "endpoint",
-    ["/admin/overview", "/admin/pending", "/admin/users", "/admin/settings", "/admin/profile"],
+    ["/admin/overview", "/admin/pending", "/admin/users", "/admin/settings", "/admin/profile", "/admin/monitoring", "/admin/content"],
 )
 def test_admin_pages_render(admin_client, endpoint):
     response = admin_client.get(endpoint)
@@ -646,13 +795,99 @@ def test_admin_dashboard_counts_include_pending(admin_client, user_factory):
 
 def test_oauth_blueprints_registered(app):
     assert "google" in app.blueprints
-    assert "facebook" in app.blueprints
+    assert "facebook" not in app.blueprints
+
+
+def test_shop_search_filters_products(client, app, user_factory):
+    seller = user_factory(email="catalogseller@example.com", role="seller", is_approved=True)
+    with app.app_context():
+        category = Category(name="Gadgets", slug="gadgets")
+        db.session.add(category)
+        db.session.commit()
+        product = Product(
+            seller_id=seller.id,
+            name="Camera Pro",
+            description="Mirrorless camera",
+            price=Decimal("500.00"),
+            category_id=category.id,
+            stock=10,
+            is_featured=True,
+        )
+        db.session.add(product)
+        db.session.commit()
+        category_id = category.id
+    response = client.get(f"/shop/?q=Camera&category={category_id}&featured=1&stock=in")
+    assert response.status_code == 200
+    assert b"Camera Pro" in response.data
+
+
+def test_cart_checkout_creates_orders_and_tracking(client, app, user_factory):
+    seller = user_factory(email="sellercart@example.com", role="seller", is_approved=True)
+    buyer = user_factory(email="buyercart@example.com", role="buyer")
+    with app.app_context():
+        product = Product(
+            seller_id=seller.id,
+            name="Sneakers",
+            description="Running shoes",
+            price=Decimal("120.00"),
+            stock=5,
+        )
+        db.session.add(product)
+        db.session.commit()
+        product_id = product.id
+    login(client, buyer.email, DEFAULT_PASSWORD)
+    client.post("/shop/cart/items", data={"product_id": product_id, "quantity": 2}, follow_redirects=True)
+    response = client.post("/shop/cart/checkout", follow_redirects=True)
+    assert response.status_code == 200
+    with app.app_context():
+        orders = Order.query.filter_by(buyer_id=buyer.id).all()
+        assert len(orders) == 1
+        assert orders[0].items[0].quantity == 2
+        assert OrderTrackingEvent.query.filter_by(order_id=orders[0].id).count() == 1
+
+
+def test_review_creation_and_seller_response(client, app, user_factory):
+    seller = user_factory(email="sellerreviews@example.com", role="seller", is_approved=True)
+    buyer = user_factory(email="buyerreviews@example.com", role="buyer")
+    with app.app_context():
+        product = Product(
+            seller_id=seller.id,
+            name="Backpack",
+            description="Travel backpack",
+            price=Decimal("80.00"),
+            stock=15,
+        )
+        db.session.add(product)
+        db.session.commit()
+        product_id = product.id
+    login(client, buyer.email, DEFAULT_PASSWORD)
+    client.post(
+        f"/shop/product/{product_id}/reviews",
+        data={"rating": "5", "title": "Great", "body": "Loved it"},
+        follow_redirects=True,
+    )
+    client.get("/logout")
+    login(client, seller.email, DEFAULT_PASSWORD)
+    with app.app_context():
+        review = Review.query.filter_by(product_id=product_id).first()
+        assert review is not None
+        review_id = review.id
+    client.post(
+        f"/seller/store/reviews/{review_id}/respond",
+        data={"message": "Thank you!"},
+        follow_redirects=True,
+    )
+    with app.app_context():
+        refreshed = db.session.get(Review, review_id)
+        assert refreshed.response is not None
+        assert refreshed.response.message == "Thank you!"
 
 
 def test_navigation_links_present(client):
     response = client.get("/")
     assert b'href="/login"' in response.data
     assert b'href="/signup"' in response.data
+    assert b'href="/shop/' in response.data
 
 
 def test_static_assets_served(client):
@@ -687,6 +922,20 @@ def test_database_schema_contains_expected_tables(app):
         assert "user" in tables
         assert "oauth" in tables
         assert "site_setting" in tables
+        assert "product" in tables
+        assert "category" in tables
+        assert "product_image" in tables
+        assert "inventory_transaction" in tables
+        assert "order" in tables
+        assert "order_item" in tables
+        assert "store_profile" in tables
+        assert "product_variant" in tables
+        assert "cart" in tables
+        assert "cart_item" in tables
+        assert "review" in tables
+        assert "review_media" in tables
+        assert "review_response" in tables
+        assert "order_tracking_event" in tables
 
 
 def test_site_setting_persistence(app):

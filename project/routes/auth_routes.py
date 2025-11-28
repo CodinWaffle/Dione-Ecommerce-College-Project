@@ -8,6 +8,42 @@ from project.utils.validators import Validators
 
 auth = Blueprint('auth', __name__)
 
+ROLE_DETAIL_FIELDS = {
+    'buyer': [
+        ('buyer_contact', 'Primary contact number', False),
+        ('buyer_address', 'Preferred delivery address', False),
+    ],
+    'seller': [
+        ('seller_store_name', 'Store name', True),
+        ('seller_business_id', 'Business registration / permit', True),
+        ('seller_contact', 'Business contact number', True),
+        ('seller_address', 'Pickup / warehouse address', True),
+        ('seller_description', 'What you plan to sell', False),
+    ],
+    'rider': [
+        ('rider_vehicle_type', 'Vehicle type', True),
+        ('rider_plate_number', 'Plate number', True),
+        ('rider_license_number', 'Driver license number', True),
+        ('rider_contact', 'Contact number', True),
+        ('rider_service_area', 'Primary delivery areas', False),
+    ],
+}
+
+
+def _collect_role_details(form_data, role):
+    """Extract structured details for the given role from the signup form."""
+    config = ROLE_DETAIL_FIELDS.get(role, [])
+    entries = []
+    missing_required = []
+    for field_name, label, required in config:
+        value = (form_data.get(field_name) or '').strip()
+        if not value:
+            if required:
+                missing_required.append(label)
+            continue
+        entries.append({'label': label, 'value': value})
+    return entries, missing_required
+
 @auth.route('/login')
 def login():
     return render_template('auth/login.html')
@@ -45,7 +81,7 @@ def login_post():
     # Redirect by active role
     role = (getattr(user, 'role', '') or 'buyer').lower()
     if role == 'seller':
-        return redirect(url_for('main.seller_dashboard'))
+        return redirect(url_for('seller.dashboard'))
     if role == 'rider':
         return redirect(url_for('main.rider_dashboard'))
     if role == 'admin':
@@ -101,6 +137,7 @@ def signup_post():
     email = request.form.get('email')
     password = request.form.get('password')
     role = (request.form.get('role') or 'buyer').lower()
+    role_details, missing_required = _collect_role_details(request.form, role)
 
     # Validate form
     is_valid, errors = Validators.validate_signup_form(username, email, password)
@@ -108,13 +145,18 @@ def signup_post():
     role_valid, role_error = Validators.validate_role(role)
     if not role_valid:
         errors.append(role_error)
-    if not is_valid:
+    if role in {'seller', 'rider'} and missing_required:
+        errors.append(
+            f"Please complete the following fields for {role} applications: {', '.join(missing_required)}"
+        )
+    if errors:
         for error in errors:
             flash(error, 'danger')
         return redirect(url_for('auth.signup'))
 
     # Create user
-    user, error = AuthService.create_user(username, email, password, role=role)
+    details_payload = role_details if role in {'seller', 'rider'} else None
+    user, error = AuthService.create_user(username, email, password, role=role, role_details=details_payload)
     if error:
         flash(error, 'danger')
         return redirect(url_for('auth.signup'))

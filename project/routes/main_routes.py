@@ -4,7 +4,7 @@ Main routes for Dione Ecommerce
 from flask import Blueprint, render_template, jsonify, redirect, url_for, flash
 from flask_login import login_required, current_user, logout_user
 from project import db
-from project.models import User
+from project.models import Category, Product, User
 
 main = Blueprint('main', __name__)
 
@@ -24,10 +24,33 @@ def index():
             return redirect(url_for('main.pending'))
         role = (getattr(current_user, 'role', '') or '').lower()
         if role == 'seller':
-            return redirect(url_for('main.seller_dashboard'))
+            return redirect(url_for('seller.dashboard'))
         if role == 'rider':
             return redirect(url_for('main.rider_dashboard'))
-    return render_template('main/index.html')
+    featured_products = (
+        Product.query.filter_by(is_active=True)
+        .order_by(Product.is_featured.desc(), Product.updated_at.desc())
+        .limit(8)
+        .all()
+    )
+    new_arrivals = (
+        Product.query.filter_by(is_active=True)
+        .order_by(Product.created_at.desc())
+        .limit(6)
+        .all()
+    )
+    categories = (
+        Category.query.filter_by(is_active=True)
+        .order_by(Category.name.asc())
+        .limit(10)
+        .all()
+    )
+    return render_template(
+        'main/index.html',
+        featured_products=featured_products,
+        new_arrivals=new_arrivals,
+        categories=categories,
+    )
 
 @main.route('/profile')
 @login_required
@@ -36,27 +59,10 @@ def profile():
     if getattr(current_user, 'role_requested', None) and not getattr(current_user, 'is_approved', True):
         return redirect(url_for('main.pending'))
     if role == 'seller':
-        return redirect(url_for('main.seller_dashboard'))
+        return redirect(url_for('seller.dashboard'))
     if role == 'rider':
         return redirect(url_for('main.rider_dashboard'))
     return render_template('main/profile.html', username=current_user.username)
-
-@main.route('/seller/dashboard')
-@login_required
-def seller_dashboard():
-    if (getattr(current_user, 'role', '') or '').lower() != 'seller' or not getattr(current_user, 'is_approved', False):
-        flash("You don't have access to the seller dashboard.", 'warning')
-        return redirect(url_for('main.profile'))
-    return render_template('seller/dashboard.html', username=current_user.username)
-
-
-@main.route('/seller/products')
-@login_required
-def seller_products():
-    if (getattr(current_user, 'role', '') or '').lower() != 'seller' or not getattr(current_user, 'is_approved', False):
-        flash("You don't have access to seller tools.", 'warning')
-        return redirect(url_for('main.profile'))
-    return render_template('seller/products.html', username=current_user.username)
 
 @main.route('/rider/dashboard')
 @login_required

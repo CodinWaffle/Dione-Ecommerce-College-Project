@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row mt-4">
+  <div class="col-lg-8">
+    <div class="card shadow-sm">
+      <div class="card-header bg-dark text-white">
+        <h4 class="mb-0">Shopping Cart</h4>
+      </div>
+      <div class="table-responsive">
+        <table class="table mb-0">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Variant</th>
+              <th>Quantity</th>
+              <th>Price</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in items %}
+            <tr>
+              <td>{{ item.product.name }}</td>
+              <td>
+                {% if item.variant %}
+                  {{ item.variant.attribute }} - {{ item.variant.value }}
+                {% else %}
+                  —
+                {% endif %}
+              </td>
+              <td>{{ item.quantity }}</td>
+              <td>₱{{ '%.2f'|format(item.unit_price) }}</td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="4" class="text-center text-muted py-4">Your cart is empty.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5>Order Summary</h5>
+        <p class="h4">₱{{ '%.2f'|format(total) }}</p>
+        <form method="post" action="{{ url_for('shop.cart_checkout') }}">
+          <button class="btn btn-primary btn-block" type="submit" {% if not items %}disabled{% endif %}>Checkout Securely</button>
+        </form>
+        <small class="text-muted d-block mt-2">Orders are split automatically by seller.</small>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

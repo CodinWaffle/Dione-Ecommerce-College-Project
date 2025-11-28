@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="catalog-hero container-narrow">
+  <div>
+    <p class="eyebrow">Marketplace</p>
+    <h1>Shop thousands of essentials, simplified.</h1>
+    <p>Fine-tune filters to discover fresh drops, limited deals, and verified sellers&mdash;just like the Shopee experience you love.</p>
+  </div>
+  <a class="link" href="{{ url_for('shop.cart') }}">Go to cart</a>
+</section>
+
+<div class="catalog-layout container-narrow">
+  <aside class="filter-panel">
+    <div class="filter-card">
+      <div class="filter-head">
+        <h5>Filters</h5>
+        <a href="{{ url_for('shop.catalog') }}">Reset</a>
+      </div>
+      <form method="get" class="filter-form">
+        <label class="filter-field">
+          <span>Search keyword</span>
+          <input type="text" name="q" value="{{ filters.get('q','') }}" placeholder="Shoes, gadgets...">
+        </label>
+        <label class="filter-field">
+          <span>Category</span>
+          <select name="category">
+            <option value="">Any category</option>
+            {% for category in categories %}
+              <option value="{{ category.id }}" {% if filters.get('category')|int == category.id %}selected{% endif %}>
+                {{ category.name }}
+              </option>
+            {% endfor %}
+          </select>
+        </label>
+        <div class="filter-duo">
+          <label class="filter-field">
+            <span>Min price</span>
+            <input type="number" step="0.01" name="min_price" value="{{ filters.get('min_price','') }}" placeholder="&#8369;0.00">
+          </label>
+          <label class="filter-field">
+            <span>Max price</span>
+            <input type="number" step="0.01" name="max_price" value="{{ filters.get('max_price','') }}" placeholder="&#8369;0.00">
+          </label>
+        </div>
+        <label class="filter-checkbox">
+          <input type="checkbox" name="featured" value="1" {% if filters.get('featured') %}checked{% endif %}>
+          <span>Show featured only</span>
+        </label>
+        <label class="filter-checkbox">
+          <input type="checkbox" name="stock" value="in" {% if filters.get('stock') == 'in' %}checked{% endif %}>
+          <span>Only items in stock</span>
+        </label>
+        <button class="btn primary block" type="submit">Apply filters</button>
+      </form>
+    </div>
+  </aside>
+
+  <section class="catalog-results">
+    <div class="results-head">
+      <div>
+        <p class="eyebrow">Results</p>
+        <h2>All products</h2>
+      </div>
+      <p class="muted">{{ products|length }} items found</p>
+    </div>
+    <div class="product-grid">
+      {% for product in products %}
+        <article class="product-card">
+          <a class="product-photo" href="{{ url_for('shop.product_detail', product_id=product.id) }}">
+            {% if product.primary_image %}
+              <img src="{{ url_for('static', filename=product.primary_image.path) }}" alt="{{ product.name }}">
+            {% else %}
+              <div class="placeholder">No image</div>
+            {% endif %}
+          </a>
+          <div class="product-body">
+            <h3>{{ product.name }}</h3>
+            <p class="product-price">&#8369;{{ '%.2f'|format(product.price) }}</p>
+            <div class="product-badges">
+              <span>{{ product.category.name if product.category else 'General' }}</span>
+            </div>
+          </div>
+          <div class="product-footer">
+            <span>Stock {{ product.stock }}</span>
+            <a class="product-link" href="{{ url_for('shop.product_detail', product_id=product.id) }}">View</a>
+          </div>
+        </article>
+      {% else %}
+        <div class="empty-state">
+          <h4>No products match your filters</h4>
+          <p>Try adjusting the filters or clearing them to explore the full catalog.</p>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+{% endblock %}

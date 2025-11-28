@@ -1,11 +1,10 @@
 """
-OAuth routes for social login (Google, Facebook)
+OAuth routes for social login (Google only)
 """
 import json
 from flask import redirect, url_for, flash, request, Blueprint
 from flask_login import current_user, login_user
 from flask_dance.contrib.google import make_google_blueprint
-from flask_dance.contrib.facebook import make_facebook_blueprint
 from flask_dance.consumer import oauth_authorized, oauth_error
 from flask_dance.consumer.storage.sqla import SQLAlchemyStorage
 from project import db
@@ -32,15 +31,6 @@ google_blueprint = make_google_blueprint(
     # Note: Flask-Dance will use default OAuth URLs for Google
 )
 
-facebook_blueprint = make_facebook_blueprint(
-    client_id=current_config.FACEBOOK_CLIENT_ID,
-    client_secret=current_config.FACEBOOK_CLIENT_SECRET,
-    # Use None to let Flask-Dance generate the redirect URI automatically
-    redirect_url=None,
-    scope=["email"],
-    storage=SQLAlchemyStorage(OAuth, db.session)
-)
-
 # OAuth blueprints configured successfully
 
 # Create a blueprint for debug routes
@@ -55,11 +45,6 @@ def oauth_debug():
     except Exception as e:
         google_auth_url = f"Error generating URL: {e}"
 
-    try:
-        facebook_auth_url = facebook_blueprint.authorization_url
-    except Exception as e:
-        facebook_auth_url = f"Error generating URL: {e}"
-
     debug_info = f"""
     Google OAuth Configuration:
     - Client ID: {google_blueprint.client_id[:20]}...
@@ -67,13 +52,6 @@ def oauth_debug():
     - Authorization URL: {google_blueprint.authorization_url}
     - Token URL: {google_blueprint.token_url}
     - Generated Auth URL: {google_auth_url}
-
-    Facebook OAuth Configuration:
-    - Client ID: {facebook_blueprint.client_id}
-    - Configured Redirect URL: {facebook_blueprint.redirect_url}
-    - Authorization URL: {facebook_blueprint.authorization_url}
-    - Token URL: {facebook_blueprint.token_url}
-    - Generated Auth URL: {facebook_auth_url}
 
     Current Request:
     - URL: {request.url}
@@ -83,7 +61,6 @@ def oauth_debug():
     - Port: {request.environ.get('SERVER_PORT', 'unknown')}
 
     Expected Google Redirect URI: {request.url_root}login/google/authorized
-    Expected Facebook Redirect URI: {request.url_root}login/facebook/authorized
     """
     return f"<pre>{debug_info}</pre>"
 
@@ -139,64 +116,9 @@ def google_logged_in(blueprint, token):
     except Exception:
         return redirect(url_for("main.index"))
 
-@oauth_authorized.connect_via(facebook_blueprint)
-def facebook_logged_in(blueprint, token):
-    if not token:
-        flash("Failed to log in.", category="error")
-        return
-
-    resp = blueprint.session.get("/me")
-    if not resp.ok:
-        msg = "Failed to fetch user info."
-        flash(msg, category="error")
-        return
-
-    facebook_info = resp.json()
-    facebook_name = facebook_info["name"]
-    facebook_user_id = str(facebook_info["id"])
-    facebook_email = facebook_info.get("email", f"{facebook_user_id}@oauth.local")
-
-    # Handle user login/creation
-    if current_user.is_anonymous:
-        try:
-            user, is_new = OAuthService.create_or_get_oauth_user(
-                provider=blueprint.name,
-                provider_user_id=facebook_user_id,
-                provider_user_login=facebook_name,
-                email=facebook_email,
-                name=facebook_name
-            )
-
-            # Update token
-            oauth = OAuthService.get_oauth_by_provider_and_id(blueprint.name, facebook_user_id)
-            if oauth:
-                OAuthService.update_oauth_token(oauth, token)
-
-            login_user(user)
-        except Exception as e:
-            flash(f"Error during Facebook login: {str(e)}", category="error")
-            return
-
-    try:
-        role = (getattr(current_user, 'role', '') or 'buyer').lower()
-        if role == 'seller':
-            return redirect(url_for('main.seller_dashboard'))
-        if role == 'rider':
-            return redirect(url_for('main.rider_dashboard'))
-        return redirect(url_for('main.index'))
-    except Exception:
-        return redirect(url_for("main.index"))
-
 # OAuth error handlers
 @oauth_error.connect_via(google_blueprint)
 def google_error(blueprint, message, response):
-    error_msg = f"OAuth error from {blueprint.name}! Error: {message}"
-    if response:
-        error_msg += f" | Response: {response.text}"
-    flash(error_msg, category="error")
-
-@oauth_error.connect_via(facebook_blueprint)
-def facebook_error(blueprint, message, response):
     error_msg = f"OAuth error from {blueprint.name}! Error: {message}"
     if response:
         error_msg += f" | Response: {response.text}"

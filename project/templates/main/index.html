@@ -1,12 +1,152 @@
 {% extends "base.html" %}
 
+{% block body_class %}home{% endblock %}
+
 {% block content %}
+<section class="hero-section container-narrow">
+  <div class="hero-copy-block">
+    <span class="hero-pill">Trusted sellers · Fast checkout</span>
+    <h1>Discover modern essentials from local Dione shops.</h1>
+    <p>Browse featured drops, compare categories, and complete purchases with a streamlined shopping cart—just like your favorite ecommerce apps.</p>
+    <div class="hero-cta">
+      <a class="btn primary" href="{{ url_for('shop.catalog') }}">Shop now</a>
+      <a class="btn outline" href="{{ url_for('shop.catalog', featured=1) }}">View featured</a>
+    </div>
+    <ul class="hero-highlights">
+      <li><i class="fas fa-shipping-fast"></i> Same-day dispatch on featured items</li>
+      <li><i class="fas fa-shield-check"></i> Secure checkout & order tracking</li>
+      <li><i class="fas fa-store"></i> {{ categories|length }} categories curated by sellers</li>
+    </ul>
+  </div>
+  <div class="hero-media">
+    <div class="hero-photo">
+      <img src="{{ url_for('static', filename='image/dione logo.png') }}" alt="Dione ecommerce hero">
+    </div>
+    <div class="hero-media-card">
+      <strong>{{ featured_products|length }} featured items</strong>
+      <span>Handpicked by store owners</span>
+    </div>
+  </div>
+</section>
 
-<div class="index">
-<h3 class="text-center">Homepage</h3>
+<section id="categories" class="category-strip container-narrow">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">Shop by category</p>
+      <h2>Pick a lane, start exploring</h2>
+    </div>
+    <a class="link" href="{{ url_for('shop.catalog') }}">View all</a>
+  </div>
+  <div class="category-grid">
+    {% for category in categories %}
+      <a class="category-chip" href="{{ url_for('shop.catalog', category=category.id) }}">
+        <div class="category-icon">{{ (category.name or '?')[0]|upper }}</div>
+        <div>
+          <strong>{{ category.name }}</strong>
+          <small>Shop now</small>
+        </div>
+      </a>
+    {% else %}
+      <div class="empty-state small">
+        <p>No categories yet. Create products to build your marketplace!</p>
+      </div>
+    {% endfor %}
+  </div>
+</section>
 
-<p class="lead text-center">
-  kaya mo yan wag susuko malapit na tayo sa finish line :D
-</p>
-</div>
+<section class="product-section container-narrow">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">Curated favorites</p>
+      <h2>Featured products</h2>
+    </div>
+    <a class="link" href="{{ url_for('shop.catalog', featured=1) }}">See all featured</a>
+  </div>
+  <div class="product-grid">
+    {% for product in featured_products %}
+      <article class="product-card">
+        <a class="product-photo" href="{{ url_for('shop.product_detail', product_id=product.id) }}">
+          {% if product.primary_image %}
+            <img src="{{ url_for('static', filename=product.primary_image.path) }}" alt="{{ product.name }}">
+          {% else %}
+            <div class="placeholder">No image</div>
+          {% endif %}
+        </a>
+        <div class="product-body">
+          <h3>{{ product.name }}</h3>
+          <p class="product-price">₱{{ '%.2f'|format(product.price) }}</p>
+          <div class="product-badges">
+            <span>{{ product.category.name if product.category else 'General' }}</span>
+            {% if product.is_featured %}
+              <span class="badge soft">Featured</span>
+            {% endif %}
+          </div>
+        </div>
+        <div class="product-footer">
+          <span>Stock {{ product.stock }}</span>
+          <a class="product-link" href="{{ url_for('shop.product_detail', product_id=product.id) }}">View</a>
+        </div>
+      </article>
+    {% else %}
+      <div class="empty-state">
+        <h4>No products yet</h4>
+        <p>Once sellers add listings, they’ll appear here with fresh deals.</p>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="product-section container-narrow">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">Seller shelves</p>
+      <h2>Latest from our sellers</h2>
+    </div>
+    <a class="link" href="{{ url_for('shop.catalog') }}">Shop marketplace</a>
+  </div>
+  <div class="product-grid">
+    {% for product in new_arrivals %}
+      <article class="product-card compact">
+        <a class="product-photo" href="{{ url_for('shop.product_detail', product_id=product.id) }}">
+          {% if product.primary_image %}
+            <img src="{{ url_for('static', filename=product.primary_image.path) }}" alt="{{ product.name }}">
+          {% else %}
+            <div class="placeholder">No image</div>
+          {% endif %}
+        </a>
+        <div class="product-body">
+          <h3>{{ product.name }}</h3>
+          <p class="product-price">₱{{ '%.2f'|format(product.price) }}</p>
+          <div class="product-badges">
+            <span>{{ product.seller.username or 'Seller' }}</span>
+          </div>
+        </div>
+        <div class="product-footer">
+          <span>Stock {{ product.stock }}</span>
+          <a class="product-link" href="{{ url_for('shop.product_detail', product_id=product.id) }}">Quick view</a>
+        </div>
+      </article>
+    {% else %}
+      <div class="empty-state">
+        <h4>No listings yet</h4>
+        <p>Encourage sellers to publish products to activate this section.</p>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="perks-grid container-narrow">
+  <article>
+    <h3>Buyer protection</h3>
+    <p>Secure payments, dispute assistance, and transparent tracking keep you confident.</p>
+  </article>
+  <article>
+    <h3>Smart discovery</h3>
+    <p>Powerful search and category filters mirror the Shopee browsing experience you expect.</p>
+  </article>
+  <article>
+    <h3>Seller growth</h3>
+    <p>Store dashboards surface analytics, reviews, and inventory snapshots instantly.</p>
+  </article>
+</section>
 {% endblock %}

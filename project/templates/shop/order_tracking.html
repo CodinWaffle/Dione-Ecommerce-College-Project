@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row mt-4">
+  <div class="col-lg-8 mx-auto">
+    <div class="card shadow-sm">
+      <div class="card-header bg-dark text-white">
+        <h4 class="mb-0">Order #{{ order.id }} Tracking</h4>
+      </div>
+      <div class="card-body">
+        <p><strong>Status:</strong> {{ order.status }}</p>
+        <p><strong>Total:</strong> ₱{{ '%.2f'|format(order.total_amount) }}</p>
+        <hr>
+        <h5>Latest Updates</h5>
+        <ul class="timeline list-unstyled">
+          {% for event in order.tracking_events %}
+          <li class="mb-3">
+            <div class="small text-muted">{{ event.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+            <strong>{{ event.status|title }}</strong>
+            <p class="mb-0">{{ event.message }}</p>
+          </li>
+          {% else %}
+          <li class="text-muted">No tracking events yet.</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

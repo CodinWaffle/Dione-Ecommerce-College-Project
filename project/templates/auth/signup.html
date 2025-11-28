@@ -1,36 +1,187 @@
 {% extends "base.html" %}
 
+{% block body_class %}auth-body{% endblock %}
+
 {% block content %}
+<section class="auth-wrapper wide">
+  <div class="auth-card simple-card large-card">
+    <div class="auth-header">
+      <p class="eyebrow">Create your account</p>
+      <h1>Sign Up</h1>
+      <p class="subtitle">Pick a role and share the details that help admins review your application.</p>
+    </div>
 
-<div class="container">
-
-  <aside class="col col-sm-5">
-    <div class="card">
-      <article class="card-body">
-        <h4 class="card-title mb-4 mt-1 text-center">Sign Up</h4>
-        <form method="POST" action="/signup">
-          <div class="form-group">
-              <input name="username" class="form-control" placeholder="Name" type="text" autofocus="">
-          </div>
-          <div class="form-group">
-              <input name="email" class="form-control" placeholder="user@user.com" type="email" autofocus="">
-          </div>
-          <div class="form-group">
-              <input name="password" class="form-control" placeholder="********" type="password">
-          </div>
-          <div class="form-group">
-              <select name="role" class="form-control">
-                  <option value="" disabled selected>Select Role</option>
-                  <option value="buyer">Buyer</option>
-                  <option value="seller">Seller</option>
-                  <option value="rider">Rider</option>
-              </select>
-          </div>
-          <button type="submit" class="btn btn-info btn-block">Sign Up</button>
-        </form>
+    <form method="POST" action="/signup" class="auth-form card-form auth-transition-form">
+      <div class="form-grid">
+        <div class="floating-field">
+          <label for="signup-username">Full name</label>
+          <input id="signup-username" name="username" type="text" placeholder="Jane Doe" required>
+        </div>
+        <div class="floating-field">
+          <label for="signup-email">Email</label>
+          <input id="signup-email" name="email" type="email" placeholder="you@example.com" required>
+        </div>
+        <div class="floating-field">
+          <label for="signup-password">Password</label>
+          <input id="signup-password" name="password" type="password" placeholder="Create a strong password" required>
+        </div>
       </div>
 
-    </div>
-      </article>
-  </aside>
+      <div class="role-toggle">
+        <p class="role-label">Select your role</p>
+        <div class="role-options">
+          <label class="role-option active">
+            <input type="radio" name="role" value="buyer" checked>
+            <span>
+              <strong>Buyer</strong>
+              <small>Place and track orders</small>
+            </span>
+          </label>
+          <label class="role-option">
+            <input type="radio" name="role" value="seller">
+            <span>
+              <strong>Seller</strong>
+              <small>List products & manage inventory</small>
+            </span>
+          </label>
+          <label class="role-option">
+            <input type="radio" name="role" value="rider">
+            <span>
+              <strong>Rider</strong>
+              <small>Handle deliveries</small>
+            </span>
+          </label>
+        </div>
+      </div>
+
+      <div class="role-panels">
+        <div class="role-panel active" data-role="buyer">
+          <div class="role-panel-header">
+            <span class="badge soft">Buyer info</span>
+            <p>Optional details to personalize your experience.</p>
+          </div>
+          <div class="form-grid two-col">
+            <div class="floating-field">
+              <label for="buyer_contact">Contact number</label>
+              <input id="buyer_contact" name="buyer_contact" type="text" placeholder="+63 900 000 0000" data-role-field="buyer">
+            </div>
+            <div class="floating-field">
+              <label for="buyer_address">Preferred delivery address</label>
+              <input id="buyer_address" name="buyer_address" type="text" placeholder="City, Province" data-role-field="buyer">
+            </div>
+          </div>
+        </div>
+
+        <div class="role-panel" data-role="seller">
+          <div class="role-panel-header">
+            <span class="badge soft">Seller application</span>
+            <p>Admins review these details before activating your seller tools.</p>
+          </div>
+          <div class="form-grid two-col">
+            <div class="floating-field">
+              <label for="seller_store_name">Store name</label>
+              <input id="seller_store_name" name="seller_store_name" type="text" placeholder="Dione Essentials" data-role-field="seller" data-required="true">
+            </div>
+            <div class="floating-field">
+              <label for="seller_business_id">Business registration / permit</label>
+              <input id="seller_business_id" name="seller_business_id" type="text" placeholder="Permit / DTI / SEC" data-role-field="seller" data-required="true">
+            </div>
+            <div class="floating-field">
+              <label for="seller_contact">Business contact number</label>
+              <input id="seller_contact" name="seller_contact" type="text" placeholder="+63 900 000 0000" data-role-field="seller" data-required="true">
+            </div>
+            <div class="floating-field">
+              <label for="seller_address">Pickup / warehouse address</label>
+              <input id="seller_address" name="seller_address" type="text" placeholder="City, Province" data-role-field="seller" data-required="true">
+            </div>
+            <div class="floating-field wide">
+              <label for="seller_description">What products will you sell?</label>
+              <textarea id="seller_description" name="seller_description" rows="2" placeholder="Describe your assortment" data-role-field="seller"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="role-panel" data-role="rider">
+          <div class="role-panel-header">
+            <span class="badge soft">Rider application</span>
+            <p>Tell us about your vehicle and coverage area.</p>
+          </div>
+          <div class="form-grid two-col">
+            <div class="floating-field">
+              <label for="rider_vehicle_type">Vehicle type</label>
+              <select id="rider_vehicle_type" name="rider_vehicle_type" data-role-field="rider" data-required="true">
+                <option value="">Select vehicle</option>
+                <option value="Motorcycle">Motorcycle</option>
+                <option value="Car">Car</option>
+                <option value="Van">Van</option>
+                <option value="Truck">Truck</option>
+              </select>
+            </div>
+            <div class="floating-field">
+              <label for="rider_plate_number">Plate number</label>
+              <input id="rider_plate_number" name="rider_plate_number" type="text" placeholder="ABC-1234" data-role-field="rider" data-required="true">
+            </div>
+            <div class="floating-field">
+              <label for="rider_license_number">Driver license number</label>
+              <input id="rider_license_number" name="rider_license_number" type="text" placeholder="00-00-000000" data-role-field="rider" data-required="true">
+            </div>
+            <div class="floating-field">
+              <label for="rider_contact">Contact number</label>
+              <input id="rider_contact" name="rider_contact" type="text" placeholder="+63 900 000 0000" data-role-field="rider" data-required="true">
+            </div>
+            <div class="floating-field wide">
+              <label for="rider_service_area">Primary delivery areas</label>
+              <textarea id="rider_service_area" name="rider_service_area" rows="2" placeholder="Cities / barangays you cover" data-role-field="rider"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="auth-row end">
+        <button type="submit" class="btn primary">Create account</button>
+        <a href="{{ url_for('auth.login') }}" class="ghost-link">Already registered? Sign in</a>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const roleInputs = document.querySelectorAll('.role-option input[name="role"]');
+  const rolePanels = document.querySelectorAll('.role-panel');
+  const roleFields = document.querySelectorAll('[data-role-field]');
+
+  function activateRole(role) {
+    rolePanels.forEach(panel => {
+      panel.classList.toggle('active', panel.dataset.role === role);
+    });
+    document.querySelectorAll('.role-option').forEach(option => {
+      const input = option.querySelector('input[name="role"]');
+      option.classList.toggle('active', input && input.value === role);
+    });
+    roleFields.forEach(field => {
+      const shouldShow = field.dataset.roleField === role;
+      const requires = field.dataset.required === 'true' && shouldShow && role !== 'buyer';
+      const wrapper = field.closest('.floating-field');
+      if (wrapper) {
+        wrapper.classList.toggle('disabled', !shouldShow && !field.value);
+      }
+      if (requires) {
+        field.setAttribute('required', 'required');
+      } else {
+        field.removeAttribute('required');
+      }
+    });
+  }
+
+  roleInputs.forEach(input => {
+    input.addEventListener('change', () => activateRole(input.value));
+  });
+
+  const initial = document.querySelector('.role-option input[name="role"]:checked');
+  activateRole(initial ? initial.value : 'buyer');
+});
+</script>
 {% endblock %}

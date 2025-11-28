@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4 mb-5 seller-orders">
+  <div class="d-flex justify-content-between align-items-center flex-wrap mb-4">
+    <div>
+      <p class="text-uppercase text-muted small mb-1">Orders</p>
+      <h3 class="mb-0">Order Management</h3>
+      <p class="text-muted mb-0">Track fulfillment, update statuses, and log manual sales.</p>
+    </div>
+    <div class="mt-3 mt-md-0">
+      <a class="btn btn-outline-secondary" href="{{ url_for('seller.dashboard') }}">Back to dashboard</a>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-5 mb-4">
+      <div class="card shadow-sm">
+        <div class="card-header bg-white border-0">
+          <strong>Record Manual Order</strong>
+          <small class="d-block text-muted">Great for marketplace sales outside the storefront.</small>
+        </div>
+        <div class="card-body">
+          <form method="post" action="{{ url_for('seller.orders') }}">
+            <div class="form-group">
+              <label for="product_id">Product</label>
+              <select class="form-control" name="product_id" id="product_id" required {% if not products %}disabled{% endif %}>
+                <option value="">Select product</option>
+                {% for product in products %}
+                  <option value="{{ product.id }}">{{ product.name }} ({{ product.stock }} in stock)</option>
+                {% endfor %}
+              </select>
+              {% if not products %}
+                <small class="form-text text-muted">Add products to your catalog to enable manual orders.</small>
+              {% endif %}
+            </div>
+            <div class="form-group">
+              <label for="quantity">Quantity</label>
+              <input type="number" min="1" class="form-control" id="quantity" name="quantity" value="1" required>
+            </div>
+            <div class="form-group">
+              <label for="buyer_email">Buyer Email (optional)</label>
+              <input type="email" class="form-control" id="buyer_email" name="buyer_email" placeholder="customer@example.com">
+              <small class="form-text text-muted">If the email matches a user, we link the order automatically.</small>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block" {% if not products %}disabled{% endif %}>Log Order</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-7 mb-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+          <strong>Active Orders</strong>
+          <small class="text-muted">{{ orders|length }} total</small>
+        </div>
+        <div class="table-responsive">
+          <table class="table mb-0">
+            <thead class="thead-light">
+              <tr>
+                <th>#</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Placed</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if orders %}
+                {% for order in orders %}
+                  <tr>
+                    <td><strong>#{{ order.id }}</strong></td>
+                    <td>₱{{ "%.2f"|format(order.total_amount or 0) }}</td>
+                    <td><span class="badge badge-secondary text-uppercase">{{ order.status }}</span></td>
+                    <td>{{ order.placed_at.strftime("%b %d, %Y") if order.placed_at else "—" }}</td>
+                    <td>
+                      <form method="post" action="{{ url_for('seller.order_status', order_id=order.id) }}" class="form-inline justify-content-end">
+                        <select class="form-control form-control-sm mr-2" name="status">
+                          {% for choice in status_choices %}
+                            <option value="{{ choice }}" {% if order.status == choice %}selected{% endif %}>{{ choice.title() }}</option>
+                          {% endfor %}
+                        </select>
+                        <button type="submit" class="btn btn-sm btn-outline-primary">Update</button>
+                      </form>
+                    </td>
+                  </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="5" class="text-center text-muted py-4">No orders yet.</td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

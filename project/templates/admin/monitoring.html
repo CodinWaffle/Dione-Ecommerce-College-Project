@@ -1,0 +1,29 @@
+{% extends "admin/base_admin.html" %}
+{% block admin_content %}
+<section class="admin-section">
+  <div class="section-header">
+    <div>
+      <p class="section-eyebrow">System Status</p>
+      <h2>Platform Monitoring</h2>
+    </div>
+  </div>
+  <div class="admin-grid">
+    <div class="card kpi-card">
+      <p class="label">Total Orders</p>
+      <h3>{{ metrics.orders }}</h3>
+    </div>
+    <div class="card kpi-card">
+      <p class="label">Gross Revenue</p>
+      <h3>₱{{ '%.2f'|format(metrics.revenue) }}</h3>
+    </div>
+    <div class="card kpi-card">
+      <p class="label">Active Stores</p>
+      <h3>{{ metrics.stores }}</h3>
+    </div>
+    <div class="card kpi-card">
+      <p class="label">Reviews Awaiting Moderation</p>
+      <h3>{{ metrics.pending_reviews }}</h3>
+    </div>
+  </div>
+</section>
+{% endblock %}

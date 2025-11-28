@@ -4,6 +4,8 @@ Configuration settings for Dione Ecommerce application
 import os
 from datetime import timedelta
 
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+
 def load_env_file():
     """Load environment variables from .env file"""
     if os.path.exists('.env'):
@@ -37,8 +39,9 @@ class Config:
 
     GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID') or "570919329793-g8sl8nn0h03mbk32qbgop8gie34m5chq.apps.googleusercontent.com"
     GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET') or "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"
-    FACEBOOK_CLIENT_ID = os.environ.get('FACEBOOK_CLIENT_ID') or "YOUR_FACEBOOK_APP_ID"
-    FACEBOOK_CLIENT_SECRET = os.environ.get('FACEBOOK_CLIENT_SECRET') or "YOUR_FACEBOOK_APP_SECRET"
+    MAX_CONTENT_LENGTH = 10 * 1024 * 1024  # 10 MB upload ceiling
+    UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
+    ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 
 class DevelopmentConfig(Config):
     """Development configuration"""

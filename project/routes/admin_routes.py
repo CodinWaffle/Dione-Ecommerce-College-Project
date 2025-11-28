@@ -6,7 +6,9 @@ from flask_login import login_required, current_user, login_user, logout_user
 from werkzeug.security import check_password_hash
 from flask_mail import Message
 from project import db, mail
-from project.models import User, SiteSetting
+from project.models import Order, Review, SiteSetting, StoreProfile, User
+from project.services.storefront_service import moderate_review
+from sqlalchemy import func
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -378,3 +380,45 @@ def user_delete(user_id):
         db.session.rollback()
         flash(f"Error deleting user: {str(exc)}", 'danger')
     return redirect(url_for('admin.users'))
+
+
+@admin_bp.get('/monitoring')
+@login_required
+def monitoring():
+    """Platform monitoring dashboard."""
+    total_orders = Order.query.count()
+    revenue = (
+        db.session.query(func.coalesce(func.sum(Order.total_amount), 0)).scalar()
+        or 0
+    )
+    stores = StoreProfile.query.count()
+    pending_reviews = Review.query.filter_by(is_published=False).count()
+    return render_template(
+        'admin/monitoring.html',
+        metrics={
+            'orders': total_orders,
+            'revenue': float(revenue),
+            'stores': stores,
+            'pending_reviews': pending_reviews,
+        },
+    )
+
+
+@admin_bp.get('/content')
+@login_required
+def content_center():
+    """Content moderation for reviews."""
+    reviews = Review.query.order_by(Review.created_at.desc()).limit(50).all()
+    return render_template('admin/content.html', reviews=reviews)
+
+
+@admin_bp.post('/content/reviews/<int:review_id>/<string:action>')
+@login_required
+def content_review_action(review_id, action):
+    publish = action == 'publish'
+    try:
+        moderate_review(review_id, publish=publish)
+        flash('Review visibility updated.', 'success')
+    except Exception as exc:
+        flash(f'Unable to update review: {exc}', 'danger')
+    return redirect(url_for('admin.content_center'))

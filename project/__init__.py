@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_jwt_extended import JWTManager
 from flask_mail import Mail
+from flask_mail import Mail
 import os
 
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
@@ -18,6 +19,7 @@ def create_app(config_name='default'):
     # Load configuration
     from .config import config
     app.config.from_object(config[config_name])
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
     db.init_app(app)
     jwt.init_app(app)
     mail.init_app(app)
@@ -37,14 +39,17 @@ def create_app(config_name='default'):
     # Register blueprints
     from .routes.auth_routes import auth
     from .routes.main_routes import main
-    from .routes.oauth_routes import google_blueprint, facebook_blueprint, debug_bp
+    from .routes.oauth_routes import google_blueprint, debug_bp
+    from .routes.seller_routes import seller_bp
     from .routes.admin_routes import admin_bp
+    from .routes.storefront_routes import shop_bp
 
     app.register_blueprint(auth)
     app.register_blueprint(main)
     app.register_blueprint(google_blueprint, url_prefix="/login")
-    app.register_blueprint(facebook_blueprint, url_prefix="/login")
     app.register_blueprint(debug_bp)
     app.register_blueprint(admin_bp)
+    app.register_blueprint(seller_bp)
+    app.register_blueprint(shop_bp)
 
     return app

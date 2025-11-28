@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row mt-4">
+  <div class="col-lg-8 mx-auto">
+    <div class="card shadow-sm">
+      <div class="card-header bg-dark text-white">
+        <h4 class="mb-0">Store Profile</h4>
+      </div>
+      <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+          <div class="form-group">
+            <label>Store Name</label>
+            <input type="text" class="form-control" name="name" value="{{ store.name }}" required>
+          </div>
+          <div class="form-group">
+            <label>Public URL Slug</label>
+            <input type="text" class="form-control" name="slug" value="{{ store.slug }}">
+            <small class="text-muted">Shown on storefront links (e.g., /shop/store/{{ store.slug }}).</small>
+          </div>
+          <div class="form-group">
+            <label>Tagline</label>
+            <input type="text" class="form-control" name="tagline" value="{{ store.tagline }}">
+          </div>
+          <div class="form-group">
+            <label>Description</label>
+            <textarea class="form-control" name="description" rows="4">{{ store.description }}</textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label>Contact Email</label>
+              <input type="email" class="form-control" name="contact_email" value="{{ store.contact_email }}">
+            </div>
+            <div class="form-group col-md-6">
+              <label>Contact Phone</label>
+              <input type="text" class="form-control" name="contact_phone" value="{{ store.contact_phone }}">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Theme Color</label>
+            <input type="text" class="form-control" name="theme_color" value="{{ store.theme_color }}">
+          </div>
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label>Logo Image</label>
+              <input type="file" class="form-control-file" name="logo_image">
+              {% if store.logo_image %}
+              <small class="text-muted d-block mt-1">Current: {{ store.logo_image }}</small>
+              {% endif %}
+            </div>
+            <div class="form-group col-md-6">
+              <label>Banner Image</label>
+              <input type="file" class="form-control-file" name="banner_image">
+              {% if store.banner_image %}
+              <small class="text-muted d-block mt-1">Current: {{ store.banner_image }}</small>
+              {% endif %}
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Shipping Policy</label>
+            <textarea class="form-control" name="shipping_policy" rows="3">{{ store.shipping_policy }}</textarea>
+          </div>
+          <div class="form-group">
+            <label>Return Policy</label>
+            <textarea class="form-control" name="return_policy" rows="3">{{ store.return_policy }}</textarea>
+          </div>
+          <div class="border rounded p-3 mb-4">
+            <h5>Social Links</h5>
+            <div class="form-row">
+              <div class="form-group col-md-6">
+                <label>Facebook</label>
+                <input class="form-control" name="social_facebook" value="{{ store.social_links_dict.get('facebook') }}">
+              </div>
+              <div class="form-group col-md-6">
+                <label>Instagram</label>
+                <input class="form-control" name="social_instagram" value="{{ store.social_links_dict.get('instagram') }}">
+              </div>
+              <div class="form-group col-md-6">
+                <label>TikTok</label>
+                <input class="form-control" name="social_tiktok" value="{{ store.social_links_dict.get('tiktok') }}">
+              </div>
+              <div class="form-group col-md-6">
+                <label>Website</label>
+                <input class="form-control" name="social_website" value="{{ store.social_links_dict.get('website') }}">
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-primary" type="submit">Save Store Profile</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

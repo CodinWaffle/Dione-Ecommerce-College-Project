@@ -16,6 +16,8 @@
     </div>
     <div class="list-group list-group-flush">
       <a class="list-group-item list-group-item-action {% if request.endpoint == 'admin.overview' %}active{% endif %}" href="{{ url_for('admin.overview') }}">Dashboard</a>
+      <a class="list-group-item list-group-item-action {% if request.endpoint == 'admin.monitoring' %}active{% endif %}" href="{{ url_for('admin.monitoring') }}">Monitoring</a>
+      <a class="list-group-item list-group-item-action {% if request.endpoint == 'admin.content_center' %}active{% endif %}" href="{{ url_for('admin.content_center') }}">Content Moderation</a>
       <a class="list-group-item list-group-item-action {% if request.endpoint == 'admin.users' %}active{% endif %}" href="{{ url_for('admin.users') }}">Users Management</a>
       <a class="list-group-item list-group-item-action {% if request.endpoint == 'admin.products' %}active{% endif %}" href="{{ url_for('admin.products') }}">Product Management</a>
       <a class="list-group-item list-group-item-action {% if request.endpoint == 'admin.sellers' %}active{% endif %}" href="{{ url_for('admin.sellers') }}">Sellers Management</a>

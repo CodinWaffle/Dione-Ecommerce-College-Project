@@ -1,24 +1,30 @@
 {% extends "base.html" %}
 
+{% block body_class %}auth-body{% endblock %}
+
 {% block content %}
-<div class="container mt-5" style="max-width: 480px;">
-  <div class="card">
-    <div class="card-body">
-      <h4 class="card-title text-center mb-4">Admin Login</h4>
-      <form method="POST" action="{{ url_for('admin.login_post') }}">
-        <div class="form-group">
-          <label for="email">Email</label>
-          <input id="email" type="email" name="email" class="form-control" placeholder="admin@example.com" required>
-        </div>
-        <div class="form-group">
-          <label for="password">Password</label>
-          <input id="password" type="password" name="password" class="form-control" placeholder="********" required>
-        </div>
-        <button class="btn btn-primary btn-block" type="submit">Login</button>
-      </form>
+<section class="auth-wrapper narrow">
+  <div class="auth-card simple-card">
+    <div class="auth-header">
+      <p class="eyebrow">Admin console</p>
+      <h1>Sign in</h1>
+      <p class="subtitle">Access moderation, approvals, and analytics.</p>
+    </div>
+    <form method="POST" action="{{ url_for('admin.login_post') }}" class="auth-form card-form auth-transition-form">
+      <div class="floating-field">
+        <label for="admin-email">Email</label>
+        <input id="admin-email" type="email" name="email" placeholder="admin@example.com" required>
+      </div>
+      <div class="floating-field">
+        <label for="admin-password">Password</label>
+        <input id="admin-password" type="password" name="password" placeholder="••••••••" required>
+      </div>
+      <button class="btn primary w-100" type="submit">Login</button>
+    </form>
+    <div class="auth-footer">
+      <span>Back to storefront?</span>
+      <a class="ghost-link" href="{{ url_for('main.index') }}">Return home</a>
     </div>
   </div>
-</div>
+</section>
 {% endblock %}
-
-

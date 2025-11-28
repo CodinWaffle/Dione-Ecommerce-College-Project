@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row mt-4">
+  <div class="col-md-6">
+    {% if product.primary_image %}
+    <img src="{{ url_for('static', filename=product.primary_image.path) }}" class="img-fluid rounded mb-3" alt="{{ product.name }}">
+    {% endif %}
+    <p class="text-muted">{{ product.description }}</p>
+    <div class="border rounded p-3">
+      <h6>Stock Availability</h6>
+      <p class="{% if product.stock > 0 %}text-success{% else %}text-danger{% endif %}">
+        {% if product.stock > 0 %}
+          In Stock ({{ product.stock }})
+        {% else %}
+          Out of stock
+        {% endif %}
+      </p>
+      {% if product.variants %}
+      <p class="mb-0"><strong>Variants:</strong> {{ product.variants|length }} options</p>
+      {% endif %}
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <h3>{{ product.name }}</h3>
+        <h4 class="text-primary mb-3">₱{{ '%.2f'|format(product.price) }}</h4>
+        <form method="post" action="{{ url_for('shop.cart_add_item') }}">
+          <input type="hidden" name="product_id" value="{{ product.id }}">
+          {% if product.variants %}
+          <div class="form-group">
+            <label>Select Variant</label>
+            <select class="form-control" name="variant_id">
+              {% for variant in product.variants %}
+              <option value="{{ variant.id }}">{{ variant.attribute }}: {{ variant.value }} (Stock: {{ variant.stock }})</option>
+              {% endfor %}
+            </select>
+          </div>
+          {% endif %}
+          <div class="form-group">
+            <label>Quantity</label>
+            <input type="number" class="form-control" name="quantity" value="1" min="1">
+          </div>
+          {% if current_user.is_authenticated %}
+          <button class="btn btn-primary btn-block" type="submit">Add to Cart</button>
+          {% else %}
+          <a class="btn btn-outline-primary btn-block" href="{{ url_for('auth.login') }}">Login to Purchase</a>
+          {% endif %}
+        </form>
+      </div>
+    </div>
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5>Ratings & Reviews</h5>
+        <p class="display-4">{{ '%.1f'|format(rating.average) }} <small class="text-muted">({{ rating.total }} reviews)</small></p>
+        {% if current_user.is_authenticated %}
+        <form method="post" action="{{ url_for('shop.product_review', product_id=product.id) }}" enctype="multipart/form-data">
+          <div class="form-row">
+            <div class="form-group col-md-4">
+              <label>Rating</label>
+              <select class="form-control" name="rating">
+                {% for n in range(5,0,-1) %}
+                <option value="{{ n }}">{{ n }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="form-group col-md-8">
+              <label>Title</label>
+              <input class="form-control" name="title">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Comment</label>
+            <textarea class="form-control" name="body" rows="3"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Upload Media (max 5)</label>
+            <input class="form-control-file" type="file" name="media" multiple>
+          </div>
+          <button class="btn btn-outline-secondary btn-block" type="submit">Submit Review</button>
+        </form>
+        {% else %}
+        <p class="text-muted">Login to leave a review.</p>
+        {% endif %}
+        <hr>
+        {% for review in reviews %}
+        <div class="mb-3">
+          <strong>{{ review.rating }}/5</strong>
+          <p class="mb-1">{{ review.body }}</p>
+          {% if review.response %}
+          <div class="bg-light rounded p-2">
+            <small class="text-muted">Seller response:</small>
+            <p class="mb-0">{{ review.response.message }}</p>
+          </div>
+          {% endif %}
+        </div>
+        {% else %}
+        <p class="text-muted">No reviews yet.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
