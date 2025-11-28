@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Size Selection Modal Test</title>
+    <link rel="stylesheet" href="project/static/css/seller_styles/add_product_stocks.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body>
+    <div style="padding: 2rem;">
+        <h1>Size Selection Modal Improvements Test</h1>
+        <button onclick="openModal()" class="btn btn-purple">
+            <i data-lucide="edit-3"></i>
+            Test Size Selection Modal
+        </button>
+    </div>
+
+    <!-- Size selection modal -->
+    <div id="sizeSelectModal" class="modal">
+        <div class="modal-content size-modal-content">
+            <div class="modal-header">
+                <div class="modal-header-content">
+                    <div class="modal-icon">
+                        <i data-lucide="ruler"></i>
+                    </div>
+                    <div class="modal-title-section">
+                        <h2 class="modal-title">Select Sizes & Stock</h2>
+                        <p class="modal-subtitle">Choose sizes and set stock quantities</p>
+                    </div>
+                </div>
+                <button class="close-btn" onclick="closeModal()">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="size-modal-note">
+                    <i data-lucide="info"></i>
+                    <span>Select multiple sizes for this variant and set individual stock quantities. Click on size boxes to select them, then enter stock amounts.</span>
+                </div>
+                
+                <!-- Size Selection Preview -->
+                <div class="size-selection-preview">
+                    <div class="preview-header">
+                        <h4>Selected Sizes Preview</h4>
+                        <span class="preview-count">2 sizes selected</span>
+                    </div>
+                    <div class="preview-content">
+                        <span class="preview-size-item">S: 10</span>
+                        <span class="preview-size-item">M: 15</span>
+                        <span class="preview-size-item custom">Custom XL: 5</span>
+                    </div>
+                </div>
+
+                <div id="sizeOptionsContainer" class="size-options-area">
+                    <!-- Clothing Group -->
+                    <div class="size-group-container">
+                        <div class="size-group-header">
+                            <strong>Clothing</strong>
+                            <span class="size-group-hint">— Shirts, tops, dresses</span>
+                        </div>
+                        <div class="size-group-grid">
+                            <div class="size-selection-box selected">
+                                <div class="size-name">XS</div>
+                                <div class="size-category-badge">Clothing</div>
+                                <input type="number" class="stock-input-small" value="5" min="0" placeholder="0">
+                            </div>
+                            <div class="size-selection-box selected">
+                                <div class="size-name">S</div>
+                                <div class="size-category-badge">Clothing</div>
+                                <input type="number" class="stock-input-small" value="10" min="0" placeholder="0">
+                            </div>
+                            <div class="size-selection-box">
+                                <div class="size-name">M</div>
+                                <div class="size-category-badge">Clothing</div>
+                                <input type="number" class="stock-input-small" style="display: none;" min="0" placeholder="0">
+                            </div>
+                            <div class="size-selection-box">
+                                <div class="size-name">L</div>
+                                <div class="size-category-badge">Clothing</div>
+                                <input type="number" class="stock-input-small" style="display: none;" min="0" placeholder="0">
+                            </div>
+                            <div class="size-selection-box">
+                                <div class="size-name">XL</div>
+                                <div class="size-category-badge">Clothing</div>
+                                <input type="number" class="stock-input-small" style="display: none;" min="0" placeholder="0">
+                            </div>
+                            <div class="size-selection-box">
+                                <div class="size-name">XXL</div>
+                                <div class="size-category-badge">Clothing</div>
+                                <input type="number" class="stock-input-small" style="display: none;" min="0" placeholder="0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Shoes Group -->
+                    <div class="size-group-container">
+                        <div class="size-group-header">
+                            <strong>Shoes</strong>
+                            <span class="size-group-hint">— US / EU shoe sizes</span>
+                        </div>
+                        <div class="size-group-grid">
+                            <div class="size-selection-box">
+                                <div class="size-name">US 5</div>
+                                <div class="size-category-badge">Shoes</div>
+                                <input type="number" class="stock-input-small" style="display: none;" min="0" placeholder="0">
+                            </div>
+                            <div class="size-selection-box">
+                                <div class="size-name">US 6</div>
+                                <div class="size-category-badge">Shoes</div>
+                                <input type="number" class="stock-input-small" style="display: none;" min="0" placeholder="0">
+                            </div>
+                            <div class="size-selection-box">
+                                <div class="size-name">US 7</div>
+                                <div class="size-category-badge">Shoes</div>
+                                <input type="number" class="stock-input-small" style="display: none;" min="0" placeholder="0">
+                            </div>
+                            <div class="size-selection-box">
+                                <div class="size-name">US 8</div>
+                                <div class="size-category-badge">Shoes</div>
+                                <input type="number" class="stock-input-small" style="display: none;" min="0" placeholder="0">
+                            </div>
+                            <div class="size-selection-box">
+                                <div class="size-name">EU 36</div>
+                                <div class="size-category-badge">Shoes</div>
+                                <input type="number" class="stock-input-small" style="display: none;" min="0" placeholder="0">
+                            </div>
+                            <div class="size-selection-box">
+                                <div class="size-name">EU 37</div>
+                                <div class="size-category-badge">Shoes</div>
+                                <input type="number" class="stock-input-small" style="display: none;" min="0" placeholder="0">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="closeModal()">
+                    <i data-lucide="x"></i>
+                    Cancel
+                </button>
+                <button type="button" class="btn-primary">
+                    <i data-lucide="save"></i>
+                    Save Changes
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openModal() {
+            document.getElementById('sizeSelectModal').classList.add('active');
+            lucide.createIcons();
+        }
+
+        function closeModal() {
+            document.getElementById('sizeSelectModal').classList.remove('active');
+        }
+
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Add click handlers for size boxes
+        document.querySelectorAll('.size-selection-box').forEach(box => {
+            box.addEventListener('click', function(e) {
+                if (e.target.classList.contains('stock-input-small')) return;
+                
+                this.classList.toggle('selected');
+                const stockInput = this.querySelector('.stock-input-small');
+                
+                if (this.classList.contains('selected')) {
+                    stockInput.style.display = 'block';
+                    if (!stockInput.value) stockInput.value = '0';
+                    setTimeout(() => stockInput.focus(), 50);
+                } else {
+                    stockInput.style.display = 'none';
+                    stockInput.value = '';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

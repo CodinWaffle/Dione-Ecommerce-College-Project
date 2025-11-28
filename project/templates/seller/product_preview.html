@@ -1,0 +1,560 @@
+{% set active_page = 'products' %}
+{% extends 'seller/base_seller.html' %}
+{% block title %}Product Preview{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/seller_styles/product_preview.css') }}" />
+<link rel="stylesheet" href="{{ url_for('static', filename='css/seller_styles/progress_bar.css') }}" />
+<style>
+.preview-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.preview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.preview-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.preview-status {
+    background: #fef3c7;
+    color: #92400e;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+}
+
+.preview-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.preview-section {
+    background: white;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+}
+
+.section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.section-title i {
+    color: #a259f7;
+}
+
+.preview-field {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.preview-field:last-child {
+    border-bottom: none;
+}
+
+.field-label {
+    font-weight: 600;
+    color: #6b7280;
+    min-width: 120px;
+}
+
+.field-value {
+    color: #1f2937;
+    text-align: right;
+    flex: 1;
+}
+
+.price-display {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #059669;
+}
+
+.compare-price {
+    text-decoration: line-through;
+    color: #9ca3af;
+    font-size: 1rem;
+    margin-left: 0.5rem;
+}
+
+.image-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.preview-image {
+    width: 120px;
+    height: 120px;
+    border-radius: 0.5rem;
+    object-fit: cover;
+    border: 2px solid #e5e7eb;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.preview-image:hover {
+    transform: scale(1.05);
+}
+
+.variants-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+.variants-table th,
+.variants-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.variants-table th {
+    background: #f9fafb;
+    font-weight: 600;
+    color: #374151;
+}
+
+.variant-photo {
+    width: 40px;
+    height: 40px;
+    border-radius: 0.25rem;
+    object-fit: cover;
+}
+
+.color-swatch {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 1px solid #e5e7eb;
+    display: inline-block;
+    margin-right: 0.5rem;
+}
+
+.stock-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.stock-good {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.stock-low {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.stock-out {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.preview-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 2px solid #e5e7eb;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-secondary {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.btn-secondary:hover {
+    background: #e5e7eb;
+}
+
+.btn-primary {
+    background: #a259f7;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #9333ea;
+}
+
+.btn-success {
+    background: #059669;
+    color: white;
+}
+
+.btn-success:hover {
+    background: #047857;
+}
+
+.full-width {
+    grid-column: 1 / -1;
+}
+
+.description-text {
+    background: #f9fafb;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    border-left: 4px solid #a259f7;
+    margin-top: 0.5rem;
+    white-space: pre-wrap;
+}
+
+.attributes-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.attribute-tag {
+    background: #e0e7ff;
+    color: #3730a3;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+}
+
+@media (max-width: 768px) {
+    .preview-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .preview-actions {
+        flex-direction: column;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="preview-container">
+    <div class="preview-header">
+        <h1 class="preview-title">{{ product.name }}</h1>
+        <div class="preview-status">
+            <i class="ri-draft-line"></i>
+            Draft Preview
+        </div>
+    </div>
+
+    <div class="preview-grid">
+        <!-- Basic Information -->
+        <div class="preview-section">
+            <h2 class="section-title">
+                <i class="ri-information-line"></i>
+                Basic Information
+            </h2>
+            
+            <div class="preview-field">
+                <span class="field-label">Product Name:</span>
+                <span class="field-value">{{ product.name }}</span>
+            </div>
+            
+            <div class="preview-field">
+                <span class="field-label">Category:</span>
+                <span class="field-value">{{ product.category }}</span>
+            </div>
+            
+            {% if product.subcategory %}
+            <div class="preview-field">
+                <span class="field-label">Subcategory:</span>
+                <span class="field-value">{{ product.subcategory }}</span>
+            </div>
+            {% endif %}
+            
+            <div class="preview-field">
+                <span class="field-label">Price:</span>
+                <span class="field-value">
+                    <span class="price-display">₱{{ "%.2f"|format(product.price) }}</span>
+                    {% if product.compare_at_price %}
+                    <span class="compare-price">₱{{ "%.2f"|format(product.compare_at_price) }}</span>
+                    {% endif %}
+                </span>
+            </div>
+            
+            {% if product.discount_type %}
+            <div class="preview-field">
+                <span class="field-label">Discount:</span>
+                <span class="field-value">
+                    {{ product.discount_value }}{% if product.discount_type == 'percentage' %}%{% else %} ₱{% endif %}
+                    ({{ product.discount_type|title }})
+                </span>
+            </div>
+            {% endif %}
+            
+            {% if product.voucher_type %}
+            <div class="preview-field">
+                <span class="field-label">Voucher Type:</span>
+                <span class="field-value">{{ product.voucher_type|title }}</span>
+            </div>
+            {% endif %}
+            
+            <div class="preview-field">
+                <span class="field-label">Total Stock:</span>
+                <span class="field-value">
+                    <span class="stock-badge {% if product.total_stock == 0 %}stock-out{% elif product.total_stock < 10 %}stock-low{% else %}stock-good{% endif %}">
+                        {{ product.total_stock }} units
+                    </span>
+                </span>
+            </div>
+        </div>
+
+        <!-- Images -->
+        <div class="preview-section">
+            <h2 class="section-title">
+                <i class="ri-image-line"></i>
+                Product Images
+            </h2>
+            
+            <div class="image-gallery">
+                {% if product.primary_image %}
+                <img src="{{ product.primary_image }}" alt="Primary Image" class="preview-image" onclick="showImageModal(this.src)">
+                {% endif %}
+                {% if product.secondary_image %}
+                <img src="{{ product.secondary_image }}" alt="Secondary Image" class="preview-image" onclick="showImageModal(this.src)">
+                {% endif %}
+                {% if not product.primary_image and not product.secondary_image %}
+                <div style="color: #9ca3af; text-align: center; padding: 2rem;">
+                    No images uploaded
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Product Details -->
+        <div class="preview-section full-width">
+            <h2 class="section-title">
+                <i class="ri-file-text-line"></i>
+                Product Details
+            </h2>
+            
+            {% if product.description %}
+            <div class="preview-field">
+                <span class="field-label">Description:</span>
+            </div>
+            <div class="description-text">{{ product.description }}</div>
+            {% endif %}
+            
+            {% if product.materials %}
+            <div class="preview-field">
+                <span class="field-label">Materials:</span>
+            </div>
+            <div class="description-text">{{ product.materials }}</div>
+            {% endif %}
+            
+            {% if product.details_fit %}
+            <div class="preview-field">
+                <span class="field-label">Details & Fit:</span>
+            </div>
+            <div class="description-text">{{ product.details_fit }}</div>
+            {% endif %}
+            
+            {% if product.attributes and product.attributes.subitems %}
+            <div class="preview-field">
+                <span class="field-label">Sub-items:</span>
+                <div class="attributes-list">
+                    {% for item in product.attributes.subitems %}
+                    <span class="attribute-tag">{{ item }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Variants & Stock -->
+        {% if product.variants %}
+        <div class="preview-section full-width">
+            <h2 class="section-title">
+                <i class="ri-palette-line"></i>
+                Variants & Stock
+            </h2>
+            
+            <table class="variants-table">
+                <thead>
+                    <tr>
+                        <th>Photo</th>
+                        <th>SKU</th>
+                        <th>Color</th>
+                        <th>Sizes & Stock</th>
+                        <th>Low Stock Alert</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for variant in product.variants %}
+                    <tr>
+                        <td>
+                            {% if variant.photo %}
+                            <img src="{{ variant.photo }}" alt="Variant" class="variant-photo">
+                            {% else %}
+                            <div style="width: 40px; height: 40px; background: #f3f4f6; border-radius: 0.25rem; display: flex; align-items: center; justify-content: center; color: #9ca3af;">
+                                <i class="ri-image-line"></i>
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td>{{ variant.sku or '-' }}</td>
+                        <td>
+                            {% if variant.color %}
+                            <div style="display: flex; align-items: center;">
+                                <span class="color-swatch" style="background-color: {{ variant.colorHex or '#000000' }};"></span>
+                                {{ variant.color }}
+                            </div>
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if variant.sizeStocks %}
+                                {% for size_item in variant.sizeStocks %}
+                                <div style="display: inline-block; margin-right: 1rem; margin-bottom: 0.25rem;">
+                                    <strong>{{ size_item.size }}:</strong>
+                                    <span class="stock-badge {% if size_item.stock == 0 %}stock-out{% elif size_item.stock < 5 %}stock-low{% else %}stock-good{% endif %}">
+                                        {{ size_item.stock }}
+                                    </span>
+                                </div>
+                                {% endfor %}
+                            {% elif variant.size %}
+                                <div>
+                                    <strong>{{ variant.size }}:</strong>
+                                    <span class="stock-badge {% if variant.stock == 0 %}stock-out{% elif variant.stock < 5 %}stock-low{% else %}stock-good{% endif %}">
+                                        {{ variant.stock }}
+                                    </span>
+                                </div>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>{{ variant.lowStock or 0 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="preview-actions">
+        <a href="{{ url_for('seller.add_product_stocks') }}" class="btn btn-secondary">
+            <i class="ri-arrow-left-line"></i>
+            Edit Product
+        </a>
+        
+        <button type="button" class="btn btn-success" id="publishBtn">
+            <i class="ri-check-line"></i>
+            Publish Product
+        </button>
+    </div>
+</div>
+
+<!-- Image Modal -->
+<div id="imageModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; cursor: pointer;">
+    <div style="display: flex; align-items: center; justify-content: center; height: 100%;">
+        <img id="modalImage" style="max-width: 90%; max-height: 90%; border-radius: 0.5rem;">
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function showImageModal(src) {
+    document.getElementById('modalImage').src = src;
+    document.getElementById('imageModal').style.display = 'block';
+}
+
+document.getElementById('imageModal').addEventListener('click', function() {
+    this.style.display = 'none';
+});
+
+document.getElementById('publishBtn').addEventListener('click', async function() {
+    const btn = this;
+    const originalText = btn.innerHTML;
+    
+    // Show loading state
+    btn.disabled = true;
+    btn.innerHTML = '<i class="ri-loader-4-line" style="animation: spin 1s linear infinite;"></i> Publishing...';
+    
+    try {
+        const response = await fetch(`{{ url_for('seller.commit_product', product_id=product.id) }}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'same-origin'
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Show success message
+            btn.innerHTML = '<i class="ri-check-line"></i> Published!';
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-primary');
+            
+            // Redirect after short delay
+            setTimeout(() => {
+                window.location.href = result.redirect;
+            }, 1000);
+        } else {
+            throw new Error(result.error || 'Failed to publish product');
+        }
+    } catch (error) {
+        console.error('Error publishing product:', error);
+        alert('Error publishing product: ' + error.message);
+        
+        // Restore button
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    }
+});
+
+// Add spin animation for loading icon
+const style = document.createElement('style');
+style.textContent = `
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}

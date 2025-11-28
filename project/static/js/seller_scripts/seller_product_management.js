@@ -203,7 +203,8 @@ document.addEventListener("DOMContentLoaded", function () {
     ).length;
     // Active listings should be products that are active AND have stock > 0
     const active = products.filter((p) => {
-      const stock = p.total_stock != null ? p.total_stock : p.stock != null ? p.stock : 0;
+      const stock =
+        p.total_stock != null ? p.total_stock : p.stock != null ? p.stock : 0;
       return p.status === "active" && stock > 0;
     }).length;
     document.getElementById("countAll").textContent = total;
@@ -902,8 +903,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (delBtn) {
         const id = parseInt(delBtn.dataset.id);
-        products = products.filter((x) => x.id !== id);
-        renderProducts(products);
+        const product = products.find((p) => p.id === id);
+        if (product) {
+          showDeleteConfirmation(product);
+        }
       }
     });
 
@@ -1399,4 +1402,132 @@ if (sizeModal) {
 }
 
 // Make functions globally available
+
+// Delete confirmation functionality
+let productToDelete = null;
+
+function showDeleteConfirmation(product) {
+  productToDelete = product;
+  const modal = document.getElementById("deleteConfirmModal");
+  const productNameEl = modal.querySelector(".product-name-to-delete");
+
+  if (productNameEl) {
+    productNameEl.textContent = product.name || "Unknown Product";
+  }
+
+  modal.classList.add("active");
+}
+
+function hideDeleteConfirmation() {
+  const modal = document.getElementById("deleteConfirmModal");
+  modal.classList.remove("active");
+  productToDelete = null;
+}
+
+async function deleteProduct(productId) {
+  try {
+    const response = await fetch(`/seller/product/${productId}/delete`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+
+      // Remove from frontend array
+      products = products.filter((p) => p.id !== productId);
+      renderProducts(products);
+
+      // Show success message
+      showNotification("Product deleted successfully", "success");
+
+      return true;
+    } else {
+      const error = await response.json();
+      showNotification(error.message || "Failed to delete product", "error");
+      return false;
+    }
+  } catch (error) {
+    console.error("Delete error:", error);
+    showNotification("Network error occurred while deleting product", "error");
+    return false;
+  }
+}
+
+function showNotification(message, type = "info") {
+  // Create notification element
+  const notification = document.createElement("div");
+  notification.className = `notification notification-${type}`;
+  notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 500;
+    z-index: 10000;
+    transition: all 0.3s ease;
+  `;
+
+  // Set background color based on type
+  if (type === "success") {
+    notification.style.backgroundColor = "#10b981";
+  } else if (type === "error") {
+    notification.style.backgroundColor = "#ef4444";
+  } else {
+    notification.style.backgroundColor = "#6b7280";
+  }
+
+  notification.textContent = message;
+  document.body.appendChild(notification);
+
+  // Auto remove after 3 seconds
+  setTimeout(() => {
+    notification.style.opacity = "0";
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
+      }
+    }, 300);
+  }, 3000);
+}
+
+// Set up delete modal event listeners
+document.addEventListener("DOMContentLoaded", function () {
+  const deleteModal = document.getElementById("deleteConfirmModal");
+  const closeDeleteModal = document.getElementById("closeDeleteModal");
+  const cancelDelete = document.getElementById("cancelDelete");
+  const confirmDelete = document.getElementById("confirmDelete");
+
+  // Close modal handlers
+  [closeDeleteModal, cancelDelete].forEach((btn) => {
+    if (btn) {
+      btn.addEventListener("click", hideDeleteConfirmation);
+    }
+  });
+
+  // Confirm delete handler
+  if (confirmDelete) {
+    confirmDelete.addEventListener("click", async function () {
+      if (productToDelete) {
+        const success = await deleteProduct(productToDelete.id);
+        if (success) {
+          hideDeleteConfirmation();
+        }
+      }
+    });
+  }
+
+  // Close on backdrop click
+  if (deleteModal) {
+    deleteModal.addEventListener("click", function (e) {
+      if (e.target === deleteModal) {
+        hideDeleteConfirmation();
+      }
+    });
+  }
+});
 window.openSizeModalForVariant = openSizeModalForVariant;

@@ -380,18 +380,57 @@ h6 {
   margin-bottom: 32px;
 }
 
-/* Card */
+/* Card - Glassmorphism Enhanced */
 .card {
-  background: var(--white);
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.9) 0%, 
+    rgba(255, 255, 255, 0.8) 100%
+  );
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(108, 92, 231, 0.08);
   border-radius: 20px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  box-shadow: 
+    0 8px 32px rgba(108, 92, 231, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
   overflow: hidden;
-  transition: transform 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   margin-bottom: 24px;
+  position: relative;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, 
+    rgba(108, 92, 231, 0.02) 0%, 
+    rgba(168, 85, 247, 0.01) 100%
+  );
+  pointer-events: none;
+  transition: all 0.3s ease;
 }
 
 .card:hover {
-  transform: translateY(-4px);
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.95) 0%, 
+    rgba(255, 255, 255, 0.85) 100%
+  );
+  border-color: rgba(108, 92, 231, 0.12);
+  box-shadow: 
+    0 12px 40px rgba(108, 92, 231, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transform: translateY(-6px);
+}
+
+.card:hover::before {
+  background: linear-gradient(135deg, 
+    rgba(108, 92, 231, 0.04) 0%, 
+    rgba(168, 85, 247, 0.02) 100%
+  );
 }
 
 /* Recent Orders Card */
@@ -406,15 +445,38 @@ h6 {
 
 .card-header {
   padding: 24px;
-  border-bottom: 1px solid var(--gray-200);
+  border-bottom: 1px solid rgba(108, 92, 231, 0.08);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  background: linear-gradient(135deg, 
+    rgba(108, 92, 231, 0.03) 0%, 
+    rgba(168, 85, 247, 0.02) 100%
+  );
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  position: relative;
+}
+
+.card-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(108, 92, 231, 0.2) 50%, 
+    transparent 100%
+  );
 }
 
 .card-header h2 {
   font-size: 18px;
   color: var(--gray-900);
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+  font-weight: 600;
 }
 
 .filter-select {

@@ -1,9 +1,37 @@
-/* Profile and Store Banner common styling */
+/* Profile and Store Banner common styling - Glassmorphism Enhanced */
 
 /* Banner container with profile photo and cover photo */
 .profile-banner {
   position: relative;
   margin-bottom: 60px; /* Increased to accommodate profile photo */
+  /* Glassmorphism container */
+  background: linear-gradient(135deg, 
+    rgba(108, 92, 231, 0.06) 0%, 
+    rgba(168, 85, 247, 0.04) 50%,
+    rgba(124, 58, 237, 0.03) 100%
+  );
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(108, 92, 231, 0.08);
+  border-radius: 20px;
+  padding: 8px;
+  box-shadow: 
+    0 12px 40px rgba(108, 92, 231, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.profile-banner:hover {
+  background: linear-gradient(135deg, 
+    rgba(108, 92, 231, 0.08) 0%, 
+    rgba(168, 85, 247, 0.06) 50%,
+    rgba(124, 58, 237, 0.04) 100%
+  );
+  border-color: rgba(108, 92, 231, 0.12);
+  box-shadow: 
+    0 16px 50px rgba(108, 92, 231, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
 }
 
 /* Cover photo container styles */
@@ -11,10 +39,19 @@
   position: relative;
   width: 100%;
   height: 180px;
-  border-radius: 8px 8px 0 0;
+  border-radius: 16px;
   overflow: hidden;
-  background-color: #f3f4f6;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, 
+    rgba(108, 92, 231, 0.1) 0%, 
+    rgba(168, 85, 247, 0.08) 100%
+  );
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 
+    0 8px 32px rgba(108, 92, 231, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .cover-photo {
@@ -22,12 +59,43 @@
   height: 100%;
   background-size: cover;
   background-position: center;
-  transition: transform 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.cover-photo::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, 
+    rgba(108, 92, 231, 0.05) 0%, 
+    rgba(168, 85, 247, 0.03) 100%
+  );
+  backdrop-filter: blur(1px);
+  -webkit-backdrop-filter: blur(1px);
+  transition: all 0.3s ease;
 }
 
 /* Hover effect for cover photo */
+.cover-photo-container:hover {
+  box-shadow: 
+    0 12px 40px rgba(108, 92, 231, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+}
+
 .cover-photo-container:hover .cover-photo {
-  transform: scale(1.03);
+  transform: scale(1.02);
+}
+
+.cover-photo-container:hover .cover-photo::before {
+  background: linear-gradient(135deg, 
+    rgba(108, 92, 231, 0.08) 0%, 
+    rgba(168, 85, 247, 0.06) 100%
+  );
 }
 
 /* Overlay for edit button */
@@ -37,9 +105,14 @@
   right: 0;
   bottom: 0;
   left: 0;
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.3));
+  background: linear-gradient(to bottom, 
+    rgba(108, 92, 231, 0.1) 0%, 
+    rgba(124, 58, 237, 0.3) 100%
+  );
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: flex-end;
   justify-content: flex-end;
@@ -59,10 +132,26 @@
   height: 120px;
   border-radius: 50%;
   overflow: hidden;
-  background-color: #f3f4f6;
-  border: 4px solid #fff;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, 
+    rgba(108, 92, 231, 0.1) 0%, 
+    rgba(168, 85, 247, 0.08) 100%
+  );
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 4px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 
+    0 8px 32px rgba(108, 92, 231, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
   z-index: 10;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.profile-photo-container:hover {
+  border-color: rgba(255, 255, 255, 0.9);
+  box-shadow: 
+    0 12px 40px rgba(108, 92, 231, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px) scale(1.02);
 }
 
 .profile-photo {
@@ -70,12 +159,36 @@
   height: 100%;
   background-size: cover;
   background-position: center;
-  transition: transform 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.profile-photo::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, 
+    rgba(108, 92, 231, 0.03) 0%, 
+    rgba(168, 85, 247, 0.02) 100%
+  );
+  backdrop-filter: blur(1px);
+  -webkit-backdrop-filter: blur(1px);
+  transition: all 0.3s ease;
 }
 
 /* Hover effect for profile photo */
 .profile-photo-container:hover .profile-photo {
-  transform: scale(1.1);
+  transform: scale(1.05);
+}
+
+.profile-photo-container:hover .profile-photo::before {
+  background: linear-gradient(135deg, 
+    rgba(108, 92, 231, 0.06) 0%, 
+    rgba(168, 85, 247, 0.04) 100%
+  );
 }
 
 /* Overlay for edit button */
@@ -85,9 +198,14 @@
   right: 0;
   bottom: 0;
   left: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: linear-gradient(135deg, 
+    rgba(108, 92, 231, 0.6) 0%, 
+    rgba(124, 58, 237, 0.7) 100%
+  );
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -97,26 +215,56 @@
   opacity: 1;
 }
 
-/* Button styles */
+/* Button styles - Glassmorphism Enhanced */
 .btn-edit-cover,
 .btn-edit-profile {
-  background-color: rgba(255, 255, 255, 0.85);
-  border: none;
-  border-radius: 4px;
-  padding: 6px 12px;
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.9) 0%, 
+    rgba(255, 255, 255, 0.8) 100%
+  );
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  padding: 8px 16px;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #4c1d95;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+  box-shadow: 
+    0 4px 16px rgba(108, 92, 231, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
 .btn-edit-cover:hover,
 .btn-edit-profile:hover {
-  background-color: #fff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.95) 0%, 
+    rgba(255, 255, 255, 0.9) 100%
+  );
+  border-color: rgba(108, 92, 231, 0.2);
+  box-shadow: 
+    0 6px 20px rgba(108, 92, 231, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  transform: translateY(-1px);
+  color: #5b21b6;
+}
+
+.btn-edit-cover svg,
+.btn-edit-profile svg {
+  filter: drop-shadow(0 1px 2px rgba(108, 92, 231, 0.2));
+  transition: all 0.3s ease;
+}
+
+.btn-edit-cover:hover svg,
+.btn-edit-profile:hover svg {
+  filter: drop-shadow(0 2px 4px rgba(108, 92, 231, 0.3));
+  transform: scale(1.05);
 }
 
 /* Hidden file input */

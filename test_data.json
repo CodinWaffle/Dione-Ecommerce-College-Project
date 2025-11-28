@@ -1,0 +1,39 @@
+{
+  "step1": {
+    "productName": "Test Premium T-Shirt",
+    "category": "Fashion",
+    "subcategory": "T-Shirts",
+    "price": "49.99",
+    "discountType": "percentage",
+    "discountPercentage": "10",
+    "voucherType": "",
+    "lowStockThreshold": "5",
+    "primaryImage": "data:image/jpeg;base64,/9j/test_image_data...",
+    "secondaryImage": null,
+    "subitem": []
+  },
+  "step2": {
+    "description": "Premium quality cotton t-shirt with modern fit",
+    "materials": "100% Organic Cotton",
+    "detailsFit": "Modern fit, pre-shrunk",
+    "sizeGuide": ["XS", "S", "M", "L", "XL"],
+    "certifications": ["OEKO-TEX", "Organic Cotton"]
+  },
+  "step3": {
+    "variants": [
+      {
+        "sku": "PTS-BLK-01",
+        "color": "Black",
+        "colorHex": "#000000",
+        "lowStock": 5,
+        "photo": "data:image/jpeg;base64,/9j/test_variant_data...",
+        "sizeStocks": [
+          { "size": "S", "stock": 10 },
+          { "size": "M", "stock": 15 },
+          { "size": "L", "stock": 8 }
+        ]
+      }
+    ],
+    "totalStock": 33
+  }
+}

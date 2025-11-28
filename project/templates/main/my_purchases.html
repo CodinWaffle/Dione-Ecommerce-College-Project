@@ -1,0 +1,391 @@
+{% extends 'main/base_buyer.html' %}
+
+{% block title %}My Purchases - Dione Ecommerce{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/buyer_styles/my_purchases.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="my-purchases-container">
+  <div class="page-header">
+    <h1>My Purchases</h1>
+    <p class="page-subtitle">Track your orders and manage your purchase history</p>
+  </div>
+
+  <!-- Order Status Tabs -->
+  <div class="order-tabs">
+    <button class="tab-btn active" data-status="all">All Orders</button>
+    <button class="tab-btn" data-status="pending">To Pay</button>
+    <button class="tab-btn" data-status="processing">To Ship</button>
+    <button class="tab-btn" data-status="shipped">To Receive</button>
+    <button class="tab-btn" data-status="delivered">Completed</button>
+    <button class="tab-btn" data-status="cancelled">Cancelled</button>
+  </div>
+
+  <!-- Orders List -->
+  <div class="orders-list">
+    <!-- Sample Order 1 - Delivered -->
+    <div class="order-card" data-status="delivered">
+      <div class="order-header">
+        <div class="order-info">
+          <span class="order-id">Order #ORD-2024-001</span>
+          <span class="order-date">November 20, 2024</span>
+        </div>
+        <div class="order-status delivered">
+          <i class="ri-check-circle-line"></i>
+          Delivered
+        </div>
+      </div>
+      
+      <div class="order-items">
+        <div class="order-item">
+          <img src="/static/image/banner.png" alt="Product" class="item-image">
+          <div class="item-details">
+            <h3 class="item-name">Premium Cotton T-Shirt</h3>
+            <p class="item-variant">Color: Navy Blue, Size: M</p>
+            <p class="item-price">₱899.00 × 1</p>
+          </div>
+          <div class="item-actions">
+            <button class="btn-review" data-product-id="1" data-order-id="ORD-2024-001">
+              <i class="ri-star-line"></i>
+              Write Review
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="order-footer">
+        <div class="order-total">
+          <span>Total: ₱914.00</span>
+        </div>
+        <div class="order-actions">
+          <button class="btn-secondary">Buy Again</button>
+          <button class="btn-primary reviews-toggle" data-order="ORD-2024-001">
+            <i class="ri-star-line"></i>
+            Reviews
+            <i class="ri-arrow-down-s-line dropdown-icon"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Reviews Dropdown -->
+      <div class="reviews-dropdown" id="reviews-ORD-2024-001">
+        <div class="reviews-header">
+          <div class="reviews-stats">
+            <div class="rating-summary">
+              <div class="overall-rating">
+                <span class="rating-number">4.5</span>
+                <div class="stars">
+                  <i class="ri-star-fill"></i>
+                  <i class="ri-star-fill"></i>
+                  <i class="ri-star-fill"></i>
+                  <i class="ri-star-fill"></i>
+                  <i class="ri-star-half-line"></i>
+                </div>
+                <span class="rating-count">(3 reviews)</span>
+              </div>
+              <div class="rating-breakdown">
+                <div class="rating-bar">
+                  <span>Product Quality</span>
+                  <div class="bar">
+                    <div class="fill" style="width: 90%"></div>
+                  </div>
+                  <span>4.5</span>
+                </div>
+                <div class="rating-bar">
+                  <span>Store Service</span>
+                  <div class="bar">
+                    <div class="fill" style="width: 85%"></div>
+                  </div>
+                  <span>4.2</span>
+                </div>
+                <div class="rating-bar">
+                  <span>Delivery</span>
+                  <div class="bar">
+                    <div class="fill" style="width: 95%"></div>
+                  </div>
+                  <span>4.8</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="review-controls">
+            <button class="btn-filter active" data-filter="all">All Reviews</button>
+            <button class="btn-filter" data-filter="photos">With Photos</button>
+            <button class="btn-filter" data-filter="recent">Most Recent</button>
+          </div>
+        </div>
+
+        <div class="reviews-list">
+          <!-- Sample Review 1 -->
+          <div class="review-item">
+            <div class="review-header">
+              <div class="reviewer-info">
+                <div class="reviewer-avatar">
+                  <i class="ri-user-line"></i>
+                </div>
+                <div class="reviewer-details">
+                  <span class="reviewer-name">Maria S.</span>
+                  <span class="review-date">November 22, 2024</span>
+                </div>
+              </div>
+              <div class="review-ratings">
+                <div class="rating-item">
+                  <span>Product</span>
+                  <div class="stars">
+                    <i class="ri-star-fill"></i>
+                    <i class="ri-star-fill"></i>
+                    <i class="ri-star-fill"></i>
+                    <i class="ri-star-fill"></i>
+                    <i class="ri-star-fill"></i>
+                  </div>
+                </div>
+                <div class="rating-item">
+                  <span>Store</span>
+                  <div class="stars">
+                    <i class="ri-star-fill"></i>
+                    <i class="ri-star-fill"></i>
+                    <i class="ri-star-fill"></i>
+                    <i class="ri-star-fill"></i>
+                    <i class="ri-star-line"></i>
+                  </div>
+                </div>
+                <div class="rating-item">
+                  <span>Delivery</span>
+                  <div class="stars">
+                    <i class="ri-star-fill"></i>
+                    <i class="ri-star-fill"></i>
+                    <i class="ri-star-fill"></i>
+                    <i class="ri-star-fill"></i>
+                    <i class="ri-star-fill"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="review-content">
+              <p>Excellent quality t-shirt! The fabric is soft and comfortable. Fits perfectly as described. Fast delivery and great packaging. Highly recommended!</p>
+              <div class="review-photos">
+                <img src="/static/image/banner.png" alt="Review photo" class="review-photo">
+                <img src="/static/image/banner.png" alt="Review photo" class="review-photo">
+              </div>
+            </div>
+          </div>
+
+          <!-- Sample Review 2 -->
+          <div class="review-item">
+            <div class="review-header">
+              <div class="reviewer-info">
+                <div class="reviewer-avatar">
+                  <i class="ri-user-line"></i>
+                </div>
+                <div class="reviewer-details">
+                  <span class="reviewer-name">John D.</span>
+                  <span class="review-date">November 21, 2024</span>
+                </div>
+              </div>
+              <div class="review-ratings">
+                <div class="rating-item">
+                  <span>Product</span>
+                  <div class="stars">
+                    <i class="ri-star-fill"></i>
+                    <i class="ri-star-fill"></i>
+                    <i class="ri-star-fill"></i>
+                    <i class="ri-star-fill"></i>
+                    <i class="ri-star-line"></i>
+                  </div>
+                </div>
+                <div class="rating-item">
+                  <span>Store</span>
+                  <div class="stars">
+                    <i class="ri-star-fill"></i>
+                    <i class="ri-star-fill"></i>
+                    <i class="ri-star-fill"></i>
+                    <i class="ri-star-fill"></i>
+                    <i class="ri-star-line"></i>
+                  </div>
+                </div>
+                <div class="rating-item">
+                  <span>Delivery</span>
+                  <div class="stars">
+                    <i class="ri-star-fill"></i>
+                    <i class="ri-star-fill"></i>
+                    <i class="ri-star-fill"></i>
+                    <i class="ri-star-fill"></i>
+                    <i class="ri-star-fill"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="review-content">
+              <p>Good quality shirt, color is exactly as shown. Delivery was quick. Would buy again.</p>
+            </div>
+          </div>
+
+          <!-- No Reviews State -->
+          <div class="no-reviews" style="display: none;">
+            <div class="no-reviews-content">
+              <i class="ri-star-line"></i>
+              <p>No reviews yet</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sample Order 2 - Processing -->
+    <div class="order-card" data-status="processing">
+      <div class="order-header">
+        <div class="order-info">
+          <span class="order-id">Order #ORD-2024-002</span>
+          <span class="order-date">November 25, 2024</span>
+        </div>
+        <div class="order-status processing">
+          <i class="ri-truck-line"></i>
+          Processing
+        </div>
+      </div>
+      
+      <div class="order-items">
+        <div class="order-item">
+          <img src="/static/image/banner.png" alt="Product" class="item-image">
+          <div class="item-details">
+            <h3 class="item-name">Casual Denim Jeans</h3>
+            <p class="item-variant">Color: Dark Blue, Size: 32</p>
+            <p class="item-price">₱1,299.00 × 1</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="order-footer">
+        <div class="order-total">
+          <span>Total: ₱1,314.00</span>
+        </div>
+        <div class="order-actions">
+          <button class="btn-secondary">Track Order</button>
+          <button class="btn-primary reviews-toggle" data-order="ORD-2024-002">
+            <i class="ri-star-line"></i>
+            Reviews
+            <i class="ri-arrow-down-s-line dropdown-icon"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Reviews Dropdown -->
+      <div class="reviews-dropdown" id="reviews-ORD-2024-002">
+        <div class="reviews-header">
+          <div class="reviews-stats">
+            <div class="no-reviews-message">
+              <i class="ri-star-line"></i>
+              <p>No reviews yet</p>
+              <span>Reviews will be available after delivery</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Write Review Modal -->
+<div id="writeReviewModal" class="modal">
+  <div class="modal-content review-modal-content">
+    <div class="modal-header">
+      <h2>Write a Review</h2>
+      <button class="close-btn" id="closeReviewModal">
+        <i class="ri-close-line"></i>
+      </button>
+    </div>
+    
+    <div class="modal-body">
+      <div class="product-info">
+        <img src="/static/image/banner.png" alt="Product" class="product-image">
+        <div class="product-details">
+          <h3 id="reviewProductName">Premium Cotton T-Shirt</h3>
+          <p id="reviewProductVariant">Color: Navy Blue, Size: M</p>
+        </div>
+      </div>
+
+      <form id="reviewForm" class="review-form">
+        <div class="rating-section">
+          <div class="rating-group">
+            <label>Product Quality</label>
+            <div class="star-rating" data-rating="product">
+              <i class="ri-star-line" data-value="1"></i>
+              <i class="ri-star-line" data-value="2"></i>
+              <i class="ri-star-line" data-value="3"></i>
+              <i class="ri-star-line" data-value="4"></i>
+              <i class="ri-star-line" data-value="5"></i>
+            </div>
+            <span class="rating-text">Rate the product quality</span>
+          </div>
+
+          <div class="rating-group">
+            <label>Store Service</label>
+            <div class="star-rating" data-rating="store">
+              <i class="ri-star-line" data-value="1"></i>
+              <i class="ri-star-line" data-value="2"></i>
+              <i class="ri-star-line" data-value="3"></i>
+              <i class="ri-star-line" data-value="4"></i>
+              <i class="ri-star-line" data-value="5"></i>
+            </div>
+            <span class="rating-text">Rate the store service</span>
+          </div>
+
+          <div class="rating-group">
+            <label>Delivery Experience</label>
+            <div class="star-rating" data-rating="delivery">
+              <i class="ri-star-line" data-value="1"></i>
+              <i class="ri-star-line" data-value="2"></i>
+              <i class="ri-star-line" data-value="3"></i>
+              <i class="ri-star-line" data-value="4"></i>
+              <i class="ri-star-line" data-value="5"></i>
+            </div>
+            <span class="rating-text">Rate the delivery service</span>
+          </div>
+        </div>
+
+        <div class="review-text-section">
+          <label for="reviewText">Your Review</label>
+          <textarea 
+            id="reviewText" 
+            name="reviewText" 
+            placeholder="Share your experience with this product..."
+            rows="4"
+            maxlength="500"
+          ></textarea>
+          <div class="character-count">
+            <span id="charCount">0</span>/500 characters
+          </div>
+        </div>
+
+        <div class="photo-upload-section">
+          <label>Add Photos (Optional)</label>
+          <div class="photo-upload-area">
+            <input type="file" id="reviewPhotos" multiple accept="image/*" style="display: none;">
+            <button type="button" class="upload-btn" onclick="document.getElementById('reviewPhotos').click()">
+              <i class="ri-camera-line"></i>
+              Add Photos
+            </button>
+            <span class="upload-hint">Upload up to 5 photos</span>
+          </div>
+          <div class="photo-preview" id="photoPreview"></div>
+        </div>
+      </form>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn-secondary" id="cancelReview">Cancel</button>
+      <button type="submit" form="reviewForm" class="btn-primary" id="submitReview">
+        <i class="ri-send-plane-line"></i>
+        Submit Review
+      </button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/buyer_scripts/my_purchases.js') }}"></script>
+{% endblock %}

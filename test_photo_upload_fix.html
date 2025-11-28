@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Upload Fix Test</title>
+    <link rel="stylesheet" href="project/static/css/seller_styles/add_product_stocks.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css">
+</head>
+<body>
+    <div style="padding: 2rem;">
+        <h1>Photo Upload Fix Test</h1>
+        <p>Test the photo upload functionality to ensure:</p>
+        <ul>
+            <li>Single click opens file dialog</li>
+            <li>No duplicate photos are displayed</li>
+            <li>Proper image preview</li>
+        </ul>
+
+        <table style="border-collapse: collapse; margin-top: 2rem;">
+            <thead>
+                <tr style="border-bottom: 1px solid #e0e0e0">
+                    <th style="padding: 0.75rem;">No.</th>
+                    <th style="padding: 0.75rem;">Photo</th>
+                    <th style="padding: 0.75rem;">SKU</th>
+                    <th style="padding: 0.75rem;">Color</th>
+                </tr>
+            </thead>
+            <tbody id="variantTableBody">
+                <tr>
+                    <td style="padding: 8px; border: 1px solid #e5e7eb; text-align: center;">1</td>
+                    <td style="padding: 8px; border: 1px solid #e5e7eb; text-align: center; width: 60px;">
+                        <label class="photo-upload-box grey" style="margin: 0 auto" title="Upload variant photo">
+                            <input type="file" accept="image/*" style="display: none" />
+                            <div class="photo-upload-content">
+                                <i class="ri-image-add-line" style="font-size: 1.2rem; color: #a259f7"></i>
+                            </div>
+                            <div class="upload-progress" style="display: none;">
+                                <div class="progress-bar"></div>
+                            </div>
+                        </label>
+                    </td>
+                    <td style="padding: 8px; border: 1px solid #e5e7eb;">
+                        <input type="text" placeholder="SKU" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 4px;">
+                    </td>
+                    <td style="padding: 8px; border: 1px solid #e5e7eb;">
+                        <input type="text" placeholder="Color" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 4px;">
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px; border: 1px solid #e5e7eb; text-align: center;">2</td>
+                    <td style="padding: 8px; border: 1px solid #e5e7eb; text-align: center; width: 60px;">
+                        <label class="photo-upload-box grey" style="margin: 0 auto" title="Upload variant photo">
+                            <input type="file" accept="image/*" style="display: none" />
+                            <div class="photo-upload-content">
+                                <i class="ri-image-add-line" style="font-size: 1.2rem; color: #a259f7"></i>
+                            </div>
+                            <div class="upload-progress" style="display: none;">
+                                <div class="progress-bar"></div>
+                            </div>
+                        </label>
+                    </td>
+                    <td style="padding: 8px; border: 1px solid #e5e7eb;">
+                        <input type="text" placeholder="SKU" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 4px;">
+                    </td>
+                    <td style="padding: 8px; border: 1px solid #e5e7eb;">
+                        <input type="text" placeholder="Color" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 4px;">
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div style="margin-top: 2rem;">
+            <button onclick="addNewRow()" style="padding: 0.5rem 1rem; background: #6c5ce7; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                Add New Row
+            </button>
+        </div>
+    </div>
+
+    <script src="project/static/js/seller_scripts/variant_table.js"></script>
+    <script>
+        // Test function to add new rows
+        function addNewRow() {
+            const tbody = document.getElementById('variantTableBody');
+            const rowCount = tbody.children.length + 1;
+            
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td style="padding: 8px; border: 1px solid #e5e7eb; text-align: center;">${rowCount}</td>
+                <td style="padding: 8px; border: 1px solid #e5e7eb; text-align: center; width: 60px;">
+                    <div class="photo-upload-box grey" style="margin: 0 auto; cursor: pointer;" title="Upload variant photo">
+                        <input type="file" accept="image/*" style="display: none" />
+                        <div class="photo-upload-content">
+                            <i class="ri-image-add-line" style="font-size: 1.2rem; color: #a259f7"></i>
+                        </div>
+                        <div class="upload-progress" style="display: none;">
+                            <div class="progress-bar"></div>
+                        </div>
+                    </div>
+                </td>
+                <td style="padding: 8px; border: 1px solid #e5e7eb;">
+                    <input type="text" placeholder="SKU" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 4px;">
+                </td>
+                <td style="padding: 8px; border: 1px solid #e5e7eb;">
+                    <input type="text" placeholder="Color" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 4px;">
+                </td>
+            `;
+            
+            tbody.appendChild(newRow);
+            
+            // Setup photo upload for the new row
+            const photoLabel = newRow.querySelector('.photo-upload-box');
+            if (photoLabel && window.setupVariantPhoto) {
+                window.setupVariantPhoto(photoLabel);
+            }
+        }
+
+        // Initialize existing photo upload boxes
+        document.addEventListener('DOMContentLoaded', function() {
+            const photoBoxes = document.querySelectorAll('.photo-upload-box');
+            photoBoxes.forEach(box => {
+                if (window.setupVariantPhoto) {
+                    window.setupVariantPhoto(box);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

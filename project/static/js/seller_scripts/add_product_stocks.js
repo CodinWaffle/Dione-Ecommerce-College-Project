@@ -2,6 +2,21 @@
 document.addEventListener("DOMContentLoaded", function () {
   console.log("add_product_stocks.js loaded");
 
+  // Debug: Check if photo boxes exist
+  setTimeout(() => {
+    const photoBoxes = document.querySelectorAll(".photo-upload-box");
+    console.log(
+      "Photo boxes found in add_product_stocks.js:",
+      photoBoxes.length
+    );
+    photoBoxes.forEach((box, index) => {
+      console.log(`Photo box ${index + 1}:`, box);
+      const input = box.querySelector('input[type="file"]');
+      console.log(`  - Has file input: ${!!input}`);
+      console.log(`  - Setup status: ${box.dataset.photoSetup || "not set"}`);
+    });
+  }, 1000);
+
   // Grouped sizes available for selection. Each group has a name and sizes.
   const AVAILABLE_SIZE_GROUPS = [
     {
@@ -53,6 +68,13 @@ document.addEventListener("DOMContentLoaded", function () {
   const sizeModalSave = document.getElementById("sizeModalSave");
   const sizeModalCancel = document.getElementById("sizeModalCancel");
   const sizeModalClose = document.getElementById("sizeModalClose");
+
+  // Initialize total stock display on page load
+  setTimeout(() => {
+    if (typeof window.updateTotalStock === "function") {
+      window.updateTotalStock();
+    }
+  }, 100);
 
   let currentSizeModalRow = null; // reference to <tr> for which modal is opened
 
@@ -128,7 +150,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const wrapper = document.createElement("div");
         wrapper.className = "size-selection-box";
         wrapper.dataset.size = sz;
-        
+
         if (existingMap[sz] !== undefined) {
           wrapper.classList.add("selected");
         }
@@ -144,26 +166,37 @@ document.addEventListener("DOMContentLoaded", function () {
         const stockInput = document.createElement("input");
         stockInput.type = "number";
         stockInput.min = "0";
-        stockInput.placeholder = "Stock";
+        stockInput.placeholder = "0";
         stockInput.className = "stock-input-small";
         stockInput.dataset.size = sz;
         stockInput.value = existingMap[sz] || "";
-        
-        if (!existingMap[sz]) {
+
+        if (!existingMap[sz] || existingMap[sz] === undefined) {
           stockInput.style.display = "none";
         }
 
         // Handle box click to select/deselect
         wrapper.addEventListener("click", (e) => {
           if (e.target === stockInput) return; // Don't toggle when clicking input
-          
+
           wrapper.classList.toggle("selected");
           if (wrapper.classList.contains("selected")) {
             stockInput.style.display = "block";
-            stockInput.focus();
+            if (!stockInput.value) {
+              stockInput.value = "0";
+            }
+            setTimeout(() => stockInput.focus(), 50);
           } else {
             stockInput.style.display = "none";
             stockInput.value = "";
+          }
+        });
+
+        // Handle stock input changes
+        stockInput.addEventListener("input", (e) => {
+          const value = parseInt(e.target.value) || 0;
+          if (value < 0) {
+            e.target.value = "0";
           }
         });
 
@@ -234,19 +267,21 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     // Add custom size section
+    // Preview section removed for more compact modal design
+
     const customSizeSection = document.createElement("div");
     customSizeSection.className = "custom-size-section";
 
     const customHeader = document.createElement("div");
     customHeader.className = "custom-size-header";
-    
+
     const customIcon = document.createElement("div");
     customIcon.className = "custom-size-icon";
     customIcon.innerHTML = '<i data-lucide="plus"></i>';
-    
+
     const customTitle = document.createElement("h4");
     customTitle.textContent = "Add Custom Sizes";
-    
+
     customHeader.appendChild(customIcon);
     customHeader.appendChild(customTitle);
 
@@ -255,10 +290,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const inputWrapper = document.createElement("div");
     inputWrapper.className = "custom-size-input-wrapper";
-    
+
     const inputLabel = document.createElement("label");
     inputLabel.textContent = "Custom Size Name";
-    
+
     const customInput = document.createElement("input");
     customInput.type = "text";
     customInput.className = "custom-size-input";
@@ -267,10 +302,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const stockWrapper = document.createElement("div");
     stockWrapper.className = "custom-size-input-wrapper";
-    
+
     const stockLabel = document.createElement("label");
     stockLabel.textContent = "Stock Quantity";
-    
+
     const customStockInput = document.createElement("input");
     customStockInput.type = "number";
     customStockInput.className = "custom-size-input";
@@ -287,7 +322,7 @@ document.addEventListener("DOMContentLoaded", function () {
     inputWrapper.appendChild(customInput);
     stockWrapper.appendChild(stockLabel);
     stockWrapper.appendChild(customStockInput);
-    
+
     inputGroup.appendChild(inputWrapper);
     inputGroup.appendChild(stockWrapper);
     inputGroup.appendChild(addBtn);
@@ -297,11 +332,11 @@ document.addEventListener("DOMContentLoaded", function () {
     customSizesList.id = "customSizesList";
 
     // Load existing custom sizes
-    const existingCustomSizes = Object.keys(existingMap).filter(size => {
-      return !AVAILABLE_SIZE_GROUPS.some(group => group.sizes.includes(size));
+    const existingCustomSizes = Object.keys(existingMap).filter((size) => {
+      return !AVAILABLE_SIZE_GROUPS.some((group) => group.sizes.includes(size));
     });
 
-    existingCustomSizes.forEach(customSize => {
+    existingCustomSizes.forEach((customSize) => {
       addCustomSizeToList(customSize, existingMap[customSize], customSizesList);
     });
 
@@ -309,7 +344,7 @@ document.addEventListener("DOMContentLoaded", function () {
     addBtn.addEventListener("click", () => {
       const sizeName = customInput.value.trim();
       const stockValue = customStockInput.value || "0";
-      
+
       if (sizeName) {
         addCustomSizeToList(sizeName, stockValue, customSizesList);
         customInput.value = "";
@@ -333,6 +368,8 @@ document.addEventListener("DOMContentLoaded", function () {
     if (window.lucide) {
       lucide.createIcons();
     }
+
+    // Preview functionality removed for more compact modal design
 
     // If existing saved sizes contain keys that are not part of any group,
     // prefill the 'Other' custom input with the first such key.
@@ -417,22 +454,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function saveSizeModal() {
     if (!currentSizeModalRow) return;
-    
+
     // Get selected size boxes
     const selectedBoxes = Array.from(
       sizeOptionsContainer.querySelectorAll(".size-selection-box.selected")
     );
-    
+
     // Get custom sizes
     const customSizes = Array.from(
       sizeOptionsContainer.querySelectorAll(".custom-size-item")
     );
-    
+
     const sizeGroup = currentSizeModalRow.querySelector(".variant-size-group");
     const sizeSummary = currentSizeModalRow.querySelector(
       ".variant-size-summary"
     );
-    
+
     // Remove existing size-stock-inputs in the row
     const existing = Array.from(
       currentSizeModalRow.querySelectorAll(".size-stock-input")
@@ -454,7 +491,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const sizeName = box.dataset.size;
       const stockInput = box.querySelector(".stock-input-small");
       const stockValue = parseInt(stockInput?.value || "0", 10) || 0;
-      
+
       stocks.push({ size: sizeName, stock: stockValue });
       addSizeToRow(sizeName, stockValue, sizeGroup, sizeContainer);
     });
@@ -464,26 +501,57 @@ document.addEventListener("DOMContentLoaded", function () {
       const sizeName = customItem.dataset.size;
       const stockInput = customItem.querySelector(".stock-input-small");
       const stockValue = parseInt(stockInput?.value || "0", 10) || 0;
-      
+
       stocks.push({ size: sizeName, stock: stockValue });
       addSizeToRow(sizeName, stockValue, sizeGroup, sizeContainer);
     });
 
-    // Update visible summary
+    // Update visible summary with enhanced formatting
     if (sizeSummary) {
       if (stocks.length === 0) {
-        sizeSummary.textContent = "No sizes selected";
+        sizeSummary.innerHTML =
+          '<span class="no-sizes">No sizes selected</span>';
       } else {
-        sizeSummary.textContent = stocks
-          .map((s) => `${s.size} (${s.stock})`)
-          .join(", ");
+        // Sort sizes logically (XS, S, M, L, XL, etc.)
+        const sortedStocks = sortSizesLogically(stocks);
+        const totalVariantStock = sortedStocks.reduce(
+          (sum, s) => sum + s.stock,
+          0
+        );
+
+        const summaryHtml = sortedStocks
+          .map((s) => {
+            const stockClass =
+              s.stock === 0
+                ? "out-of-stock"
+                : s.stock < 5
+                ? "low-stock"
+                : "in-stock";
+            return `<span class="size-summary-item ${stockClass}">${s.size}: ${s.stock}</span>`;
+          })
+          .join(" • ");
+
+        sizeSummary.innerHTML = `
+          <div class="size-summary-header">
+            <strong>${stocks.length} size${
+          stocks.length > 1 ? "s" : ""
+        } selected (Total: ${totalVariantStock})</strong>
+          </div>
+          <div class="size-summary-details">${summaryHtml}</div>
+        `;
       }
     }
+
+    // Update row total stock display
+    updateRowTotalStock(currentSizeModalRow, stocks);
 
     // Trigger total update
     if (typeof window.updateTotalStock === "function") {
       window.updateTotalStock();
     }
+
+    // Show success feedback
+    showSaveSuccessFeedback(currentSizeModalRow);
 
     closeSizeModal();
   }
@@ -628,41 +696,115 @@ document.addEventListener("DOMContentLoaded", function () {
     return variants;
   }
 
-  // Form submit handler
+  // Enhanced Form submit handler with proper navigation
   const form = document.getElementById("productStocksForm");
   if (form) {
     form.addEventListener("submit", function (e) {
       e.preventDefault();
+      handleFormSubmission();
+    });
+  }
 
+  // Handle form submission with AJAX and navigation
+  async function handleFormSubmission() {
+    const submitBtn = document.querySelector('.btn-save');
+    const originalText = submitBtn.innerHTML;
+    
+    // Show loading state
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="ri-loader-4-line" style="animation: spin 1s linear infinite;"></i> Saving...';
+    
+    try {
+      // Get all form data
       const variants = getVariantsData();
       let totalStock = 0;
       variants.forEach((v) => (totalStock += v.stock));
 
-      const formData = {
-        variants: variants,
-        totalStock: totalStock,
-        timestamp: Date.now(),
-      };
-
-      storeProductStocks(formData);
-
-      // Store in products array for preview
-      try {
-        const existing = JSON.parse(localStorage.getItem("products") || "[]");
-        existing.unshift({
-          id: Date.now(),
+      // Get previous step data from session storage or localStorage
+      const step1Data = getStoredData('productForm') || getStoredData('step1') || {};
+      const step2Data = getStoredData('productDescriptionForm') || getStoredData('step2') || {};
+      
+      const payload = {
+        step1: step1Data,
+        step2: step2Data,
+        step3: {
           variants: variants,
           totalStock: totalStock,
-        });
-        localStorage.setItem("products", JSON.stringify(existing));
-        console.log("Product saved to products array");
-      } catch (e) {
-        console.warn("Error saving to products array:", e);
-      }
+          timestamp: Date.now(),
+        }
+      };
 
-      // Navigate to preview
-      window.location.href = "/seller/add_product_preview";
-    });
+      console.log('Submitting payload:', payload);
+
+      // Submit to server
+      const response = await fetch(window.location.pathname, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify(payload)
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        
+        if (result.success) {
+          // Clear stored form data
+          clearStoredFormData();
+          
+          // Navigate to preview
+          window.location.href = result.next;
+        } else {
+          throw new Error(result.error || 'Server returned error');
+        }
+      } else {
+        throw new Error(`Server error: ${response.status}`);
+      }
+      
+    } catch (error) {
+      console.error('Form submission error:', error);
+      alert('Error saving product: ' + error.message);
+      
+      // Restore button
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalText;
+    }
+  }
+
+  // Helper function to get stored data from various sources
+  function getStoredData(key) {
+    try {
+      // Try localStorage first
+      let data = localStorage.getItem(key);
+      if (data) return JSON.parse(data);
+      
+      // Try sessionStorage
+      data = sessionStorage.getItem(key);
+      if (data) return JSON.parse(data);
+      
+      return null;
+    } catch (e) {
+      console.warn(`Failed to get stored data for ${key}:`, e);
+      return null;
+    }
+  }
+
+  // Helper function to clear stored form data
+  function clearStoredFormData() {
+    try {
+      localStorage.removeItem('productForm');
+      localStorage.removeItem('productDescriptionForm');
+      localStorage.removeItem('productStocksForm');
+      sessionStorage.removeItem('productForm');
+      sessionStorage.removeItem('productDescriptionForm');
+      sessionStorage.removeItem('productStocksForm');
+      sessionStorage.removeItem('step1');
+      sessionStorage.removeItem('step2');
+      sessionStorage.removeItem('step3');
+    } catch (e) {
+      console.warn('Failed to clear stored form data:', e);
+    }
   }
 
   // Back button handler
@@ -673,24 +815,615 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // Sync color picker with text input for existing first row
-  // Only sync from text input to color picker, user can type color names
-  const firstRow = document.querySelector("#variantTableBody tr");
-  if (firstRow) {
-    const colorInput = firstRow.querySelector('input[name^="color_"]');
-    const colorPicker = firstRow.querySelector(
-      '.color-picker, input[type="color"]'
-    );
+  // Sync color picker with text input for all rows (bidirectional)
+  function setupColorSync() {
+    const rows = document.querySelectorAll("#variantTableBody tr");
 
-    if (colorInput && colorPicker) {
-      colorInput.addEventListener("input", function () {
-        const val = this.value.trim();
-        if (val.startsWith("#") && (val.length === 4 || val.length === 7)) {
-          colorPicker.value = val;
-        }
-      });
-    }
+    rows.forEach((row) => {
+      const colorInput = row.querySelector('input[name^="color_"]');
+      const colorPicker = row.querySelector(
+        '.color-picker, input[type="color"]'
+      );
+
+      if (colorInput && colorPicker) {
+        // Sync from text input to color picker (when user types hex)
+        colorInput.addEventListener("input", function () {
+          const val = this.value.trim();
+          if (val.startsWith("#") && (val.length === 4 || val.length === 7)) {
+            colorPicker.value = val;
+          }
+        });
+
+        // Sync from color picker to text input (when user picks color)
+        colorPicker.addEventListener("input", function () {
+          const hexValue = this.value;
+          // Only update if the text input is empty or already contains a hex value
+          if (
+            !colorInput.value.trim() ||
+            colorInput.value.trim().startsWith("#")
+          ) {
+            colorInput.value = hexValue;
+          }
+        });
+
+        // Also sync on change event for better compatibility
+        colorPicker.addEventListener("change", function () {
+          const hexValue = this.value;
+          if (
+            !colorInput.value.trim() ||
+            colorInput.value.trim().startsWith("#")
+          ) {
+            colorInput.value = hexValue;
+          }
+        });
+      }
+    });
+  }
+
+  // Initial setup
+  setupColorSync();
+
+  // Re-setup when new rows are added (if there's dynamic row addition)
+  const addVariantBtn = document.getElementById("addVariantBtn");
+  if (addVariantBtn) {
+    addVariantBtn.addEventListener("click", function () {
+      // Small delay to allow DOM to update
+      setTimeout(setupColorSync, 100);
+    });
   }
 
   console.log("Form handlers initialized");
+
+  // Helper function to sort sizes logically
+  function sortSizesLogically(stocks) {
+    const sizeOrder = {
+      XS: 1,
+      S: 2,
+      M: 3,
+      L: 4,
+      XL: 5,
+      XXL: 6,
+      "One size": 7,
+      "Free size": 8,
+      "US 5": 10,
+      "US 6": 11,
+      "US 7": 12,
+      "US 8": 13,
+      "US 9": 14,
+      "US 10": 15,
+      "US 11": 16,
+      "EU 36": 20,
+      "EU 37": 21,
+      "EU 38": 22,
+      "EU 39": 23,
+      "EU 40": 24,
+      "EU 41": 25,
+      "EU 42": 26,
+      "Ring 4": 30,
+      "Ring 5": 31,
+      "Ring 6": 32,
+      "Ring 7": 33,
+      "Ring 8": 34,
+      "Ring 9": 35,
+      "Ring 10": 36,
+      "Waist 28": 40,
+      "Waist 30": 41,
+      "Waist 32": 42,
+    };
+
+    return stocks.sort((a, b) => {
+      const orderA = sizeOrder[a.size] || 999;
+      const orderB = sizeOrder[b.size] || 999;
+      if (orderA !== orderB) return orderA - orderB;
+      return a.size.localeCompare(b.size);
+    });
+  }
+
+  // Update row total stock display
+  function updateRowTotalStock(row, stocks) {
+    const totalStock = stocks.reduce((sum, s) => sum + s.stock, 0);
+    let totalStockEl = row.querySelector(".row-total-stock");
+
+    if (!totalStockEl) {
+      // Create total stock display if it doesn't exist
+      const actionsCell = row.querySelector("td:last-child");
+      if (actionsCell) {
+        totalStockEl = document.createElement("div");
+        totalStockEl.className = "row-total-stock";
+        actionsCell.insertBefore(totalStockEl, actionsCell.firstChild);
+      }
+    }
+
+    if (totalStockEl) {
+      const stockClass =
+        totalStock === 0 ? "zero" : totalStock < 10 ? "low" : "good";
+      totalStockEl.innerHTML = `<span class="total-stock-badge ${stockClass}">Total: ${totalStock}</span>`;
+    }
+  }
+
+  // Show success feedback when sizes are saved
+  function showSaveSuccessFeedback(row) {
+    const selectSizesBtn = row.querySelector(".btn-select-sizes");
+    if (selectSizesBtn) {
+      const originalText = selectSizesBtn.innerHTML;
+      selectSizesBtn.innerHTML = '<i data-lucide="check"></i>Saved!';
+      selectSizesBtn.classList.add("success-state");
+
+      setTimeout(() => {
+        selectSizesBtn.innerHTML = originalText;
+        selectSizesBtn.classList.remove("success-state");
+        if (window.lucide) {
+          lucide.createIcons();
+        }
+      }, 2000);
+    }
+  }
+
+  // Enhanced total stock calculation for all variants
+  window.updateTotalStock = function () {
+    const rows = document.querySelectorAll("#variantTableBody tr");
+    let totalStock = 0;
+
+    rows.forEach((row) => {
+      const sizeInputs = row.querySelectorAll(".size-stock-input");
+      let rowTotal = 0;
+
+      sizeInputs.forEach((input) => {
+        rowTotal += parseInt(input.value || "0", 10);
+      });
+
+      totalStock += rowTotal;
+
+      // Update row display
+      updateRowTotalStock(
+        row,
+        Array.from(sizeInputs).map((input) => ({
+          size: input.dataset.size,
+          stock: parseInt(input.value || "0", 10),
+        }))
+      );
+    });
+
+    // Update simple total stock display
+    updateSimpleTotalStockDisplay(totalStock);
+  };
+
+  // Update simple total stock display
+  function updateSimpleTotalStockDisplay(total) {
+    const totalStockEl = document.getElementById("totalStockDisplay");
+    if (totalStockEl) {
+      totalStockEl.textContent = total;
+    }
+  }
+
+  // Enhanced Features Implementation
+
+  // Bulk Stock Management
+  const bulkStockBtn = document.getElementById("bulkStockBtn");
+  const bulkStockModal = document.getElementById("bulkStockModal");
+  const bulkModalClose = document.getElementById("bulkModalClose");
+  const bulkModalCancel = document.getElementById("bulkModalCancel");
+  const bulkModalApply = document.getElementById("bulkModalApply");
+
+  if (bulkStockBtn) {
+    bulkStockBtn.addEventListener("click", openBulkStockModal);
+  }
+
+  if (bulkModalClose)
+    bulkModalClose.addEventListener("click", closeBulkStockModal);
+  if (bulkModalCancel)
+    bulkModalCancel.addEventListener("click", closeBulkStockModal);
+  if (bulkModalApply) bulkModalApply.addEventListener("click", applyBulkStock);
+
+  // Bulk modal radio button handling
+  document.addEventListener("change", function (e) {
+    if (e.target.name === "bulkType") {
+      const bulkSizeInputs = document.getElementById("bulkSizeInputs");
+      if (e.target.value === "bySize") {
+        bulkSizeInputs.style.display = "block";
+        populateBulkSizeInputs();
+      } else {
+        bulkSizeInputs.style.display = "none";
+      }
+    }
+  });
+
+  function openBulkStockModal() {
+    if (!bulkStockModal) return;
+    bulkStockModal.classList.add("active");
+  }
+
+  function closeBulkStockModal() {
+    if (!bulkStockModal) return;
+    bulkStockModal.classList.remove("active");
+  }
+
+  function populateBulkSizeInputs() {
+    const container = document.getElementById("bulkSizeInputs");
+    if (!container) return;
+
+    // Get all unique sizes from all variants
+    const allSizes = new Set();
+    document.querySelectorAll(".size-stock-input").forEach((input) => {
+      allSizes.add(input.dataset.size);
+    });
+
+    container.innerHTML = "";
+    Array.from(allSizes)
+      .sort()
+      .forEach((size) => {
+        const group = document.createElement("div");
+        group.className = "bulk-size-input-group";
+
+        const label = document.createElement("label");
+        label.className = "bulk-size-label";
+        label.textContent = size;
+
+        const input = document.createElement("input");
+        input.type = "number";
+        input.min = "0";
+        input.className = "bulk-input";
+        input.dataset.size = size;
+        input.placeholder = "Stock for " + size;
+
+        group.appendChild(label);
+        group.appendChild(input);
+        container.appendChild(group);
+      });
+  }
+
+  function applyBulkStock() {
+    const bulkType = document.querySelector(
+      'input[name="bulkType"]:checked'
+    )?.value;
+
+    if (bulkType === "all") {
+      const stockValue =
+        parseInt(document.getElementById("bulkAllStock").value) || 0;
+      document.querySelectorAll(".size-stock-input").forEach((input) => {
+        input.value = stockValue;
+      });
+    } else if (bulkType === "bySize") {
+      const sizeInputs = document.querySelectorAll(
+        "#bulkSizeInputs .bulk-input"
+      );
+      sizeInputs.forEach((bulkInput) => {
+        const size = bulkInput.dataset.size;
+        const stockValue = parseInt(bulkInput.value) || 0;
+        document
+          .querySelectorAll(`.size-stock-input[data-size="${size}"]`)
+          .forEach((input) => {
+            input.value = stockValue;
+          });
+      });
+    } else if (bulkType === "percentage") {
+      const percentage =
+        parseFloat(document.getElementById("bulkPercentage").value) || 100;
+      document.querySelectorAll(".size-stock-input").forEach((input) => {
+        const currentValue = parseInt(input.value) || 0;
+        const newValue = Math.round(currentValue * (percentage / 100));
+        input.value = Math.max(0, newValue);
+      });
+    }
+
+    // Update totals and close modal
+    if (typeof window.updateTotalStock === "function") {
+      window.updateTotalStock();
+    }
+    closeBulkStockModal();
+    showNotification("Bulk stock update applied successfully!", "success");
+  }
+
+  // Stock Validation
+  const validateStockBtn = document.getElementById("validateStockBtn");
+  const validationModal = document.getElementById("validationModal");
+  const validationModalClose = document.getElementById("validationModalClose");
+  const validationModalClose2 = document.getElementById(
+    "validationModalClose2"
+  );
+
+  if (validateStockBtn) {
+    validateStockBtn.addEventListener("click", validateStock);
+  }
+
+  if (validationModalClose)
+    validationModalClose.addEventListener("click", closeValidationModal);
+  if (validationModalClose2)
+    validationModalClose2.addEventListener("click", closeValidationModal);
+
+  function validateStock() {
+    const results = performStockValidation();
+    displayValidationResults(results);
+    validationModal.classList.add("active");
+  }
+
+  function closeValidationModal() {
+    if (!validationModal) return;
+    validationModal.classList.remove("active");
+  }
+
+  function performStockValidation() {
+    const results = {
+      errors: [],
+      warnings: [],
+      info: [],
+      success: [],
+    };
+
+    const rows = document.querySelectorAll("#variantTableBody tr");
+    let totalVariants = 0;
+    let variantsWithStock = 0;
+    let totalStock = 0;
+    let emptyVariants = [];
+    let lowStockVariants = [];
+
+    rows.forEach((row, index) => {
+      const rowNum = index + 1;
+      const sku = row.querySelector('input[name^="sku_"]')?.value?.trim();
+      const color = row.querySelector('input[name^="color_"]')?.value?.trim();
+      const sizeInputs = row.querySelectorAll(".size-stock-input");
+
+      totalVariants++;
+
+      if (!sku && !color && sizeInputs.length === 0) {
+        emptyVariants.push(rowNum);
+        return;
+      }
+
+      let rowStock = 0;
+      sizeInputs.forEach((input) => {
+        const stock = parseInt(input.value) || 0;
+        rowStock += stock;
+      });
+
+      totalStock += rowStock;
+
+      if (rowStock > 0) {
+        variantsWithStock++;
+      } else if (sku || color) {
+        lowStockVariants.push({ row: rowNum, sku, color });
+      }
+
+      // Check for missing required fields
+      if (sizeInputs.length > 0 && !sku) {
+        results.warnings.push(`Variant ${rowNum}: Has sizes but missing SKU`);
+      }
+
+      if (sizeInputs.length > 0 && !color) {
+        results.warnings.push(`Variant ${rowNum}: Has sizes but missing color`);
+      }
+    });
+
+    // Generate results
+    if (emptyVariants.length > 0) {
+      results.info.push(
+        `Empty variants found: Row(s) ${emptyVariants.join(
+          ", "
+        )} - these will be ignored`
+      );
+    }
+
+    if (lowStockVariants.length > 0) {
+      results.warnings.push(
+        `${lowStockVariants.length} variant(s) have no stock but have SKU/color defined`
+      );
+    }
+
+    if (totalStock === 0) {
+      results.errors.push("No stock quantities set for any variant");
+    } else {
+      results.success.push(
+        `Total stock: ${totalStock} units across ${variantsWithStock} variant(s)`
+      );
+    }
+
+    if (variantsWithStock > 0) {
+      results.success.push(
+        `${variantsWithStock} out of ${totalVariants} variants have stock`
+      );
+    }
+
+    // Check for duplicate SKUs
+    const skus = [];
+    rows.forEach((row, index) => {
+      const sku = row.querySelector('input[name^="sku_"]')?.value?.trim();
+      if (sku) {
+        if (skus.includes(sku)) {
+          results.errors.push(`Duplicate SKU found: "${sku}"`);
+        } else {
+          skus.push(sku);
+        }
+      }
+    });
+
+    return results;
+  }
+
+  function displayValidationResults(results) {
+    const container = document.getElementById("validationResults");
+    if (!container) return;
+
+    container.innerHTML = "";
+
+    const sections = [
+      {
+        type: "error",
+        title: "Errors",
+        items: results.errors,
+        icon: "alert-circle",
+      },
+      {
+        type: "warning",
+        title: "Warnings",
+        items: results.warnings,
+        icon: "alert-triangle",
+      },
+      {
+        type: "success",
+        title: "Success",
+        items: results.success,
+        icon: "check-circle",
+      },
+      { type: "info", title: "Information", items: results.info, icon: "info" },
+    ];
+
+    sections.forEach((section) => {
+      if (section.items.length > 0) {
+        const sectionEl = document.createElement("div");
+        sectionEl.className = `validation-section ${section.type}`;
+
+        const header = document.createElement("div");
+        header.className = "validation-header";
+        header.innerHTML = `
+          <i data-lucide="${section.icon}" class="validation-icon"></i>
+          <h4 class="validation-title">${section.title} (${section.items.length})</h4>
+        `;
+
+        const content = document.createElement("div");
+        content.className = "validation-content";
+
+        if (section.items.length === 1) {
+          content.textContent = section.items[0];
+        } else {
+          const list = document.createElement("ul");
+          list.className = "validation-list";
+          section.items.forEach((item) => {
+            const li = document.createElement("li");
+            li.textContent = item;
+            list.appendChild(li);
+          });
+          content.appendChild(list);
+        }
+
+        sectionEl.appendChild(header);
+        sectionEl.appendChild(content);
+        container.appendChild(sectionEl);
+      }
+    });
+
+    // Initialize Lucide icons for validation results
+    if (window.lucide) {
+      lucide.createIcons();
+    }
+  }
+
+  // Enhanced Variant Counter
+  function updateVariantStats() {
+    const rows = document.querySelectorAll("#variantTableBody tr");
+    const variantCount = rows.length;
+    const variantCountEl = document.getElementById("variantCount");
+    const variantPluralEl = document.getElementById("variantPlural");
+
+    if (variantCountEl) {
+      variantCountEl.textContent = variantCount;
+    }
+
+    if (variantPluralEl) {
+      variantPluralEl.style.display = variantCount === 1 ? "none" : "inline";
+    }
+
+    // Update total stock display
+    let totalStock = 0;
+    document.querySelectorAll(".size-stock-input").forEach((input) => {
+      totalStock += parseInt(input.value) || 0;
+    });
+
+    const totalStockEl = document.getElementById("totalStockDisplay");
+    if (totalStockEl) {
+      totalStockEl.textContent = totalStock;
+    }
+  }
+
+  // Notification System
+  function showNotification(message, type = "info") {
+    const notification = document.createElement("div");
+    notification.className = `notification notification-${type}`;
+    notification.innerHTML = `
+      <div class="notification-content">
+        <i data-lucide="${getNotificationIcon(type)}"></i>
+        <span>${message}</span>
+      </div>
+    `;
+
+    // Add to page
+    document.body.appendChild(notification);
+
+    // Animate in
+    setTimeout(() => {
+      notification.classList.add("show");
+    }, 100);
+
+    // Remove after delay
+    setTimeout(() => {
+      notification.classList.remove("show");
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.parentNode.removeChild(notification);
+        }
+      }, 300);
+    }, 3000);
+
+    // Initialize Lucide icons
+    if (window.lucide) {
+      lucide.createIcons();
+    }
+  }
+
+  function getNotificationIcon(type) {
+    const icons = {
+      success: "check-circle",
+      error: "alert-circle",
+      warning: "alert-triangle",
+      info: "info",
+    };
+    return icons[type] || "info";
+  }
+
+  // Enhanced updateTotalStock function
+  const originalUpdateTotalStock = window.updateTotalStock;
+  window.updateTotalStock = function () {
+    if (originalUpdateTotalStock) {
+      originalUpdateTotalStock();
+    }
+    updateVariantStats();
+  };
+
+  // Initialize enhanced features
+  setTimeout(() => {
+    updateVariantStats();
+    if (typeof window.updateTotalStock === "function") {
+      window.updateTotalStock();
+    }
+  }, 500);
+
+  // Initialize Lucide icons for the page
+  if (window.lucide) {
+    lucide.createIcons();
+  }
+
+  console.log("Enhanced stock management features initialized");
 });
+
+// Global form save handler for the template onclick
+function handleFormSave(event) {
+  if (event) {
+    event.preventDefault();
+  }
+  
+  // Call the existing form submission handler
+  if (typeof handleFormSubmission === 'function') {
+    handleFormSubmission();
+  } else {
+    console.error('handleFormSubmission function not found');
+  }
+}
+
+// Add spin animation CSS
+const spinStyle = document.createElement('style');
+spinStyle.textContent = `
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+`;
+document.head.appendChild(spinStyle);

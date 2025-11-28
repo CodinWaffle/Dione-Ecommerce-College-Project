@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Upload Debug Test</title>
+    <link rel="stylesheet" href="project/static/css/seller_styles/add_product_stocks.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css">
+    <style>
+        body { padding: 2rem; font-family: Arial, sans-serif; }
+        .debug-info { background: #f0f9ff; padding: 1rem; border-radius: 8px; margin: 1rem 0; }
+        .test-table { border-collapse: collapse; margin: 2rem 0; }
+        .test-table td { padding: 8px; border: 1px solid #e5e7eb; }
+    </style>
+</head>
+<body>
+    <h1>Photo Upload Debug Test</h1>
+    
+    <div class="debug-info">
+        <h3>Debug Information:</h3>
+        <p>Open browser console (F12) to see debug messages</p>
+        <p>Click on the photo upload area below to test functionality</p>
+    </div>
+
+    <table class="test-table">
+        <thead>
+            <tr>
+                <th>No.</th>
+                <th>Photo</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td style="width: 60px; text-align: center;">
+                    <div class="photo-upload-box grey" style="margin: 0 auto; cursor: pointer;" title="Upload variant photo">
+                        <input type="file" accept="image/*" style="display: none" />
+                        <div class="photo-upload-content">
+                            <i class="ri-image-add-line" style="font-size: 1.2rem; color: #a259f7"></i>
+                        </div>
+                        <div class="upload-progress" style="display: none;">
+                            <div class="progress-bar"></div>
+                        </div>
+                    </div>
+                </td>
+                <td id="status1">Ready</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td style="width: 60px; text-align: center;">
+                    <div class="photo-upload-box grey" style="margin: 0 auto; cursor: pointer;" title="Upload variant photo">
+                        <input type="file" accept="image/*" style="display: none" />
+                        <div class="photo-upload-content">
+                            <i class="ri-image-add-line" style="font-size: 1.2rem; color: #a259f7"></i>
+                        </div>
+                        <div class="upload-progress" style="display: none;">
+                            <div class="progress-bar"></div>
+                        </div>
+                    </div>
+                </td>
+                <td id="status2">Ready</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="debug-info">
+        <h3>Expected Behavior:</h3>
+        <ol>
+            <li>Click on photo upload area</li>
+            <li>File dialog should open</li>
+            <li>Select an image file</li>
+            <li>Image should appear in the upload box</li>
+            <li>Upload icon should be hidden</li>
+        </ol>
+    </div>
+
+    <script src="project/static/js/seller_scripts/variant_table.js"></script>
+    <script>
+        // Additional debugging
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, checking photo upload setup...');
+            
+            // Check if variant_table.js loaded
+            if (typeof setupVariantPhoto === 'function') {
+                console.log('✅ setupVariantPhoto function is available');
+            } else {
+                console.error('❌ setupVariantPhoto function not found');
+            }
+            
+            // Check photo boxes
+            const photoBoxes = document.querySelectorAll('.photo-upload-box');
+            console.log('Found', photoBoxes.length, 'photo boxes');
+            
+            photoBoxes.forEach((box, index) => {
+                const input = box.querySelector('input[type="file"]');
+                const content = box.querySelector('.photo-upload-content');
+                
+                console.log(`Photo box ${index + 1}:`, {
+                    box: box,
+                    hasInput: !!input,
+                    hasContent: !!content,
+                    setupStatus: box.dataset.photoSetup
+                });
+                
+                // Add click listener for debugging
+                box.addEventListener('click', function() {
+                    document.getElementById(`status${index + 1}`).textContent = 'Clicked!';
+                    setTimeout(() => {
+                        document.getElementById(`status${index + 1}`).textContent = 'Ready';
+                    }, 2000);
+                });
+                
+                // Add change listener to input for debugging
+                if (input) {
+                    input.addEventListener('change', function() {
+                        document.getElementById(`status${index + 1}`).textContent = 'File selected!';
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -5,6 +5,9 @@
 
 .dropdown-item:hover {
   color: var(--purple-primary) !important;
+  background-color: rgba(108, 92, 231, 0.06);
+  transform: translateX(3px);
+  opacity: 0.9;
 }
 
 :root {
@@ -46,14 +49,68 @@
   display: none;
 }
 
-.sidebar-header-seller {
-  padding: 28px 20px;
-  border-bottom: 1px solid var(--gray-200);
+.sidebar-header {
   display: flex;
+  padding: 0 25px !important;
   align-items: center;
   justify-content: space-between;
+  border-bottom: 1px solid #e5e7eb;
 }
 
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-primary, "Montserrat", sans-serif);
+}
+
+.brand h2 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 0;
+  color: #000000;
+}
+
+.brand h2 span {
+  color: var(--color-primary, #6c5ce7);
+}
+
+.brand i {
+  width: 24px;
+  height: 24px;
+  color: var(--color-primary, #6c5ce7);
+}
+
+/* Make the brand text collapsible when the sidebar is collapsed */
+.brand h2 {
+  display: inline-block;
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: max-width 0.22s ease, opacity 0.18s ease, margin 0.18s ease;
+}
+
+.sidebar.collapsed .brand h2 {
+  max-width: 0;
+  opacity: 0;
+  margin: 0;
+}
+
+/* Strong hide for title and inner span to avoid other styles overriding it */
+.sidebar.collapsed .brand h2,
+.sidebar.collapsed .brand h2 span {
+  display: inline-block !important;
+  max-width: 0 !important;
+  width: 0 !important;
+  opacity: 0 !important;
+  overflow: hidden !important;
+  visibility: hidden !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Legacy logo styles - kept for backward compatibility */
 .logo {
   display: flex;
   align-items: center;
@@ -63,41 +120,6 @@
   font-weight: 700;
   color: var(--purple-primary);
 }
-
-/* Logo image sizing: ensure the image fits within the header without overflowing */
-.logo img {
-  display: block;
-  max-height: 56px; /* increased size */
-  max-width: 220px; /* increased width for a larger logo */
-  width: auto;
-  height: auto;
-  object-fit: contain;
-}
-
-/* If you want the logo text to be hidden when using an image-only logo, uncomment:
-.logo span { display: none; }
-*/
-
-.logo i {
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Text-based logo styles */
-.logo-text {
-  display: flex;
-  align-items: center;
-  gap: 4px; /* reduced gap so Seller and Panel sit closer */
-}
-
-.logo-icon {
-  width: 20px;
-  height: 20px;
-  display: inline-flex;
-  align-items: center;
   justify-content: center;
   color: #000; /* ensure icon renders black */
 }
@@ -157,14 +179,18 @@
 }
 
 .nav-item:hover {
-  background-color: var(--purple-lightest);
+  background-color: rgba(108, 92, 231, 0.08);
   color: var(--purple-primary);
+  transform: translateX(4px);
+  opacity: 0.9;
 }
 
 .nav-item.active {
-  background-color: var(--purple-lightest);
+  background-color: rgba(108, 92, 231, 0.12);
   color: var(--purple-primary);
   font-weight: 600;
+  opacity: 1;
+  border-left: 3px solid var(--purple-primary);
 }
 
 .nav-item i {
@@ -224,13 +250,15 @@
 
 /* Make the active item look like a rounded card with stronger purple */
 .nav-item.active {
-  background-color: var(--purple-lightest);
+  background-color: rgba(108, 92, 231, 0.12);
   color: var(--purple-primary);
   font-weight: 600;
   border-radius: 12px;
   padding: 12px 18px;
   margin: 6px 12px;
-  box-shadow: 0 6px 18px rgba(108, 92, 231, 0.06);
+  box-shadow: 0 8px 25px rgba(108, 92, 231, 0.15);
+  opacity: 1;
+  border-left: 3px solid var(--purple-primary);
 }
 
 /* Give the active icon a soft white background so the purple icon stands out */
@@ -428,7 +456,9 @@
 }
 
 .dropdown-item:hover {
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: rgba(108, 92, 231, 0.08);
+  transform: translateX(3px);
+  opacity: 0.9;
 }
 
 .dropdown-item.active {

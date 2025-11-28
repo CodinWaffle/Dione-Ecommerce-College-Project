@@ -24,6 +24,9 @@ class Config:
         'pool_pre_ping': True,
         'pool_recycle': 300,
     }
+    
+    # Set maximum content length to 50MB to handle multiple image uploads
+    MAX_CONTENT_LENGTH = 50 * 1024 * 1024  # 50MB
 
     SQLALCHEMY_DISABLE_DRIVER_HACKS = True
 

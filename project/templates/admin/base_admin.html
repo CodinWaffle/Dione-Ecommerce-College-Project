@@ -118,11 +118,29 @@ include 'partials/_chat_bubble.html' %} {% endblock %} {% block extra_scripts %}
 <script>
   (function () {
     const sidebar = document.getElementById("sidebar");
-    const toggle = document.getElementById("sidebarToggle");
+    const headerToggle = document.getElementById("sidebarToggle");
     const header = document.querySelector(".admin-header-override");
     const main = document.querySelector(".main-content");
 
-    if (!sidebar || !toggle) return;
+    if (!sidebar || !headerToggle) return;
+
+    // Function to toggle sidebar state
+    function toggleSidebar() {
+      const isCollapsed = sidebar.classList.toggle("collapsed");
+      if (header) header.classList.toggle("expanded");
+      if (main) main.classList.toggle("expanded");
+      localStorage.setItem("adminSidebarCollapsed", isCollapsed);
+      
+      // Update header toggle icon
+      const headerIcon = headerToggle.querySelector('i');
+      if (headerIcon) {
+        headerIcon.setAttribute('data-lucide', isCollapsed ? 'panel-left-open' : 'panel-left-close');
+        // Reinitialize lucide icons if available
+        if (window.lucide && typeof lucide.createIcons === "function") {
+          lucide.createIcons();
+        }
+      }
+    }
 
     // Restore previous state
     const collapsed = localStorage.getItem("adminSidebarCollapsed") === "true";
@@ -130,14 +148,21 @@ include 'partials/_chat_bubble.html' %} {% endblock %} {% block extra_scripts %}
       sidebar.classList.add("collapsed");
       if (header) header.classList.add("expanded");
       if (main) main.classList.add("expanded");
+      
+      // Update header toggle icon for restored state
+      const headerIcon = headerToggle.querySelector('i');
+      if (headerIcon) {
+        headerIcon.setAttribute('data-lucide', 'panel-left-open');
+      }
     }
 
-    toggle.addEventListener("click", function () {
-      const isCollapsed = sidebar.classList.toggle("collapsed");
-      if (header) header.classList.toggle("expanded");
-      if (main) main.classList.toggle("expanded");
-      localStorage.setItem("adminSidebarCollapsed", isCollapsed);
-    });
+    // Add event listener to header toggle button only
+    headerToggle.addEventListener("click", toggleSidebar);
+
+    // Initialize lucide icons
+    if (window.lucide && typeof lucide.createIcons === "function") {
+      lucide.createIcons();
+    }
 
     // Hide notification badges that show 0
     try {

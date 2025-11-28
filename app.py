@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Flask application with database saving functionality
 """
 Simple entry point for Dione Ecommerce
 Can be run with: python app.py

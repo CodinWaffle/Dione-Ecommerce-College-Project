@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Validation Fix</title>
+</head>
+<body>
+    <h1>Product Creation Validation Test</h1>
+    
+    <button id="testButton">Test Validation Logic</button>
+    <button id="setupTestData">Setup Test Data</button>
+    <button id="clearData">Clear All Data</button>
+    
+    <div id="output" style="margin-top: 20px; padding: 10px; background: #f5f5f5; white-space: pre-wrap;"></div>
+
+    <script>
+        // Copy the updated getFormData function
+        function getFormData(key) {
+          try {
+            // First try localStorage with the specific key (used by individual form saves)
+            let raw = null;
+            try {
+              raw = localStorage.getItem(key);
+              console.log(`localStorage.${key}:`, raw);
+            } catch (e) {
+              console.warn(`Failed to read localStorage.${key}:`, e);
+              raw = null;
+            }
+            
+            // If not found, try sessionStorage with the specific key
+            if (!raw) {
+              try {
+                raw = sessionStorage.getItem(key);
+                console.log(`sessionStorage.${key}:`, raw);
+              } catch (e) {
+                console.warn(`Failed to read sessionStorage.${key}:`, e);
+                raw = null;
+              }
+            }
+            
+            // If still not found, try the main product_form_data from sessionStorage
+            if (!raw) {
+              try {
+                const allData = sessionStorage.getItem("product_form_data");
+                console.log(`sessionStorage.product_form_data:`, allData);
+                if (allData) {
+                  const parsed = JSON.parse(allData);
+                  console.log(`Parsed product_form_data:`, parsed);
+                  // Return the entire data for any key request since it's all combined
+                  return parsed;
+                }
+              } catch (e) {
+                console.warn("Failed to read product_form_data:", e);
+              }
+            }
+            
+            const parsed = raw ? JSON.parse(raw) : null;
+            console.log(`Final parsed ${key}:`, parsed);
+            return parsed;
+          } catch (e) {
+            console.warn("Failed to parse form data", key, e);
+            return null;
+          }
+        }
+
+        function safeParse(key) {
+          return getFormData(key);
+        }
+
+        // Test the validation logic
+        document.getElementById('testButton').addEventListener('click', function() {
+            const output = document.getElementById('output');
+            let result = "=== Validation Test Results ===\n\n";
+            
+            // Get form data - it might all be in one object or separate objects
+            let basicInfo = safeParse("productForm") || {};
+            let description = safeParse("productDescriptionForm") || {};
+            let stock = safeParse("productStocksForm") || {};
+            
+            result += `Initial basicInfo: ${JSON.stringify(basicInfo, null, 2)}\n`;
+            result += `Initial description: ${JSON.stringify(description, null, 2)}\n`;
+            result += `Initial stock: ${JSON.stringify(stock, null, 2)}\n\n`;
+            
+            // If individual objects are empty, try getting from combined data
+            if (Object.keys(basicInfo).length === 0) {
+              const allData = safeParse("product_form_data") || {};
+              result += `Combined data found: ${JSON.stringify(allData, null, 2)}\n\n`;
+              basicInfo = allData;
+              description = allData;
+              stock = allData;
+            }
+
+            // More flexible validation - check multiple possible field names
+            const productName = basicInfo.productName || basicInfo.product_name || basicInfo.name || '';
+            const category = basicInfo.category || basicInfo.productCategory || '';
+            
+            result += `Extracted Product Name: "${productName}"\n`;
+            result += `Extracted Category: "${category}"\n`;
+            result += `Available fields: ${Object.keys(basicInfo).join(', ')}\n\n`;
+            
+            const validationPassed = !!(productName.trim() && category.trim());
+            result += `Validation Result: ${validationPassed ? 'PASS' : 'FAIL'}\n`;
+            
+            if (!validationPassed) {
+                result += `Error: Missing required fields\n`;
+            }
+            
+            output.textContent = result;
+        });
+
+        // Setup test data
+        document.getElementById('setupTestData').addEventListener('click', function() {
+            // Test scenario 1: Data in product_form_data (sessionStorage)
+            const testData = {
+                productName: "Test Product Name",
+                category: "Test Category",
+                price: "99.99",
+                description: "Test description"
+            };
+            
+            sessionStorage.setItem("product_form_data", JSON.stringify(testData));
+            
+            // Test scenario 2: Data in individual localStorage keys
+            localStorage.setItem("productForm", JSON.stringify({
+                productName: "Local Test Product",
+                category: "Local Test Category"
+            }));
+            
+            alert("Test data setup complete! Click 'Test Validation Logic' to verify.");
+        });
+
+        // Clear all data
+        document.getElementById('clearData').addEventListener('click', function() {
+            localStorage.clear();
+            sessionStorage.clear();
+            document.getElementById('output').textContent = "All data cleared.";
+        });
+    </script>
+</body>
+</html>

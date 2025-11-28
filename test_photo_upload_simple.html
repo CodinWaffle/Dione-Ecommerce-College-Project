@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Photo Upload Test</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .photo-upload-box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            width: 56px;
+            height: 56px;
+            border: 2px dashed #d1d5db;
+            border-radius: 10px;
+            background: #f8fafc;
+            cursor: pointer;
+            position: relative;
+            transition: border-color 0.2s;
+            margin: 20px;
+        }
+
+        .photo-upload-box.grey {
+            border-color: #d1d5db;
+            background: #f8fafc;
+        }
+
+        .photo-upload-box.grey:hover {
+            border-color: #6c5ce7;
+        }
+
+        .photo-upload-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+
+        .photo-upload-box img.upload-thumb {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            border-radius: 8px;
+        }
+
+        .remove-photo {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 20px;
+            height: 20px;
+            background: rgba(239, 68, 68, 0.9);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            z-index: 10;
+        }
+
+        .test-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+        }
+
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status.info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>📸 Simple Photo Upload Test</h1>
+        <p>This tests the exact same photo upload functionality used in add_product_stocks</p>
+
+        <div style="display: flex; align-items: center; gap: 20px;">
+            <div class="photo-upload-box grey" title="Click to upload photo">
+                <input type="file" accept="image/*" style="display: none" />
+                <div class="photo-upload-content">
+                    <i class="ri-image-add-line" style="font-size: 1.2rem; color: #a259f7"></i>
+                </div>
+            </div>
+            <div>
+                <h3>Test Photo Upload</h3>
+                <p>Click the box to upload an image</p>
+                <div id="status" class="status info">Ready to test</div>
+            </div>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <h3>Instructions:</h3>
+            <ol>
+                <li>Click the gray photo box</li>
+                <li>Select an image file</li>
+                <li>Verify the preview appears</li>
+                <li>Test the remove button (×)</li>
+            </ol>
+        </div>
+
+        <div style="margin-top: 20px;">
+            <button onclick="window.forceInitPhotoBoxes()" style="padding: 10px 20px; background: #6c5ce7; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                Re-initialize Photo Upload
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Same exact code as in the template
+        console.log("🚀 Force photo upload fix loading...");
+
+        // Simple photo upload handler
+        function handlePhotoUpload(photoBox) {
+            const input = photoBox.querySelector('input[type="file"]');
+            if (!input) {
+                console.error("No file input found");
+                return;
+            }
+            
+            console.log("Setting up photo upload for:", photoBox);
+            
+            // Click handler
+            photoBox.onclick = function(e) {
+                console.log("Photo box clicked!");
+                document.getElementById('status').innerHTML = 'Photo box clicked!';
+                document.getElementById('status').className = 'status info';
+                
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Don't trigger on images or remove buttons
+                if (e.target.tagName === 'IMG' || e.target.classList.contains('remove-photo')) {
+                    return;
+                }
+                
+                input.click();
+            };
+            
+            // File change handler
+            input.onchange = function(e) {
+                const file = this.files[0];
+                console.log("File selected:", file);
+                
+                if (!file) {
+                    document.getElementById('status').innerHTML = 'No file selected';
+                    document.getElementById('status').className = 'status error';
+                    return;
+                }
+                
+                document.getElementById('status').innerHTML = 'File selected: ' + file.name;
+                document.getElementById('status').className = 'status info';
+                
+                // Validate
+                if (!file.type.startsWith('image/')) {
+                    alert('Please select an image file');
+                    this.value = '';
+                    document.getElementById('status').innerHTML = 'Invalid file type';
+                    document.getElementById('status').className = 'status error';
+                    return;
+                }
+                
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('File too large. Max 5MB');
+                    this.value = '';
+                    document.getElementById('status').innerHTML = 'File too large';
+                    document.getElementById('status').className = 'status error';
+                    return;
+                }
+                
+                document.getElementById('status').innerHTML = 'Creating preview...';
+                document.getElementById('status').className = 'status info';
+                
+                // Create preview
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    // Clear existing
+                    const existingImg = photoBox.querySelector('img.upload-thumb');
+                    const existingBtn = photoBox.querySelector('.remove-photo');
+                    if (existingImg) existingImg.remove();
+                    if (existingBtn) existingBtn.remove();
+                    
+                    // Create image
+                    const img = document.createElement('img');
+                    img.className = 'upload-thumb';
+                    img.src = event.target.result;
+                    img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:8px;position:absolute;top:0;left:0;';
+                    
+                    // Create remove button
+                    const removeBtn = document.createElement('button');
+                    removeBtn.type = 'button';
+                    removeBtn.className = 'remove-photo';
+                    removeBtn.innerHTML = '×';
+                    removeBtn.style.cssText = 'position:absolute;top:2px;right:2px;width:20px;height:20px;background:rgba(239,68,68,0.9);color:white;border:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;z-index:10;';
+                    
+                    removeBtn.onclick = function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        input.value = '';
+                        img.remove();
+                        removeBtn.remove();
+                        const placeholder = photoBox.querySelector('.photo-upload-content');
+                        if (placeholder) placeholder.style.display = '';
+                        photoBox.style.position = '';
+                        
+                        document.getElementById('status').innerHTML = 'Image removed';
+                        document.getElementById('status').className = 'status info';
+                    };
+                    
+                    // Add to photo box
+                    const placeholder = photoBox.querySelector('.photo-upload-content');
+                    if (placeholder) placeholder.style.display = 'none';
+                    photoBox.style.position = 'relative';
+                    photoBox.appendChild(img);
+                    photoBox.appendChild(removeBtn);
+                    
+                    document.getElementById('status').innerHTML = 'Upload successful! ✅';
+                    document.getElementById('status').className = 'status success';
+                    
+                    console.log("Photo preview created!");
+                };
+                
+                reader.readAsDataURL(file);
+            };
+        }
+
+        // Initialize all photo boxes
+        function initPhotoBoxes() {
+            const photoBoxes = document.querySelectorAll('.photo-upload-box');
+            console.log("Found photo boxes:", photoBoxes.length);
+            
+            photoBoxes.forEach((box, index) => {
+                console.log(`Setting up photo box ${index + 1}`);
+                handlePhotoUpload(box);
+            });
+            
+            if (photoBoxes.length === 0) {
+                console.warn("No photo boxes found, retrying...");
+                setTimeout(initPhotoBoxes, 1000);
+            }
+        }
+
+        // Run initialization when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log("DOM ready, initializing photo boxes...");
+                initPhotoBoxes();
+            });
+        } else {
+            console.log("DOM already ready, initializing photo boxes...");
+            initPhotoBoxes();
+        }
+
+        // Also try after delays to catch any timing issues
+        setTimeout(initPhotoBoxes, 500);
+        setTimeout(initPhotoBoxes, 1000);
+        setTimeout(initPhotoBoxes, 2000);
+
+        // Global function for manual initialization
+        window.forceInitPhotoBoxes = initPhotoBoxes;
+
+        console.log("✅ Force photo upload fix loaded");
+    </script>
+</body>
+</html>

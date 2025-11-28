@@ -1,0 +1,465 @@
+{% set active_page = 'products' %} {% extends 'seller/base_seller.html' %} {%
+block title %}Inventory Management - Dione Ecommerce{% endblock %} {% block extra_css %}
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css"
+/>
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/seller_styles/add_product_stocks.css') }}"
+/>
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/seller_styles/seller_product_management.css') }}"
+/>
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/seller_styles/product_preview.css') }}"
+/>
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/seller_styles/progress_bar.css') }}"
+/>
+{% endblock %} {% block content %}
+<div class="container-stocks">
+  {% set progress_step = 3 %} {% include 'seller/partials/_progress_bar.html' %}
+
+  <form id="productStocksForm" class="form-main" method="post">
+    <div class="form-section">
+      <div class="page-header">
+        <div class="section-icon">
+          <i class="ri-archive-line"></i>
+        </div>
+        <div class="page-header-left">
+          <h2>Inventory Management</h2>
+          <p class="page-subtext">Manage inventory for your product variants</p>
+        </div>
+        <div class="page-header-actions">
+          <!-- Removed bulk stock and validate buttons as requested -->
+        </div>
+      </div>
+      <div class="form-grid"></div>
+      <div class="form-group full-width">
+        <div style="overflow-x: auto">
+          <div class="variant-controls">
+            <button
+              type="button"
+              id="addVariantBtn"
+              class="btn btn-purple"
+              title="Add a new product variant"
+            >
+              <i class="ri-add-line"></i> Add Variant
+            </button>
+            <div class="variant-stats">
+              <span class="stat-item">
+                <i class="ri-package-line"></i>
+                <span id="variantCount">1</span> Variant<span id="variantPlural" style="display: none;">s</span>
+              </span>
+              <span class="stat-item">
+                <i class="ri-archive-line"></i>
+                <span id="totalStockDisplay">0</span> Total Stock
+              </span>
+            </div>
+          </div>
+          <div style="overflow-x: auto">
+            <table
+              class="variant-table"
+              style="width: 100%; border-collapse: collapse"
+            >
+              <thead>
+                <tr style="border-bottom: 1px solid #e0e0e0">
+                  <th>No.</th>
+                  <th>Photo</th>
+                  <th>SKU</th>
+                  <th>Color</th>
+                  <th>Size</th>
+                  <th>Low Stock</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="variantTableBody">
+                <tr>
+                  <td
+                    style="
+                      padding: 8px;
+                      border: 1px solid #e5e7eb;
+                      text-align: center;
+                      font-weight: 600;
+                      color: #6b7280;
+                      width: 36px;
+                    "
+                  >
+                    1
+                  </td>
+                  <td
+                    style="
+                      padding: 8px;
+                      border: 1px solid #e5e7eb;
+                      text-align: center;
+                      width: 60px;
+                    "
+                  >
+                    <div class="photo-upload-box grey" style="margin: 0 auto; cursor: pointer;" title="Upload variant photo">
+                      <input type="file" accept="image/*" style="display: none" />
+                      <div class="photo-upload-content">
+                        <i
+                          class="ri-image-add-line"
+                          style="font-size: 1.2rem; color: #a259f7"
+                        ></i>
+                      </div>
+                      <div class="upload-progress" style="display: none;">
+                        <div class="progress-bar"></div>
+                      </div>
+                    </div>
+                  </td>
+                  <td
+                    style="
+                      padding: 8px;
+                      border: 1px solid #e5e7eb;
+                      width: 180px;
+                    "
+                  >
+                    <input
+                      type="text"
+                      name="sku_1"
+                      placeholder="SKU"
+                      class="variant-input compact"
+                    />
+                  </td>
+                  <td
+                    style="
+                      padding: 8px;
+                      border: 1px solid #e5e7eb;
+                      width: 180px;
+                    "
+                  >
+                    <div
+                      style="display: flex; gap: 0.5rem; align-items: center"
+                    >
+                      <input
+                        type="text"
+                        name="color_1"
+                        placeholder="Color name"
+                        class="variant-input compact"
+                        style="flex: 1"
+                      />
+                      <input
+                        type="color"
+                        name="color_picker_1"
+                        class="color-picker"
+                        value="#000000"
+                        style="
+                          width: 40px;
+                          height: 36px;
+                          border: 1px solid #e5e7eb;
+                          border-radius: 4px;
+                          cursor: pointer;
+                          padding: 2px;
+                        "
+                      />
+                    </div>
+                  </td>
+                  <td
+                    style="
+                      padding: 8px;
+                      border: 1px solid #e5e7eb;
+                      width: 200px;
+                    "
+                  >
+                    <div
+                      style="display: flex; flex-direction: column; gap: 6px"
+                    >
+                      <button
+                        type="button"
+                        class="btn btn-secondary btn-select-sizes"
+                        data-row="1"
+                        title="Click to select sizes and set stock levels"
+                      >
+                        <i data-lucide="edit-3"></i>
+                        Select Sizes
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-outline btn-copy-sizes"
+                        data-row="1"
+                        title="Copy sizes from another variant"
+                        style="display: none; margin-top: 4px;"
+                      >
+                        <i data-lucide="copy"></i>
+                        Copy From
+                      </button>
+                      <div
+                        class="variant-size-summary"
+                        style="font-size: 0.9rem; color: #374151; min-height: 20px;"
+                      >
+                        <span class="no-sizes">No sizes selected</span>
+                      </div>
+                      <div
+                        class="variant-size-group"
+                        style="display: none"
+                      ></div>
+                      <div class="size-stock-container" style="display: none;"></div>
+                    </div>
+                  </td>
+
+                  <td
+                    style="
+                      padding: 8px;
+                      border: 1px solid #e5e7eb;
+                      width: 140px;
+                    "
+                  >
+                    <input
+                      type="number"
+                      name="lowStock_1"
+                      min="0"
+                      placeholder="Low Stock"
+                      class="variant-input compact"
+                    />
+                  </td>
+                  <td
+                    style="
+                      padding: 8px;
+                      border: 1px solid #e5e7eb;
+                      text-align: center;
+                      width: 120px;
+                    "
+                  >
+                    <div class="row-actions">
+                      <div class="row-total-stock">
+                        <span class="total-stock-badge zero">Total: 0</span>
+                      </div>
+                      <!-- First row cannot be deleted -->
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div
+            style="
+              margin-top: 1.5rem;
+              display: flex;
+              justify-content: flex-end;
+              gap: 1rem;
+            "
+          >
+            <button
+              type="reset"
+              class="btn btn-secondary btn-clear"
+              style="
+                font-weight: 700;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                background-color: #ffffff;
+              "
+            >
+              <i class="ri-refresh-line" style="font-size: 1.1rem"></i> Clear
+            </button>
+            <button
+              type="submit"
+              class="btn btn-purple btn-save"
+              style="
+                font-weight: 700;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+              "
+            >
+              <i class="ri-save-3-line" style="font-size: 1.1rem"></i> Save
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %} {% block extra_js %}
+<script src="{{ url_for('static', filename='js/seller_scripts/add_product_flow.js') }}"></script>
+<script src="{{ url_for('static', filename='js/seller_scripts/product_preview.js') }}"></script>
+<script src="{{ url_for('static', filename='js/seller_scripts/variant_table.js') }}"></script>
+<script src="{{ url_for('static', filename='js/seller_scripts/add_product_stocks.js') }}"></script>
+<script src="{{ url_for('static', filename='js/seller_scripts/progress_bar.js') }}"></script>
+
+<!-- Force Photo Upload Fix - Simple and Direct -->
+<script>
+// Force photo upload to work - Simple and direct approach
+console.log("🚀 Force photo upload fix loading...");
+
+// Simple photo upload handler
+function handlePhotoUpload(photoBox) {
+    const input = photoBox.querySelector('input[type="file"]');
+    if (!input) {
+        console.error("No file input found");
+        return;
+    }
+    
+    console.log("Setting up photo upload for:", photoBox);
+    
+    // Click handler
+    photoBox.onclick = function(e) {
+        console.log("Photo box clicked!");
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Don't trigger on images or remove buttons
+        if (e.target.tagName === 'IMG' || e.target.classList.contains('remove-photo')) {
+            return;
+        }
+        
+        input.click();
+    };
+    
+    // File change handler
+    input.onchange = function(e) {
+        const file = this.files[0];
+        console.log("File selected:", file);
+        
+        if (!file) return;
+        
+        // Validate
+        if (!file.type.startsWith('image/')) {
+            alert('Please select an image file');
+            this.value = '';
+            return;
+        }
+        
+        if (file.size > 5 * 1024 * 1024) {
+            alert('File too large. Max 5MB');
+            this.value = '';
+            return;
+        }
+        
+        // Create preview
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            // Clear existing
+            const existingImg = photoBox.querySelector('img.upload-thumb');
+            const existingBtn = photoBox.querySelector('.remove-photo');
+            if (existingImg) existingImg.remove();
+            if (existingBtn) existingBtn.remove();
+            
+            // Create image
+            const img = document.createElement('img');
+            img.className = 'upload-thumb';
+            img.src = event.target.result;
+            img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:8px;position:absolute;top:0;left:0;';
+            
+            // Create remove button
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'remove-photo';
+            removeBtn.innerHTML = '×';
+            removeBtn.style.cssText = 'position:absolute;top:2px;right:2px;width:20px;height:20px;background:rgba(239,68,68,0.9);color:white;border:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;z-index:10;';
+            
+            removeBtn.onclick = function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                input.value = '';
+                img.remove();
+                removeBtn.remove();
+                const placeholder = photoBox.querySelector('.photo-upload-content');
+                if (placeholder) placeholder.style.display = '';
+                photoBox.style.position = '';
+            };
+            
+            // Add to photo box
+            const placeholder = photoBox.querySelector('.photo-upload-content');
+            if (placeholder) placeholder.style.display = 'none';
+            photoBox.style.position = 'relative';
+            photoBox.appendChild(img);
+            photoBox.appendChild(removeBtn);
+            
+            console.log("Photo preview created!");
+        };
+        
+        reader.readAsDataURL(file);
+    };
+}
+
+// Initialize all photo boxes
+function initPhotoBoxes() {
+    const photoBoxes = document.querySelectorAll('.photo-upload-box');
+    console.log("Found photo boxes:", photoBoxes.length);
+    
+    photoBoxes.forEach((box, index) => {
+        console.log(`Setting up photo box ${index + 1}`);
+        handlePhotoUpload(box);
+    });
+    
+    if (photoBoxes.length === 0) {
+        console.warn("No photo boxes found, retrying...");
+        setTimeout(initPhotoBoxes, 1000);
+    }
+}
+
+// Run initialization when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("DOM ready, initializing photo boxes...");
+        initPhotoBoxes();
+    });
+} else {
+    console.log("DOM already ready, initializing photo boxes...");
+    initPhotoBoxes();
+}
+
+// Also try after delays to catch any timing issues
+setTimeout(initPhotoBoxes, 500);
+setTimeout(initPhotoBoxes, 1000);
+setTimeout(initPhotoBoxes, 2000);
+
+// Global function for manual initialization
+window.forceInitPhotoBoxes = initPhotoBoxes;
+
+console.log("✅ Force photo upload fix loaded");
+</script>
+
+<!-- Size selection modal -->
+<div id="sizeSelectModal" class="modal">
+  <div class="modal-content size-modal-content">
+    <div class="modal-header">
+      <div class="modal-header-content">
+        <div class="modal-icon">
+          <i data-lucide="ruler"></i>
+        </div>
+        <div class="modal-title-section">
+          <h2 class="modal-title">Select Sizes & Stock</h2>
+          <p class="modal-subtitle">Choose sizes and set stock quantities</p>
+        </div>
+      </div>
+      <button class="close-btn" id="sizeModalClose">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="size-modal-note">
+        <i data-lucide="info"></i>
+        Click size boxes to select them and enter stock amounts.
+      </div>
+      <div id="sizeOptionsContainer" class="size-options-area"></div>
+    </div>
+    <div class="modal-footer">
+      <button
+        type="button"
+        id="sizeModalCancel"
+        class="btn-secondary"
+        title="Cancel changes"
+      >
+        <i data-lucide="x"></i>
+        Cancel
+      </button>
+      <button
+        type="button"
+        id="sizeModalSave"
+        class="btn-primary"
+        title="Save size selections"
+      >
+        <i data-lucide="save"></i>
+        Save Changes
+      </button>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -3,9 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Cart</title>
+    <title>Shopping Cart - Dione</title>
     <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
     <link
@@ -16,165 +16,272 @@
       rel="stylesheet"
       href="{{ url_for('static', filename='css/buyer_styles/partials/_header_buyer.css') }}"
     />
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   </head>
   <body>
     <!-- Include Header -->
     {% include 'main/partials/_header_buyer.html' %}
+    
+    <!-- Breadcrumb -->
+    <div class="breadcrumb-container">
+      <nav class="breadcrumb">
+        <a href="{{ url_for('main.index') }}" class="breadcrumb-link">
+          <i data-lucide="home"></i>
+          Home
+        </a>
+        <i data-lucide="chevron-right" class="breadcrumb-separator"></i>
+        <span class="breadcrumb-current">Shopping Cart</span>
+      </nav>
+    </div>
+
     <!-- Main Content -->
     <div class="main-container">
       <!-- Cart Section -->
       <div class="cart-section">
         <div class="cart-header">
-          <h1 class="cart-title">My Bag</h1>
-          <span class="item-count"
-            ><span class="item-number"
-              >{{ cart_items|length if cart_items else 0 }}</span
-            >
-            <span class="item-text"
-              >ITEM{{ 's' if cart_items and cart_items|length != 1 else ''
-              }}</span
-            ></span
-          >
-        </div>
-
-        <div class="shipping-notice">
-          <span class="shipping-icon">
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <rect x="1" y="3" width="15" height="13"></rect>
-              <polygon points="16,3 22,9 22,16 16,16"></polygon>
-              <circle cx="5.5" cy="18.5" r="2.5"></circle>
-              <circle cx="18.5" cy="18.5" r="2.5"></circle>
-            </svg>
-          </span>
-          <span class="shipping-text"
-            >These items are going fast. Check out now to make them yours.</span
-          >
-        </div>
-
-        <!-- Product Cards -->
-        {% if cart_items %} {% for item in cart_items %}
-        <div class="product-card">
-          <img
-            src="{{ item.image_url if item.image_url else url_for('static', filename='images/product_1.jpg') }}"
-            alt="{{ item.name }}"
-            class="product-image"
-          />
-          <div class="product-details">
-            <a href="#" class="store-name" onclick="return false;"
-              >{{ item.store_name|default('SHOP.CO Store') }}</a
-            >
-            <h3 class="product-name">{{ item.name }}</h3>
-            <div class="product-specs">
-              Size: {{ item.size }}<br />
-              Color: {{ item.color }}
-            </div>
-            <div class="product-actions">
-              <div class="quantity-controls">
-                <button
-                  class="qty-btn"
-                  onclick="updateQuantity({{ item.id }}, -1)"
-                >
-                  −
-                </button>
-                <input
-                  type="number"
-                  class="qty-input"
-                  value="{{ item.quantity }}"
-                  id="qty-{{ item.id }}"
-                  readonly
-                />
-                <button
-                  class="qty-btn"
-                  onclick="updateQuantity({{ item.id }}, 1)"
-                >
-                  +
-                </button>
-              </div>
-              <div class="product-price">₱{{ "%.2f"|format(item.price) }}</div>
-            </div>
-            <div class="product-links">
-              <a
-                href="#"
-                class="product-link"
-                onclick="saveForLater({{ item.id }})"
-                >Save for later</a
-              >
-              <a href="#" class="product-link">Edit</a>
-              <a
-                href="#"
-                class="product-link"
-                onclick="removeItem({{ item.id }})"
-                >Remove</a
-              >
-            </div>
+          <div class="cart-title-section">
+            <h1 class="cart-title">Shopping Cart</h1>
+            <p class="cart-subtitle">Review your items before checkout</p>
+          </div>
+          <div class="item-count">
+            <span class="item-number">{{ cart_items|length if cart_items else 0 }}</span>
+            <span class="item-text">item{{ 's' if cart_items and cart_items|length != 1 else '' }}</span>
           </div>
         </div>
-        {% endfor %} {% else %}
-        <div class="empty-cart">
-          <p>Your cart is empty</p>
-          <a href="{{ url_for('main.index') }}" class="continue-shopping-btn"
-            >Continue Shopping</a
-          >
+
+        {% if cart_items %}
+        <div class="shipping-notice">
+          <div class="shipping-notice-content">
+            <div class="shipping-icon">
+              <i data-lucide="truck"></i>
+            </div>
+            <div class="shipping-text">
+              <strong>Free shipping</strong> on orders over ₱1,500
+              <span class="shipping-subtext">Estimated delivery: 2-3 business days</span>
+            </div>
+          </div>
         </div>
         {% endif %}
 
+        <!-- Product Cards -->
+        <div class="cart-items">
+          {% if cart_items %}
+            {% for item in cart_items %}
+            <div class="product-card" data-item-id="{{ item.id }}">
+              <div class="product-image-container">
+                <img
+                  src="{{ item.image_url if item.image_url else url_for('static', filename='images/product_1.jpg') }}"
+                  alt="{{ item.name }}"
+                  class="product-image"
+                  loading="lazy"
+                />
+              </div>
+              
+              <div class="product-info">
+                <div class="product-header">
+                  <div class="product-meta">
+                    <a href="#" class="store-name" onclick="return false;">
+                      <i data-lucide="store"></i>
+                      {{ item.store_name|default('Dione Store') }}
+                    </a>
+                    <button class="remove-btn" onclick="removeItem({{ item.id }})" title="Remove item">
+                      <i data-lucide="x"></i>
+                    </button>
+                  </div>
+                  <h3 class="product-name">{{ item.name }}</h3>
+                </div>
+
+                <div class="product-variants">
+                  <div class="variant-item">
+                    <span class="variant-label">Size:</span>
+                    <span class="variant-value">{{ item.size }}</span>
+                  </div>
+                  <div class="variant-item">
+                    <span class="variant-label">Color:</span>
+                    <span class="variant-value">{{ item.color }}</span>
+                  </div>
+                </div>
+
+                <div class="product-footer">
+                  <div class="quantity-section">
+                    <label class="quantity-label">Quantity</label>
+                    <div class="quantity-controls">
+                      <button
+                        class="qty-btn qty-decrease"
+                        onclick="updateQuantity({{ item.id }}, -1)"
+                        title="Decrease quantity"
+                      >
+                        <i data-lucide="minus"></i>
+                      </button>
+                      <input
+                        type="number"
+                        class="qty-input"
+                        value="{{ item.quantity }}"
+                        id="qty-{{ item.id }}"
+                        min="1"
+                        max="99"
+                        readonly
+                      />
+                      <button
+                        class="qty-btn qty-increase"
+                        onclick="updateQuantity({{ item.id }}, 1)"
+                        title="Increase quantity"
+                      >
+                        <i data-lucide="plus"></i>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="price-section">
+                    <div class="product-price">₱{{ "%.2f"|format(item.price * item.quantity) }}</div>
+                    {% if item.quantity > 1 %}
+                    <div class="unit-price">₱{{ "%.2f"|format(item.price) }} each</div>
+                    {% endif %}
+                  </div>
+                </div>
+
+                <div class="product-actions">
+                  <button class="action-btn save-btn" onclick="saveForLater({{ item.id }})">
+                    <i data-lucide="heart"></i>
+                    Save for later
+                  </button>
+                  <button class="action-btn edit-btn" onclick="editItem({{ item.id }})">
+                    <i data-lucide="edit-2"></i>
+                    Edit
+                  </button>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          {% else %}
+            <div class="empty-cart">
+              <div class="empty-cart-icon">
+                <i data-lucide="shopping-bag"></i>
+              </div>
+              <h2 class="empty-cart-title">Your cart is empty</h2>
+              <p class="empty-cart-text">Looks like you haven't added anything to your cart yet.</p>
+              <a href="{{ url_for('main.index') }}" class="continue-shopping-btn">
+                <i data-lucide="arrow-left"></i>
+                Continue Shopping
+              </a>
+            </div>
+          {% endif %}
+        </div>
+
         <!-- Saved Items Section -->
+        {% if cart_items %}
         <div class="saved-section" id="saved-items">
-          <h2 class="saved-title">Saved Items</h2>
+          <div class="saved-header">
+            <h2 class="saved-title">
+              <i data-lucide="heart"></i>
+              Saved for Later
+            </h2>
+          </div>
           <div id="saved-items-container">
-            <p class="no-saved-items" id="no-saved-message">
-              You have no saved items.
-            </p>
+            <div class="no-saved-items" id="no-saved-message">
+              <i data-lucide="bookmark"></i>
+              <p>No saved items yet</p>
+              <span>Items you save for later will appear here</span>
+            </div>
           </div>
         </div>
+        {% endif %}
       </div>
 
       <!-- Order Summary -->
+      {% if cart_items %}
       <div class="order-summary">
-        <h2 class="summary-title">Order Summary</h2>
-
-        <div class="summary-row">
-          <span class="summary-label">Subtotal</span>
-          <span class="summary-value" id="subtotal"
-            >₱{{ "%.2f"|format(subtotal|default(0)) }}</span
-          >
+        <div class="summary-header">
+          <h2 class="summary-title">Order Summary</h2>
+          <div class="summary-badge">{{ cart_items|length }} item{{ 's' if cart_items|length != 1 else '' }}</div>
         </div>
 
-        <div class="summary-row">
-          <span class="summary-label">Discount (-20%)</span>
-          <span class="summary-value discount" id="discount"
-            >-₱{{ "%.2f"|format(discount|default(0)) }}</span
-          >
+        <div class="summary-content">
+          <div class="summary-row">
+            <span class="summary-label">Subtotal</span>
+            <span class="summary-value" id="subtotal">₱{{ "%.2f"|format(subtotal|default(0)) }}</span>
+          </div>
+
+          <div class="summary-row">
+            <span class="summary-label">
+              Shipping
+              <span class="shipping-info">
+                <i data-lucide="info"></i>
+                <div class="tooltip">Free shipping on orders over ₱1,500</div>
+              </span>
+            </span>
+            <span class="summary-value" id="delivery">
+              {% if subtotal and subtotal >= 1500 %}
+                <span class="free-shipping">FREE</span>
+              {% else %}
+                ₱{{ "%.2f"|format(delivery_fee|default(150)) }}
+              {% endif %}
+            </span>
+          </div>
+
+          {% if discount and discount > 0 %}
+          <div class="summary-row discount-row">
+            <span class="summary-label">
+              <i data-lucide="tag"></i>
+              Discount
+            </span>
+            <span class="summary-value discount">-₱{{ "%.2f"|format(discount) }}</span>
+          </div>
+          {% endif %}
+
+          <div class="promo-section">
+            <div class="promo-input-container">
+              <input
+                type="text"
+                class="promo-input"
+                placeholder="Enter promo code"
+                id="promo-code"
+              />
+              <button class="apply-btn" onclick="applyPromoCode()">
+                <i data-lucide="tag"></i>
+                Apply
+              </button>
+            </div>
+          </div>
+
+          <div class="summary-divider"></div>
+
+          <div class="summary-row total-row">
+            <span class="summary-label">Total</span>
+            <span class="summary-value total-value" id="total">₱{{ "%.2f"|format(total|default(0)) }}</span>
+          </div>
         </div>
 
-        <div class="summary-row">
-          <span class="summary-label">Delivery Fee</span>
-          <span class="summary-value" id="delivery"
-            >₱{{ "%.2f"|format(delivery_fee|default(15)) }}</span
-          >
+        <div class="checkout-section">
+          <button class="checkout-btn" onclick="goToCheckout()">
+            <i data-lucide="credit-card"></i>
+            Proceed to Checkout
+          </button>
+          
+          <div class="security-badges">
+            <div class="security-item">
+              <i data-lucide="shield-check"></i>
+              <span>Secure Checkout</span>
+            </div>
+            <div class="security-item">
+              <i data-lucide="truck"></i>
+              <span>Fast Delivery</span>
+            </div>
+          </div>
         </div>
-
-        <div class="summary-row total-row">
-          <span class="summary-label">Total</span>
-          <span class="summary-value" id="total"
-            >₱{{ "%.2f"|format(total|default(0)) }}</span
-          >
-        </div>
-
-        <button class="checkout-btn" onclick="goToCheckout()">
-          Go to Checkout →
-        </button>
       </div>
+      {% endif %}
     </div>
 
     <script>
+      // Initialize Lucide icons
+      document.addEventListener('DOMContentLoaded', function() {
+        if (typeof lucide !== 'undefined') {
+          lucide.createIcons();
+        }
+      });
+
       // Cart functionality
       let cartItems = {{ cart_items|tojson if cart_items else '[]' }};
       let savedItems = [];
@@ -182,88 +289,145 @@
       function updateQuantity(itemId, change) {
           const item = cartItems.find(item => item.id === itemId);
           if (item) {
-              item.quantity = Math.max(1, item.quantity + change);
-              document.getElementById(`qty-${itemId}`).value = item.quantity;
+              const newQuantity = Math.max(1, Math.min(99, item.quantity + change));
+              item.quantity = newQuantity;
+              document.getElementById(`qty-${itemId}`).value = newQuantity;
+              
+              // Update price display
+              const priceElement = document.querySelector(`[data-item-id="${itemId}"] .product-price`);
+              if (priceElement) {
+                  priceElement.textContent = `₱${(item.price * newQuantity).toFixed(2)}`;
+              }
+              
+              // Update unit price display
+              const unitPriceElement = document.querySelector(`[data-item-id="${itemId}"] .unit-price`);
+              if (unitPriceElement) {
+                  if (newQuantity > 1) {
+                      unitPriceElement.textContent = `₱${item.price.toFixed(2)} each`;
+                      unitPriceElement.style.display = 'block';
+                  } else {
+                      unitPriceElement.style.display = 'none';
+                  }
+              }
+              
+              updateItemCount();
               updateSummary();
+              
+              // Add visual feedback
+              const card = document.querySelector(`[data-item-id="${itemId}"]`);
+              card.classList.add('updating');
+              setTimeout(() => card.classList.remove('updating'), 300);
           }
       }
 
       function removeItem(itemId) {
-          if (confirm('Are you sure you want to remove this item?')) {
+          const item = cartItems.find(item => item.id === itemId);
+          if (item && confirm(`Remove "${item.name}" from your cart?`)) {
               cartItems = cartItems.filter(item => item.id !== itemId);
-              document.querySelector(`#qty-${itemId}`).closest('.product-card').remove();
-              updateItemCount();
-              updateSummary();
+              const card = document.querySelector(`[data-item-id="${itemId}"]`);
+              
+              // Add removal animation
+              card.classList.add('removing');
+              setTimeout(() => {
+                  card.remove();
+                  updateItemCount();
+                  updateSummary();
+                  
+                  // Check if cart is empty
+                  if (cartItems.length === 0) {
+                      location.reload();
+                  }
+              }, 300);
           }
       }
 
       function saveForLater(itemId) {
           const item = cartItems.find(item => item.id === itemId);
           if (item) {
-              // Move item from cart to saved items
               savedItems.push(item);
               cartItems = cartItems.filter(item => item.id !== itemId);
 
-              // Remove from cart display
-              document.querySelector(`#qty-${itemId}`).closest('.product-card').remove();
-
-              // Add to saved items display
-              addToSavedItemsDisplay(item);
-
-              // Update cart
-              updateItemCount();
-              updateSummary();
-              updateSavedItemsDisplay();
+              const card = document.querySelector(`[data-item-id="${itemId}"]`);
+              card.classList.add('saving');
+              
+              setTimeout(() => {
+                  card.remove();
+                  addToSavedItemsDisplay(item);
+                  updateItemCount();
+                  updateSummary();
+                  updateSavedItemsDisplay();
+                  
+                  // Show success message
+                  showNotification(`"${item.name}" saved for later`, 'success');
+              }, 300);
           }
+      }
+
+      function editItem(itemId) {
+          // Placeholder for edit functionality
+          showNotification('Edit functionality coming soon!', 'info');
       }
 
       function addToSavedItemsDisplay(item) {
           const savedContainer = document.getElementById('saved-items-container');
           const noSavedMessage = document.getElementById('no-saved-message');
 
-          // Hide "no saved items" message
           noSavedMessage.style.display = 'none';
 
-          // Create saved item HTML
           const savedItemHTML = `
               <div class="saved-item" id="saved-${item.id}">
-                  <img src="${item.image_url || "{{ url_for('static', filename='images/product_1.jpg') }}"}" alt="${item.name}" class="saved-item-image">
+                  <div class="saved-item-image-container">
+                      <img src="${item.image_url || "{{ url_for('static', filename='images/product_1.jpg') }}"}" 
+                           alt="${item.name}" class="saved-item-image">
+                  </div>
                   <div class="saved-item-details">
-                      <a href="#" class="store-name" onclick="return false;">${item.store_name || 'SHOP.CO Store'}</a>
+                      <div class="saved-item-header">
+                          <a href="#" class="store-name" onclick="return false;">
+                              <i data-lucide="store"></i>
+                              ${item.store_name || 'Dione Store'}
+                          </a>
+                          <button class="remove-saved-btn" onclick="removeSavedItem(${item.id})" title="Remove">
+                              <i data-lucide="x"></i>
+                          </button>
+                      </div>
                       <h4 class="saved-item-name">${item.name}</h4>
                       <div class="saved-item-specs">
-                          Size: ${item.size}<br>
-                          Color: ${item.color}
+                          <span>Size: ${item.size}</span>
+                          <span>Color: ${item.color}</span>
                       </div>
-                      <div class="saved-item-price">₱${parseFloat(item.price).toFixed(2)}</div>
-                      <div class="saved-item-links">
-                          <a href="#" class="product-link" onclick="moveToCart(${item.id})">Move to bag</a>
-                          <a href="#" class="product-link" onclick="removeSavedItem(${item.id})">Remove</a>
+                      <div class="saved-item-footer">
+                          <div class="saved-item-price">₱${parseFloat(item.price).toFixed(2)}</div>
+                          <button class="move-to-cart-btn" onclick="moveToCart(${item.id})">
+                              <i data-lucide="shopping-bag"></i>
+                              Move to Cart
+                          </button>
                       </div>
                   </div>
               </div>
           `;
 
           savedContainer.insertAdjacentHTML('beforeend', savedItemHTML);
+          
+          // Re-initialize icons for new elements
+          if (typeof lucide !== 'undefined') {
+              lucide.createIcons();
+          }
       }
 
       function moveToCart(itemId) {
           const item = savedItems.find(item => item.id === itemId);
           if (item) {
-              // Move item back to cart
               cartItems.push(item);
               savedItems = savedItems.filter(item => item.id !== itemId);
-
-              // Remove from saved items display
-              document.getElementById(`saved-${itemId}`).remove();
-
-              // Add back to cart display (reload page for simplicity, or you could recreate the HTML)
+              
+              showNotification(`"${item.name}" moved to cart`, 'success');
               location.reload();
           }
       }
 
       function removeSavedItem(itemId) {
-          if (confirm('Are you sure you want to remove this saved item?')) {
+          const item = savedItems.find(item => item.id === itemId);
+          if (item && confirm(`Remove "${item.name}" from saved items?`)) {
               savedItems = savedItems.filter(item => item.id !== itemId);
               document.getElementById(`saved-${itemId}`).remove();
               updateSavedItemsDisplay();
@@ -272,8 +436,10 @@
 
       function updateSavedItemsDisplay() {
           const noSavedMessage = document.getElementById('no-saved-message');
+          const savedSection = document.getElementById('saved-items');
+          
           if (savedItems.length === 0) {
-              noSavedMessage.style.display = 'block';
+              noSavedMessage.style.display = 'flex';
           } else {
               noSavedMessage.style.display = 'none';
           }
@@ -286,49 +452,119 @@
 
           if (itemNumberElement && itemTextElement) {
               itemNumberElement.textContent = totalItems;
-              itemTextElement.textContent = `ITEM${totalItems !== 1 ? 'S' : ''}`;
+              itemTextElement.textContent = `item${totalItems !== 1 ? 's' : ''}`;
           }
 
           const cartBadge = document.querySelector('.cart-badge');
           if (cartBadge) {
               cartBadge.textContent = totalItems;
           }
+          
+          const summaryBadge = document.querySelector('.summary-badge');
+          if (summaryBadge) {
+              summaryBadge.textContent = `${cartItems.length} item${cartItems.length !== 1 ? 's' : ''}`;
+          }
       }
 
       function updateSummary() {
           const subtotal = cartItems.reduce((sum, item) => sum + (parseFloat(item.price) * parseInt(item.quantity)), 0);
-          const discount = subtotal > 0 ? subtotal * 0.2 : 0; // 20% discount
-          const delivery = subtotal > 0 ? 15 : 0; // No delivery fee if cart is empty
-          const total = subtotal > 0 ? subtotal - discount + delivery : 0; // Set to 0 if no items
+          const freeShippingThreshold = 1500;
+          const deliveryFee = subtotal >= freeShippingThreshold ? 0 : 150;
+          const discount = 0; // Will be calculated based on promo codes
+          const total = subtotal + deliveryFee - discount;
 
           document.getElementById('subtotal').textContent = `₱${subtotal.toFixed(2)}`;
-          document.getElementById('discount').textContent = `-₱${discount.toFixed(2)}`;
-          document.getElementById('delivery').textContent = `₱${delivery.toFixed(2)}`;
+          
+          const deliveryElement = document.getElementById('delivery');
+          if (deliveryElement) {
+              if (deliveryFee === 0) {
+                  deliveryElement.innerHTML = '<span class="free-shipping">FREE</span>';
+              } else {
+                  deliveryElement.textContent = `₱${deliveryFee.toFixed(2)}`;
+              }
+          }
+          
           document.getElementById('total').textContent = `₱${total.toFixed(2)}`;
+      }
+
+      function applyPromoCode() {
+          const promoInput = document.getElementById('promo-code');
+          const code = promoInput.value.trim().toUpperCase();
+          
+          if (!code) {
+              showNotification('Please enter a promo code', 'error');
+              return;
+          }
+          
+          // Simulate promo code validation
+          const validCodes = {
+              'WELCOME10': 0.1,
+              'SAVE20': 0.2,
+              'FREESHIP': 'free_shipping'
+          };
+          
+          if (validCodes[code]) {
+              showNotification(`Promo code "${code}" applied successfully!`, 'success');
+              promoInput.value = '';
+              // Apply discount logic here
+          } else {
+              showNotification('Invalid promo code', 'error');
+          }
       }
 
       function goToCheckout() {
           if (cartItems.length === 0) {
-              alert('Your cart is empty!');
+              showNotification('Your cart is empty!', 'error');
               return;
           }
-          window.location.href = "{{ url_for('main.buyer_checkout') }}";
+          
+          // Add loading state
+          const checkoutBtn = document.querySelector('.checkout-btn');
+          const originalText = checkoutBtn.innerHTML;
+          checkoutBtn.innerHTML = '<i data-lucide="loader-2" class="spinning"></i> Processing...';
+          checkoutBtn.disabled = true;
+          
+          setTimeout(() => {
+              window.location.href = "{{ url_for('main.buyer_checkout') }}";
+          }, 1000);
+      }
+
+      function showNotification(message, type = 'info') {
+          const notification = document.createElement('div');
+          notification.className = `notification notification-${type}`;
+          notification.innerHTML = `
+              <div class="notification-content">
+                  <i data-lucide="${type === 'success' ? 'check-circle' : type === 'error' ? 'x-circle' : 'info'}"></i>
+                  <span>${message}</span>
+              </div>
+          `;
+          
+          document.body.appendChild(notification);
+          
+          if (typeof lucide !== 'undefined') {
+              lucide.createIcons();
+          }
+          
+          setTimeout(() => notification.classList.add('show'), 100);
+          setTimeout(() => {
+              notification.classList.remove('show');
+              setTimeout(() => notification.remove(), 300);
+          }, 3000);
       }
 
       // Initialize the page
       document.addEventListener('DOMContentLoaded', function() {
           updateItemCount();
           updateSummary();
-      });
-
-      // Search functionality
-      document.querySelector('.search-input').addEventListener('keypress', function(e) {
-          if (e.key === 'Enter') {
-              const searchTerm = this.value.trim();
-              if (searchTerm) {
-                  alert(`Searching for: ${searchTerm}`);
-                  // Search logic would go here
-              }
+          
+          // Add promo code enter key support
+          const promoInput = document.getElementById('promo-code');
+          if (promoInput) {
+              promoInput.addEventListener('keypress', function(e) {
+                  if (e.key === 'Enter') {
+                      applyPromoCode();
+                  }
+              });
           }
       });
     </script>

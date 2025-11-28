@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Photo Upload System Test</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f9fafb;
+        }
+        
+        .test-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .variant-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .variant-table th,
+        .variant-table td {
+            border: 1px solid #e5e7eb;
+            padding: 8px;
+            text-align: center;
+        }
+        
+        .variant-table th {
+            background: #f9fafb;
+            font-weight: 600;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn-purple {
+            background: #a259f7;
+            color: white;
+        }
+        
+        .btn-purple:hover {
+            background: #9333ea;
+        }
+        
+        .console-output {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-weight: 600;
+        }
+        
+        .status.success {
+            background: #dcfce7;
+            color: #16a34a;
+            border: 1px solid #bbf7d0;
+        }
+        
+        .status.error {
+            background: #fee2e2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+        
+        /* New Photo Upload Styles */
+        .variant-photo-upload {
+            width: 50px;
+            height: 50px;
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #f9fafb;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .variant-photo-upload:hover {
+            border-color: #a259f7;
+            background: #faf5ff;
+        }
+
+        .photo-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: #6b7280;
+            font-size: 10px;
+            gap: 2px;
+        }
+
+        .photo-placeholder i {
+            font-size: 16px;
+            color: #a259f7;
+        }
+
+        .photo-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+
+        .photo-remove {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 16px;
+            height: 16px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+            z-index: 10;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .variant-photo-upload:hover .photo-remove {
+            opacity: 1;
+        }
+
+        .photo-remove:hover {
+            background: #dc2626;
+            transform: scale(1.1);
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🆕 New Photo Upload System Test</h1>
+        <p>Testing the completely rewritten photo upload functionality.</p>
+        
+        <div class="status" id="testStatus">
+            Ready to test - Click any photo upload area below
+        </div>
+        
+        <div style="margin: 20px 0;">
+            <button class="btn btn-purple" id="addVariantBtn">
+                <i class="ri-add-line"></i> Add Variant
+            </button>
+            <button class="btn btn-purple" onclick="testAllUploads()">
+                <i class="ri-test-tube-line"></i> Test All Uploads
+            </button>
+            <button class="btn btn-purple" onclick="clearConsole()">
+                <i class="ri-delete-bin-line"></i> Clear Console
+            </button>
+        </div>
+
+        <table class="variant-table">
+            <thead>
+                <tr>
+                    <th>No.</th>
+                    <th>Photo</th>
+                    <th>SKU</th>
+                    <th>Color</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="variantTableBody">
+                <tr>
+                    <td>1</td>
+                    <td>
+                        <div class="variant-photo-upload" data-variant="1">
+                            <input type="file" accept="image/*" class="photo-input" style="display: none;">
+                            <div class="photo-placeholder">
+                                <i class="ri-camera-line"></i>
+                                <span>Add Photo</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <input type="text" placeholder="SKU" style="width: 100px; padding: 4px;">
+                    </td>
+                    <td>
+                        <input type="text" placeholder="Color" style="width: 100px; padding: 4px;">
+                    </td>
+                    <td>
+                        <button class="btn" style="background: #ef4444; color: white; font-size: 12px;" onclick="removeRow(this)">
+                            <i class="ri-close-line"></i>
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="console-output" id="consoleOutput">
+            <div>Console output will appear here...</div>
+        </div>
+    </div>
+
+    <script>
+        // Capture console output
+        const originalLog = console.log;
+        const originalError = console.error;
+        const consoleDiv = document.getElementById('consoleOutput');
+        const statusDiv = document.getElementById('testStatus');
+        
+        function addToConsole(message, type = 'log') {
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'error' ? '#ef4444' : '#10b981';
+            consoleDiv.innerHTML += `<div style="color: ${color}">[${timestamp}] ${message}</div>`;
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        }
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            const message = args.map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+            ).join(' ');
+            addToConsole(message, 'log');
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            const message = args.map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+            ).join(' ');
+            addToConsole(message, 'error');
+        };
+
+        // New Photo Upload System
+        console.log("🆕 New Photo Upload System Loading...");
+
+        class VariantPhotoUpload {
+            constructor() {
+                this.init();
+            }
+
+            init() {
+                console.log("Initializing photo upload system...");
+                this.setupExistingUploads();
+                this.setupEventDelegation();
+            }
+
+            setupExistingUploads() {
+                const uploads = document.querySelectorAll('.variant-photo-upload');
+                console.log(`Found ${uploads.length} photo upload areas`);
+                
+                uploads.forEach((upload, index) => {
+                    this.setupPhotoUpload(upload, index + 1);
+                });
+            }
+
+            setupPhotoUpload(uploadArea, variantNumber) {
+                console.log(`Setting up photo upload for variant ${variantNumber}`);
+                
+                const input = uploadArea.querySelector('.photo-input');
+                const placeholder = uploadArea.querySelector('.photo-placeholder');
+                
+                if (!input || !placeholder) {
+                    console.error(`Missing elements for variant ${variantNumber}`);
+                    return;
+                }
+
+                // Click handler for upload area
+                uploadArea.addEventListener('click', (e) => {
+                    // Don't trigger if clicking on remove button
+                    if (e.target.classList.contains('photo-remove')) {
+                        return;
+                    }
+                    
+                    console.log(`Photo upload clicked for variant ${variantNumber}`);
+                    statusDiv.textContent = `Photo upload clicked for variant ${variantNumber}`;
+                    statusDiv.className = 'status';
+                    input.click();
+                });
+
+                // File input change handler
+                input.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        console.log(`File selected for variant ${variantNumber}:`, file.name);
+                        this.handleFileUpload(file, uploadArea, input, variantNumber);
+                    }
+                });
+            }
+
+            handleFileUpload(file, uploadArea, input, variantNumber) {
+                // Validate file
+                if (!this.validateFile(file)) {
+                    input.value = '';
+                    return;
+                }
+
+                // Show loading state
+                this.showLoading(uploadArea);
+
+                // Read and display file
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    this.displayPhoto(e.target.result, uploadArea, input, variantNumber);
+                };
+                
+                reader.onerror = () => {
+                    console.error(`Error reading file for variant ${variantNumber}`);
+                    alert('Error reading the selected file. Please try again.');
+                    this.hideLoading(uploadArea);
+                    input.value = '';
+                };
+
+                reader.readAsDataURL(file);
+            }
+
+            validateFile(file) {
+                // Check file type
+                if (!file.type.startsWith('image/')) {
+                    alert('Please select an image file (JPG, PNG, GIF, etc.)');
+                    statusDiv.textContent = 'Invalid file type - please select an image';
+                    statusDiv.className = 'status error';
+                    return false;
+                }
+
+                // Check file size (5MB limit)
+                const maxSize = 5 * 1024 * 1024;
+                if (file.size > maxSize) {
+                    alert('File is too large. Please select an image smaller than 5MB.');
+                    statusDiv.textContent = 'File too large - maximum 5MB allowed';
+                    statusDiv.className = 'status error';
+                    return false;
+                }
+
+                return true;
+            }
+
+            showLoading(uploadArea) {
+                const placeholder = uploadArea.querySelector('.photo-placeholder');
+                if (placeholder) {
+                    placeholder.innerHTML = '<i class="ri-loader-4-line" style="animation: spin 1s linear infinite;"></i><span>Loading...</span>';
+                }
+                statusDiv.textContent = 'Processing image...';
+                statusDiv.className = 'status';
+            }
+
+            hideLoading(uploadArea) {
+                const placeholder = uploadArea.querySelector('.photo-placeholder');
+                if (placeholder) {
+                    placeholder.innerHTML = '<i class="ri-camera-line"></i><span>Add Photo</span>';
+                }
+            }
+
+            displayPhoto(imageSrc, uploadArea, input, variantNumber) {
+                console.log(`Displaying photo for variant ${variantNumber}`);
+                
+                // Clear existing content
+                uploadArea.innerHTML = '';
+                
+                // Add the input back
+                uploadArea.appendChild(input);
+                
+                // Create image element
+                const img = document.createElement('img');
+                img.src = imageSrc;
+                img.className = 'photo-preview';
+                img.alt = `Variant ${variantNumber} photo`;
+                
+                // Create remove button
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'photo-remove';
+                removeBtn.innerHTML = '×';
+                removeBtn.title = 'Remove photo';
+                
+                // Remove button click handler
+                removeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.removePhoto(uploadArea, input, variantNumber);
+                });
+                
+                // Add elements to upload area
+                uploadArea.appendChild(img);
+                uploadArea.appendChild(removeBtn);
+                
+                // Update styling
+                uploadArea.style.border = '2px solid #10b981';
+                uploadArea.style.background = '#ecfdf5';
+                
+                statusDiv.textContent = `✅ Photo uploaded successfully for variant ${variantNumber}`;
+                statusDiv.className = 'status success';
+                
+                console.log(`Photo displayed successfully for variant ${variantNumber}`);
+            }
+
+            removePhoto(uploadArea, input, variantNumber) {
+                console.log(`Removing photo for variant ${variantNumber}`);
+                
+                // Clear file input
+                input.value = '';
+                
+                // Reset upload area
+                uploadArea.innerHTML = '';
+                uploadArea.appendChild(input);
+                
+                // Add placeholder back
+                const placeholder = document.createElement('div');
+                placeholder.className = 'photo-placeholder';
+                placeholder.innerHTML = '<i class="ri-camera-line"></i><span>Add Photo</span>';
+                uploadArea.appendChild(placeholder);
+                
+                // Reset styling
+                uploadArea.style.border = '2px dashed #d1d5db';
+                uploadArea.style.background = '#f9fafb';
+                
+                // Re-setup the upload functionality
+                this.setupPhotoUpload(uploadArea, variantNumber);
+                
+                statusDiv.textContent = `Photo removed from variant ${variantNumber}`;
+                statusDiv.className = 'status';
+                
+                console.log(`Photo removed successfully for variant ${variantNumber}`);
+            }
+
+            setupEventDelegation() {
+                // Handle dynamically added variants
+                document.addEventListener('click', (e) => {
+                    if (e.target.id === 'addVariantBtn' || e.target.closest('#addVariantBtn')) {
+                        console.log('New variant being added, will setup photo uploads...');
+                        setTimeout(() => {
+                            this.setupNewVariantUploads();
+                        }, 100);
+                    }
+                });
+            }
+
+            setupNewVariantUploads() {
+                const uploads = document.querySelectorAll('.variant-photo-upload:not([data-setup])');
+                console.log(`Setting up ${uploads.length} new photo uploads`);
+                
+                uploads.forEach((upload, index) => {
+                    const variantNumber = upload.dataset.variant || (index + 1);
+                    this.setupPhotoUpload(upload, variantNumber);
+                    upload.setAttribute('data-setup', 'true');
+                });
+            }
+        }
+
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                window.photoUploadSystem = new VariantPhotoUpload();
+            });
+        } else {
+            window.photoUploadSystem = new VariantPhotoUpload();
+        }
+
+        // Add Variant functionality
+        let variantCounter = 1;
+        document.getElementById('addVariantBtn').addEventListener('click', function() {
+            variantCounter++;
+            const tbody = document.getElementById('variantTableBody');
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td>${variantCounter}</td>
+                <td>
+                    <div class="variant-photo-upload" data-variant="${variantCounter}">
+                        <input type="file" accept="image/*" class="photo-input" style="display: none;">
+                        <div class="photo-placeholder">
+                            <i class="ri-camera-line"></i>
+                            <span>Add Photo</span>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <input type="text" placeholder="SKU" style="width: 100px; padding: 4px;">
+                </td>
+                <td>
+                    <input type="text" placeholder="Color" style="width: 100px; padding: 4px;">
+                </td>
+                <td>
+                    <button class="btn" style="background: #ef4444; color: white; font-size: 12px;" onclick="removeRow(this)">
+                        <i class="ri-close-line"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(newRow);
+            console.log(`Added variant ${variantCounter}`);
+        });
+
+        function removeRow(button) {
+            const row = button.closest('tr');
+            if (row) {
+                row.remove();
+                console.log('Removed variant row');
+            }
+        }
+
+        function testAllUploads() {
+            const uploads = document.querySelectorAll('.variant-photo-upload');
+            let workingCount = 0;
+            
+            uploads.forEach((upload, index) => {
+                const input = upload.querySelector('.photo-input');
+                const placeholder = upload.querySelector('.photo-placeholder');
+                
+                if (input && placeholder) {
+                    workingCount++;
+                    console.log(`Upload ${index + 1}: ✅ Working`);
+                } else {
+                    console.log(`Upload ${index + 1}: ❌ Missing elements`);
+                }
+            });
+            
+            statusDiv.textContent = `Test complete: ${workingCount}/${uploads.length} uploads working`;
+            statusDiv.className = workingCount === uploads.length ? 'status success' : 'status error';
+        }
+
+        function clearConsole() {
+            consoleDiv.innerHTML = '<div>Console cleared...</div>';
+        }
+
+        console.log("✅ New Photo Upload System Loaded");
+    </script>
+</body>
+</html>

@@ -1,316 +1,287 @@
 <div class="product-details-container">
   <!-- Store Information -->
+  {% if seller_info %}
   <section class="store-info">
-    <div class="store-header">
-      <div class="store-profile-section">
-        <div class="store-profile-image">
-          <img
-            src="{{ url_for('static', filename='images/store-profile.jpg') }}"
-            alt="Store Profile"
-            class="profile-img"
-          />
+    <div class="store-info-section">
+      <div class="store-profile">
+        <div class="store-avatar">
+          <i class="ri-store-2-line"></i>
         </div>
         <div class="store-details">
-          <h2 class="store-name">
-            <a
-              href="{{ url_for('main.store_page', store_name=(store_name or 'Fashion-Forward-Boutique')|replace(' ', '-') ) }}"
-              style="color: inherit; text-decoration: none"
-              >{{ store_name or "Fashion Forward Boutique" }}</a
-            >
-          </h2>
-          <p class="store-location">
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-              <circle cx="12" cy="10" r="3"></circle>
-            </svg>
-            {{ store_location or "Makati City, Metro Manila" }}
-          </p>
+          <h3 class="store-name">
+            {{ seller_info.business_name or 'Store Name' }}
+          </h3>
+          <div class="store-stats">
+            <div class="stat-item">
+              <div class="stars">
+                {% for i in range(5) %} {% if i < (seller_info.rating or
+                4.5)|int %}
+                <i class="ri-star-fill"></i>
+                {% elif i < (seller_info.rating or 4.5) %}
+                <i class="ri-star-half-line"></i>
+                {% else %}
+                <i class="ri-star-line"></i>
+                {% endif %} {% endfor %}
+              </div>
+              <span class="rating-text"
+                >{{ "%.1f"|format(seller_info.rating or 4.5) }}</span
+              >
+            </div>
+            <span class="stat-divider">|</span>
+            <div class="stat-item">
+              <i class="ri-shopping-bag-line"></i>
+              <span>{{ seller_info.products_count or 0 }} Products</span>
+            </div>
+            <span class="stat-divider">|</span>
+            <div class="stat-item">
+              <i class="ri-user-follow-line"></i>
+              <span>{{ seller_info.followers_count or 0 }} Followers</span>
+            </div>
+          </div>
+          <div class="store-joined">
+            <i class="ri-calendar-line"></i>
+            <span>Joined {{ seller_info.joined_date or 'Recently' }}</span>
+          </div>
         </div>
       </div>
       <div class="store-actions">
-        <button class="follow-btn" id="followBtn">
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-            <circle cx="9" cy="7" r="4"></circle>
-            <path d="m22 11-3-3m0 0-3 3m3-3v8"></path>
-          </svg>
-          <span>Follow</span>
+        <button class="btn-chat" onclick="chatWithStore()">
+          <i class="ri-message-3-line"></i>
+          Chat
         </button>
-        <button class="chat-btn" id="chatBtn">
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path
-              d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
-            ></path>
-          </svg>
-          <span>Chat Now</span>
+        <button class="btn-view-shop" onclick="viewShop({{ seller_info.id }})">
+          <i class="ri-store-line"></i>
+          View Shop
         </button>
       </div>
     </div>
   </section>
-
-  <!-- Vouchers & Shipping -->
-  <section class="vouchers-section">
-    <div class="vouchers-shipping">
-      <div class="voucher-item">
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <path
-            d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"
-          ></path>
-          <polyline points="3.27,6.96 12,12.01 20.73,6.96"></polyline>
-          <line x1="12" y1="22.08" x2="12" y2="12"></line>
-        </svg>
-        <span>₱50 OFF for orders over ₱2,000</span>
-      </div>
-      <div class="voucher-item">
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <path d="M5 7h14l-1 10H6L5 7z"></path>
-          <path d="M5 7l-1-4H2"></path>
-          <path d="M9 11h6"></path>
-        </svg>
-        <span>Free shipping nationwide for orders over ₱1,500</span>
-      </div>
-      <div class="voucher-item">
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <circle cx="12" cy="12" r="10"></circle>
-          <path d="M8 12h8"></path>
-          <path d="M12 8v8"></path>
-        </svg>
-        <span>Buy 2 Get 1 Free on selected items</span>
-      </div>
-    </div>
-  </section>
-
-  <!-- Size Guide -->
-  <section class="size-guide">
-    <h3 class="section-subtitle">Size Guide</h3>
-    <div class="size-guide-image">
-      <img
-        src="https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=800&h=500&fit=crop"
-        alt="Size Guide Chart"
-        class="size-chart-img"
-      />
-      <div class="size-guide-text">
-        <p>
-          Please refer to the size chart above for accurate measurements. If
-          you're between sizes, we recommend sizing up for a more comfortable
-          fit.
-        </p>
-      </div>
-    </div>
-  </section>
+  {% endif %}
 
   <!-- Product Information Sections -->
   <section class="product-info-sections">
     <div class="product-info-content">
       <div class="info-section">
-        <h3 class="section-subtitle">Description</h3>
-        <p>
-          A stylish and comfortable tube top perfect for casual wear and
-          layering. Features a fitted design that hugs your curves beautifully
-          and offers versatile styling options.
-        </p>
-      </div>
-
-      <div class="info-section">
-        <h3 class="section-subtitle">Materials & Care</h3>
-        <p>
-          65% Polyester, 35% Viscose<br />Machine wash cold, hang dry<br />Do
-          not bleach or iron directly
-        </p>
-      </div>
-
-      <div class="info-section">
-        <h3 class="section-subtitle">Details & Fit</h3>
-        <p>
-          Fitted silhouette<br />Strapless design<br />Stretchy fabric<br />Cropped
-          length<br />Perfect for layering
-        </p>
-      </div>
-
-      <div class="info-section">
-        <h3 class="section-subtitle">Certifications</h3>
-        <p>
-          OEKO-TEX Standard 100 certified<br />Ethically sourced materials<br />Fair
-          trade manufacturing
-        </p>
-      </div>
-    </div>
-  </section>
-
-  <!-- You May Also Like Section -->
-  <section class="you-may-like">
-    <h3 class="section-title">YOU MAY ALSO LIKE</h3>
-    <div class="products-container">
-      {% set sample_products = [ {'name': 'Classic White Tee', 'price': '1,250',
-      'image_url': url_for('static', filename='images/product_1.jpg')}, {'name':
-      'Denim Crop Top', 'price': '2,150', 'image_url': url_for('static',
-      filename='images/product_2.jpg')}, {'name': 'Floral Tube Top', 'price':
-      '1,890', 'image_url': url_for('static', filename='images/product_3.png')},
-      {'name': 'Striped Tank Top', 'price': '1,450', 'image_url':
-      url_for('static', filename='images/Tank Tops.png')}, {'name': 'Basic Black
-      Tee', 'price': '1,300', 'image_url': url_for('static',
-      filename='images/T-Shirts.png')}, {'name': 'Silk Blouse', 'price':
-      '3,250', 'image_url': url_for('static', filename='images/Blouses.png')},
-      {'name': 'Button Down Shirt', 'price': '2,890', 'image_url':
-      url_for('static', filename='images/Button-Downs.png')}, {'name': 'Crop Top
-      Basic', 'price': '1,750', 'image_url': url_for('static',
-      filename='images/Crop Top.png')}, {'name': 'Casual Tank', 'price':
-      '1,200', 'image_url': url_for('static', filename='images/Tank Tops.png')},
-      {'name': 'Summer Tube Top', 'price': '1,650', 'image_url':
-      url_for('static', filename='images/Tube Tops.png')}, {'name': 'Wrap Style
-      Top', 'price': '2,450', 'image_url': url_for('static',
-      filename='images/Wrap Tops.png')}, {'name': 'Elegant Tunic', 'price':
-      '2,990', 'image_url': url_for('static', filename='images/Tunics.png')},
-      {'name': 'Party Tube Top', 'price': '1,890', 'image_url':
-      url_for('static', filename='images/Tube Tops.png')}, {'name': 'Comfort
-      Tee', 'price': '1,350', 'image_url': url_for('static',
-      filename='images/T-Shirts.png')}, {'name': 'Designer Blouse', 'price':
-      '3,750', 'image_url': url_for('static', filename='images/Blouses.png')},
-      {'name': 'Casual Crop', 'price': '1,550', 'image_url': url_for('static',
-      filename='images/Crop Top.png')}, {'name': 'Premium Tank', 'price':
-      '1,450', 'image_url': url_for('static', filename='images/Tank Tops.png')},
-      {'name': 'Stylish Wrap Top', 'price': '2,250', 'image_url':
-      url_for('static', filename='images/Wrap Tops.png')}, {'name': 'Formal
-      Tunic', 'price': '3,150', 'image_url': url_for('static',
-      filename='images/Tunics.png')}, {'name': 'Evening Tube Top', 'price':
-      '2,190', 'image_url': url_for('static', filename='images/Tube Tops.png')}
-      ] %} {% for product in sample_products %}
-      <div class="product-card" onclick="navigateToProduct('{{ loop.index }}')">
-        <div class="product-image-container">
-          <img
-            src="{{ product.image_url }}"
-            alt="{{ product.name }}"
-            class="product-image primary"
-          />
-          <img
-            src="{{ product.image_url }}"
-            alt="{{ product.name }}"
-            class="product-image secondary"
-          />
-          <div class="hover-actions">
-            <button
-              class="action-btn wishlist-btn"
-              onclick="event.stopPropagation(); toggleProductCardWishlist('{{ loop.index }}', this)"
-              title="Save Item"
-            >
+        <div class="dropdown-item">
+          <button class="dropdown-header" onclick="toggleDropdown(this)">
+            <div class="dropdown-title">
               <svg
+                class="dropdown-icon"
                 viewBox="0 0 24 24"
+                width="20"
+                height="20"
                 fill="none"
                 stroke="currentColor"
                 stroke-width="2"
               >
-                <path
-                  d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
-                ></path>
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12" y2="16"></line>
               </svg>
-            </button>
-            <button
-              class="action-btn cart-btn"
-              onclick="event.stopPropagation(); addProductCardToCart('{{ loop.index }}'); navigateToProduct('{{ loop.index }}')"
-              title="Buy Item"
+              <span>Product Description</span>
+            </div>
+            <svg
+              class="chevron"
+              viewBox="0 0 24 24"
+              width="20"
+              height="20"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
             >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path
-                  d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"
-                ></path>
-                <line x1="3" y1="6" x2="21" y2="6"></line>
-                <path d="M16 10a4 4 0 0 1-8 0"></path>
-              </svg>
-            </button>
-          </div>
-        </div>
-        <div class="product-details">
-          <div class="product-info">
-            <div class="product-left">
-              <h3 class="product-name">{{ product.name }}</h3>
-              <div class="color-swatches">
-                <div
-                  class="color-swatch active"
-                  style="background-color: #000000"
-                  onclick="event.stopPropagation(); selectProductCardColor(this, '#000000')"
-                ></div>
-                <div
-                  class="color-swatch"
-                  style="background-color: #ffffff"
-                  onclick="event.stopPropagation(); selectProductCardColor(this, '#FFFFFF')"
-                ></div>
-                <div
-                  class="color-swatch"
-                  style="background-color: #ff4757"
-                  onclick="event.stopPropagation(); selectProductCardColor(this, '#FF4757')"
-                ></div>
-              </div>
-              <div class="price-container">
-                <span class="price">₱{{ product.price }}</span>
-              </div>
+              <polyline points="6,9 12,15 18,9"></polyline>
+            </svg>
+          </button>
+          <div class="dropdown-content">
+            <div class="content-text">
+              {{ product.description if product and product.description else 'A
+              stylish and comfortable product perfect for everyday wear.
+              Features high-quality materials and excellent craftsmanship for
+              lasting durability and comfort.' }}
             </div>
           </div>
         </div>
       </div>
-      {% endfor %}
 
-      <div class="view-more-container">
-        <button class="view-more-btn" onclick="viewMoreProducts()">
-          View More
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            style="margin-left: 0.5rem"
-          >
-            <polyline points="9,18 15,12 9,6"></polyline>
-          </svg>
-        </button>
+      <div class="info-section">
+        <div class="dropdown-item">
+          <button class="dropdown-header" onclick="toggleDropdown(this)">
+            <div class="dropdown-title">
+              <svg
+                class="dropdown-icon"
+                viewBox="0 0 24 24"
+                width="20"
+                height="20"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M12 2s4 4 4 8-4 8-4 8-4-4-4-8 4-8 4-8z"></path>
+                <line x1="12" y1="2" x2="12" y2="22"></line>
+              </svg>
+              <span>Materials & Care</span>
+            </div>
+            <svg
+              class="chevron"
+              viewBox="0 0 24 24"
+              width="20"
+              height="20"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <polyline points="6,9 12,15 18,9"></polyline>
+            </svg>
+          </button>
+          <div class="dropdown-content">
+            <div class="content-text">
+              {% if product and product.materials %} {{
+              product.materials|replace('\n', '<br />')|safe }} {% else %}
+              <strong>Materials:</strong> Premium quality fabric blend<br />
+              <strong>Care Instructions:</strong><br />
+              • Machine wash cold with like colors<br />
+              • Tumble dry low or hang dry<br />
+              • Do not bleach<br />
+              • Iron on low heat if needed {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <div class="dropdown-item">
+          <button class="dropdown-header" onclick="toggleDropdown(this)">
+            <div class="dropdown-title">
+              <svg
+                class="dropdown-icon"
+                viewBox="0 0 24 24"
+                width="20"
+                height="20"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                <path d="M8 8h8M8 12h8M8 16h8"></path>
+              </svg>
+              <span>Size Guide</span>
+            </div>
+            <svg
+              class="chevron"
+              viewBox="0 0 24 24"
+              width="20"
+              height="20"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <polyline points="6,9 12,15 18,9"></polyline>
+            </svg>
+          </button>
+          <div class="dropdown-content">
+            <div class="content-text">
+              {% if product and product.size_guides and
+              product.size_guides|length > 0 %}
+              <div
+                class="image-grid"
+                style="display: flex; gap: 8px; flex-wrap: wrap"
+              >
+                {% for img in product.size_guides %}
+                <a href="{{ img }}" target="_blank" rel="noopener noreferrer">
+                  <img
+                    src="{{ img }}"
+                    alt="Size guide"
+                    style="
+                      max-width: 120px;
+                      max-height: 120px;
+                      border-radius: 6px;
+                      border: 1px solid #eee;
+                      object-fit: cover;
+                    "
+                  />
+                </a>
+                {% endfor %}
+              </div>
+              {% else %} {% if product and product.details_fit %} {{
+              product.details_fit|replace('\n', '<br />')|safe }} {% else %}
+              <strong>Fit:</strong> True to size<br />
+              <strong>Model Info:</strong> Model is 5'8" wearing size S<br />
+              <strong>Sizing:</strong><br />
+              • S: Chest 32-34", Waist 26-28"<br />
+              • M: Chest 34-36", Waist 28-30"<br />
+              • L: Chest 36-38", Waist 30-32"<br />
+              • XL: Chest 38-40", Waist 32-34" {% endif %} {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <div class="dropdown-item">
+          <button class="dropdown-header" onclick="toggleDropdown(this)">
+            <div class="dropdown-title">
+              <svg
+                class="dropdown-icon"
+                viewBox="0 0 24 24"
+                width="20"
+                height="20"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <span>Certificates of Sustainability</span>
+            </div>
+            <svg
+              class="chevron"
+              viewBox="0 0 24 24"
+              width="20"
+              height="20"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <polyline points="6,9 12,15 18,9"></polyline>
+            </svg>
+          </button>
+          <div class="dropdown-content">
+            <div class="content-text">
+              {% if product and product.certifications and
+              product.certifications|length > 0 %}
+              <div
+                class="image-grid"
+                style="display: flex; gap: 8px; flex-wrap: wrap"
+              >
+                {% for img in product.certifications %}
+                <a href="{{ img }}" target="_blank" rel="noopener noreferrer">
+                  <img
+                    src="{{ img }}"
+                    alt="Certificate"
+                    style="
+                      max-width: 140px;
+                      max-height: 140px;
+                      border-radius: 6px;
+                      border: 1px solid #eee;
+                      object-fit: cover;
+                    "
+                  />
+                </a>
+                {% endfor %}
+              </div>
+              {% else %}
+              <strong>Shipping:</strong><br />
+              • Free shipping on orders over ₱2,000<br />
+              • Standard delivery: 3-7 business days<br />
+              • Express delivery: 1-3 business days (additional fee)<br /><br />
+              <strong>Returns:</strong><br />
+              • 30-day return policy<br />
+              • Items must be unworn with tags attached<br />
+              • Free returns for defective items<br />
+              • Return shipping fee applies for size exchanges {% endif %}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>

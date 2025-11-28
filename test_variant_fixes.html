@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Variant Fixes</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css">
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .variant-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        .variant-table th, .variant-table td { border: 1px solid #e5e7eb; padding: 8px; text-align: center; }
+        .photo-upload-box { 
+            width: 50px; height: 50px; border: 2px dashed #e5e7eb; 
+            border-radius: 8px; cursor: pointer; display: flex; 
+            align-items: center; justify-content: center; margin: 0 auto;
+            background: #f9fafb; transition: all 0.2s ease;
+        }
+        .photo-upload-box:hover { border-color: #a259f7; background: #faf5ff; }
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .btn-purple { background: #a259f7; color: white; }
+        .btn-purple:hover { background: #9333ea; }
+        .variant-input { padding: 6px; border: 1px solid #e5e7eb; border-radius: 4px; width: 100%; }
+        .color-picker { width: 40px; height: 36px; border: 1px solid #e5e7eb; border-radius: 4px; cursor: pointer; }
+        .variant-controls { display: flex; justify-content: space-between; align-items: center; margin: 20px 0; }
+        .variant-stats { display: flex; gap: 20px; }
+        .stat-item { display: flex; align-items: center; gap: 5px; }
+        .delete-variant-btn { 
+            background: #ef4444; color: white; border: none; 
+            border-radius: 4px; padding: 4px 8px; cursor: pointer; 
+        }
+        .total-stock-badge { 
+            padding: 2px 6px; border-radius: 4px; font-size: 12px; font-weight: 600;
+        }
+        .total-stock-badge.zero { background: #fee2e2; color: #dc2626; }
+        .total-stock-badge.low { background: #fef3c7; color: #d97706; }
+        .total-stock-badge.good { background: #dcfce7; color: #16a34a; }
+    </style>
+</head>
+<body>
+    <h1>Test Variant Fixes</h1>
+    <p>This page tests the Add Variant button and photo upload functionality.</p>
+    
+    <div class="variant-controls">
+        <button type="button" id="addVariantBtn" class="btn btn-purple" title="Add a new product variant">
+            <i class="ri-add-line"></i> Add Variant
+        </button>
+        <div class="variant-stats">
+            <span class="stat-item">
+                <i class="ri-package-line"></i>
+                <span id="variantCount">1</span> Variant<span id="variantPlural" style="display: none">s</span>
+            </span>
+            <span class="stat-item">
+                <i class="ri-archive-line"></i>
+                <span id="totalStockDisplay">0</span> Total Stock
+            </span>
+        </div>
+    </div>
+
+    <table class="variant-table">
+        <thead>
+            <tr>
+                <th>No.</th>
+                <th>Photo</th>
+                <th>SKU</th>
+                <th>Color</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="variantTableBody">
+            <tr>
+                <td>1</td>
+                <td>
+                    <div class="photo-upload-box grey" title="Upload variant photo">
+                        <input type="file" accept="image/*" style="display: none" />
+                        <div class="photo-upload-content">
+                            <i class="ri-image-add-line" style="font-size: 1.2rem; color: #a259f7"></i>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <input type="text" name="sku_1" placeholder="SKU" class="variant-input" />
+                </td>
+                <td>
+                    <div style="display: flex; gap: 6px; align-items: center;">
+                        <input type="text" name="color_1" placeholder="Color" class="variant-input" style="flex: 1;" />
+                        <input type="color" name="color_picker_1" class="color-picker" value="#000000" />
+                    </div>
+                </td>
+                <td>
+                    <div class="row-total-stock">
+                        <span class="total-stock-badge zero">Total: 0</span>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div id="console-output" style="background: #f3f4f6; padding: 15px; border-radius: 8px; margin-top: 20px;">
+        <h3>Console Output:</h3>
+        <div id="console-log" style="font-family: monospace; font-size: 12px; max-height: 200px; overflow-y: auto;"></div>
+    </div>
+
+    <script>
+        // Capture console.log for display
+        const originalLog = console.log;
+        const consoleDiv = document.getElementById('console-log');
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            const message = args.map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+            ).join(' ');
+            consoleDiv.innerHTML += '<div>' + new Date().toLocaleTimeString() + ': ' + message + '</div>';
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        };
+
+        // Load the variant table script
+        const script = document.createElement('script');
+        script.src = 'project/static/js/seller_scripts/variant_table.js';
+        script.onload = function() {
+            console.log('variant_table.js loaded successfully');
+        };
+        script.onerror = function() {
+            console.error('Failed to load variant_table.js');
+        };
+        document.head.appendChild(script);
+    </script>
+</body>
+</html>

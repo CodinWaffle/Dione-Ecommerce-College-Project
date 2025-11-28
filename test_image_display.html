@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Display Test</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f9fafb;
+        }
+        
+        .test-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .product-photo-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin: 30px 0;
+        }
+
+        .product-photo-upload {
+            width: 150px;
+            height: 150px;
+            border: 2px dashed #d1d5db;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .product-photo-upload:hover {
+            border-color: #a259f7;
+            background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(162, 89, 247, 0.15);
+        }
+
+        .photo-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: #6b7280;
+            font-size: 14px;
+            font-weight: 500;
+            gap: 8px;
+            padding: 10px;
+        }
+
+        .photo-placeholder i {
+            font-size: 32px;
+            color: #a259f7;
+            margin-bottom: 6px;
+        }
+
+        .photo-placeholder span {
+            font-weight: 600;
+            line-height: 1.2;
+        }
+
+        .photo-placeholder small {
+            font-size: 12px;
+            color: #9ca3af;
+            font-weight: 400;
+        }
+
+        .photo-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 10px;
+            transition: transform 0.2s ease;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        .product-photo-upload:hover .photo-preview {
+            transform: scale(1.02);
+        }
+
+        .photo-remove {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            border: 2px solid white;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            z-index: 10;
+            opacity: 0;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+        }
+
+        .product-photo-upload:hover .photo-remove {
+            opacity: 1;
+        }
+
+        .photo-remove:hover {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            transform: scale(1.1);
+        }
+
+        .photo-success {
+            border: 2px solid #10b981;
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.15);
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 5px;
+            background: #a259f7;
+            color: white;
+        }
+        
+        .btn:hover {
+            background: #9333ea;
+        }
+        
+        .status {
+            padding: 12px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-weight: 600;
+            text-align: center;
+        }
+        
+        .status.success {
+            background: #dcfce7;
+            color: #16a34a;
+            border: 1px solid #bbf7d0;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🖼️ Image Display Test</h1>
+        <p>Test that selected photos are properly displayed as previews in the upload areas.</p>
+        
+        <div class="status" id="status">
+            Click the upload areas below to select images and see them displayed
+        </div>
+        
+        <div class="product-photo-container">
+            <div class="product-photo-upload" data-photo-type="primary">
+                <input type="file" accept="image/*" class="photo-input" style="display: none;">
+                <div class="photo-placeholder">
+                    <i class="ri-camera-line"></i>
+                    <span>Main Photo</span>
+                    <small>Click to upload</small>
+                </div>
+            </div>
+            
+            <div class="product-photo-upload" data-photo-type="secondary">
+                <input type="file" accept="image/*" class="photo-input" style="display: none;">
+                <div class="photo-placeholder">
+                    <i class="ri-image-line"></i>
+                    <span>Secondary Photo</span>
+                    <small>Click to upload</small>
+                </div>
+            </div>
+        </div>
+        
+        <div style="text-align: center;">
+            <button class="btn" onclick="clearAll()">Clear All Photos</button>
+        </div>
+    </div>
+
+    <script>
+        class ImageDisplayTest {
+            constructor() {
+                this.setupPhotoUploads();
+            }
+
+            setupPhotoUploads() {
+                const uploads = document.querySelectorAll('.product-photo-upload');
+                uploads.forEach(upload => this.setupPhotoUpload(upload));
+            }
+
+            setupPhotoUpload(uploadArea) {
+                const photoType = uploadArea.dataset.photoType;
+                const input = uploadArea.querySelector('.photo-input');
+                
+                uploadArea.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('photo-remove')) return;
+                    input.click();
+                });
+
+                input.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (file && file.type.startsWith('image/')) {
+                        this.displayPhoto(file, uploadArea, input, photoType);
+                    }
+                });
+            }
+
+            displayPhoto(file, uploadArea, input, photoType) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    // Clear existing content but keep input
+                    uploadArea.innerHTML = '';
+                    uploadArea.appendChild(input);
+                    
+                    // Create image element
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'photo-preview';
+                    img.alt = `${photoType} photo`;
+                    
+                    // Create remove button
+                    const removeBtn = document.createElement('button');
+                    removeBtn.type = 'button';
+                    removeBtn.className = 'photo-remove';
+                    removeBtn.innerHTML = '×';
+                    removeBtn.title = 'Remove photo';
+                    
+                    removeBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        this.removePhoto(uploadArea, input, photoType);
+                    });
+                    
+                    // Add elements
+                    uploadArea.appendChild(img);
+                    uploadArea.appendChild(removeBtn);
+                    
+                    // Add success styling
+                    uploadArea.classList.add('photo-success');
+                    
+                    // Update status
+                    document.getElementById('status').textContent = `✅ ${photoType} photo displayed successfully!`;
+                    document.getElementById('status').className = 'status success';
+                };
+                
+                reader.readAsDataURL(file);
+            }
+
+            removePhoto(uploadArea, input, photoType) {
+                input.value = '';
+                uploadArea.innerHTML = '';
+                uploadArea.appendChild(input);
+                
+                const placeholder = document.createElement('div');
+                placeholder.className = 'photo-placeholder';
+                const icon = photoType === 'primary' ? 'ri-camera-line' : 'ri-image-line';
+                const label = photoType === 'primary' ? 'Main Photo' : 'Secondary Photo';
+                placeholder.innerHTML = `<i class="${icon}"></i><span>${label}</span><small>Click to upload</small>`;
+                uploadArea.appendChild(placeholder);
+                
+                uploadArea.classList.remove('photo-success');
+                
+                this.setupPhotoUpload(uploadArea);
+                
+                document.getElementById('status').textContent = `${photoType} photo removed`;
+                document.getElementById('status').className = 'status';
+            }
+        }
+
+        function clearAll() {
+            const removeButtons = document.querySelectorAll('.photo-remove');
+            removeButtons.forEach(btn => btn.click());
+        }
+
+        // Initialize
+        new ImageDisplayTest();
+    </script>
+</body>
+</html>

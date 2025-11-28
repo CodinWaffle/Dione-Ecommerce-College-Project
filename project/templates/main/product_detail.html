@@ -41,39 +41,16 @@
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+      type="text/css"
+    />
+    <!-- Remix Icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css"
+      type="text/css"
     />
 
-    <!-- Fallback direct links in case url_for isn't working properly -->
-    <link
-      rel="stylesheet"
-      href="/static/css/buyer_styles/partials/_header_buyer.css"
-      type="text/css"
-    />
-    <link
-      rel="stylesheet"
-      href="/static/css/buyer_styles/product_detail.css"
-      type="text/css"
-    />
-    <link
-      rel="stylesheet"
-      href="/static/css/buyer_styles/partials/_add_to_cart_popup.css"
-      type="text/css"
-    />
-    <link
-      rel="stylesheet"
-      href="/static/css/buyer_styles/partials/_product_dropdown_details.css"
-      type="text/css"
-    />
-    <link
-      rel="stylesheet"
-      href="/static/css/buyer_styles/components/product_card.css"
-      type="text/css"
-    />
-    <link
-      rel="stylesheet"
-      href="/static/css/buyer_styles/partials/_reviews_dropdown.css"
-      type="text/css"
-    />
+    <!-- Fallbacks disabled: using Flask `url_for`-resolved static links above for reliability -->
 
     <!-- Inline critical CSS to ensure proper display -->
     <style>
@@ -105,26 +82,15 @@
         flex: 1;
         min-width: 400px;
         max-width: 45%;
-      }
-
-      .main-image {
-        position: relative;
-        margin-bottom: 20px;
-        background-color: #f8f8f8;
-        border-radius: 8px;
-        overflow: hidden;
-      }
-
-      .main-image img {
-        width: 100%;
-        height: auto;
-        object-fit: cover;
-        display: block;
+        display: flex;
+        gap: 15px;
       }
 
       .thumbnail-images {
         display: flex;
+        flex-direction: column;
         gap: 10px;
+        flex-shrink: 0;
       }
 
       .thumbnail {
@@ -139,6 +105,27 @@
 
       .thumbnail.active {
         border-color: #8e44ad;
+      }
+
+      .main-image-container {
+        flex: 1;
+        position: relative;
+      }
+
+      .main-image {
+        position: relative;
+        background-color: #f8f8f8;
+        border-radius: 8px;
+        overflow: hidden;
+        width: 100%;
+        height: 500px;
+      }
+
+      .main-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
       }
 
       .product-details {
@@ -202,6 +189,10 @@
         margin-bottom: 10px;
       }
 
+      .color-section[style*="display: none"] + .size-section {
+        margin-top: 0;
+      }
+
       .section-label {
         display: block;
         font-size: 16px;
@@ -215,16 +206,34 @@
       }
 
       .color-option {
-        width: 30px;
-        height: 30px;
-        border-radius: 50%;
-        border: 1px solid #ddd;
+        width: 60px;
+        height: 60px;
+        border-radius: 8px;
+        border: 2px solid #ddd;
         cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        transition: all 0.2s;
+      }
+
+      .color-option:hover:not(.disabled) {
+        border-color: #8e44ad;
+        transform: scale(1.05);
       }
 
       .color-option.active {
-        border: 2px solid #8e44ad;
-        box-shadow: 0 0 0 2px white, 0 0 0 4px #8e44ad;
+        border: 3px solid #8e44ad;
+        box-shadow: 0 0 0 2px white, 0 0 0 5px #8e44ad;
+      }
+
+      .color-name {
+        font-size: 10px;
+        font-weight: 600;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+        color: white;
+        text-align: center;
       }
 
       .selected-color {
@@ -348,6 +357,64 @@
         background-color: #7a4d86;
       }
 
+      /* Zoom functionality styles */
+      .zoom-box {
+        position: absolute;
+        width: 150px;
+        height: 150px;
+        border: 2px solid #8e44ad;
+        background: rgba(142, 68, 173, 0.1);
+        pointer-events: none;
+        display: none;
+        z-index: 10;
+      }
+
+      .zoom-viewer {
+        position: absolute;
+        top: 0;
+        left: 110%;
+        width: 350px;
+        height: 350px;
+        border: 1px solid #ddd;
+        background: white;
+        overflow: hidden;
+        display: none;
+        z-index: 20;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+
+      .zoom-viewer img {
+        width: 800px;
+        height: 800px;
+        object-fit: cover;
+      }
+
+      /* Responsive design for thumbnails */
+      @media (max-width: 768px) {
+        .product-images {
+          flex-direction: column;
+        }
+
+        .thumbnail-images {
+          flex-direction: row;
+          justify-content: center;
+          order: 2;
+          margin-top: 15px;
+        }
+
+        .main-image-container {
+          order: 1;
+        }
+
+        .main-image {
+          height: 400px;
+        }
+
+        .zoom-viewer {
+          display: none !important;
+        }
+      }
+
       /* Additional styles for product page elements */
       .shipping-info {
         margin: 20px 0;
@@ -362,84 +429,262 @@
         color: #8e44ad;
         margin-right: 10px;
       }
+
+      /* Modal (report) styles */
+      .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 60;
+      }
+
+      .modal-panel {
+        background: #fff;
+        width: 520px;
+        max-width: 96%;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 12px 30px rgba(17, 24, 39, 0.12);
+      }
+
+      .modal-title {
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 6px;
+        color: #111827;
+      }
+
+      .modal-body {
+        margin-top: 10px;
+        color: #374151;
+      }
+
+      .modal-notice {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        background: #fff5f5;
+        border: 1px solid #fed7d7;
+        color: #9b1c1c;
+        padding: 10px 12px;
+        border-radius: 8px;
+        margin: 8px 0 14px 0;
+        font-size: 14px;
+      }
+
+      .modal-notice .notice-icon {
+        flex: 0 0 20px;
+        width: 20px;
+        height: 20px;
+      }
+
+      .radio-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 6px;
+      }
+      .radio-list label {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        cursor: pointer;
+        color: #111827;
+      }
+      .radio-list input[type="radio"] {
+        width: 16px;
+        height: 16px;
+      }
+
+      .modal-actions {
+        margin-top: 18px;
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+      }
+      .btn {
+        padding: 8px 14px;
+        border-radius: 8px;
+        cursor: pointer;
+        border: 1px solid #e5e7eb;
+        font-weight: 600;
+      }
+      .btn.secondary {
+        background: #fff;
+        color: #111827;
+        border-color: #d1d5db;
+      }
+      .btn.danger {
+        background: #ef4444;
+        color: white;
+        border-color: #ef4444;
+      }
+      .btn.danger:hover {
+        background: #dc2626;
+      }
     </style>
   </head>
   <body>
     <!-- Include Header -->
     {% include 'main/partials/_header_buyer.html' %}
 
+    <!-- Report Modal (hidden) -->
+    <div
+      class="modal-backdrop"
+      id="reportBackdrop"
+      aria-hidden="true"
+      style="display: none"
+    >
+      <div
+        class="modal-panel"
+        role="dialog"
+        aria-modal="true"
+        id="reportModal"
+        style="position: relative"
+      >
+        <button
+          type="button"
+          class="btn secondary"
+          aria-label="Close report dialog"
+          onclick="closeReportModal()"
+          style="
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            line-height: 1;
+            cursor: pointer;
+          "
+        >
+          &times;
+        </button>
+        <div class="modal-title">Report Product</div>
+        <div class="modal-body">
+          <p style="margin-bottom: 8px">
+            Please select the reason for reporting this product:
+          </p>
+          <div class="modal-notice" role="status" aria-live="polite">
+            <svg
+              class="notice-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+            >
+              <path
+                d="M12 9v4"
+                stroke="#c53030"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              <path
+                d="M12 17h.01"
+                stroke="#c53030"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              <path
+                d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+                stroke="#c53030"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                fill="none"
+              />
+            </svg>
+            <div class="notice-text">
+              Notice: Your report will be reviewed by our moderation team. False
+              or abusive reports may result in account action.
+            </div>
+          </div>
+          <form id="reportForm">
+            <div class="radio-list">
+              <label
+                ><input
+                  type="radio"
+                  name="reason"
+                  value="intellectual_property"
+                />
+                Intellectual Property Violation</label
+              >
+              <label
+                ><input type="radio" name="reason" value="inappropriate" />
+                Inappropriate Content</label
+              >
+              <label
+                ><input type="radio" name="reason" value="fraud" /> Fraud /
+                Scam</label
+              >
+              <label
+                ><input type="radio" name="reason" value="spam" /> Spam</label
+              >
+              <label
+                ><input type="radio" name="reason" value="not_product" /> Not a
+                Product / Wrong Listing</label
+              >
+              <label
+                ><input type="radio" name="reason" value="other" /> Other</label
+              >
+            </div>
+            <div style="margin-top: 10px">
+              <label for="reportDetails">Additional details (optional)</label>
+              <textarea
+                id="reportDetails"
+                name="details"
+                rows="4"
+                style="
+                  width: 100%;
+                  padding: 8px;
+                  border: 1px solid #ddd;
+                  border-radius: 6px;
+                  margin-top: 6px;
+                "
+              ></textarea>
+            </div>
+            <input type="hidden" name="product_id" value="{{ product.id }}" />
+          </form>
+        </div>
+        <div
+          class="modal-actions"
+          style="justify-content: space-between; align-items: center"
+        >
+          <button
+            class="btn secondary"
+            type="button"
+            onclick="closeReportModal()"
+          >
+            Cancel
+          </button>
+          <button
+            class="btn danger"
+            type="button"
+            id="submitReportBtn"
+            onclick="submitReport()"
+          >
+            Report
+          </button>
+        </div>
+      </div>
+    </div>
+
     <div class="container">
       <!-- Product Images Section -->
       <div class="product-images">
-        <div class="main-image">
-          <img
-            id="mainImage"
-            src="{{ product.primaryImage }}"
-            alt="{{ product.name }}"
-            style="max-height: 500px; width: auto; display: block"
-          />
-          <div class="zoom-box" id="zoomBox"></div>
-          <div class="zoom-viewer" id="zoomViewer">
-            <img
-              id="zoomImage"
-              src="{{ product.primaryImage }}"
-              alt="Zoomed view of {{ product.name }}"
-            />
-          </div>
-          <div class="image-overlay-buttons">
-            <button
-              class="wishlist-btn"
-              id="wishlistBtn"
-              style="
-                background: rgba(255, 255, 255, 0.9);
-                border: none;
-                border-radius: 50%;
-                width: 44px;
-                height: 44px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-              "
-            >
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path
-                  d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
-                ></path>
-              </svg>
-            </button>
-          </div>
-        </div>
-        <div
-          class="thumbnail-images"
-          style="
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-            justify-content: center;
-          "
-        >
+        <!-- Thumbnail Images on the Left -->
+        <div class="thumbnail-images">
           <img
             src="{{ product.primaryImage }}"
             alt="{{ product.name }} front view"
             class="thumbnail active"
             data-index="0"
             onclick="changeMainImage(this, 0)"
-            style="
-              width: 80px;
-              height: 80px;
-              object-fit: cover;
-              border: 2px solid #8e44ad;
-              border-radius: 4px;
-              cursor: pointer;
-            "
           />
           <img
             src="{{ product.secondaryImage }}"
@@ -447,14 +692,6 @@
             class="thumbnail"
             data-index="1"
             onclick="changeMainImage(this, 1)"
-            style="
-              width: 80px;
-              height: 80px;
-              object-fit: cover;
-              border: 2px solid #ddd;
-              border-radius: 4px;
-              cursor: pointer;
-            "
           />
           <img
             src="{{ product.primaryImage }}"
@@ -462,15 +699,59 @@
             class="thumbnail"
             data-index="2"
             onclick="changeMainImage(this, 2)"
-            style="
-              width: 80px;
-              height: 80px;
-              object-fit: cover;
-              border: 2px solid #ddd;
-              border-radius: 4px;
-              cursor: pointer;
-            "
           />
+        </div>
+
+        <!-- Main Image Container on the Right -->
+        <div class="main-image-container">
+          <div class="main-image">
+            <img
+              id="mainImage"
+              src="{{ product.primaryImage }}"
+              alt="{{ product.name }}"
+            />
+            <div class="zoom-box" id="zoomBox"></div>
+            <div class="zoom-viewer" id="zoomViewer">
+              <img
+                id="zoomImage"
+                src="{{ product.primaryImage }}"
+                alt="Zoomed view of {{ product.name }}"
+              />
+            </div>
+            <div class="image-overlay-buttons">
+              <button
+                class="wishlist-btn"
+                id="wishlistBtn"
+                style="
+                  background: rgba(255, 255, 255, 0.9);
+                  border: none;
+                  border-radius: 50%;
+                  width: 44px;
+                  height: 44px;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+                  position: absolute;
+                  top: 15px;
+                  right: 15px;
+                "
+              >
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+                  ></path>
+                </svg>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -689,7 +970,7 @@
                   ></polygon>
                 </svg>
               </div>
-              <span style="font-weight: 600; color: #333">4.0</span>
+              <span style="font-weight: 600; color: #333">0.0</span>
             </div>
 
             <span style="color: #ccc">|</span>
@@ -699,7 +980,7 @@
               class="ratings-container"
               style="display: flex; align-items: center; gap: 4px"
             >
-              <span style="font-weight: 500">1.2k Ratings</span>
+              <span style="font-weight: 500">0 Ratings</span>
             </div>
 
             <span style="color: #ccc">|</span>
@@ -723,31 +1004,46 @@
                 <line x1="3" y1="6" x2="21" y2="6"></line>
                 <path d="M16 10a4 4 0 0 1-8 0"></path>
               </svg>
-              <span class="sold-text">1.2k Sold</span>
+              <span class="sold-text">0 Sold</span>
             </div>
           </div>
         </div>
 
         <!-- Color Selection -->
-        <div class="color-section">
+        <div
+          class="color-section"
+          {%
+          if
+          not
+          stock_data
+          %}style="display: none;"
+          {%
+          endif
+          %}
+        >
           <label class="section-label"
-            >COLOR <span class="selected-color">{% if stock_data %}{{ stock_data.keys()|list|first }}{% else %}Select Color{% endif %}</span></label
-          >
+            >COLOR
+            <span class="selected-color">Select Color</span>
+          </label>
           <div class="color-options">
-            {% for color, sizes in stock_data.items() %}
-            {% set total_stock = sizes.values()|sum %}
-            {% set color_hex = variant_photos.get(color, {}).get('color_hex', '#000000') %}
+            {% for color, sizes in stock_data.items() %} {% set total_stock =
+            sizes.values()|sum %} {% set color_hex = variant_photos.get(color,
+            {}).get('color_hex', '#000000') %}
             <button
-              class="color-option {% if loop.first %}active{% endif %} {% if total_stock == 0 %}disabled out-of-stock{% endif %}"
+              type="button"
+              class="color-option color-circle{% if total_stock == 0 %} disabled out-of-stock{% endif %}"
               data-color="{{ color }}"
               data-stock="{{ sizes|tojson }}"
               data-total-stock="{{ total_stock }}"
-              style="background-color: {{ color_hex }}; {% if total_stock == 0 %}opacity: 0.3; pointer-events: none;{% endif %}"
-              {% if total_stock > 0 %}onclick="selectColor(this)"{% endif %}
+              data-color-hex="{{ color_hex }}"
               title="{{ color }}{% if total_stock == 0 %} - Out of Stock{% endif %}"
+              onclick="selectColor(this)"
+              style="background-color: {{ color_hex }};"
             >
               {% if total_stock == 0 %}
-              <span class="oos-label" style="position: absolute; top: -8px; right: -8px; background: #dc143c; color: white; font-size: 8px; padding: 1px 3px; border-radius: 2px;">OOS</span>
+              <span class="oos-overlay">
+                <i class="oos-icon">✕</i>
+              </span>
               {% endif %}
             </button>
             {% endfor %}
@@ -758,133 +1054,90 @@
         <div class="size-section">
           <label class="section-label">SIZE</label>
           <div class="size-options" id="sizeOptions">
-            {% if stock_data %}
-              {% set first_color = stock_data.keys()|list|first %}
-              {% set first_color_sizes = stock_data[first_color] %}
-              {% for size, stock in first_color_sizes.items() %}
-              <button
-                class="size-option {% if loop.first %}active{% endif %} {% if stock == 0 %}disabled out-of-stock{% endif %}"
-                data-size="{{ size }}"
-                data-stock="{{ stock }}"
-                {% if stock > 0 %}onclick="selectSize(this)"{% endif %}
-                style="
-                  padding: 8px 15px;
-                  border: 1px solid {% if loop.first and stock > 0 %}#8e44ad{% else %}#ddd{% endif %};
-                  border-radius: 4px;
-                  cursor: {% if stock > 0 %}pointer{% else %}not-allowed{% endif %};
-                  background: {% if loop.first and stock > 0 %}#8e44ad{% else %}white{% endif %};
-                  color: {% if loop.first and stock > 0 %}white{% else %}#333{% endif %};
-                  {% if stock == 0 %}opacity: 0.5; text-decoration: line-through;{% endif %}
-                "
-              >
-                {{ size }}
-              </button>
-              {% endfor %}
+            <div class="size-placeholder">
+              Select a color to view available sizes
+            </div>
+          </div>
+          <div class="size-info" id="modelInfo">
+            {% if product.details_fit %}
+            <span>{{ product.details_fit }}</span>
             {% else %}
-              <!-- Fallback sizes if no variant data -->
-              <button class="size-option active" data-size="OS" onclick="selectSize(this)" style="padding: 8px 15px; border: 1px solid #8e44ad; border-radius: 4px; cursor: pointer; background-color: #8e44ad; color: white;">
-                One Size
-              </button>
+            <span>Model is 5'10", wearing a size S</span>
             {% endif %}
           </div>
-          <div class="size-info">
-            <span>Model is 5'10", wearing a size S</span>
-          </div>
-
-          <!-- Shipping Info -->
-          <div class="shipping-info">
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#1565c0"
-              stroke-width="2"
-              class="shipping-icon"
-            >
-              <rect x="1" y="3" width="15" height="13"></rect>
-              <path d="m16 6 4 4v6"></path>
-              <circle cx="5.5" cy="18.5" r="2.5"></circle>
-              <circle cx="18.5" cy="18.5" r="2.5"></circle>
-            </svg>
-            <span
-              >Free shipping on orders over ₱2,000 | Easy returns within 30
-              days</span
-            >
-          </div>
+        </div>
+        <div class="shipping-info">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#1565c0"
+            stroke-width="2"
+            class="shipping-icon"
+          >
+            <rect x="1" y="3" width="15" height="13"></rect>
+            <path d="m16 6 4 4v6"></path>
+            <circle cx="5.5" cy="18.5" r="2.5"></circle>
+            <circle cx="18.5" cy="18.5" r="2.5"></circle>
+          </svg>
+          <span
+            >Free shipping on orders over ₱2,000 | Easy returns within 30
+            days</span
+          >
         </div>
 
         <!-- Quantity and Stock Section -->
         <div class="quantity-section">
-          <div class="quantity-stock-header">
-            <div class="quantity-label-group">
-              <label class="section-label">QUANTITY</label>
-              <div class="quantity-selector">
-                <button
-                  class="quantity-btn"
-                  onclick="decreaseQuantity()"
-                  id="decreaseBtn"
+          <label class="section-label">QUANTITY</label>
+          <div class="quantity-controls-group">
+            <div class="quantity-selector">
+              <button
+                class="quantity-btn"
+                onclick="decreaseQuantity()"
+                id="decreaseBtn"
+              >
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
                 >
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                  </svg>
-                </button>
-                <input
-                  type="number"
-                  class="quantity-input"
-                  value="1"
-                  min="1"
-                  max="10"
-                  id="quantityInput"
-                  onchange="updateQuantity()"
-                />
-                <button
-                  class="quantity-btn"
-                  onclick="increaseQuantity()"
-                  id="increaseBtn"
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+              </button>
+              <input
+                type="number"
+                class="quantity-input"
+                value="1"
+                min="1"
+                max="10"
+                id="quantityInput"
+                onchange="updateQuantity()"
+              />
+              <button
+                class="quantity-btn"
+                onclick="increaseQuantity()"
+                id="increaseBtn"
+              >
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
                 >
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                  </svg>
-                </button>
-              </div>
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+              </button>
             </div>
-            <div class="stock-size-section">
-              <div class="stock-section">
-                <span class="stock-indicator" id="stockIndicator">
-                  {% if stock_data %}
-                    {% set first_color = stock_data.keys()|list|first %}
-                    {% set first_size = stock_data[first_color].keys()|list|first %}
-                    {{ stock_data[first_color][first_size] }}
-                  {% else %}
-                    0
-                  {% endif %}
-                </span>
-                <span class="stock-label">in stock</span>
-              </div>
-              <div class="size-guide-section">
-                <a
-                  href="#"
-                  class="size-guide-large"
-                  onclick="scrollToSizeGuide(event)"
-                  >SIZE GUIDE</a
-                >
-              </div>
+            <div class="stock-section">
+              <span class="stock-indicator" id="stockIndicator"> 0 </span>
+              <span class="stock-label">in stock</span>
             </div>
           </div>
         </div>
@@ -943,10 +1196,100 @@
     <script>
       // Example shape from backend: { "Black": {"primary": "/static/uploads/black1.jpg","secondary": "/static/uploads/black2.jpg"}, "Red": "/static/uploads/red.jpg" }
       window.variantPhotoMap = {{ variant_photos | default({}) | tojson | safe }};
+
+      // Stock data for dynamic size selection based on color
+      // Example shape: { "Black": {"XS": 15, "S": 25, "M": 30}, "White": {"XS": 12, "S": 18} }
+      window.stockData = {{ stock_data | default({}) | tojson | safe }};
+      window._pageStockData = window.stockData; // Alias for compatibility
+
+      console.log('Stock data loaded:', window.stockData);
+      console.log('Variant photos loaded:', window.variantPhotoMap);
+
+      // Initialize stock display after data is loaded
+      document.addEventListener('DOMContentLoaded', function() {
+        // Wait a bit for other initialization to complete
+        setTimeout(function() {
+          if (typeof updateStockDisplay === 'function') {
+            console.log('Initializing stock display...');
+            updateStockDisplay();
+          }
+        }, 100);
+      });
+    </script>
+    <script>
+      // Store info functions
+      function chatWithStore() {
+        // TODO: Implement chat functionality
+        alert("Chat feature coming soon!");
+      }
+
+      function viewShop(sellerId) {
+        // Navigate to store page
+        window.location.href = `/store/${sellerId}`;
+      }
+
+      // Report modal helpers
+      function reportProduct() {
+        const backdrop = document.getElementById("reportBackdrop");
+        if (!backdrop) return;
+        backdrop.style.display = "flex";
+        backdrop.setAttribute("aria-hidden", "false");
+      }
+
+      function closeReportModal() {
+        const backdrop = document.getElementById("reportBackdrop");
+        if (!backdrop) return;
+        backdrop.style.display = "none";
+        backdrop.setAttribute("aria-hidden", "true");
+      }
+
+      async function submitReport() {
+        const btn = document.getElementById("submitReportBtn");
+        if (btn) btn.disabled = true;
+
+        try {
+          const form = document.getElementById("reportForm");
+          const fd = new FormData(form);
+          const reason = fd.get("reason");
+          const details = fd.get("details") || "";
+          const productId = fd.get("product_id");
+
+          if (!reason) {
+            alert("Please select a reason for reporting.");
+            if (btn) btn.disabled = false;
+            return;
+          }
+
+          const resp = await fetch(`/api/product/${productId}/report`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ reason: reason, details: details }),
+          });
+
+          const data = await resp.json();
+          if (!resp.ok) {
+            console.error("Report error", data);
+            alert(data.error || "Failed to submit report");
+            if (btn) btn.disabled = false;
+            return;
+          }
+
+          alert(
+            "Report submitted — thank you. Our team will review this product."
+          );
+          closeReportModal();
+        } catch (e) {
+          console.error("submitReport error", e);
+          alert("An unexpected error occurred while sending the report.");
+        } finally {
+          if (btn) btn.disabled = false;
+        }
+      }
     </script>
 
     <script src="{{ url_for('static', filename='js/buyer_scripts/partials/_product_dropdown_details.js') }}"></script>
     <script src="{{ url_for('static', filename='js/buyer_scripts/partials/_reviews_dropdown.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/buyer_scripts/product_detail.js') }}"></script>
     <script>
       // Initialize zoom functionality on the main image
       document.addEventListener("DOMContentLoaded", function () {

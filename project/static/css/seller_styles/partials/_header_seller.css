@@ -18,6 +18,33 @@
   flex: 1;
   display: flex;
   align-items: center;
+  gap: 16px;
+}
+
+.menu-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.18s ease, transform 0.12s ease;
+  color: var(--color-grey-600, #4b5563);
+}
+
+.menu-toggle:hover,
+.menu-toggle:active {
+  background: transparent;
+  color: var(--color-primary, #6c5ce7);
+  transform: translateY(-1px);
+}
+
+.menu-toggle i {
+  width: 20px;
+  height: 20px;
 }
 
 .header-right {
@@ -183,4 +210,99 @@
 
 .user-profile-dropdown.active .dropdown-arrow {
   transform: rotate(180deg);
+}
+
+/* Seller Profile Compact Styles - Glassmorphism */
+.seller-profile-compact {
+  display: flex;
+  align-items: center;
+  /* Glassmorphism container */
+  background: linear-gradient(135deg, 
+    rgba(108, 92, 231, 0.08) 0%, 
+    rgba(168, 85, 247, 0.06) 50%,
+    rgba(124, 58, 237, 0.04) 100%
+  );
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(108, 92, 231, 0.12);
+  border-radius: 16px;
+  padding: 8px 16px;
+  box-shadow: 
+    0 8px 32px rgba(108, 92, 231, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.seller-profile-compact:hover {
+  background: linear-gradient(135deg, 
+    rgba(108, 92, 231, 0.12) 0%, 
+    rgba(168, 85, 247, 0.08) 50%,
+    rgba(124, 58, 237, 0.06) 100%
+  );
+  border-color: rgba(108, 92, 231, 0.18);
+  box-shadow: 
+    0 12px 40px rgba(108, 92, 231, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.seller-profile-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 4px 0;
+}
+
+.seller-profile-link:hover {
+  opacity: 1;
+  transform: none; /* Remove individual transform since parent handles it */
+}
+
+.avatar-icon-circle {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, 
+    rgba(108, 92, 231, 0.9) 0%, 
+    rgba(124, 58, 237, 0.8) 100%
+  );
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  box-shadow: 
+    0 4px 16px rgba(108, 92, 231, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.seller-profile-compact:hover .avatar-icon-circle {
+  box-shadow: 
+    0 6px 20px rgba(108, 92, 231, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
+.avatar-icon-circle i {
+  width: 20px;
+  height: 20px;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+}
+
+.store-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--color-grey-800, #1f2937);
+  font-family: "Montserrat", sans-serif;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.seller-profile-compact:hover .store-name {
+  color: #4c1d95;
+  text-shadow: 0 1px 3px rgba(255, 255, 255, 0.9);
 }

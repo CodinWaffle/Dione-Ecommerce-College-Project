@@ -62,9 +62,12 @@ CSS included #}
 
       /* Container centers content but for this storefront we let it overlap like marketplace pages */
       .container {
-        max-width: 1100px;
+        /* Responsive container: center content, cap max width, and
+           use clamp() for adjustable side padding that responds to viewport */
+        width: 100%;
+        max-width: 1200px;
         margin: calc(-1 * var(--banner-height) / 2) auto 40px;
-        padding: 0 20px;
+        padding: 0 clamp(16px, 4vw, 64px);
         position: relative;
         z-index: 10;
       }
@@ -122,10 +125,9 @@ CSS included #}
         padding: 20px;
         margin-top: 20px;
         box-shadow: 0 10px 30px rgba(2, 6, 23, 0.06);
-        height: var(--banner-height);
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        min-height: var(--banner-height);
+        height: auto;
+        display: block;
       }
 
       /* responsive tweaks */
@@ -402,11 +404,11 @@ CSS included #}
             gap: 8px;
           "
         ></div>
-      </div>
 
-      {# Include reusable product listing area (product cards) #}
-      <div style="margin-top: 18px">
-        {% include 'main/partials/content_area.html' %}
+        <!-- Product listing inside the content area -->
+        <div class="products-listing" style="margin-top: 18px; width: 100%">
+          {% include 'main/partials/content_area.html' %}
+        </div>
       </div>
 
       {% endblock %}

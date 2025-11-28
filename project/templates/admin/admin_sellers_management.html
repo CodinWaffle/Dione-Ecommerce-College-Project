@@ -43,24 +43,402 @@ endblock %} {% block extra_css %}
         </p>
       </div>
 
+      <!-- Seller Stats Cards -->
+      <div class="stats-cards">
+        <!-- Total Sellers Card -->
+        <div class="stat-card">
+          <div class="stat-card-icon blue">
+            <i class="bx bx-store"></i>
+          </div>
+          <div class="stat-card-info">
+            <h3>Total Sellers</h3>
+            <p class="stat-number">1,248</p>
+            <div class="stat-change positive">
+              <i class="bx bx-up-arrow-alt"></i>
+              <span>8.5% increase</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Active Sellers Card -->
+        <div class="stat-card">
+          <div class="stat-card-icon green">
+            <i class="bx bx-check-circle"></i>
+          </div>
+          <div class="stat-card-info">
+            <h3>Active Sellers</h3>
+            <p class="stat-number">1,156</p>
+            <div class="stat-change positive">
+              <i class="bx bx-up-arrow-alt"></i>
+              <span>12 new this month</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Flagged Accounts Card -->
+        <div class="stat-card">
+          <div class="stat-card-icon orange">
+            <i class="bx bx-flag"></i>
+          </div>
+          <div class="stat-card-info">
+            <h3>Flagged Accounts</h3>
+            <p class="stat-number">23</p>
+            <div class="stat-change negative">
+              <i class="bx bx-down-arrow-alt"></i>
+              <span>5 resolved today</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Revenue Generated Card -->
+        <div class="stat-card">
+          <div class="stat-card-icon purple">
+            <i class="bx bx-trending-up"></i>
+          </div>
+          <div class="stat-card-info">
+            <h3>Revenue Generated</h3>
+            <p class="stat-number">₱2.4M</p>
+            <div class="stat-change positive">
+              <i class="bx bx-up-arrow-alt"></i>
+              <span>15.3% this month</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Performing Sellers -->
+      <div class="top-performers-section">
+        <div class="card-header">
+          <h3>Top Performing Sellers</h3>
+          <div class="header-actions">
+            <button class="btn secondary-btn">
+              <i class="bx bx-download"></i>
+              Export Report
+            </button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table top-performers-table">
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Seller Name</th>
+                <th>Store Name</th>
+                <th>Products Sold</th>
+                <th>Rating</th>
+                <th>Revenue</th>
+                <th>Growth</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <div class="rank-badge gold">
+                    <i class="bx bx-trophy"></i>
+                    1
+                  </div>
+                </td>
+                <td>
+                  <div class="seller-info">
+                    <div class="seller-avatar">
+                      <img
+                        src="https://via.placeholder.com/40"
+                        alt="Maria Santos"
+                      />
+                    </div>
+                    <div>
+                      <p class="seller-name">Maria Santos</p>
+                      <p class="seller-email">maria@techgadgets.ph</p>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="store-info">
+                    <strong>Tech Gadgets PH</strong>
+                    <span class="store-category">Electronics</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="products-sold">
+                    <strong>2,847</strong>
+                    <span class="period">this month</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="rating-display">
+                    <div class="stars">
+                      <i class="bx bxs-star"></i>
+                      <i class="bx bxs-star"></i>
+                      <i class="bx bxs-star"></i>
+                      <i class="bx bxs-star"></i>
+                      <i class="bx bxs-star"></i>
+                    </div>
+                    <span class="rating-value">4.9</span>
+                    <span class="review-count">(1,234 reviews)</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="revenue-amount">
+                    <strong>₱487,250</strong>
+                  </div>
+                </td>
+                <td>
+                  <div class="growth-indicator positive">
+                    <i class="bx bx-trending-up"></i>
+                    +23.5%
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="rank-badge silver">
+                    <i class="bx bx-medal"></i>
+                    2
+                  </div>
+                </td>
+                <td>
+                  <div class="seller-info">
+                    <div class="seller-avatar">
+                      <img
+                        src="https://via.placeholder.com/40"
+                        alt="John Dela Cruz"
+                      />
+                    </div>
+                    <div>
+                      <p class="seller-name">John Dela Cruz</p>
+                      <p class="seller-email">john@fashionhub.com</p>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="store-info">
+                    <strong>Fashion Hub Manila</strong>
+                    <span class="store-category">Fashion & Apparel</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="products-sold">
+                    <strong>2,156</strong>
+                    <span class="period">this month</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="rating-display">
+                    <div class="stars">
+                      <i class="bx bxs-star"></i>
+                      <i class="bx bxs-star"></i>
+                      <i class="bx bxs-star"></i>
+                      <i class="bx bxs-star"></i>
+                      <i class="bx bxs-star-half"></i>
+                    </div>
+                    <span class="rating-value">4.7</span>
+                    <span class="review-count">(892 reviews)</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="revenue-amount">
+                    <strong>₱356,890</strong>
+                  </div>
+                </td>
+                <td>
+                  <div class="growth-indicator positive">
+                    <i class="bx bx-trending-up"></i>
+                    +18.2%
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="rank-badge bronze">
+                    <i class="bx bx-medal"></i>
+                    3
+                  </div>
+                </td>
+                <td>
+                  <div class="seller-info">
+                    <div class="seller-avatar">
+                      <img
+                        src="https://via.placeholder.com/40"
+                        alt="Anna Rodriguez"
+                      />
+                    </div>
+                    <div>
+                      <p class="seller-name">Anna Rodriguez</p>
+                      <p class="seller-email">anna@homeessentials.ph</p>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="store-info">
+                    <strong>Home Essentials PH</strong>
+                    <span class="store-category">Home & Garden</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="products-sold">
+                    <strong>1,943</strong>
+                    <span class="period">this month</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="rating-display">
+                    <div class="stars">
+                      <i class="bx bxs-star"></i>
+                      <i class="bx bxs-star"></i>
+                      <i class="bx bxs-star"></i>
+                      <i class="bx bxs-star"></i>
+                      <i class="bx bxs-star"></i>
+                    </div>
+                    <span class="rating-value">4.8</span>
+                    <span class="review-count">(756 reviews)</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="revenue-amount">
+                    <strong>₱298,450</strong>
+                  </div>
+                </td>
+                <td>
+                  <div class="growth-indicator positive">
+                    <i class="bx bx-trending-up"></i>
+                    +15.8%
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="rank-badge">4</div>
+                </td>
+                <td>
+                  <div class="seller-info">
+                    <div class="seller-avatar">
+                      <img
+                        src="https://via.placeholder.com/40"
+                        alt="Carlos Martinez"
+                      />
+                    </div>
+                    <div>
+                      <p class="seller-name">Carlos Martinez</p>
+                      <p class="seller-email">carlos@sportszone.com</p>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="store-info">
+                    <strong>Sports Zone Philippines</strong>
+                    <span class="store-category">Sports & Recreation</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="products-sold">
+                    <strong>1,725</strong>
+                    <span class="period">this month</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="rating-display">
+                    <div class="stars">
+                      <i class="bx bxs-star"></i>
+                      <i class="bx bxs-star"></i>
+                      <i class="bx bxs-star"></i>
+                      <i class="bx bxs-star"></i>
+                      <i class="bx bx-star"></i>
+                    </div>
+                    <span class="rating-value">4.5</span>
+                    <span class="review-count">(623 reviews)</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="revenue-amount">
+                    <strong>₱245,320</strong>
+                  </div>
+                </td>
+                <td>
+                  <div class="growth-indicator positive">
+                    <i class="bx bx-trending-up"></i>
+                    +12.3%
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="rank-badge">5</div>
+                </td>
+                <td>
+                  <div class="seller-info">
+                    <div class="seller-avatar">
+                      <img
+                        src="https://via.placeholder.com/40"
+                        alt="Lisa Chen"
+                      />
+                    </div>
+                    <div>
+                      <p class="seller-name">Lisa Chen</p>
+                      <p class="seller-email">lisa@beautycorner.ph</p>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="store-info">
+                    <strong>Beauty Corner PH</strong>
+                    <span class="store-category">Beauty & Personal Care</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="products-sold">
+                    <strong>1,658</strong>
+                    <span class="period">this month</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="rating-display">
+                    <div class="stars">
+                      <i class="bx bxs-star"></i>
+                      <i class="bx bxs-star"></i>
+                      <i class="bx bxs-star"></i>
+                      <i class="bx bxs-star"></i>
+                      <i class="bx bxs-star-half"></i>
+                    </div>
+                    <span class="rating-value">4.6</span>
+                    <span class="review-count">(534 reviews)</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="revenue-amount">
+                    <strong>₱189,760</strong>
+                  </div>
+                </td>
+                <td>
+                  <div class="growth-indicator positive">
+                    <i class="bx bx-trending-up"></i>
+                    +9.7%
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- Seller Management Tabs -->
       <div class="tab-container">
         <div class="tab-header">
-          <button class="tab-btn active" data-tab="pending">
-            Pending Approval
+          <button class="tab-btn active" data-tab="all-sellers">
+            All Sellers
           </button>
           <button class="tab-btn" data-tab="active">Active Sellers</button>
           <button class="tab-btn" data-tab="flagged">Flagged Accounts</button>
           <button class="tab-btn" data-tab="suspended">Suspended</button>
         </div>
 
-        <div class="tab-content active" id="pending">
+        <div class="tab-content active" id="all-sellers">
           <div class="card-header">
-            <h3>Pending Seller Approvals</h3>
+            <h3>All Sellers</h3>
             <div class="header-actions">
               <div class="search-mini">
                 <i class="bx bx-search"></i>
-                <input type="text" placeholder="Search applications..." />
+                <input type="text" placeholder="Search sellers..." />
               </div>
               <div class="filter-dropdown">
                 <button class="filter-btn">

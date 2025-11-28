@@ -11,12 +11,20 @@ class ProductCard {
     // Clone the template
     this.element = this.template.content.cloneNode(true);
 
-    // Set images
+    // Set images with fallbacks
     const images = this.element.querySelectorAll(".product-image");
-    images[0].src = this.product.primaryImage;
+    images[0].src = this.product.primaryImage || '/static/image/banner.png';
     images[0].alt = `${this.product.name} - Front`;
-    images[1].src = this.product.secondaryImage;
+    images[1].src = this.product.secondaryImage || this.product.primaryImage || '/static/image/banner.png';
     images[1].alt = `${this.product.name} - Back`;
+    
+    // Add error handling for broken images
+    images[0].onerror = function() {
+      this.src = '/static/image/banner.png';
+    };
+    images[1].onerror = function() {
+      this.src = '/static/image/banner.png';
+    };
 
     // Set product info
     this.element.querySelector(".product-name").textContent = this.product.name;
@@ -202,7 +210,7 @@ function initializeProducts(containerId, products) {
 
   products.forEach((product) => {
     console.log(
-      `initializeProducts: id=${product.id}, secondaryImage=${
+      `initializeProducts: id=${product.id}, name=${product.name}, primaryImage=${product.primaryImage}, secondaryImage=${
         product.secondaryImage ? "yes" : "no"
       }`
     );

@@ -1892,31 +1892,31 @@ label {
   .variant-stock-modal {
     max-width: 95vw;
   }
-  
+
   .stock-summary {
     grid-template-columns: 1fr;
   }
-  
+
   .variant-size-row {
     flex-direction: column;
     align-items: stretch;
     gap: 0.5rem;
   }
-  
+
   .variant-stock-input {
     width: 100%;
   }
-  
+
   .modal-footer {
     flex-direction: column-reverse;
   }
-  
+
   .btn-primary,
   .btn-secondary {
     width: 100%;
     justify-content: center;
   }
-}/* Enha
+} /* Enha
 nced Variant Card Styles */
 .variant-card {
   background: white;
@@ -2146,7 +2146,11 @@ nced Variant Card Styles */
 }
 
 .size-options-row.size-selected {
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.05) 0%, rgba(168, 85, 247, 0.03) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(124, 58, 237, 0.05) 0%,
+    rgba(168, 85, 247, 0.03) 100%
+  );
   border-color: rgba(124, 58, 237, 0.2);
   box-shadow: 0 2px 8px rgba(124, 58, 237, 0.1);
 }
@@ -2216,36 +2220,36 @@ nced Variant Card Styles */
   .size-modal-content {
     max-width: 95vw;
   }
-  
+
   .size-options-row {
     grid-template-columns: 1fr;
     gap: 0.5rem;
   }
-  
+
   .size-options-row.size-options-other {
     grid-template-columns: 1fr;
   }
-  
+
   .size-label-with-badge {
     justify-content: flex-start;
     gap: 0.5rem;
   }
-  
+
   .variant-sizes-grid {
     grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
   }
-  
+
   .variant-card-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.75rem;
   }
-  
+
   .variant-actions {
     width: 100%;
     justify-content: flex-end;
   }
-}/* Cons
+} /* Cons
 istent color scheme for stocks modal */
 .variant-stock-modal .modal-title {
   color: white;
@@ -2307,7 +2311,7 @@ istent color scheme for stocks modal */
 
 .size-stock-card .stock-value.out {
   color: #dc2626;
-}/* En
+} /* En
 sure modals are always on top */
 #variantStockModal,
 #sizeSelectModal {
@@ -2350,7 +2354,7 @@ sure modals are always on top */
 .modal button {
   z-index: 100001 !important;
   position: relative;
-}/* Fo
+} /* Fo
 rce modals to be on top of everything */
 #variantStockModal,
 #sizeSelectModal {
@@ -2384,4 +2388,50 @@ rce modals to be on top of everything */
 .modal button {
   z-index: 100001 !important;
   position: relative !important;
+}
+
+/* Delete confirmation modal styles */
+.delete-warning {
+  text-align: center;
+  padding: 20px 10px;
+}
+
+.delete-warning i {
+  display: block;
+  margin: 0 auto 16px;
+}
+
+.delete-warning p {
+  margin: 8px 0;
+  line-height: 1.5;
+}
+
+.modal-footer {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  padding: 16px 20px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.btn-danger {
+  background: #ef4444;
+  color: white;
+  border: 1px solid #dc2626;
+}
+
+.btn-danger:hover {
+  background: #dc2626;
+  color: white;
+}
+
+.btn-secondary {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.btn-secondary:hover {
+  background: #e5e7eb;
+  color: #111827;
 }

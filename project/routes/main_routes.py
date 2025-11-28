@@ -1,14 +1,86 @@
 """
 Main routes for Dione Ecommerce
 """
-from flask import Blueprint, render_template, jsonify, redirect, url_for, flash
+from flask import Blueprint, render_template, jsonify, redirect, url_for, flash, current_app
 from flask import request
 from flask_login import login_required, current_user, logout_user
 from project import db
-from project.models import Product, User, SellerProduct
+from project.models import Product, User, SellerProduct, ProductReport, Seller
 from sqlalchemy import func
+import hashlib
 
 main = Blueprint('main', __name__)
+
+
+def generate_color_from_name(color_name):
+    """Generate a consistent color hex from a color name"""
+    if not color_name:
+        return '#000000'
+    
+    # Common color mappings
+    color_map = {
+        'red': '#FF0000',
+        'blue': '#0000FF', 
+        'green': '#008000',
+        'yellow': '#FFFF00',
+        'orange': '#FFA500',
+        'purple': '#800080',
+        'pink': '#FFC0CB',
+        'brown': '#A52A2A',
+        'black': '#000000',
+        'white': '#FFFFFF',
+        'gray': '#808080',
+        'grey': '#808080',
+        'navy': '#000080',
+        'maroon': '#800000',
+        'olive': '#808000',
+        'lime': '#00FF00',
+        'aqua': '#00FFFF',
+        'teal': '#008080',
+        'silver': '#C0C0C0',
+        'fuchsia': '#FF00FF',
+    }
+    
+    # Check for exact matches first
+    name_lower = color_name.lower().strip()
+    if name_lower in color_map:
+        return color_map[name_lower]
+    
+    # Check for partial matches
+    for color, hex_val in color_map.items():
+        if color in name_lower:
+            return hex_val
+    
+    # Generate a consistent color from the name using hash
+    hash_obj = hashlib.md5(color_name.encode())
+    hash_hex = hash_obj.hexdigest()
+    
+    # Use first 6 characters as color, but ensure it's not too dark
+    r = int(hash_hex[0:2], 16)
+    g = int(hash_hex[2:4], 16) 
+    b = int(hash_hex[4:6], 16)
+    
+    # Ensure minimum brightness
+    if r + g + b < 200:
+        r = min(255, r + 100)
+        g = min(255, g + 100)
+        b = min(255, b + 100)
+    
+    return f'#{r:02x}{g:02x}{b:02x}'
+
+
+def _normalize_image_path(path):
+    """Normalize stored image path into a usable URL for the frontend.
+
+    If `path` is an absolute URL or already starts with `/`, return as-is.
+    Otherwise prefix with `/static/` so static files under `static/` are reachable.
+    """
+    if not path:
+        return None
+    s = str(path)
+    if s.startswith('/') or s.startswith('http'):
+        return s
+    return '/static/' + s.lstrip('/')
 
 @main.before_request
 def check_suspension():
@@ -47,8 +119,8 @@ def index():
         return {
             'id': sp.id,
             'name': sp.name,
-            'primaryImage': sp.primary_image or '/static/image/banner.png',
-            'secondaryImage': sp.secondary_image or sp.primary_image or '/static/image/banner.png',
+            'primaryImage': _normalize_image_path(sp.primary_image) or '/static/image/banner.png',
+            'secondaryImage': _normalize_image_path(sp.secondary_image) or _normalize_image_path(sp.primary_image) or '/static/image/banner.png',
             'material': (sp.materials or 'Premium Material').split('\n')[0] if sp.materials else 'Premium Material',
             'price': float(sp.price or 0),
             'originalPrice': float(sp.compare_at_price) if sp.compare_at_price and sp.compare_at_price > sp.price else None,
@@ -116,15 +188,24 @@ def api_products():
     # Convert to public dict format
     items = []
     for p in products:
-        items.append(p.to_public_dict())
+        # Ensure Product.image is normalized for frontend
+        pd = p.to_public_dict()
+        if pd.get('primaryImage'):
+            # if database stored path lacks /static prefix, normalize it
+            if not (str(pd.get('primaryImage')).startswith('/') or str(pd.get('primaryImage')).startswith('http')):
+                pd['primaryImage'] = _normalize_image_path(pd['primaryImage'])
+        if pd.get('secondaryImage'):
+            if not (str(pd.get('secondaryImage')).startswith('/') or str(pd.get('secondaryImage')).startswith('http')):
+                pd['secondaryImage'] = _normalize_image_path(pd['secondaryImage'])
+        items.append(pd)
     
     for sp in seller_products:
         # Convert SellerProduct to public dict format compatible with frontend
         items.append({
             'id': sp.id,
             'name': sp.name,
-            'primaryImage': sp.primary_image or '/static/image/banner.png',
-            'secondaryImage': sp.secondary_image or sp.primary_image or '/static/image/banner.png',
+            'primaryImage': _normalize_image_path(sp.primary_image) or '/static/image/banner.png',
+            'secondaryImage': _normalize_image_path(sp.secondary_image) or _normalize_image_path(sp.primary_image) or '/static/image/banner.png',
             'material': (sp.materials or 'Premium Material').split('\n')[0] if sp.materials else 'Premium Material',
             'price': float(sp.price or 0),
             'originalPrice': float(sp.compare_at_price) if sp.compare_at_price and sp.compare_at_price > sp.price else None,
@@ -147,9 +228,18 @@ def api_product_variant(product_id, variant_id):
             return jsonify({'error': 'Product or variant not found'}), 404
             
         # Find the specific variant
-        if isinstance(sp.variants, list):
+        # Parse variants if it's a string
+        variants_data = sp.variants
+        if isinstance(variants_data, str):
+            import json
+            try:
+                variants_data = json.loads(variants_data)
+            except (json.JSONDecodeError, TypeError):
+                variants_data = []
+        
+        if isinstance(variants_data, list):
             variant = None
-            for v in sp.variants:
+            for v in variants_data:
                 if str(v.get('color', '')) == str(variant_id):
                     variant = v
                     break
@@ -161,8 +251,8 @@ def api_product_variant(product_id, variant_id):
                 'variant': {
                     'color': variant.get('color'),
                     'images': {
-                        'primary': sp.primary_image or '/static/image/banner.png',
-                        'secondary': sp.secondary_image or sp.primary_image or '/static/image/banner.png'
+                        'primary': _normalize_image_path(sp.primary_image) or '/static/image/banner.png',
+                        'secondary': _normalize_image_path(sp.secondary_image) or _normalize_image_path(sp.primary_image) or '/static/image/banner.png'
                     },
                     'stock': {variant.get('size', 'OS'): variant.get('stock', 0)}
                 }
@@ -183,32 +273,54 @@ def api_product(product_id):
             variant_photos = {}
             stock_data = {}
             try:
-                if isinstance(sp.variants, list):
+                # Parse variants if it's a string
+                variants_data = sp.variants
+                if isinstance(variants_data, str):
+                    import json
+                    try:
+                        variants_data = json.loads(variants_data)
+                    except (json.JSONDecodeError, TypeError):
+                        variants_data = []
+                
+                if isinstance(variants_data, list):
                     # Convert list of variants to structured data
-                    for variant in sp.variants:
+                    for variant in variants_data:
                         if isinstance(variant, dict):
                             color = variant.get('color', 'Unknown')
+                            # variant may define a single size/stock or a list of sizeStocks
                             size = variant.get('size', 'OS')
                             stock = variant.get('stock', 0)
+                            size_stocks = variant.get('sizeStocks')
                             color_hex = variant.get('colorHex', '#000000')
                             
                             # Initialize color in stock_data if not exists
                             if color not in stock_data:
                                 stock_data[color] = {}
                             
-                            # Add size stock for this color
-                            stock_data[color][size] = stock
+                            # If variant provides per-size stocks, use those to populate stock_data
+                            if isinstance(size_stocks, list) and size_stocks:
+                                for ss in size_stocks:
+                                    try:
+                                        sname = ss.get('size') if isinstance(ss, dict) else None
+                                        sval = int(ss.get('stock', 0)) if isinstance(ss, dict) else 0
+                                        if sname:
+                                            stock_data[color][sname] = sval
+                                    except Exception:
+                                        continue
+                            else:
+                                # Add single size stock for this color
+                                stock_data[color][size] = stock
                             
                             # Set color hex for styling (store in variant_photos for now)
                             if color not in variant_photos:
                                 variant_photos[color] = {
-                                    'primary': sp.primary_image or '/static/image/banner.png',
-                                    'secondary': sp.secondary_image or sp.primary_image or '/static/image/banner.png',
+                                    'primary': _normalize_image_path(sp.primary_image) or '/static/image/banner.png',
+                                    'secondary': _normalize_image_path(sp.secondary_image) or _normalize_image_path(sp.primary_image) or '/static/image/banner.png',
                                     'color_hex': color_hex
                                 }
-                elif isinstance(sp.variants, dict):
+                elif isinstance(variants_data, dict):
                     # Handle existing dict structure
-                    for k, v in sp.variants.items():
+                    for k, v in variants_data.items():
                         # v might be { 'images': [...], 'stock': { 'XS': 3, ... } }
                         if isinstance(v, dict):
                             if 'images' in v and v['images']:
@@ -224,9 +336,9 @@ def api_product(product_id):
                 variant_photos = {}
                 stock_data = {}
 
-            # fallback to top-level images
-            primary = sp.primary_image or sp.primary_image
-            secondary = sp.secondary_image or sp.primary_image
+            # fallback to top-level images with proper normalization
+            primary = _normalize_image_path(sp.primary_image) or '/static/image/banner.png'
+            secondary = _normalize_image_path(sp.secondary_image) or _normalize_image_path(sp.primary_image) or '/static/image/banner.png'
 
             payload = {
                 'id': sp.id,
@@ -234,15 +346,48 @@ def api_product(product_id):
                 'description': sp.description,
                 'price': float(sp.price or 0),
                 'originalPrice': float(sp.compare_at_price) if sp.compare_at_price and sp.compare_at_price > sp.price else None,
-                'primaryImage': primary or '/static/image/banner.png',
-                'secondaryImage': secondary or primary or '/static/image/banner.png',
+                'primaryImage': primary,
+                'secondaryImage': secondary,
                 'materials': sp.materials,
-                'variants': sp.variants or {},
+                'details_fit': sp.details_fit,
+                'variants': variants_data or {},
                 'variant_photos': variant_photos,
                 'stock_data': stock_data,
                 'type': 'seller'
             }
             return jsonify({'product': payload})
+
+
+
+        @main.route('/api/product/<int:product_id>/report', methods=['POST'])
+        def api_report_product(product_id):
+            """Accept a report/flag for a product and save it to the database.
+
+            Expected JSON: { reason: 'inappropriate'|'spam'|..., details: 'optional details' }
+            """
+            try:
+                data = request.get_json(force=True, silent=True) or request.form or {}
+                reason = (data.get('reason') or request.values.get('reason') or '').strip()
+                details = data.get('details') or request.values.get('details') or ''
+
+                if not reason:
+                    return jsonify({'error': 'Reason is required'}), 400
+
+                reporter_id = None
+                try:
+                    if current_user and getattr(current_user, 'is_authenticated', False):
+                        reporter_id = current_user.id
+                except Exception:
+                    reporter_id = None
+
+                report = ProductReport(product_id=product_id, reporter_id=reporter_id, reason=reason, details=details)
+                db.session.add(report)
+                db.session.commit()
+
+                return jsonify({'success': True, 'report_id': report.id}), 201
+            except Exception as e:
+                db.session.rollback()
+                return jsonify({'error': 'Server error', 'detail': str(e)}), 500
 
         # Try legacy Product model
         p = Product.query.get(product_id)
@@ -251,6 +396,7 @@ def api_product(product_id):
             payload.update({
                 'description': p.description,
                 'materials': p.materials,
+                'details_fit': getattr(p, 'details_fit', None),
                 'variant_photos': {},
                 'stock_data': {},
                 'type': 'legacy'
@@ -347,31 +493,150 @@ def pending():
 
 @main.route('/cart')
 def cart():
-    """Display shopping cart"""
+    """Display shopping cart with items grouped by store"""
+    from flask import session
     nav_items = get_nav_items()
-    cart_items = []  # TODO: Fetch cart items from session/database
+    
+    # Get cart items from session
+    cart_items = session.get('cart_items', [])
+    
+    # Group cart items by store
+    stores_with_items = {}
+    
+    for item in cart_items:
+        try:
+            # Get product and seller information
+            product = SellerProduct.query.get(item.get('product_id'))
+            if product:
+                seller_user = User.query.get(product.seller_id)
+                if seller_user and seller_user.seller_profile:
+                    seller_profile = seller_user.seller_profile[0]
+                    store_id = seller_user.id
+                    store_name = seller_profile.business_name
+                    
+                    # Get variant photo
+                    variant_photo = item.get('image_url', product.primary_image or '/static/image/banner.png')
+                    
+                    # Create enhanced item data
+                    enhanced_item = {
+                        'id': item.get('id', f"{item.get('product_id')}_{item.get('color')}_{item.get('size')}"),
+                        'product_id': item.get('product_id'),
+                        'name': product.name,
+                        'price': float(product.price),
+                        'quantity': item.get('quantity', 1),
+                        'color': item.get('color', 'Default'),
+                        'size': item.get('size', 'One Size'),
+                        'image_url': variant_photo,
+                        'color_hex': item.get('color_hex', '#000000')
+                    }
+                    
+                    # Group by store
+                    if store_id not in stores_with_items:
+                        stores_with_items[store_id] = {
+                            'store_info': {
+                                'id': store_id,
+                                'name': store_name,
+                                'is_verified': seller_profile.is_verified,
+                                'avatar': '/static/image/default-store.png'  # TODO: Add store avatar
+                            },
+                            'items': []
+                        }
+                    
+                    stores_with_items[store_id]['items'].append(enhanced_item)
+        except Exception as e:
+            print(f"Error processing cart item: {e}")
+            continue
     
     # Calculate summary values
     subtotal = 0
-    discount = 0
-    delivery_fee = 0
-    total = 0
+    total_items = 0
     
-    if cart_items:
-        subtotal = sum(float(item.get('price', 0)) * int(item.get('quantity', 1)) for item in cart_items)
-        discount = subtotal * 0.2  # 20% discount
-        delivery_fee = 15
-        total = subtotal - discount + delivery_fee
+    for store_data in stores_with_items.values():
+        for item in store_data['items']:
+            item_total = item['price'] * item['quantity']
+            subtotal += item_total
+            total_items += item['quantity']
+    
+    discount = subtotal * 0.2 if subtotal > 0 else 0  # 20% discount
+    delivery_fee = 15 if subtotal > 0 else 0
+    total = subtotal - discount + delivery_fee if subtotal > 0 else 0
     
     return render_template(
         'main/cart.html',
         nav_items=nav_items,
-        cart_items=cart_items,
+        stores_with_items=stores_with_items,
+        total_items=total_items,
         subtotal=subtotal,
         discount=discount,
         delivery_fee=delivery_fee,
         total=total
     )
+
+@main.route('/add-to-cart', methods=['POST'])
+def add_to_cart():
+    """Add item to cart with variant information"""
+    from flask import session, request, jsonify
+    
+    try:
+        data = request.get_json()
+        
+        # Extract item data
+        product_id = data.get('product_id')
+        color = data.get('color')
+        size = data.get('size')
+        quantity = int(data.get('quantity', 1))
+        color_hex = data.get('color_hex', '#000000')
+        image_url = data.get('image_url')
+        
+        # Validate required fields
+        if not all([product_id, color, size]):
+            return jsonify({'error': 'Missing required fields'}), 400
+        
+        # Get or create cart items in session
+        cart_items = session.get('cart_items', [])
+        
+        # Create unique item ID
+        item_id = f"{product_id}_{color}_{size}"
+        
+        # Check if item already exists in cart
+        existing_item = None
+        for item in cart_items:
+            if (item.get('product_id') == product_id and 
+                item.get('color') == color and 
+                item.get('size') == size):
+                existing_item = item
+                break
+        
+        if existing_item:
+            # Update quantity
+            existing_item['quantity'] += quantity
+        else:
+            # Add new item
+            new_item = {
+                'id': item_id,
+                'product_id': product_id,
+                'color': color,
+                'size': size,
+                'quantity': quantity,
+                'color_hex': color_hex,
+                'image_url': image_url,
+                'added_at': datetime.now().isoformat()
+            }
+            cart_items.append(new_item)
+        
+        # Save to session
+        session['cart_items'] = cart_items
+        session.permanent = True
+        
+        return jsonify({
+            'success': True,
+            'message': 'Item added to cart',
+            'cart_count': sum(item['quantity'] for item in cart_items)
+        })
+        
+    except Exception as e:
+        print(f"Error adding to cart: {e}")
+        return jsonify({'error': 'Failed to add item to cart'}), 500
 
 @main.route('/checkout')
 @login_required
@@ -432,6 +697,65 @@ def payment():
         total=total
     )
 
+@main.route('/my-purchases')
+@login_required
+def my_purchases():
+    """Display user's purchase history and reviews"""
+    nav_items = get_nav_items()
+    
+    # TODO: Fetch actual orders from database
+    # For now, using sample data structure
+    sample_orders = [
+        {
+            'id': 'ORD-2024-001',
+            'date': 'November 20, 2024',
+            'status': 'delivered',
+            'total': 914.00,
+            'items': [
+                {
+                    'id': 1,
+                    'name': 'Premium Cotton T-Shirt',
+                    'variant': 'Color: Navy Blue, Size: M',
+                    'price': 899.00,
+                    'quantity': 1,
+                    'image': '/static/image/banner.png'
+                }
+            ],
+            'reviews': [
+                {
+                    'reviewer': 'Maria S.',
+                    'date': 'November 22, 2024',
+                    'ratings': {'product': 5, 'store': 4, 'delivery': 5},
+                    'content': 'Excellent quality t-shirt! The fabric is soft and comfortable.',
+                    'photos': ['/static/image/banner.png', '/static/image/banner.png']
+                }
+            ]
+        },
+        {
+            'id': 'ORD-2024-002',
+            'date': 'November 25, 2024',
+            'status': 'processing',
+            'total': 1314.00,
+            'items': [
+                {
+                    'id': 2,
+                    'name': 'Casual Denim Jeans',
+                    'variant': 'Color: Dark Blue, Size: 32',
+                    'price': 1299.00,
+                    'quantity': 1,
+                    'image': '/static/image/banner.png'
+                }
+            ],
+            'reviews': []
+        }
+    ]
+    
+    return render_template(
+        'main/my_purchases.html',
+        nav_items=nav_items,
+        orders=sample_orders
+    )
+
 @main.route('/product/<product_id>')
 def product_detail(product_id):
     """Display product detail page"""
@@ -442,6 +766,7 @@ def product_detail(product_id):
     product = {}
     product_price = 0
     selected_quantity = 1
+    seller_info = None
 
     try:
         # Try SellerProduct (more detailed model)
@@ -451,23 +776,90 @@ def product_detail(product_id):
             sp = None
 
         if sp:
+            # Fetch seller information
+            try:
+                seller_user = User.query.get(sp.seller_id)
+                if seller_user and seller_user.seller_profile:
+                    # seller_profile is a list due to backref, get the first one
+                    seller_profiles = seller_user.seller_profile
+                    if seller_profiles:
+                        seller_profile = seller_profiles[0]
+                        
+                        # Calculate seller statistics
+                        from sqlalchemy import func
+                        
+                        # Count products by this seller
+                        products_count = SellerProduct.query.filter_by(
+                            seller_id=seller_user.id, 
+                            status='active'
+                        ).count()
+                        
+                        # Calculate average rating (placeholder - implement when reviews are added)
+                        avg_rating = 4.5  # TODO: Calculate from actual reviews
+                        
+                        # Calculate followers count (placeholder - implement when follow system is added)
+                        followers_count = 1250  # TODO: Get from actual followers table
+                        
+                        # Format joined date
+                        joined_date = seller_user.created_at.strftime('%B %Y') if seller_user.created_at else 'Recently'
+                        
+                        seller_info = {
+                            'id': seller_user.id,
+                            'business_name': seller_profile.business_name,
+                            'business_address': seller_profile.business_address,
+                            'business_city': seller_profile.business_city,
+                            'business_country': seller_profile.business_country,
+                            'store_description': seller_profile.store_description,
+                            'is_verified': seller_profile.is_verified,
+                            'rating': avg_rating,
+                            'products_count': products_count,
+                            'followers_count': followers_count,
+                            'joined_date': joined_date,
+                            'created_at': seller_user.created_at
+                        }
+            except Exception as e:
+                print(f"Error fetching seller info: {e}")
+                seller_info = None
             # Build variant_photos and stock_data from variants JSON
             try:
-                if isinstance(sp.variants, list):
+                # Parse variants if it's a string
+                variants_data = sp.variants
+                if isinstance(variants_data, str):
+                    import json
+                    try:
+                        variants_data = json.loads(variants_data)
+                    except (json.JSONDecodeError, TypeError):
+                        variants_data = []
+                
+                if isinstance(variants_data, list):
                     # Convert list of variants to structured data
-                    for variant in sp.variants:
+                    for variant in variants_data:
                         if isinstance(variant, dict):
                             color = variant.get('color', 'Unknown')
-                            size = variant.get('size', 'OS')
-                            stock = variant.get('stock', 0)
                             color_hex = variant.get('colorHex', '#000000')
+                            
+                            # Generate a default color hex if missing
+                            if not color_hex or color_hex == '#000000':
+                                # Generate a color based on the color name
+                                color_hex = generate_color_from_name(color)
                             
                             # Initialize color in stock_data if not exists
                             if color not in stock_data:
                                 stock_data[color] = {}
                             
-                            # Add size stock for this color
-                            stock_data[color][size] = stock
+                            # Handle both old and new variant structures
+                            if 'sizeStocks' in variant:
+                                # New structure: sizeStocks array
+                                for size_item in variant['sizeStocks']:
+                                    if isinstance(size_item, dict):
+                                        size = size_item.get('size', 'OS')
+                                        stock = size_item.get('stock', 0)
+                                        stock_data[color][size] = stock
+                            else:
+                                # Old structure: single size and stock
+                                size = variant.get('size') or 'One Size'
+                                stock = variant.get('stock', 0)
+                                stock_data[color][size] = stock
                             
                             # Set color hex for styling (store in variant_photos for now)
                             if color not in variant_photos:
@@ -476,9 +868,9 @@ def product_detail(product_id):
                                     'secondary': sp.secondary_image or sp.primary_image or '/static/image/banner.png',
                                     'color_hex': color_hex
                                 }
-                elif isinstance(sp.variants, dict):
+                elif isinstance(variants_data, dict):
                     # Handle existing dict structure
-                    for color_key, v in sp.variants.items():
+                    for color_key, v in variants_data.items():
                         if isinstance(v, dict):
                             imgs = v.get('images') or v.get('photos') or []
                             if imgs:
@@ -499,6 +891,34 @@ def product_detail(product_id):
 
             primary = sp.primary_image or '/static/image/banner.png'
             secondary = sp.secondary_image or primary
+            # Normalize size guides and certifications from attributes if present
+            attrs = sp.attributes or {}
+            raw_size_guides = attrs.get('size_guides') if isinstance(attrs, dict) else None
+            raw_certifications = attrs.get('certifications') if isinstance(attrs, dict) else None
+            def _normalize_list(paths):
+                out = []
+                if not paths:
+                    return out
+                try:
+                    for p in paths:
+                        if not p:
+                            continue
+                        s = str(p)
+                        # Preserve data URIs and absolute URLs as-is
+                        if s.startswith('data:') or s.startswith('http') or s.startswith('/'):
+                            out.append(s)
+                            continue
+                        # Otherwise normalize local relative paths into /static/ URLs
+                        url = _normalize_image_path(s)
+                        if url:
+                            out.append(url)
+                except Exception:
+                    pass
+                return out
+
+            size_guides = _normalize_list(raw_size_guides)
+            certifications = _normalize_list(raw_certifications)
+
             product = {
                 'id': sp.id,
                 'name': sp.name,
@@ -508,7 +928,10 @@ def product_detail(product_id):
                 'primaryImage': primary,
                 'secondaryImage': secondary,
                 'materials': sp.materials,
-                'variants': sp.variants or {},
+                'details_fit': sp.details_fit,
+                'variants': variants_data or {},
+                'size_guides': size_guides,
+                'certifications': certifications,
             }
             product_price = float(sp.price or 0)
 
@@ -524,6 +947,7 @@ def product_detail(product_id):
                 product.update({
                     'description': p.description or '',
                     'materials': p.materials,
+                    'details_fit': getattr(p, 'details_fit', None),
                     'variants': {},
                 })
                 variant_photos = {}
@@ -552,55 +976,121 @@ def product_detail(product_id):
         variant_photos=variant_photos,
         product_price=product_price,
         selected_quantity=selected_quantity,
+        seller_info=seller_info,
     )
 
 
-@main.route('/store/<store_name>')
-def store_page(store_name):
-    """Render a storefront page for the given store name (simple lookup by name).
+@main.route('/store/<int:seller_id>')
+def store_page(seller_id):
+    """Render a storefront page for the given seller ID."""
+    nav_items = get_nav_items()
+    
+    try:
+        # Fetch seller information
+        seller_user = User.query.get(seller_id)
+        if not seller_user or not seller_user.seller_profile:
+            flash('Store not found', 'error')
+            return redirect(url_for('main.index'))
+        
+        seller_profile = seller_user.seller_profile[0]
+        
+        # Calculate seller statistics
+        from sqlalchemy import func
+        
+        # Count products by this seller
+        products_count = SellerProduct.query.filter_by(
+            seller_id=seller_user.id, 
+            status='active'
+        ).count()
+        
+        # Calculate average rating (placeholder)
+        avg_rating = 4.5  # TODO: Calculate from actual reviews
+        
+        # Calculate followers count (placeholder)
+        followers_count = 1250  # TODO: Get from actual followers table
+        
+        # Format joined date
+        joined_date = seller_user.created_at.strftime('%B %Y') if seller_user.created_at else 'Recently'
+        
+        # Format location
+        location_parts = []
+        if seller_profile.business_city:
+            location_parts.append(seller_profile.business_city)
+        if seller_profile.business_country:
+            location_parts.append(seller_profile.business_country)
+        store_location = ', '.join(location_parts) if location_parts else 'Location not specified'
+        
+        def fmt_count(n):
+            try:
+                n = int(n)
+            except Exception:
+                return str(n)
+            if n >= 1_000_000:
+                v = round(n / 1_000_000, 1)
+                return f"{v:g}M"
+            if n >= 1000:
+                v = round(n / 1000, 1)
+                s = f"{v}K"
+                if s.endswith('.0K'):
+                    s = s.replace('.0K', 'K')
+                return s
+            return str(n)
 
-    This is a lightweight route so clicking the store name in product dropdown
-    can display the `main/store_page.html` template. In a full implementation
-    this should lookup a Seller/Store model by id or slug.
-    """
+        products_sold_display = fmt_count(products_count)
+        followers_display = fmt_count(followers_count)
+
+        return render_template(
+            'main/store_page.html',
+            nav_items=nav_items,
+            store_name=seller_profile.business_name,
+            store_location=store_location,
+            products_sold_display=products_sold_display,
+            followers_display=followers_display,
+            products_sold=products_count,
+            followers=followers_count,
+            seller_info={
+                'id': seller_user.id,
+                'business_name': seller_profile.business_name,
+                'store_description': seller_profile.store_description,
+                'is_verified': seller_profile.is_verified,
+                'rating': avg_rating,
+                'products_count': products_count,
+                'followers_count': followers_count,
+                'joined_date': joined_date
+            }
+        )
+        
+    except Exception as e:
+        print(f"Error loading store page: {e}")
+        flash('Error loading store page', 'error')
+        return redirect(url_for('main.index'))
+
+# Keep the old route for backward compatibility
+@main.route('/store/<store_name>')
+def store_page_by_name(store_name):
+    """Legacy route for store pages by name - redirects to seller ID route"""
+    # Try to find seller by business name
+    try:
+        seller_profile = Seller.query.filter_by(business_name=store_name.replace('-', ' ')).first()
+        if seller_profile:
+            return redirect(url_for('main.store_page', seller_id=seller_profile.user_id))
+    except Exception:
+        pass
+    
+    # Fallback to generic store page
     nav_items = get_nav_items()
     display_name = (store_name or 'Store').replace('-', ' ')
-    # For now use a default location; real data should come from the DB
-    store_location = 'Makati City, Metro Manila'
-
-    # Sample stats (replace with DB lookups for real data)
-    products_sold = 1200
-    followers = 8500
-
-    def fmt_count(n):
-        try:
-            n = int(n)
-        except Exception:
-            return str(n)
-        if n >= 1_000_000:
-            v = round(n / 1_000_000, 1)
-            return f"{v:g}M"
-        if n >= 1000:
-            v = round(n / 1000, 1)
-            # remove trailing .0
-            s = f"{v}K"
-            if s.endswith('.0K'):
-                s = s.replace('.0K', 'K')
-            return s
-        return str(n)
-
-    products_sold_display = fmt_count(products_sold)
-    followers_display = fmt_count(followers)
+    store_location = 'Location not specified'
 
     return render_template(
         'main/store_page.html',
         nav_items=nav_items,
         store_name=display_name,
         store_location=store_location,
-        products_sold_display=products_sold_display,
-        followers_display=followers_display,
-        products_sold=products_sold,
-        followers=followers,
+        products_sold_display='0',
+        followers_display='0',
+        products_sold=0,
+        followers=0,
     )
 
 

@@ -4,6 +4,7 @@
     <button class="menu-toggle" id="menuToggle" onclick="toggleSidebar()">
       <i data-lucide="panel-left-close"></i>
     </button>
+
     <div class="search-container-header">
       <i data-lucide="search"></i>
       <!-- Give the header search input a dedicated class and inline reset styles
@@ -29,32 +30,26 @@
   <div class="header-right">
     <div class="notification-bell">
       <i data-lucide="bell"></i>
-      <span class="notification-count">3</span>
+      <span class="notification-count">0</span>
     </div>
-    <div class="user-profile-dropdown">
-      <div class="user-profile-toggle">
+    <div class="seller-profile-compact">
+      <a
+        href="{{ url_for('main.store_page', seller_id=seller.id) if seller and seller.id else url_for('seller.profile') }}"
+        class="seller-profile-link"
+        title="Open store profile"
+        style="color: inherit; text-decoration: none"
+      >
         <div class="user-avatar-container">
           <div class="avatar-icon-circle">
             <i data-lucide="user"></i>
           </div>
-          <span class="active-indicator"></span>
         </div>
-        <span class="user-name"
+        <span class="store-name" style="color: inherit; text-decoration: none"
           >{{ seller.business_name if seller and seller.business_name else
-          current_user.email }}</span
+          (current_user.first_name if (current_user and current_user.first_name)
+          else 'My Store') }}</span
         >
-        <i data-lucide="chevron-down" class="dropdown-arrow"></i>
-      </div>
-      <div class="user-dropdown-menu" aria-hidden="true">
-        <a href="#profile" class="profile-link">
-          <i data-lucide="user"></i>
-          <span>Profile</span>
-        </a>
-        <a href="{{ url_for('auth.logout') }}" class="logout-link">
-          <i data-lucide="log-out"></i>
-          <span>Logout</span>
-        </a>
-      </div>
+      </a>
     </div>
   </div>
 </header>

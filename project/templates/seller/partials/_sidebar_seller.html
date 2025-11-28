@@ -1,12 +1,9 @@
 {# Seller Sidebar Partial #}
 <aside class="sidebar" id="sidebar">
-  <div class="sidebar-header-seller">
-    <div class="logo">
-      <span class="logo-text">
-        <i class="logo-icon" data-lucide="store"></i>
-        <span class="seller">Seller</span>
-        <span class="panel">Panel</span>
-      </span>
+  <div class="sidebar-header">
+    <div class="brand">
+      <i data-lucide="store"></i>
+      <h2>Seller<span>Panel</span></h2>
     </div>
   </div>
 
@@ -60,13 +57,7 @@
       <span>Reviews & Ratings</span>
     </a>
     <a
-      href="{{ url_for('seller.inventory') }}"
-      class="nav-item {{ 'active' if active_page == 'inventory' }}"
-      data-page="inventory"
-    >
-      <i data-lucide="warehouse"></i>
-      <span>Inventory</span>
-    </a>
+      
     <a
       href="{{ url_for('seller.payment_methods') }}"
       class="nav-item {{ 'active' if active_page == 'payment-methods' }}"

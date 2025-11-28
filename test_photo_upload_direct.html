@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Direct Photo Upload Test</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css">
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px; 
+            background: #f9fafb;
+        }
+        
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .photo-upload-box { 
+            width: 60px; 
+            height: 60px; 
+            border: 2px dashed #e5e7eb; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            margin: 10px;
+            background: #f9fafb; 
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        
+        .photo-upload-box:hover { 
+            border-color: #a259f7; 
+            background: #faf5ff; 
+        }
+        
+        .photo-upload-box.grey {
+            border-color: #d1d5db;
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .test-item {
+            text-align: center;
+            padding: 15px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+        }
+        
+        .console-output {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 5px;
+        }
+        
+        .btn-purple {
+            background: #a259f7;
+            color: white;
+        }
+        
+        .btn-purple:hover {
+            background: #9333ea;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-weight: 600;
+        }
+        
+        .status.success {
+            background: #dcfce7;
+            color: #16a34a;
+            border: 1px solid #bbf7d0;
+        }
+        
+        .status.error {
+            background: #fee2e2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Direct Photo Upload Test</h1>
+        <p>This page tests the photo upload functionality with a direct, simple implementation.</p>
+        
+        <div class="status" id="testStatus">
+            Ready to test - Click any photo box below
+        </div>
+        
+        <h3>Test Photo Boxes:</h3>
+        <div class="test-grid">
+            <div class="test-item">
+                <h4>Box 1 (Standard)</h4>
+                <div class="photo-upload-box" title="Upload photo">
+                    <input type="file" accept="image/*" style="display: none" />
+                    <div class="photo-upload-content">
+                        <i class="ri-image-add-line" style="font-size: 1.2rem; color: #a259f7"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="test-item">
+                <h4>Box 2 (Grey)</h4>
+                <div class="photo-upload-box grey" title="Upload photo">
+                    <input type="file" accept="image/*" style="display: none" />
+                    <div class="photo-upload-content">
+                        <i class="ri-image-add-line" style="font-size: 1.2rem; color: #a259f7"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="test-item">
+                <h4>Box 3 (Dynamic)</h4>
+                <div id="dynamicBox">
+                    <!-- Will be created by JavaScript -->
+                </div>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin: 20px 0;">
+            <button class="btn btn-purple" onclick="addDynamicBox()">Add Dynamic Photo Box</button>
+            <button class="btn btn-purple" onclick="testAllBoxes()">Test All Boxes</button>
+            <button class="btn btn-purple" onclick="clearConsole()">Clear Console</button>
+        </div>
+        
+        <div class="console-output" id="consoleOutput">
+            <div>Console output will appear here...</div>
+        </div>
+    </div>
+
+    <script>
+        // Capture console output
+        const originalLog = console.log;
+        const originalError = console.error;
+        const consoleDiv = document.getElementById('consoleOutput');
+        const statusDiv = document.getElementById('testStatus');
+        
+        function addToConsole(message, type = 'log') {
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'error' ? '#ef4444' : '#10b981';
+            consoleDiv.innerHTML += `<div style="color: ${color}">[${timestamp}] ${message}</div>`;
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        }
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            const message = args.map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+            ).join(' ');
+            addToConsole(message, 'log');
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            const message = args.map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+            ).join(' ');
+            addToConsole(message, 'error');
+        };
+        
+        // Direct photo upload implementation
+        console.log("🔧 Direct photo upload test starting...");
+
+        function setupPhotoBox(photoBox, boxName) {
+            console.log(`Setting up ${boxName}`);
+            
+            let fileInput = photoBox.querySelector('input[type="file"]');
+            if (!fileInput) {
+                fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.accept = 'image/*';
+                fileInput.style.display = 'none';
+                photoBox.appendChild(fileInput);
+                console.log(`Created file input for ${boxName}`);
+            }
+            
+            // Click handler
+            photoBox.addEventListener('click', function(e) {
+                console.log(`${boxName} clicked!`);
+                statusDiv.textContent = `${boxName} clicked - opening file dialog...`;
+                statusDiv.className = 'status';
+                
+                // Don't trigger if clicking on image or remove button
+                if (e.target.tagName === 'IMG' || 
+                    e.target.classList.contains('remove-photo') ||
+                    e.target.closest('.remove-photo')) {
+                    console.log('Clicked on image or remove button, ignoring');
+                    return;
+                }
+                
+                e.preventDefault();
+                e.stopPropagation();
+                
+                console.log('Triggering file input click');
+                fileInput.click();
+            });
+            
+            // File change handler
+            fileInput.addEventListener('change', function(e) {
+                const file = this.files[0];
+                console.log(`File selected for ${boxName}:`, file ? file.name : 'none');
+                
+                if (!file) {
+                    statusDiv.textContent = 'No file selected';
+                    statusDiv.className = 'status error';
+                    return;
+                }
+                
+                // Validate file
+                if (!file.type.startsWith('image/')) {
+                    alert('Please select an image file');
+                    this.value = '';
+                    statusDiv.textContent = 'Invalid file type - please select an image';
+                    statusDiv.className = 'status error';
+                    return;
+                }
+                
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('File too large. Maximum 5MB allowed.');
+                    this.value = '';
+                    statusDiv.textContent = 'File too large - maximum 5MB allowed';
+                    statusDiv.className = 'status error';
+                    return;
+                }
+                
+                statusDiv.textContent = `Processing ${file.name}...`;
+                statusDiv.className = 'status';
+                
+                // Create preview
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    console.log(`Creating preview for ${boxName}`);
+                    
+                    // Clear existing content
+                    const existingImg = photoBox.querySelector('img.upload-thumb');
+                    const existingBtn = photoBox.querySelector('.remove-photo');
+                    if (existingImg) existingImg.remove();
+                    if (existingBtn) existingBtn.remove();
+                    
+                    // Create image
+                    const img = document.createElement('img');
+                    img.className = 'upload-thumb';
+                    img.src = event.target.result;
+                    img.style.cssText = `
+                        width: 100%;
+                        height: 100%;
+                        object-fit: cover;
+                        border-radius: 6px;
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                    `;
+                    
+                    // Create remove button
+                    const removeBtn = document.createElement('button');
+                    removeBtn.type = 'button';
+                    removeBtn.className = 'remove-photo';
+                    removeBtn.innerHTML = '×';
+                    removeBtn.style.cssText = `
+                        position: absolute;
+                        top: -2px;
+                        right: -2px;
+                        width: 18px;
+                        height: 18px;
+                        background: rgba(239, 68, 68, 0.9);
+                        color: white;
+                        border: none;
+                        border-radius: 50%;
+                        cursor: pointer;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 12px;
+                        z-index: 10;
+                    `;
+                    
+                    removeBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log(`Removing photo from ${boxName}`);
+                        
+                        fileInput.value = '';
+                        img.remove();
+                        removeBtn.remove();
+                        
+                        const placeholder = photoBox.querySelector('.photo-upload-content');
+                        if (placeholder) placeholder.style.display = '';
+                        photoBox.style.position = '';
+                        
+                        statusDiv.textContent = `Photo removed from ${boxName}`;
+                        statusDiv.className = 'status';
+                    });
+                    
+                    // Hide placeholder and show image
+                    const placeholder = photoBox.querySelector('.photo-upload-content');
+                    if (placeholder) placeholder.style.display = 'none';
+                    
+                    photoBox.style.position = 'relative';
+                    photoBox.appendChild(img);
+                    photoBox.appendChild(removeBtn);
+                    
+                    console.log(`Photo preview created for ${boxName}`);
+                    statusDiv.textContent = `✅ Photo uploaded successfully to ${boxName}`;
+                    statusDiv.className = 'status success';
+                };
+                
+                reader.onerror = function() {
+                    console.error('Error reading file');
+                    statusDiv.textContent = 'Error reading the selected file';
+                    statusDiv.className = 'status error';
+                };
+                
+                reader.readAsDataURL(file);
+            });
+            
+            console.log(`${boxName} setup complete`);
+        }
+        
+        function initializePhotoBoxes() {
+            console.log("Initializing photo boxes...");
+            
+            const photoBoxes = document.querySelectorAll('.photo-upload-box');
+            console.log(`Found ${photoBoxes.length} photo boxes`);
+            
+            photoBoxes.forEach((box, index) => {
+                const boxName = `Box ${index + 1}`;
+                setupPhotoBox(box, boxName);
+            });
+            
+            console.log("All photo boxes initialized");
+        }
+        
+        function addDynamicBox() {
+            console.log("Adding dynamic photo box...");
+            
+            const container = document.getElementById('dynamicBox');
+            container.innerHTML = `
+                <div class="photo-upload-box" title="Dynamic photo box">
+                    <input type="file" accept="image/*" style="display: none" />
+                    <div class="photo-upload-content">
+                        <i class="ri-image-add-line" style="font-size: 1.2rem; color: #a259f7"></i>
+                    </div>
+                </div>
+            `;
+            
+            const newBox = container.querySelector('.photo-upload-box');
+            setupPhotoBox(newBox, 'Dynamic Box');
+            
+            statusDiv.textContent = 'Dynamic photo box added and configured';
+            statusDiv.className = 'status success';
+        }
+        
+        function testAllBoxes() {
+            console.log("Testing all photo boxes...");
+            
+            const boxes = document.querySelectorAll('.photo-upload-box');
+            let workingBoxes = 0;
+            
+            boxes.forEach((box, index) => {
+                const input = box.querySelector('input[type="file"]');
+                const hasClickHandler = box.onclick !== null || box.addEventListener;
+                
+                if (input && hasClickHandler) {
+                    workingBoxes++;
+                    console.log(`Box ${index + 1}: ✅ Working`);
+                } else {
+                    console.log(`Box ${index + 1}: ❌ Not working - missing ${!input ? 'input' : 'click handler'}`);
+                }
+            });
+            
+            statusDiv.textContent = `Test complete: ${workingBoxes}/${boxes.length} boxes working`;
+            statusDiv.className = workingBoxes === boxes.length ? 'status success' : 'status error';
+        }
+        
+        function clearConsole() {
+            consoleDiv.innerHTML = '<div>Console cleared...</div>';
+        }
+        
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializePhotoBoxes);
+        } else {
+            initializePhotoBoxes();
+        }
+        
+        console.log("✅ Direct photo upload test loaded");
+    </script>
+</body>
+</html>

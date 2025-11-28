@@ -227,10 +227,31 @@ select.form-control {
   padding-right: 36px;
 }
 
-/* Make sure cards have proper spacing for forms */
+/* Make sure cards have proper spacing for forms - Glassmorphism Enhanced */
 .card-body {
-  padding: 20px;
+  padding: 24px;
   overflow: hidden;
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.6) 0%, 
+    rgba(255, 255, 255, 0.4) 100%
+  );
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  position: relative;
+}
+
+.card-body::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, 
+    rgba(108, 92, 231, 0.01) 0%, 
+    rgba(168, 85, 247, 0.005) 100%
+  );
+  pointer-events: none;
 }
 
 /* Fix notification items */

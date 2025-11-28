@@ -8,6 +8,19 @@ from flask import current_app
 import jwt
 from time import time
 
+def _normalize_image_path(path):
+    """Normalize stored image path into a usable URL for the frontend.
+
+    If `path` is an absolute URL or already starts with `/`, return as-is.
+    Otherwise prefix with `/static/` so static files under `static/` are reachable.
+    """
+    if not path:
+        return None
+    s = str(path)
+    if s.startswith('/') or s.startswith('http'):
+        return s
+    return '/static/' + s.lstrip('/')
+
 class User(UserMixin, db.Model):
   id = db.Column(db.Integer, primary_key=True)
   email = db.Column(db.String(100), unique=True, nullable=False)  # Primary identifier for login
@@ -229,8 +242,8 @@ class Product(db.Model):
     return {
       'id': self.id,
       'name': self.name,
-      'primaryImage': self.image or '/static/image/banner.png',
-      'secondaryImage': self.secondary_image or self.image or '/static/image/banner.png',
+      'primaryImage': _normalize_image_path(self.image) or '/static/image/banner.png',
+      'secondaryImage': _normalize_image_path(self.secondary_image) or _normalize_image_path(self.image) or '/static/image/banner.png',
       'material': (self.materials or 'Premium Fabric').split('\n')[0],
       'price': price,
       'originalPrice': compare_price if compare_price > price else None,
@@ -275,15 +288,22 @@ class SellerProduct(db.Model):
   # Inventory
   total_stock = db.Column(db.Integer, default=0)
   low_stock_threshold = db.Column(db.Integer, default=5)
+  base_sku = db.Column(db.String(255))
 
   # JSON fields for complex data
   variants = db.Column(db.JSON)
   attributes = db.Column(db.JSON)
+  draft_data = db.Column(db.JSON)
 
   # Status & Timestamps
-  status = db.Column(db.String(20), default='active')
+  status = db.Column(db.String(20), default='draft')
+  is_draft = db.Column(db.Boolean, default=True)
   created_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
   updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+  # Relationships
+  product_variants = db.relationship('ProductVariant', backref='product', cascade='all, delete-orphan')
+  product_description = db.relationship('ProductDescription', backref='product', uselist=False, cascade='all, delete-orphan')
 
   def __repr__(self):
     return f'<SellerProduct {self.name}>'
@@ -298,11 +318,28 @@ class SellerProduct(db.Model):
       'price': float(self.price) if self.price else 0,
       'total_stock': self.total_stock,
       'primary_image': (self.primary_image if (self.primary_image and (str(self.primary_image).startswith('/') or str(self.primary_image).startswith('http'))) else (('/static/' + str(self.primary_image).lstrip('/')) if self.primary_image else None)),
+      'secondary_image': (self.secondary_image if (self.secondary_image and (str(self.secondary_image).startswith('/') or str(self.secondary_image).startswith('http'))) else (('/static/' + str(self.secondary_image).lstrip('/')) if self.secondary_image else None)),
       'status': self.status,
+      'is_draft': self.is_draft,
+      'base_sku': self.base_sku,
       'variants': self.variants if self.variants is not None else [],
       'attributes': self.attributes if self.attributes is not None else {},
+      'description': self.description,
+      'materials': self.materials,
+      'details_fit': self.details_fit,
+      'discount_type': self.discount_type,
+      'discount_value': float(self.discount_value) if self.discount_value else None,
+      'voucher_type': self.voucher_type,
+      'compare_at_price': float(self.compare_at_price) if self.compare_at_price else None,
+      'low_stock_threshold': self.low_stock_threshold,
       'created_at': self.created_at.isoformat() if self.created_at else None,
     }
+
+  def commit_draft(self):
+    """Convert draft product to active product"""
+    self.is_draft = False
+    self.status = 'active'
+    return self
 
 
 class Warning(db.Model):
@@ -342,5 +379,75 @@ class ChatMessage(db.Model):
 
   def __repr__(self):
     return f'<ChatMessage {self.id} user={self.user_id} admin={self.admin_id}>'
+
+
+class ProductVariant(db.Model):
+  """Product variants with multiple sizes support"""
+  __tablename__ = 'product_variants'
+  
+  id = db.Column(db.Integer, primary_key=True)
+  product_id = db.Column(db.Integer, db.ForeignKey('seller_product_management.id'), nullable=False)
+  variant_name = db.Column(db.String(255), nullable=False)  # e.g., "Black", "Red"
+  variant_sku = db.Column(db.String(255))
+  images_json = db.Column(db.JSON)
+  created_at = db.Column(db.DateTime, default=datetime.utcnow)
+  updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+  
+  # Relationship to sizes
+  sizes = db.relationship('VariantSize', backref='variant', cascade='all, delete-orphan')
+  
+  def __repr__(self):
+    return f'<ProductVariant {self.variant_name}>'
+
+
+class VariantSize(db.Model):
+  """Individual size entries for each variant"""
+  __tablename__ = 'variant_sizes'
+  
+  id = db.Column(db.Integer, primary_key=True)
+  variant_id = db.Column(db.Integer, db.ForeignKey('product_variants.id'), nullable=False)
+  size_label = db.Column(db.String(50), nullable=False)  # e.g., "S", "M", "L"
+  stock_quantity = db.Column(db.Integer, default=0)
+  sku = db.Column(db.String(255))  # Optional individual SKU
+  created_at = db.Column(db.DateTime, default=datetime.utcnow)
+  updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+  
+  def __repr__(self):
+    return f'<VariantSize {self.size_label}: {self.stock_quantity}>'
+
+
+class ProductDescription(db.Model):
+  """Extended product description and metadata"""
+  __tablename__ = 'product_descriptions'
+  
+  id = db.Column(db.Integer, primary_key=True)
+  product_id = db.Column(db.Integer, db.ForeignKey('seller_product_management.id'), nullable=False)
+  description_text = db.Column(db.Text)
+  materials = db.Column(db.Text)
+  care_instructions = db.Column(db.Text)
+  details_fit = db.Column(db.Text)
+  meta_json = db.Column(db.JSON)  # For certifications, size guides, etc.
+  created_at = db.Column(db.DateTime, default=datetime.utcnow)
+  updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+  
+  def __repr__(self):
+    return f'<ProductDescription {self.product_id}>'
+
+
+class ProductReport(db.Model):
+  """Product reports/flags submitted by users or anonymous visitors."""
+  __tablename__ = 'product_reports'
+  id = db.Column(db.Integer, primary_key=True)
+  product_id = db.Column(db.Integer, nullable=False, index=True)
+  reporter_id = db.Column(db.Integer, db.ForeignKey(User.id), nullable=True)
+  reason = db.Column(db.String(100), nullable=False)
+  details = db.Column(db.Text)
+  resolved = db.Column(db.Boolean, default=False)
+  created_at = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
+
+  reporter = db.relationship('User', foreign_keys=[reporter_id])
+
+  def __repr__(self):
+    return f'<ProductReport {self.id} product={self.product_id} reason={self.reason}>'
 
 

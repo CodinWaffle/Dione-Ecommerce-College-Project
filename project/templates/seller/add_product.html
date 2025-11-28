@@ -50,77 +50,29 @@ block title %}Add New Product{% endblock %} {% block extra_css %}
 
             <!-- Product Media -->
             <div class="form-group full-width">
-              <label
-                >Product Photos (Other photos can be added on the Variation
-                Section)</label
-              >
+              <label>Product Photos</label>
+              <p class="form-help-text">Upload main and secondary photos for your product. Additional photos can be added in the variation section.</p>
+              
+              <!-- Hidden inputs for form submission -->
               <input type="hidden" name="primaryImage" id="primaryImageField" />
-              <input
-                type="hidden"
-                name="secondaryImage"
-                id="secondaryImageField"
-              />
-              <div class="photo-upload-container">
-                <div
-                  class="photo-upload-box"
-                  data-index="0"
-                  title="Click to upload main product photo"
-                >
-                  <input
-                    type="file"
-                    class="photo-input"
-                    accept="image/*"
-                    id="photoInput0"
-                  />
-                  <label class="photo-label" for="photoInput0">
-                    <i class="ri-image-add-line"></i>
+              <input type="hidden" name="secondaryImage" id="secondaryImageField" />
+              
+              <div class="product-photo-container">
+                <div class="product-photo-upload" data-photo-type="primary">
+                  <input type="file" accept="image/*" class="photo-input" style="display: none;">
+                  <div class="photo-placeholder">
+                    <i class="ri-camera-line"></i>
                     <span>Main Photo</span>
                     <small>Click to upload</small>
-                  </label>
-                  <div class="photo-preview">
-                    <img src="#" alt="Preview" title="Click to change photo" />
-                    <div class="photo-overlay">
-                      <i class="ri-camera-line"></i>
-                      <span>Change Photo</span>
-                    </div>
-                    <button
-                      type="button"
-                      class="remove-photo"
-                      title="Remove photo"
-                    >
-                      <i class="ri-close-line"></i>
-                    </button>
                   </div>
                 </div>
-                <div
-                  class="photo-upload-box"
-                  data-index="1"
-                  title="Click to upload secondary product photo"
-                >
-                  <input
-                    type="file"
-                    class="photo-input"
-                    accept="image/*"
-                    id="photoInput1"
-                  />
-                  <label class="photo-label" for="photoInput1">
-                    <i class="ri-image-add-line"></i>
+                
+                <div class="product-photo-upload" data-photo-type="secondary">
+                  <input type="file" accept="image/*" class="photo-input" style="display: none;">
+                  <div class="photo-placeholder">
+                    <i class="ri-image-line"></i>
                     <span>Secondary Photo</span>
                     <small>Click to upload</small>
-                  </label>
-                  <div class="photo-preview">
-                    <img src="#" alt="Preview" title="Click to change photo" />
-                    <div class="photo-overlay">
-                      <i class="ri-camera-line"></i>
-                      <span>Change Photo</span>
-                    </div>
-                    <button
-                      type="button"
-                      class="remove-photo"
-                      title="Remove photo"
-                    >
-                      <i class="ri-close-line"></i>
-                    </button>
                   </div>
                 </div>
               </div>
@@ -921,4 +873,504 @@ block title %}Add New Product{% endblock %} {% block extra_css %}
 {% endblock %} {% block extra_js %}
 <script src="{{ url_for('static', filename='js/seller_scripts/add_product_flow.js') }}"></script>
 <script src="{{ url_for('static', filename='js/seller_scripts/add_product.js') }}"></script>
+
+<!-- Product Photo Upload System -->
+<style>
+/* Product Photo Upload Styling */
+.product-photo-container {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  margin-top: 10px;
+}
+
+.product-photo-upload {
+  width: 120px;
+  height: 120px;
+  border: 2px dashed #d1d5db;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.product-photo-upload:hover {
+  border-color: #a259f7;
+  background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(162, 89, 247, 0.15);
+}
+
+.product-photo-upload:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 12px rgba(162, 89, 247, 0.2);
+}
+
+.photo-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 500;
+  gap: 6px;
+  padding: 8px;
+}
+
+.photo-placeholder i {
+  font-size: 28px;
+  color: #a259f7;
+  margin-bottom: 4px;
+}
+
+.photo-placeholder span {
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.photo-placeholder small {
+  font-size: 10px;
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+.photo-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 10px;
+  transition: transform 0.2s ease;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+
+.product-photo-upload:hover .photo-preview {
+  transform: scale(1.02);
+}
+
+/* Ensure upload area can contain positioned elements */
+.product-photo-upload {
+  position: relative;
+}
+
+.photo-remove {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 24px;
+  height: 24px;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  border: 2px solid white;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  z-index: 10;
+  opacity: 0;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+.product-photo-upload:hover .photo-remove {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.photo-remove:hover {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+.photo-remove:active {
+  transform: scale(0.95);
+}
+
+/* Loading state styling */
+.photo-loading {
+  border-color: #a259f7;
+  background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
+}
+
+.photo-loading .photo-placeholder i {
+  animation: photoSpin 1s linear infinite;
+  color: #a259f7;
+}
+
+@keyframes photoSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Success state styling */
+.photo-success {
+  border: 2px solid #10b981;
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.15);
+}
+
+/* Error state styling */
+.photo-error {
+  border: 2px solid #ef4444;
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  animation: photoShake 0.5s ease-in-out;
+}
+
+@keyframes photoShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  75% { transform: translateX(3px); }
+}
+
+.form-help-text {
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+</style>
+
+<script>
+console.log("🆕 Product Photo Upload System Loading...");
+
+class ProductPhotoUpload {
+  constructor() {
+    this.init();
+  }
+
+  init() {
+    console.log("Initializing product photo upload system...");
+    this.setupPhotoUploads();
+  }
+
+  setupPhotoUploads() {
+    const uploads = document.querySelectorAll('.product-photo-upload');
+    console.log(`Found ${uploads.length} product photo upload areas`);
+    
+    uploads.forEach((upload) => {
+      this.setupPhotoUpload(upload);
+    });
+  }
+
+  setupPhotoUpload(uploadArea) {
+    const photoType = uploadArea.dataset.photoType;
+    console.log(`Setting up photo upload for ${photoType} photo`);
+    
+    const input = uploadArea.querySelector('.photo-input');
+    const placeholder = uploadArea.querySelector('.photo-placeholder');
+    
+    if (!input || !placeholder) {
+      console.error(`Missing elements for ${photoType} photo`);
+      return;
+    }
+
+    // Click handler for upload area
+    uploadArea.addEventListener('click', (e) => {
+      // Don't trigger if clicking on remove button
+      if (e.target.classList.contains('photo-remove')) {
+        return;
+      }
+      
+      console.log(`${photoType} photo upload clicked`);
+      input.click();
+    });
+
+    // File input change handler
+    input.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        console.log(`File selected for ${photoType} photo:`, file.name);
+        this.handleFileUpload(file, uploadArea, input, photoType);
+      }
+    });
+  }
+
+  handleFileUpload(file, uploadArea, input, photoType) {
+    // Validate file
+    if (!this.validateFile(file)) {
+      input.value = '';
+      return;
+    }
+
+    // Show loading state
+    this.showLoading(uploadArea);
+
+    // Compress and resize image before processing
+    this.compressImage(file, 800, 800, 0.8).then(compressedDataUrl => {
+      this.displayPhoto(compressedDataUrl, uploadArea, input, photoType);
+    }).catch(error => {
+      console.error(`Error processing file for ${photoType} photo:`, error);
+      alert('Error processing the selected file. Please try again.');
+      this.showErrorState(uploadArea);
+      input.value = '';
+      
+      // Reset to normal state after 3 seconds
+      setTimeout(() => {
+        this.hideLoading(uploadArea);
+      }, 3000);
+    });
+  }
+
+  compressImage(file, maxWidth, maxHeight, quality) {
+    return new Promise((resolve, reject) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      
+      img.onload = () => {
+        // Calculate new dimensions
+        let { width, height } = img;
+        
+        if (width > height) {
+          if (width > maxWidth) {
+            height = (height * maxWidth) / width;
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width = (width * maxHeight) / height;
+            height = maxHeight;
+          }
+        }
+        
+        // Set canvas dimensions
+        canvas.width = width;
+        canvas.height = height;
+        
+        // Draw and compress
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        // Convert to data URL with compression
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+        
+        console.log(`Image compressed: ${file.size} bytes → ${Math.round(compressedDataUrl.length * 0.75)} bytes`);
+        resolve(compressedDataUrl);
+      };
+      
+      img.onerror = () => reject(new Error('Failed to load image'));
+      
+      // Create object URL for the image
+      img.src = URL.createObjectURL(file);
+    });
+  }
+
+  validateFile(file) {
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file (JPG, PNG, GIF, etc.)');
+      return false;
+    }
+
+    // Check file size (10MB limit for original file, will be compressed)
+    const maxSize = 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+      alert('File is too large. Please select an image smaller than 10MB.');
+      return false;
+    }
+
+    return true;
+  }
+
+  showLoading(uploadArea) {
+    const placeholder = uploadArea.querySelector('.photo-placeholder');
+    if (placeholder) {
+      placeholder.innerHTML = '<i class="ri-loader-4-line"></i><span>Uploading...</span><small>Please wait</small>';
+    }
+    uploadArea.classList.add('photo-loading');
+    uploadArea.classList.remove('photo-success', 'photo-error');
+  }
+
+  hideLoading(uploadArea) {
+    const photoType = uploadArea.dataset.photoType;
+    const placeholder = uploadArea.querySelector('.photo-placeholder');
+    if (placeholder) {
+      const icon = photoType === 'primary' ? 'ri-camera-line' : 'ri-image-line';
+      const label = photoType === 'primary' ? 'Main Photo' : 'Secondary Photo';
+      placeholder.innerHTML = `<i class="${icon}"></i><span>${label}</span><small>Click to upload</small>`;
+    }
+    uploadArea.classList.remove('photo-loading', 'photo-success', 'photo-error');
+  }
+
+  showErrorState(uploadArea) {
+    const placeholder = uploadArea.querySelector('.photo-placeholder');
+    if (placeholder) {
+      placeholder.innerHTML = '<i class="ri-error-warning-line"></i><span>Error</span><small>Try again</small>';
+    }
+    uploadArea.classList.add('photo-error');
+    uploadArea.classList.remove('photo-loading', 'photo-success');
+  }
+
+  displayPhoto(imageSrc, uploadArea, input, photoType) {
+    console.log(`Displaying photo for ${photoType} photo`);
+    
+    // Clear existing content but keep the input
+    uploadArea.innerHTML = '';
+    uploadArea.appendChild(input);
+    
+    // Create image element with proper styling
+    const img = document.createElement('img');
+    img.src = imageSrc;
+    img.className = 'photo-preview';
+    img.alt = `${photoType} photo`;
+    img.style.cssText = `
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 10px;
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1;
+    `;
+    
+    // Create remove button
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'photo-remove';
+    removeBtn.innerHTML = '×';
+    removeBtn.title = 'Remove photo';
+    removeBtn.style.cssText = `
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      width: 24px;
+      height: 24px;
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      color: white;
+      border: 2px solid white;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: bold;
+      z-index: 10;
+      opacity: 0;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+    `;
+    
+    // Remove button click handler
+    removeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.removePhoto(uploadArea, input, photoType);
+    });
+    
+    // Add elements to upload area
+    uploadArea.appendChild(img);
+    uploadArea.appendChild(removeBtn);
+    
+    // Update upload area styling to show image properly
+    uploadArea.style.position = 'relative';
+    uploadArea.style.overflow = 'hidden';
+    
+    // Add success styling
+    uploadArea.classList.add('photo-success');
+    uploadArea.classList.remove('photo-loading', 'photo-error');
+    
+    // Show remove button on hover
+    uploadArea.addEventListener('mouseenter', () => {
+      removeBtn.style.opacity = '1';
+    });
+    
+    uploadArea.addEventListener('mouseleave', () => {
+      removeBtn.style.opacity = '0';
+    });
+    
+    // Store the image data for form submission
+    this.storePhotoData(imageSrc, photoType);
+    
+    console.log(`Photo displayed successfully for ${photoType} photo`);
+  }
+
+  removePhoto(uploadArea, input, photoType) {
+    console.log(`Removing ${photoType} photo`);
+    
+    // Clear file input
+    input.value = '';
+    
+    // Reset upload area
+    uploadArea.innerHTML = '';
+    uploadArea.appendChild(input);
+    
+    // Add placeholder back
+    const placeholder = document.createElement('div');
+    placeholder.className = 'photo-placeholder';
+    const icon = photoType === 'primary' ? 'ri-camera-line' : 'ri-image-line';
+    const label = photoType === 'primary' ? 'Main Photo' : 'Secondary Photo';
+    placeholder.innerHTML = `<i class="${icon}"></i><span>${label}</span><small>Click to upload</small>`;
+    uploadArea.appendChild(placeholder);
+    
+    // Reset styling
+    uploadArea.classList.remove('photo-success', 'photo-loading', 'photo-error');
+    uploadArea.style.position = 'relative';
+    uploadArea.style.overflow = 'hidden';
+    
+    // Remove event listeners
+    uploadArea.onmouseenter = null;
+    uploadArea.onmouseleave = null;
+    
+    // Remove stored photo data
+    this.removePhotoData(photoType);
+    
+    // Re-setup the upload functionality
+    this.setupPhotoUpload(uploadArea);
+    
+    console.log(`${photoType} photo removed successfully`);
+  }
+
+  storePhotoData(imageSrc, photoType) {
+    // Store the base64 data in the appropriate hidden input
+    const fieldId = photoType === 'primary' ? 'primaryImageField' : 'secondaryImageField';
+    const hiddenInput = document.getElementById(fieldId);
+    
+    if (hiddenInput) {
+      hiddenInput.value = imageSrc;
+      console.log(`Photo data stored for ${photoType} photo`);
+    } else {
+      console.error(`Hidden input not found for ${photoType} photo`);
+    }
+  }
+
+  removePhotoData(photoType) {
+    // Clear the hidden input
+    const fieldId = photoType === 'primary' ? 'primaryImageField' : 'secondaryImageField';
+    const hiddenInput = document.getElementById(fieldId);
+    
+    if (hiddenInput) {
+      hiddenInput.value = '';
+      console.log(`Photo data removed for ${photoType} photo`);
+    }
+  }
+}
+
+// Initialize when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    window.productPhotoUpload = new ProductPhotoUpload();
+  });
+} else {
+  window.productPhotoUpload = new ProductPhotoUpload();
+}
+
+console.log("✅ Product Photo Upload System Loaded");
+</script>
 {% endblock %}

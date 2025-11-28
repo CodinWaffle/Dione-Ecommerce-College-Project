@@ -42,10 +42,10 @@ class Validators:
         if len(username) > 30:
             return False, "Username must be at most 30 characters long"
 
-        # Allow alphanumeric, underscore, and hyphen
-        pattern = r'^[a-zA-Z0-9_-]+$'
+        # Allow alphanumeric, underscore, hyphen, and spaces
+        pattern = r'^[a-zA-Z0-9_\- ]+$'
         if not re.match(pattern, username):
-            return False, "Username can only contain letters, numbers, underscores, and hyphens"
+            return False, "Username can only contain letters, numbers, underscores, hyphens, and spaces"
 
         return True, None
 
