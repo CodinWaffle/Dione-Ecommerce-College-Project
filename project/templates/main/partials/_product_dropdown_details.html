@@ -1,62 +1,113 @@
 <div class="product-details-container">
-  <!-- Store Information -->
-  {% if seller_info %}
+  <!-- Store Information - Updated Layout -->
   <section class="store-info">
-    <div class="store-info-section">
-      <div class="store-profile">
+    <div class="store-info-container">
+      <!-- Store Avatar and Name -->
+      <div class="store-profile-section">
         <div class="store-avatar">
+          {% if seller_info.logo_url %}
+          <img
+            src="{{ seller_info.logo_url }}"
+            alt="{{ seller_info.business_name }}"
+            class="store-logo"
+          />
+          {% else %}
           <i class="ri-store-2-line"></i>
+          {% endif %}
         </div>
-        <div class="store-details">
+        <div class="store-basic-info">
           <h3 class="store-name">
-            {{ seller_info.business_name or 'Store Name' }}
+            {% if seller_info and seller_info.business_name %}
+              {{ seller_info.business_name }}
+            {% else %}
+              Store Name Not Available
+            {% endif %}
           </h3>
-          <div class="store-stats">
-            <div class="stat-item">
-              <div class="stars">
-                {% for i in range(5) %} {% if i < (seller_info.rating or
-                4.5)|int %}
-                <i class="ri-star-fill"></i>
-                {% elif i < (seller_info.rating or 4.5) %}
-                <i class="ri-star-half-line"></i>
-                {% else %}
-                <i class="ri-star-line"></i>
-                {% endif %} {% endfor %}
-              </div>
-              <span class="rating-text"
-                >{{ "%.1f"|format(seller_info.rating or 4.5) }}</span
-              >
-            </div>
-            <span class="stat-divider">|</span>
-            <div class="stat-item">
-              <i class="ri-shopping-bag-line"></i>
-              <span>{{ seller_info.products_count or 0 }} Products</span>
-            </div>
-            <span class="stat-divider">|</span>
-            <div class="stat-item">
-              <i class="ri-user-follow-line"></i>
-              <span>{{ seller_info.followers_count or 0 }} Followers</span>
-            </div>
+          <div class="store-status">
+            <span class="status-indicator active"></span>
+            <span class="status-text">
+              Active {% if seller_info and seller_info.last_active %}{{ seller_info.last_active }}{% else %}Recently{% endif %}
+            </span>
           </div>
-          <div class="store-joined">
-            <i class="ri-calendar-line"></i>
-            <span>Joined {{ seller_info.joined_date or 'Recently' }}</span>
+          <div class="store-location">
+            <i class="ri-map-pin-line"></i>
+            <span>
+              {% if seller_info and (seller_info.business_city or seller_info.business_country) %}
+                {% if seller_info.business_city %}{{ seller_info.business_city }}{% endif %}{% if seller_info.business_city and seller_info.business_country %}, {% endif %}{% if seller_info.business_country %}{{ seller_info.business_country }}{% endif %}
+              {% else %}
+                Location Not Available
+              {% endif %}
+            </span>
           </div>
         </div>
       </div>
+
+      <!-- Store Stats Grid -->
+      <div class="store-stats-grid">
+        <div class="stat-row">
+          <div class="stat-group">
+            <div class="stat-label">Ratings</div>
+            <div class="stat-value">
+              {{ (seller_info.rating_count if seller_info else None) or '0' }}
+            </div>
+          </div>
+          <div class="stat-group">
+            <div class="stat-label">Products</div>
+            <div class="stat-value">
+              {{ (seller_info.products_count if seller_info else None) or '0' }}
+            </div>
+          </div>
+          <div class="stat-group">
+            <div class="stat-label">Joined</div>
+            <div class="stat-value">
+              {{ (seller_info.joined_date if seller_info else None) or 'Recently' }}
+            </div>
+          </div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-group">
+            <div class="stat-label">Followers</div>
+            <div class="stat-value">
+              {{ (seller_info.followers_count if seller_info else None) or '0' }}
+            </div>
+          </div>
+          <div class="stat-group rating-group">
+            <div class="stat-label">Average Rating</div>
+            <div class="rating-display">
+              <div class="stars">
+                {% set rating = (seller_info.rating if seller_info else None) or 4.5 %}
+                {% for i in range(5) %}
+                  {% if i < rating|int %}
+                    <i class="ri-star-fill"></i>
+                  {% elif i < rating %}
+                    <i class="ri-star-half-line"></i>
+                  {% else %}
+                    <i class="ri-star-line"></i>
+                  {% endif %}
+                {% endfor %}
+              </div>
+              <span class="rating-value">{{ "%.1f"|format(rating) }}</span>
+            </div>
+          </div>
+          <div class="stat-group">
+            <!-- Empty space for alignment -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Store Actions -->
       <div class="store-actions">
         <button class="btn-chat" onclick="chatWithStore()">
           <i class="ri-message-3-line"></i>
-          Chat
+          <span>Chat Now</span>
         </button>
-        <button class="btn-view-shop" onclick="viewShop({{ seller_info.id }})">
-          <i class="ri-store-line"></i>
-          View Shop
+        <button class="btn-view-shop" onclick="viewShop({{ (seller_info.id if seller_info else None) or 1 }})">
+          <i class="ri-store-3-line"></i>
+          <span>View Shop</span>
         </button>
       </div>
     </div>
   </section>
-  {% endif %}
 
   <!-- Product Information Sections -->
   <section class="product-info-sections">
@@ -94,10 +145,58 @@
           </button>
           <div class="dropdown-content">
             <div class="content-text">
-              {{ product.description if product and product.description else 'A
+              {% if product and product.description %} {{
+              product.description|replace('\n', '<br />')|safe }} {% else %} A
               stylish and comfortable product perfect for everyday wear.
               Features high-quality materials and excellent craftsmanship for
-              lasting durability and comfort.' }}
+              lasting durability and comfort. {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <div class="dropdown-item">
+          <button class="dropdown-header" onclick="toggleDropdown(this)">
+            <div class="dropdown-title">
+              <svg
+                class="dropdown-icon"
+                viewBox="0 0 24 24"
+                width="20"
+                height="20"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <span>Details & Fit</span>
+            </div>
+            <svg
+              class="chevron"
+              viewBox="0 0 24 24"
+              width="20"
+              height="20"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <polyline points="6,9 12,15 18,9"></polyline>
+            </svg>
+          </button>
+          <div class="dropdown-content">
+            <div class="content-text">
+              {% if product and product.details_fit %}
+                {{ product.details_fit|replace('\n', '<br />')|safe }}
+              {% else %}
+                <strong>Fit:</strong> True to size<br />
+                <strong>Model Info:</strong> Model is 5'8" wearing size S<br />
+                <strong>Sizing:</strong><br />
+                • S: Chest 32-34", Waist 26-28"<br />
+                • M: Chest 34-36", Waist 28-30"<br />
+                • L: Chest 36-38", Waist 30-32"<br />
+                • XL: Chest 38-40", Waist 32-34"
+              {% endif %}
             </div>
           </div>
         </div>
@@ -180,37 +279,51 @@
           </button>
           <div class="dropdown-content">
             <div class="content-text">
-              {% if product and product.size_guides and
-              product.size_guides|length > 0 %}
-              <div
-                class="image-grid"
-                style="display: flex; gap: 8px; flex-wrap: wrap"
-              >
-                {% for img in product.size_guides %}
-                <a href="{{ img }}" target="_blank" rel="noopener noreferrer">
-                  <img
-                    src="{{ img }}"
-                    alt="Size guide"
-                    style="
-                      max-width: 120px;
-                      max-height: 120px;
-                      border-radius: 6px;
-                      border: 1px solid #eee;
-                      object-fit: cover;
-                    "
-                  />
-                </a>
-                {% endfor %}
-              </div>
-              {% else %} {% if product and product.details_fit %} {{
-              product.details_fit|replace('\n', '<br />')|safe }} {% else %}
-              <strong>Fit:</strong> True to size<br />
-              <strong>Model Info:</strong> Model is 5'8" wearing size S<br />
-              <strong>Sizing:</strong><br />
-              • S: Chest 32-34", Waist 26-28"<br />
-              • M: Chest 34-36", Waist 28-30"<br />
-              • L: Chest 36-38", Waist 30-32"<br />
-              • XL: Chest 38-40", Waist 32-34" {% endif %} {% endif %}
+              {% if product and product.size_guides and product.size_guides|length > 0 %}
+                <div class="image-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 16px;">
+                  {% for img in product.size_guides %}
+                    <div class="size-guide-item" style="text-align: center;">
+                      <a href="{{ img }}" target="_blank" rel="noopener noreferrer" class="size-guide-link">
+                        <img
+                          src="{{ img }}"
+                          alt="Size Guide {{ loop.index }}"
+                          style="
+                            width: 100%;
+                            max-width: 200px;
+                            height: auto;
+                            border-radius: 8px;
+                            border: 2px solid #e5e7eb;
+                            object-fit: cover;
+                            transition: all 0.3s ease;
+                            cursor: pointer;
+                          "
+                          onmouseover="this.style.borderColor='#8e44ad'; this.style.transform='scale(1.02)'"
+                          onmouseout="this.style.borderColor='#e5e7eb'; this.style.transform='scale(1)'"
+                        />
+                      </a>
+                      <p style="margin: 8px 0 0 0; font-size: 12px; color: #6b7280; font-weight: 500;">
+                        Size Guide {{ loop.index }}
+                      </p>
+                    </div>
+                  {% endfor %}
+                </div>
+                <p style="font-size: 14px; color: #6b7280; text-align: center; margin: 0;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                    <polyline points="15,3 21,3 21,9"></polyline>
+                    <line x1="10" y1="14" x2="21" y2="3"></line>
+                  </svg>
+                  Click images to view full size
+                </p>
+              {% else %}
+                <div style="text-align: center; padding: 20px; color: #6b7280;">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 12px; opacity: 0.5;">
+                    <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                    <path d="M8 8h8M8 12h8M8 16h8"></path>
+                  </svg>
+                  <p style="margin: 0; font-style: italic;">No size guide images available</p>
+                </div>
+              {% endif %}
             </div>
           </div>
         </div>
@@ -247,38 +360,65 @@
           </button>
           <div class="dropdown-content">
             <div class="content-text">
-              {% if product and product.certifications and
-              product.certifications|length > 0 %}
-              <div
-                class="image-grid"
-                style="display: flex; gap: 8px; flex-wrap: wrap"
-              >
-                {% for img in product.certifications %}
-                <a href="{{ img }}" target="_blank" rel="noopener noreferrer">
-                  <img
-                    src="{{ img }}"
-                    alt="Certificate"
-                    style="
-                      max-width: 140px;
-                      max-height: 140px;
-                      border-radius: 6px;
-                      border: 1px solid #eee;
-                      object-fit: cover;
-                    "
-                  />
-                </a>
-                {% endfor %}
-              </div>
+              {% if product and product.certifications and product.certifications|length > 0 %}
+                <div class="image-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 16px;">
+                  {% for img in product.certifications %}
+                    <div class="certificate-item" style="text-align: center;">
+                      <a href="{{ img }}" target="_blank" rel="noopener noreferrer" class="certificate-link">
+                        <img
+                          src="{{ img }}"
+                          alt="Certificate {{ loop.index }}"
+                          style="
+                            width: 100%;
+                            max-width: 180px;
+                            height: auto;
+                            border-radius: 8px;
+                            border: 2px solid #e5e7eb;
+                            object-fit: cover;
+                            transition: all 0.3s ease;
+                            cursor: pointer;
+                            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                          "
+                          onmouseover="this.style.borderColor='#10b981'; this.style.transform='scale(1.02)'; this.style.boxShadow='0 4px 16px rgba(16,185,129,0.2)'"
+                          onmouseout="this.style.borderColor='#e5e7eb'; this.style.transform='scale(1)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)'"
+                        />
+                      </a>
+                      <p style="margin: 8px 0 0 0; font-size: 12px; color: #6b7280; font-weight: 500;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                          <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Certificate {{ loop.index }}
+                      </p>
+                    </div>
+                  {% endfor %}
+                </div>
+                <p style="font-size: 14px; color: #6b7280; text-align: center; margin: 0;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                    <polyline points="15,3 21,3 21,9"></polyline>
+                    <line x1="10" y1="14" x2="21" y2="3"></line>
+                  </svg>
+                  Click certificates to view full size
+                </p>
               {% else %}
-              <strong>Shipping:</strong><br />
-              • Free shipping on orders over ₱2,000<br />
-              • Standard delivery: 3-7 business days<br />
-              • Express delivery: 1-3 business days (additional fee)<br /><br />
-              <strong>Returns:</strong><br />
-              • 30-day return policy<br />
-              • Items must be unworn with tags attached<br />
-              • Free returns for defective items<br />
-              • Return shipping fee applies for size exchanges {% endif %}
+                <div style="text-align: center; padding: 20px; color: #6b7280;">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 12px; opacity: 0.5;">
+                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  <p style="margin: 0 0 16px 0; font-style: italic;">No certificates available</p>
+                  <div style="text-align: left; max-width: 400px; margin: 0 auto;">
+                    <strong>Shipping:</strong><br />
+                    • Free shipping on orders over ₱2,000<br />
+                    • Standard delivery: 3-7 business days<br />
+                    • Express delivery: 1-3 business days (additional fee)<br /><br />
+                    <strong>Returns:</strong><br />
+                    • 30-day return policy<br />
+                    • Items must be unworn with tags attached<br />
+                    • Free returns for defective items<br />
+                    • Return shipping fee applies for size exchanges
+                  </div>
+                </div>
+              {% endif %}
             </div>
           </div>
         </div>

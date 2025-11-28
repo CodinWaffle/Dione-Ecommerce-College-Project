@@ -156,49 +156,65 @@ function updateStockDisplay() {
   const activeSizeBtn = document.querySelector(".size-option.active");
 
   let stock = 0;
-  let selectedColor = activeColorBtn?.dataset?.color || window.selectedColor || currentSelectedColor;
-  let selectedSize = activeSizeBtn?.dataset?.size || window.selectedSize || currentSelectedSize;
+  let selectedColor =
+    activeColorBtn?.dataset?.color ||
+    window.selectedColor ||
+    currentSelectedColor;
+  let selectedSize =
+    activeSizeBtn?.dataset?.size || window.selectedSize || currentSelectedSize;
 
-  console.log('updateStockDisplay called - selectedColor:', selectedColor, 'selectedSize:', selectedSize);
+  console.log(
+    "updateStockDisplay called - selectedColor:",
+    selectedColor,
+    "selectedSize:",
+    selectedSize
+  );
 
   try {
     // Priority 1: Get stock from the specific color+size combination
     if (selectedColor && selectedSize) {
       // First try to get from global stock data
       const stockData = window._pageStockData || window.stockData || {};
-      if (stockData[selectedColor] && stockData[selectedColor][selectedSize] !== undefined) {
+      if (
+        stockData[selectedColor] &&
+        stockData[selectedColor][selectedSize] !== undefined
+      ) {
         stock = parseInt(stockData[selectedColor][selectedSize]) || 0;
-        console.log('Stock from global stockData for', selectedColor, selectedSize, ':', stock);
+        console.log(
+          "Stock from global stockData for",
+          selectedColor,
+          selectedSize,
+          ":",
+          stock
+        );
       }
       // Fallback: try to get from active size button's data-stock attribute
       else if (activeSizeBtn && activeSizeBtn.dataset.stock !== undefined) {
         stock = parseInt(activeSizeBtn.dataset.stock) || 0;
-        console.log('Stock from size button data-stock:', stock);
+        console.log("Stock from size button data-stock:", stock);
       }
       // Fallback: try to get from color button's stock data
       else if (activeColorBtn && activeColorBtn.dataset.stock) {
         try {
           const colorStock = JSON.parse(activeColorBtn.dataset.stock);
           stock = parseInt(colorStock[selectedSize]) || 0;
-          console.log('Stock from color button stock data:', stock);
+          console.log("Stock from color button stock data:", stock);
         } catch (e) {
-          console.warn('Error parsing color stock data:', e);
+          console.warn("Error parsing color stock data:", e);
         }
       }
     }
     // Priority 2: If only size is selected (no color variants)
     else if (selectedSize && activeSizeBtn) {
       stock = parseInt(activeSizeBtn.dataset.stock) || 0;
-      console.log('Stock from size only:', stock);
+      console.log("Stock from size only:", stock);
     }
     // Priority 3: If only color is selected (show message to select size)
     else if (selectedColor && !selectedSize) {
-      const stockData = window._pageStockData || window.stockData || {};
-      if (stockData[selectedColor]) {
-        // Don't show total stock, instead show 0 to encourage size selection
-        stock = 0;
-        console.log('Color selected but no size - showing 0 to encourage size selection');
-      }
+      stock = 0;
+      console.log(
+        "Color selected but no size - showing 0 to encourage size selection"
+      );
     }
     // Priority 4: No specific selection - show 0 or total if no variants
     else {
@@ -207,19 +223,25 @@ function updateStockDisplay() {
         // No variants - show total product stock
         const productData = window._pageProductData || {};
         stock = productData.total_stock || 0;
-        console.log('No variants - showing total stock:', stock);
+        console.log("No variants - showing total stock:", stock);
       } else {
         // Has variants but none selected - show 0
         stock = 0;
-        console.log('Has variants but none selected - showing 0');
+        console.log("Has variants but none selected - showing 0");
       }
     }
   } catch (error) {
-    console.error('Error calculating stock:', error);
+    console.error("Error calculating stock:", error);
     stock = 0;
   }
 
-  console.log('Final calculated stock for', selectedColor, selectedSize, ':', stock);
+  console.log(
+    "Final calculated stock for",
+    selectedColor,
+    selectedSize,
+    ":",
+    stock
+  );
 
   // Update stock indicator display
   if (stockIndicator) {
@@ -239,9 +261,16 @@ function updateStockDisplay() {
   // Update add to bag button state
   const addToBagBtn = document.querySelector(".add-to-bag-btn");
   if (addToBagBtn) {
-    if (stock === 0 || (!selectedColor && Object.keys(window._pageStockData || {}).length > 0) || (!selectedSize && selectedColor)) {
+    if (
+      stock === 0 ||
+      (!selectedColor && Object.keys(window._pageStockData || {}).length > 0) ||
+      (!selectedSize && selectedColor)
+    ) {
       addToBagBtn.disabled = true;
-      if (!selectedColor && Object.keys(window._pageStockData || {}).length > 0) {
+      if (
+        !selectedColor &&
+        Object.keys(window._pageStockData || {}).length > 0
+      ) {
         addToBagBtn.textContent = "SELECT COLOR";
       } else if (!selectedSize && selectedColor) {
         addToBagBtn.textContent = "SELECT SIZE";
@@ -266,7 +295,7 @@ function updateStockDisplay() {
   }
 
   // Update quantity input max value
-  const quantityInput = document.getElementById('quantityInput');
+  const quantityInput = document.getElementById("quantityInput");
   if (quantityInput) {
     quantityInput.max = Math.max(1, stock);
     const currentQty = parseInt(quantityInput.value) || 1;
@@ -303,10 +332,8 @@ function updateSizeAvailability() {
       }
 
       const sizeBtn = document.createElement("button");
-      // Use CSS classes for styling
-      sizeBtn.className = `size-option ${
-        index === 0 && isAvailable ? "active" : ""
-      } ${!isAvailable ? "out-of-stock" : ""}`;
+      // Don't auto-select any size - let user choose
+      sizeBtn.className = `size-option ${!isAvailable ? "out-of-stock" : ""}`;
       sizeBtn.setAttribute("data-size", size);
       sizeBtn.setAttribute("data-stock", stock);
       sizeBtn.textContent = size;
@@ -323,10 +350,12 @@ function updateSizeAvailability() {
       sizeOptionsContainer.appendChild(sizeBtn);
     });
 
-    // Update current selected size
-    if (firstAvailableSize) {
-      currentSelectedSize = firstAvailableSize;
-    }
+    // Clear current selected size when color changes to force user selection
+    currentSelectedSize = null;
+    window.selectedSize = null;
+
+    // Update stock display to show 0 until size is selected
+    updateStockDisplay();
   }
 }
 
@@ -384,15 +413,15 @@ function selectColor(colorBtn) {
   currentSelectedColor = colorBtn.dataset.color;
 
   // Set CSS custom properties for dynamic color scheme
-  const colorHex = colorBtn.dataset.colorHex || '#8e44ad';
+  const colorHex = colorBtn.dataset.colorHex || "#8e44ad";
   const root = document.documentElement;
-  root.style.setProperty('--selected-color', colorHex);
-  
+  root.style.setProperty("--selected-color", colorHex);
+
   // Create lighter version for hover effects
   const lightColor = hexToRgba(colorHex, 0.1);
   const shadowColor = hexToRgba(colorHex, 0.4);
-  root.style.setProperty('--selected-color-light', lightColor);
-  root.style.setProperty('--selected-color-shadow', shadowColor);
+  root.style.setProperty("--selected-color-light", lightColor);
+  root.style.setProperty("--selected-color-shadow", shadowColor);
 
   // Update size availability and stock display
   updateSizeAvailability();
@@ -492,9 +521,12 @@ function selectSize(sizeBtn) {
   }
 
   const size = sizeBtn.dataset.size;
-  const selectedColor = window.selectedColor || currentSelectedColor || document.querySelector(".color-option.active")?.dataset?.color;
-  
-  console.log('Selecting size:', size, 'for color:', selectedColor);
+  const selectedColor =
+    window.selectedColor ||
+    currentSelectedColor ||
+    document.querySelector(".color-option.active")?.dataset?.color;
+
+  console.log("Selecting size:", size, "for color:", selectedColor);
 
   // Update selected size globally
   window.selectedSize = size;
@@ -504,13 +536,13 @@ function selectSize(sizeBtn) {
   const sizeOptions = document.querySelectorAll(".size-option");
   sizeOptions.forEach((option) => {
     option.classList.remove("active");
-    option.style.transform = '';
-    option.style.boxShadow = '';
+    option.style.transform = "";
+    option.style.boxShadow = "";
   });
 
   // Add selected class to clicked button
   sizeBtn.classList.add("active");
-  
+
   // Get the actual stock for this color+size combination
   let actualStock = 0;
   if (selectedColor && size) {
@@ -520,54 +552,52 @@ function selectSize(sizeBtn) {
     // Fallback to button's data-stock if no color variants
     actualStock = parseInt(sizeBtn.dataset.stock) || 0;
   }
-  
-  console.log('Actual stock for', selectedColor, size, ':', actualStock);
-  
+
+  console.log("Actual stock for", selectedColor, size, ":", actualStock);
+
   // Add visual feedback for selected size
   if (actualStock > 0) {
-    sizeBtn.style.transform = 'scale(1.05)';
-    sizeBtn.style.boxShadow = '0 2px 8px rgba(142, 68, 173, 0.3)';
+    sizeBtn.style.transform = "scale(1.05)";
+    sizeBtn.style.boxShadow = "0 2px 8px rgba(142, 68, 173, 0.3)";
   }
 
   // Update color availability and stock display
   updateColorAvailability();
-  
-  // Force immediate stock display update
-  setTimeout(() => {
-    updateStockDisplay();
-  }, 10);
+
+  // Force immediate stock display update with better timing
+  updateStockDisplay();
 
   // Update model information if available
   updateModelInfo();
-  
+
   // Provide user feedback about stock level with animation
-  const stockIndicator = document.getElementById('stockIndicator');
+  const stockIndicator = document.getElementById("stockIndicator");
   if (stockIndicator) {
     // Add temporary highlight to stock indicator
-    stockIndicator.style.transition = 'all 0.3s ease';
-    stockIndicator.style.transform = 'scale(1.1)';
-    
+    stockIndicator.style.transition = "all 0.3s ease";
+    stockIndicator.style.transform = "scale(1.1)";
+
     if (actualStock === 0) {
-      stockIndicator.style.color = '#dc2626';
-      stockIndicator.style.fontWeight = 'bold';
+      stockIndicator.style.color = "#dc2626";
+      stockIndicator.style.fontWeight = "bold";
     } else if (actualStock <= 3) {
-      stockIndicator.style.color = '#f59e0b';
-      stockIndicator.style.fontWeight = 'bold';
+      stockIndicator.style.color = "#f59e0b";
+      stockIndicator.style.fontWeight = "bold";
     } else {
-      stockIndicator.style.color = '#059669';
-      stockIndicator.style.fontWeight = 'bold';
+      stockIndicator.style.color = "#059669";
+      stockIndicator.style.fontWeight = "bold";
     }
-    
+
     // Reset styling after animation
     setTimeout(() => {
-      stockIndicator.style.fontWeight = '';
-      stockIndicator.style.color = '';
-      stockIndicator.style.transform = '';
+      stockIndicator.style.fontWeight = "";
+      stockIndicator.style.color = "";
+      stockIndicator.style.transform = "";
     }, 1500);
   }
-  
+
   // Update selected size display if it exists
-  const selectedSizeSpan = document.querySelector('.selected-size');
+  const selectedSizeSpan = document.querySelector(".selected-size");
   if (selectedSizeSpan) {
     selectedSizeSpan.textContent = size;
   }
@@ -580,17 +610,44 @@ document.getElementById("wishlistBtn").addEventListener("click", function () {
 
 // Add to bag functionality
 function addToBag() {
-  const selectedColor = document.querySelector(".color-option.active").dataset
-    .color;
-  const selectedSize = document.querySelector(
-    ".size-option.active"
-  ).textContent;
+  const addToBagBtn = document.querySelector(".add-to-bag-btn");
+  
+  // Add animation class
+  if (addToBagBtn) {
+    addToBagBtn.classList.add("adding");
+    
+    // Remove animation class after animation completes
+    setTimeout(() => {
+      addToBagBtn.classList.remove("adding");
+    }, 600);
+  }
+
+  const selectedColorBtn = document.querySelector(".color-option.active");
+  const selectedSizeBtn = document.querySelector(".size-option.active");
+  
+  if (!selectedColorBtn || !selectedSizeBtn) {
+    // Show error message if color or size not selected
+    if (addToBagBtn) {
+      const originalText = addToBagBtn.innerHTML;
+      addToBagBtn.innerHTML = "SELECT COLOR & SIZE";
+      addToBagBtn.style.backgroundColor = "#e74c3c";
+      
+      setTimeout(() => {
+        addToBagBtn.innerHTML = originalText;
+        addToBagBtn.style.backgroundColor = "";
+      }, 2000);
+    }
+    return;
+  }
+
+  const selectedColor = selectedColorBtn.dataset.color;
+  const selectedSize = selectedSizeBtn.textContent;
   const selectedQuantity = document.getElementById("quantityInput").value;
 
   // Get product details from the page
   const productName = document.querySelector(".product-title").textContent;
   const productPrice = parseFloat(
-    document.querySelector(".price").textContent.replace("$", "")
+    document.querySelector(".price-main").textContent.replace(/[₱,]/g, "")
   );
   const productId =
     document.querySelector("[data-product-id]")?.dataset.productId ||
@@ -612,7 +669,26 @@ function addToBag() {
   }
 
   // Show success animation first, then modal
-  showCartSuccessAnimation();
+  if (typeof showCartSuccessAnimation === "function") {
+    showCartSuccessAnimation();
+  }
+  
+  // Show success feedback
+  if (addToBagBtn) {
+    const originalText = addToBagBtn.innerHTML;
+    addToBagBtn.innerHTML = `
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="20,6 9,17 4,12"></polyline>
+      </svg>
+      ADDED TO BAG
+    `;
+    addToBagBtn.style.backgroundColor = "#27ae60";
+    
+    setTimeout(() => {
+      addToBagBtn.innerHTML = originalText;
+      addToBagBtn.style.backgroundColor = "";
+    }, 2000);
+  }
 }
 
 // Function to update popup content dynamically
@@ -911,107 +987,108 @@ function hideColorSectionIfEmpty() {
 // Enhanced color selection function
 function selectColor(colorBtn) {
   console.log("selectColor called with:", colorBtn);
-  
+
   if (!colorBtn) {
-    console.error('No color button provided');
+    console.error("No color button provided");
     return;
   }
 
-  const color = colorBtn.getAttribute('data-color');
-  const colorHex = colorBtn.getAttribute('data-color-hex') || colorBtn.dataset.colorHex;
-  
+  const color = colorBtn.getAttribute("data-color");
+  const colorHex =
+    colorBtn.getAttribute("data-color-hex") || colorBtn.dataset.colorHex;
+
   if (!color) {
-    console.error('No color data found on button');
+    console.error("No color data found on button");
     return;
   }
 
-  console.log('Selecting color:', color, 'with hex:', colorHex);
-  
+  console.log("Selecting color:", color, "with hex:", colorHex);
+
   // Update selected color globally
   window.selectedColor = color;
   window.selectedColorHex = colorHex;
   currentSelectedColor = color;
-  
+
   // Update UI - remove selected class from all color buttons
-  document.querySelectorAll('.color-option').forEach(btn => {
-    btn.classList.remove('active');
+  document.querySelectorAll(".color-option").forEach((btn) => {
+    btn.classList.remove("active");
     // Remove any previous selection styling
-    btn.style.boxShadow = '';
-    btn.style.transform = '';
+    btn.style.boxShadow = "";
+    btn.style.transform = "";
   });
-  
+
   // Add selected class to clicked button with enhanced styling
-  colorBtn.classList.add('active');
-  
+  colorBtn.classList.add("active");
+
   // Add visual feedback for selected color
   if (colorHex) {
     colorBtn.style.boxShadow = `0 0 0 3px white, 0 0 0 6px ${colorHex}`;
-    colorBtn.style.transform = 'scale(1.1)';
+    colorBtn.style.transform = "scale(1.1)";
   }
-  
+
   // Update selected color text
-  const selectedColorSpan = document.querySelector('.selected-color');
+  const selectedColorSpan = document.querySelector(".selected-color");
   if (selectedColorSpan) {
     selectedColorSpan.textContent = color;
   }
-  
+
   // Update size options for selected color
   updateSizeOptions(color);
-  
+
   // Update product images if variant photos are available
   updateProductImages(color);
-  
+
   // Force update stock display after color selection
   setTimeout(() => {
     updateStockDisplay();
   }, 50);
-  
+
   // Add subtle animation to size section to draw attention
-  const sizeSection = document.querySelector('.size-section');
+  const sizeSection = document.querySelector(".size-section");
   if (sizeSection) {
-    sizeSection.style.transition = 'all 0.3s ease';
-    sizeSection.style.backgroundColor = 'rgba(142, 68, 173, 0.05)';
+    sizeSection.style.transition = "all 0.3s ease";
+    sizeSection.style.backgroundColor = "rgba(142, 68, 173, 0.05)";
     setTimeout(() => {
-      sizeSection.style.backgroundColor = 'transparent';
+      sizeSection.style.backgroundColor = "transparent";
     }, 1000);
   }
 }
 
-
-
 // Update size options based on selected color
 function updateSizeOptions(selectedColor) {
-  console.log('Updating size options for color:', selectedColor);
-  
-  const sizeOptionsContainer = document.getElementById('sizeOptions');
+  console.log("Updating size options for color:", selectedColor);
+
+  const sizeOptionsContainer = document.getElementById("sizeOptions");
   if (!sizeOptionsContainer) {
-    console.error('Size options container not found');
+    console.error("Size options container not found");
     return;
   }
-  
+
   // Clear existing size options
-  sizeOptionsContainer.innerHTML = '';
-  
+  sizeOptionsContainer.innerHTML = "";
+
   if (!selectedColor) {
-    sizeOptionsContainer.innerHTML = '<div class="size-placeholder">Select a color to view available sizes</div>';
+    sizeOptionsContainer.innerHTML =
+      '<div class="size-placeholder">Select a color to view available sizes</div>';
     return;
   }
-  
+
   // Get stock data for the selected color from the global stock data
   const stockData = window._pageStockData || window.stockData || {};
   const colorStock = stockData[selectedColor] || {};
-  
+
   if (Object.keys(colorStock).length === 0) {
-    sizeOptionsContainer.innerHTML = '<div class="size-placeholder">No sizes available for this color</div>';
+    sizeOptionsContainer.innerHTML =
+      '<div class="size-placeholder">No sizes available for this color</div>';
     return;
   }
-  
+
   // Sort sizes in a logical order (XS, S, M, L, XL, etc.)
-  const sizeOrder = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'One Size', 'Free Size'];
+  const sizeOrder = ["XS", "S", "M", "L", "XL", "XXL", "One Size", "Free Size"];
   const sortedSizes = Object.entries(colorStock).sort(([a], [b]) => {
     const aIndex = sizeOrder.indexOf(a);
     const bIndex = sizeOrder.indexOf(b);
-    
+
     // If both sizes are in the order array, sort by their position
     if (aIndex !== -1 && bIndex !== -1) {
       return aIndex - bIndex;
@@ -1022,54 +1099,54 @@ function updateSizeOptions(selectedColor) {
     // If neither is in the order array, sort alphabetically
     return a.localeCompare(b);
   });
-  
+
   // Create size buttons with enhanced styling and interaction
   let firstAvailableSize = null;
   sortedSizes.forEach(([size, stock], index) => {
-    const sizeBtn = document.createElement('button');
-    sizeBtn.className = `size-option ${stock <= 0 ? 'out-of-stock' : ''}`;
-    sizeBtn.setAttribute('data-size', size);
-    sizeBtn.setAttribute('data-stock', stock);
+    const sizeBtn = document.createElement("button");
+    sizeBtn.className = `size-option ${stock <= 0 ? "out-of-stock" : ""}`;
+    sizeBtn.setAttribute("data-size", size);
+    sizeBtn.setAttribute("data-stock", stock);
     sizeBtn.textContent = size;
-    
+
     // Set the first available size as selected by default
     if (stock > 0 && !firstAvailableSize) {
       firstAvailableSize = size;
-      sizeBtn.classList.add('active');
+      sizeBtn.classList.add("active");
       window.selectedSize = size;
     }
-    
+
     if (stock <= 0) {
       sizeBtn.disabled = true;
-      sizeBtn.title = 'Out of stock';
-      sizeBtn.style.opacity = '0.5';
-      sizeBtn.style.textDecoration = 'line-through';
+      sizeBtn.title = "Out of stock";
+      sizeBtn.style.opacity = "0.5";
+      sizeBtn.style.textDecoration = "line-through";
     } else {
       sizeBtn.title = `${stock} in stock`;
       // Add hover effect for available sizes
-      sizeBtn.addEventListener('mouseenter', function() {
+      sizeBtn.addEventListener("mouseenter", function () {
         if (!this.disabled) {
-          this.style.transform = 'scale(1.05)';
-          this.style.transition = 'transform 0.2s ease';
+          this.style.transform = "scale(1.05)";
+          this.style.transition = "transform 0.2s ease";
         }
       });
-      sizeBtn.addEventListener('mouseleave', function() {
+      sizeBtn.addEventListener("mouseleave", function () {
         if (!this.disabled) {
-          this.style.transform = 'scale(1)';
+          this.style.transform = "scale(1)";
         }
       });
     }
-    
+
     // Add click handler
-    sizeBtn.onclick = function(e) {
+    sizeBtn.onclick = function (e) {
       e.preventDefault();
       e.stopPropagation();
       selectSize(this);
     };
-    
+
     sizeOptionsContainer.appendChild(sizeBtn);
   });
-  
+
   // Update stock display for the first available size
   if (firstAvailableSize) {
     setTimeout(() => {
@@ -1089,16 +1166,22 @@ function updateProductImages(selectedColor) {
 
     if (variant && mainImage) {
       // variant may be an object { primary: url, secondary: url, color_hex: hex } or a string
-      const primary = typeof variant === "string" ? variant : variant.primary || variant.image || null;
-      const secondary = typeof variant === "object" && variant.secondary ? variant.secondary : null;
+      const primary =
+        typeof variant === "string"
+          ? variant
+          : variant.primary || variant.image || null;
+      const secondary =
+        typeof variant === "object" && variant.secondary
+          ? variant.secondary
+          : null;
 
       if (primary) {
         // Update main image with smooth transition
-        mainImage.style.opacity = '0.7';
+        mainImage.style.opacity = "0.7";
         setTimeout(() => {
           mainImage.src = primary;
           if (zoomImage) zoomImage.src = primary;
-          mainImage.style.opacity = '1';
+          mainImage.style.opacity = "1";
         }, 150);
 
         // Update thumbnails to show variant images
@@ -1122,20 +1205,24 @@ function updateProductImages(selectedColor) {
           }
         }
 
-        console.log(`Updated images for ${selectedColor} - Primary: ${primary}, Secondary: ${secondary}`);
+        console.log(
+          `Updated images for ${selectedColor} - Primary: ${primary}, Secondary: ${secondary}`
+        );
       }
     } else {
       // Fallback to default product images if no variant images
       const productData = window._pageProductData || {};
-      const defaultPrimary = productData.primaryImage || productData.primary_image;
-      const defaultSecondary = productData.secondaryImage || productData.secondary_image;
+      const defaultPrimary =
+        productData.primaryImage || productData.primary_image;
+      const defaultSecondary =
+        productData.secondaryImage || productData.secondary_image;
 
       if (defaultPrimary && mainImage) {
-        mainImage.style.opacity = '0.7';
+        mainImage.style.opacity = "0.7";
         setTimeout(() => {
           mainImage.src = defaultPrimary;
           if (zoomImage) zoomImage.src = defaultPrimary;
-          mainImage.style.opacity = '1';
+          mainImage.style.opacity = "1";
         }, 150);
 
         if (thumbnails && thumbnails.length > 0) {

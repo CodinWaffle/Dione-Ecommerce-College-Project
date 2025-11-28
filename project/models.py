@@ -132,6 +132,14 @@ class Seller(db.Model):
   tax_id = db.Column(db.String(50))
   store_description = db.Column(db.Text)
   is_verified = db.Column(db.Boolean, nullable=False, default=False)
+  
+  # Statistics fields
+  rating_count = db.Column(db.Integer, default=0)
+  products_count = db.Column(db.Integer, default=0)
+  followers_count = db.Column(db.Integer, default=0)
+  total_sales = db.Column(db.Integer, default=0)
+  last_active = db.Column(db.DateTime, default=datetime.utcnow)
+  
   created_at = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
   updated_at = db.Column(db.DateTime, nullable=False, server_default=db.func.now(), onupdate=db.func.now())
 
@@ -434,6 +442,118 @@ class ProductDescription(db.Model):
     return f'<ProductDescription {self.product_id}>'
 
 
+class Order(db.Model):
+  """Customer orders"""
+  __tablename__ = 'orders'
+  
+  id = db.Column(db.Integer, primary_key=True)
+  order_number = db.Column(db.String(50), unique=True, nullable=False)
+  buyer_id = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
+  seller_id = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
+  
+  # Order details
+  total_amount = db.Column(db.Numeric(10, 2), nullable=False)
+  shipping_fee = db.Column(db.Numeric(10, 2), default=0)
+  tax_amount = db.Column(db.Numeric(10, 2), default=0)
+  discount_amount = db.Column(db.Numeric(10, 2), default=0)
+  
+  # Status and tracking
+  status = db.Column(db.String(20), default='pending')  # pending, confirmed, shipping, in_transit, delivered, cancelled
+  payment_status = db.Column(db.String(20), default='pending')  # pending, paid, failed, refunded
+  tracking_number = db.Column(db.String(100))
+  
+  # Addresses
+  shipping_address = db.Column(db.JSON)
+  billing_address = db.Column(db.JSON)
+  
+  # Timestamps
+  created_at = db.Column(db.DateTime, default=datetime.utcnow)
+  updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+  shipped_at = db.Column(db.DateTime)
+  delivered_at = db.Column(db.DateTime)
+  
+  # Relationships
+  buyer = db.relationship('User', foreign_keys=[buyer_id], backref='orders_as_buyer')
+  seller = db.relationship('User', foreign_keys=[seller_id], backref='orders_as_seller')
+  order_items = db.relationship('OrderItem', backref='order', cascade='all, delete-orphan')
+  
+  def __repr__(self):
+    return f'<Order {self.order_number}>'
+  
+  def to_dict(self):
+    return {
+      'id': self.id,
+      'order_number': self.order_number,
+      'total_amount': float(self.total_amount),
+      'status': self.status,
+      'payment_status': self.payment_status,
+      'tracking_number': self.tracking_number,
+      'created_at': self.created_at.isoformat() if self.created_at else None,
+      'shipped_at': self.shipped_at.isoformat() if self.shipped_at else None,
+      'delivered_at': self.delivered_at.isoformat() if self.delivered_at else None,
+    }
+
+
+class OrderItem(db.Model):
+  """Individual items in an order"""
+  __tablename__ = 'order_items'
+  
+  id = db.Column(db.Integer, primary_key=True)
+  order_id = db.Column(db.Integer, db.ForeignKey('orders.id'), nullable=False)
+  product_id = db.Column(db.Integer, db.ForeignKey('seller_product_management.id'), nullable=False)
+  
+  # Item details
+  product_name = db.Column(db.String(255), nullable=False)
+  product_image = db.Column(db.String(500))
+  variant_name = db.Column(db.String(100))  # e.g., "Black - Size M"
+  size = db.Column(db.String(50))
+  color = db.Column(db.String(50))
+  
+  # Pricing and quantity
+  quantity = db.Column(db.Integer, nullable=False)
+  unit_price = db.Column(db.Numeric(10, 2), nullable=False)
+  total_price = db.Column(db.Numeric(10, 2), nullable=False)
+  
+  # Review status
+  is_reviewed = db.Column(db.Boolean, default=False)
+  
+  # Relationships
+  product = db.relationship('SellerProduct', backref='order_items')
+  reviews = db.relationship('ProductReview', backref='order_item', cascade='all, delete-orphan')
+  
+  def __repr__(self):
+    return f'<OrderItem {self.product_name} x{self.quantity}>'
+
+
+class ProductReview(db.Model):
+  """Product reviews by customers"""
+  __tablename__ = 'product_reviews'
+  
+  id = db.Column(db.Integer, primary_key=True)
+  order_item_id = db.Column(db.Integer, db.ForeignKey('order_items.id'), nullable=False)
+  product_id = db.Column(db.Integer, db.ForeignKey('seller_product_management.id'), nullable=False)
+  buyer_id = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
+  
+  # Review content
+  rating = db.Column(db.Integer, nullable=False)  # 1-5 stars
+  title = db.Column(db.String(200))
+  comment = db.Column(db.Text)
+  
+  # Review images
+  images = db.Column(db.JSON)  # Array of image URLs
+  
+  # Timestamps
+  created_at = db.Column(db.DateTime, default=datetime.utcnow)
+  updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+  
+  # Relationships
+  buyer = db.relationship('User', backref='reviews')
+  product = db.relationship('SellerProduct', backref='reviews')
+  
+  def __repr__(self):
+    return f'<ProductReview {self.rating} stars>'
+
+
 class ProductReport(db.Model):
   """Product reports/flags submitted by users or anonymous visitors."""
   __tablename__ = 'product_reports'
@@ -449,5 +569,24 @@ class ProductReport(db.Model):
 
   def __repr__(self):
     return f'<ProductReport {self.id} product={self.product_id} reason={self.reason}>'
+
+
+class StoreFollower(db.Model):
+  """Store followers tracking"""
+  __tablename__ = 'store_followers'
+  id = db.Column(db.Integer, primary_key=True)
+  follower_id = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
+  store_id = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
+  followed_at = db.Column(db.DateTime, default=datetime.utcnow)
+  
+  # Relationships
+  follower = db.relationship('User', foreign_keys=[follower_id], backref='following_stores')
+  store = db.relationship('User', foreign_keys=[store_id], backref='followers')
+  
+  # Unique constraint
+  __table_args__ = (db.UniqueConstraint('follower_id', 'store_id', name='unique_follower_store'),)
+  
+  def __repr__(self):
+    return f'<StoreFollower follower={self.follower_id} store={self.store_id}>'
 
 

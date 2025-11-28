@@ -1,13 +1,16 @@
 <!DOCTYPE html>
-{# store_page.html - buyer storefront stub with buyer header/footer and buyer
-CSS included #}
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Elegant Boutique - Premium Store</title>
+    <title>{{ store_name or 'Store' }} - Premium Store</title>
 
-    {# Buyer CSS - include main homepage styles and buyer layout if available #}
+    <!-- Modern CSS Framework -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Buyer CSS -->
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='css/buyer_styles/homepage.css') }}"
@@ -20,489 +23,1180 @@ CSS included #}
       rel="stylesheet"
       href="{{ url_for('static', filename='css/buyer_styles/buyer.css') }}"
     />
+    
+    <!-- Product Card Styles -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/buyer_styles/components/product_card.css') }}"
+    />
 
     <style>
-      /* keep local overrides here to make the profile-card and content area banner-sized */
       :root {
-        --banner-height: 300px;
+        --primary-color: #6366f1;
+        --primary-dark: #4f46e5;
+        --secondary-color: #8b5cf6;
+        --accent-color: #06b6d4;
+        --success-color: #10b981;
+        --warning-color: #f59e0b;
+        --error-color: #ef4444;
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f2937;
+        --gray-900: #111827;
+        --white: #ffffff;
+        --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        --border-radius: 12px;
+        --border-radius-lg: 16px;
+        --border-radius-xl: 20px;
       }
+
       * {
         box-sizing: border-box;
       }
+
       body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          Arial, sans-serif;
-        background: #f9fafb;
-        color: #222;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: var(--gray-50);
+        color: var(--gray-900);
         margin: 0;
+        line-height: 1.6;
       }
 
-      /* Banner (full width) */
-      .banner {
-        width: 100vw;
-        height: var(--banner-height);
-        margin-left: calc(-50vw + 50%);
-        /* purple gradient used across the project */
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      /* Hero Banner */
+      .hero-banner {
         position: relative;
+        width: 100%;
+        height: 400px;
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
         overflow: hidden;
       }
 
-      /* subtle texture */
-      .banner::after {
-        content: "";
+      .hero-banner::before {
+        content: '';
         position: absolute;
         inset: 0;
-        background-image: linear-gradient(
-          0deg,
-          rgba(255, 255, 255, 0.03),
-          transparent
-        );
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.05"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.05"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.05"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+        opacity: 0.3;
       }
 
-      /* Container centers content but for this storefront we let it overlap like marketplace pages */
-      .container {
-        /* Responsive container: center content, cap max width, and
-           use clamp() for adjustable side padding that responds to viewport */
-        width: 100%;
-        max-width: 1200px;
-        margin: calc(-1 * var(--banner-height) / 2) auto 40px;
-        padding: 0 clamp(16px, 4vw, 64px);
+      .hero-content {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2;
+      }
+
+      /* Store Profile Card */
+      .store-profile-card {
         position: relative;
+        max-width: 1400px;
+        margin: -200px auto 0;
+        padding: 0 24px;
         z-index: 10;
       }
 
-      /* Make the profile card the same height as the banner and full-width look inside the centered container */
       .profile-card {
-        /* glassmorphism */
-        background: rgba(255, 255, 255, 0.55);
-        backdrop-filter: blur(8px) saturate(120%);
-        -webkit-backdrop-filter: blur(8px) saturate(120%);
-        border: 1px solid rgba(118, 75, 162, 0.12);
-        border-radius: 12px;
-        padding: 18px;
-        box-shadow: 0 8px 30px rgba(30, 30, 60, 0.08);
+        background: var(--white);
+        border-radius: var(--border-radius-xl);
+        padding: 32px;
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
         display: flex;
         align-items: center;
-        gap: 20px;
-        height: var(--banner-height);
+        gap: 32px;
+        position: relative;
         overflow: hidden;
       }
 
-      .profile-pic {
-        width: 160px;
-        height: 160px;
+      .profile-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-color), var(--secondary-color), var(--accent-color));
+      }
+
+      .store-avatar {
+        position: relative;
+        flex-shrink: 0;
+      }
+
+      .avatar-container {
+        width: 120px;
+        height: 120px;
         border-radius: 50%;
         overflow: hidden;
-        flex-shrink: 0;
-        border: 6px solid #fff;
+        border: 4px solid var(--white);
+        box-shadow: var(--shadow-lg);
+        position: relative;
       }
-      .profile-pic img {
+
+      .avatar-container img {
         width: 100%;
         height: 100%;
         object-fit: cover;
       }
 
-      .store-details {
+      .verified-badge {
+        position: absolute;
+        bottom: 8px;
+        right: 8px;
+        width: 32px;
+        height: 32px;
+        background: var(--success-color);
+        border-radius: 50%;
         display: flex;
-        flex-direction: column;
-        gap: 6px;
+        align-items: center;
+        justify-content: center;
+        border: 3px solid var(--white);
+        box-shadow: var(--shadow-md);
       }
+
+      .store-info {
+        flex: 1;
+        min-width: 0;
+      }
+
       .store-name {
-        font-size: 28px;
-        font-weight: 700;
-        color: #111;
+        font-size: 32px;
+        font-weight: 800;
+        color: var(--gray-900);
+        margin: 0 0 8px 0;
+        line-height: 1.2;
       }
+
       .store-location {
-        color: #666;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--gray-600);
+        font-size: 16px;
+        font-weight: 500;
+        margin-bottom: 16px;
+      }
+
+      .store-rating {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+
+      .stars {
+        display: flex;
+        gap: 2px;
+      }
+
+      .star {
+        width: 20px;
+        height: 20px;
+        color: #fbbf24;
+      }
+
+      .rating-text {
+        font-weight: 600;
+        color: var(--gray-900);
+      }
+
+      .rating-count {
+        color: var(--gray-500);
+        font-size: 14px;
+      }
+
+      .store-stats {
+        display: flex;
+        gap: 32px;
+        align-items: center;
+      }
+
+      .stat-item {
+        text-align: center;
+      }
+
+      .stat-number {
+        font-size: 24px;
+        font-weight: 800;
+        color: var(--gray-900);
+        line-height: 1;
+        margin-bottom: 4px;
+      }
+
+      .stat-label {
+        font-size: 14px;
+        color: var(--gray-500);
         font-weight: 500;
       }
 
-      /* content area below the profile-card; keep same banner height so it reads like a large hero-sized content block */
-      .content-area {
-        background: #fff;
-        border-radius: 12px;
-        padding: 20px;
-        margin-top: 20px;
-        box-shadow: 0 10px 30px rgba(2, 6, 23, 0.06);
-        min-height: var(--banner-height);
-        height: auto;
-        display: block;
+      .store-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-end;
       }
 
-      /* responsive tweaks */
-      @media (max-width: 768px) {
-        :root {
-          --banner-height: 240px;
-        }
-        .profile-card {
-          height: var(--banner-height);
-          padding: 12px;
-        }
-        .profile-pic {
-          width: 120px;
-          height: 120px;
-        }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 12px 24px;
+        border-radius: var(--border-radius);
+        font-weight: 600;
+        font-size: 14px;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        border: none;
+        min-width: 140px;
       }
-      @media (max-width: 480px) {
-        :root {
-          --banner-height: 180px;
+
+      .btn-primary {
+        background: var(--primary-color);
+        color: var(--white);
+        box-shadow: var(--shadow-sm);
+      }
+
+      .btn-primary:hover {
+        background: var(--primary-dark);
+        box-shadow: var(--shadow-md);
+        transform: translateY(-1px);
+      }
+
+      .btn-secondary {
+        background: var(--white);
+        color: var(--primary-color);
+        border: 2px solid var(--primary-color);
+      }
+
+      .btn-secondary:hover {
+        background: var(--primary-color);
+        color: var(--white);
+        transform: translateY(-1px);
+      }
+
+      /* Store Description */
+      .store-description {
+        max-width: 1400px;
+        margin: 40px auto;
+        padding: 0 24px;
+      }
+
+      .description-card {
+        background: var(--white);
+        border-radius: var(--border-radius-lg);
+        padding: 32px;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+      }
+
+      .description-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--gray-900);
+        margin-bottom: 16px;
+      }
+
+      .description-text {
+        color: var(--gray-600);
+        line-height: 1.7;
+        font-size: 16px;
+      }
+
+      /* Products Section */
+      .products-section {
+        max-width: 1400px;
+        margin: 40px auto;
+        padding: 0 24px;
+      }
+
+      /* Store Features Section */
+      .store-features {
+        max-width: 1400px;
+        margin: 40px auto;
+        padding: 0 24px;
+      }
+
+      .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 24px;
+        margin-bottom: 40px;
+      }
+
+      .feature-card {
+        background: var(--white);
+        border-radius: var(--border-radius-lg);
+        padding: 24px;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--gray-200);
+        transition: all 0.3s ease;
+      }
+
+      .feature-card:hover {
+        box-shadow: var(--shadow-md);
+        transform: translateY(-2px);
+      }
+
+      .feature-icon {
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 16px;
+        color: var(--white);
+      }
+
+      .feature-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--gray-900);
+        margin-bottom: 8px;
+      }
+
+      .feature-description {
+        color: var(--gray-600);
+        line-height: 1.6;
+        font-size: 14px;
+      }
+
+      /* Store Categories */
+      .store-categories {
+        max-width: 1400px;
+        margin: 40px auto;
+        padding: 0 24px;
+      }
+
+      .categories-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 40px;
+      }
+
+      .category-card {
+        background: var(--white);
+        border-radius: var(--border-radius);
+        padding: 20px;
+        text-align: center;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--gray-200);
+        transition: all 0.3s ease;
+        cursor: pointer;
+      }
+
+      .category-card:hover {
+        box-shadow: var(--shadow-md);
+        transform: translateY(-2px);
+        border-color: var(--primary-color);
+      }
+
+      .category-icon {
+        width: 40px;
+        height: 40px;
+        background: var(--gray-100);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 12px;
+        color: var(--primary-color);
+      }
+
+      .category-name {
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 4px;
+      }
+
+      .category-count {
+        font-size: 14px;
+        color: var(--gray-500);
+      }
+
+      /* Store Policies */
+      .store-policies {
+        max-width: 1400px;
+        margin: 40px auto;
+        padding: 0 24px;
+      }
+
+      .policies-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+      }
+
+      .policy-card {
+        background: var(--white);
+        border-radius: var(--border-radius);
+        padding: 20px;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--gray-200);
+        border-left: 4px solid var(--primary-color);
+      }
+
+      .policy-title {
+        font-weight: 600;
+        color: var(--gray-900);
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .policy-description {
+        color: var(--gray-600);
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 32px;
+      }
+
+      .section-title {
+        font-size: 28px;
+        font-weight: 800;
+        color: var(--gray-900);
+        margin: 0;
+      }
+
+      .view-all-btn {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        transition: all 0.2s ease;
+      }
+
+      .view-all-btn:hover {
+        color: var(--primary-dark);
+        transform: translateX(2px);
+      }
+
+      /* Product Grid */
+      .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 24px;
+        margin-bottom: 48px;
+      }
+
+      /* Enhanced Product Card */
+      .product-card {
+        background: var(--white);
+        border-radius: var(--border-radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--gray-200);
+        transition: all 0.3s ease;
+        position: relative;
+      }
+
+      .product-card:hover {
+        box-shadow: var(--shadow-lg);
+        transform: translateY(-4px);
+      }
+
+      .product-image-container {
+        position: relative;
+        aspect-ratio: 1;
+        overflow: hidden;
+        background: var(--gray-100);
+      }
+
+      .product-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+      }
+
+      .product-card:hover .product-image {
+        transform: scale(1.05);
+      }
+
+      .product-actions {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        opacity: 0;
+        transform: translateX(10px);
+        transition: all 0.3s ease;
+      }
+
+      .product-card:hover .product-actions {
+        opacity: 1;
+        transform: translateX(0);
+      }
+
+      .action-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--white);
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: var(--shadow-md);
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .action-btn:hover {
+        background: var(--primary-color);
+        color: var(--white);
+        transform: scale(1.1);
+      }
+
+      .product-info {
+        padding: 20px;
+      }
+
+      .product-name {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin: 0 0 8px 0;
+        line-height: 1.4;
+      }
+
+      .product-price {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+
+      .current-price {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--gray-900);
+      }
+
+      .original-price {
+        font-size: 14px;
+        color: var(--gray-400);
+        text-decoration: line-through;
+      }
+
+      .discount-badge {
+        background: var(--error-color);
+        color: var(--white);
+        font-size: 12px;
+        font-weight: 600;
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+
+      .product-rating {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 14px;
+        color: var(--gray-500);
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .hero-banner {
+          height: 300px;
         }
-        .container {
-          margin: -90px auto 20px;
-          padding: 0 12px;
+
+        .store-profile-card {
+          margin: -150px auto 0;
+          padding: 0 16px;
         }
+
         .profile-card {
           flex-direction: column;
-          height: var(--banner-height);
-          align-items: center;
           text-align: center;
+          padding: 24px;
+          gap: 24px;
         }
-        .profile-pic {
-          width: 96px;
-          height: 96px;
+
+        .avatar-container {
+          width: 100px;
+          height: 100px;
+        }
+
+        .store-name {
+          font-size: 24px;
+        }
+
+        .store-stats {
+          gap: 24px;
+        }
+
+        .store-actions {
+          flex-direction: row;
+          width: 100%;
+        }
+
+        .btn {
+          flex: 1;
+          min-width: auto;
+        }
+
+        .product-grid {
+          grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+          gap: 16px;
+        }
+
+        .section-title {
+          font-size: 24px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .hero-banner {
+          height: 250px;
+        }
+
+        .store-profile-card {
+          margin: -125px auto 0;
+          padding: 0 12px;
+        }
+
+        .profile-card {
+          padding: 20px;
+        }
+
+        .store-stats {
+          gap: 16px;
+        }
+
+        .stat-number {
+          font-size: 20px;
+        }
+
+        .product-grid {
+          grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+          gap: 12px;
         }
       }
     </style>
   </head>
   <body>
-    {# Include plain original header (non-auth) #} {% include
-    'main/partials/_header_buyer.html' %}
+    <!-- Include Header -->
+    {% include 'main/partials/_header_buyer.html' %}
 
-    <!-- Full-width banner at top -->
-    <div class="banner" aria-hidden="true"></div>
+    <!-- Hero Banner -->
+    <div class="hero-banner">
+      <div class="hero-content">
+        <!-- Optional: Add store banner content here -->
+      </div>
+    </div>
 
-    <!-- Container with overlapping profile card -->
-    <div class="container">
+    <!-- Store Profile Card -->
+    <div class="store-profile-card">
       <div class="profile-card">
-        <div class="profile-pic" aria-hidden="true">
-          <img
-            src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=160&h=160&fit=crop"
-            alt="Store Logo"
-          />
-        </div>
-
-        <div class="store-details">
-          <h1 class="store-name">Elegant Boutique</h1>
-          <div class="store-location">📍 South Luzon</div>
-          <div
-            class="rating-section"
-            style="margin-top: 8px; color: #f39c12; font-weight: 600"
-          >
-            ★ ★ ★ ★ ★
-            <span style="color: #666; font-weight: 500; margin-left: 8px"
-              >(4.8)</span
-            >
-          </div>
-          <div
-            class="store-stats"
-            style="
-              display: flex;
-              gap: 18px;
-              margin-top: 8px;
-              align-items: center;
-            "
-          >
-            <div style="text-align: center">
-              <div style="font-weight: 800; color: #111; font-size: 18px">
-                {{ products_sold_display or '1.2K' }}
-              </div>
-              <div style="color: #666; font-size: 13px">Products Sold</div>
+        <div class="store-avatar">
+          <div class="avatar-container">
+            <img
+              src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=160&h=160&fit=crop"
+              alt="{{ store_name or 'Store' }} Logo"
+            />
+            {% if store_info and store_info.is_verified %}
+            <div class="verified-badge">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                <polyline points="20,6 9,17 4,12"></polyline>
+              </svg>
             </div>
-            <div style="text-align: center">
-              <div style="font-weight: 800; color: #111; font-size: 18px">
-                {{ followers_display or '8.5K' }}
-              </div>
-              <div style="color: #666; font-size: 13px">Followers</div>
-            </div>
+            {% endif %}
           </div>
         </div>
 
-        <div
-          class="store-actions"
-          style="
-            margin-left: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            align-items: flex-end;
-          "
-        >
-          <button
-            class="btn btn-follow"
-            id="followBtn"
-            onclick="toggleFollow()"
-            style="
-              display: flex;
-              align-items: center;
-              gap: 10px;
-              padding: 12px 22px;
-              border-radius: 10px;
-              border: none;
-              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-              color: #fff;
-              font-weight: 700;
-              font-size: 16px;
-            "
-            aria-label="Follow store"
-          >
-            <!-- Outline plus icon -->
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              style="flex-shrink: 0"
-            >
+        <div class="store-info">
+          <h1 class="store-name">{{ store_info.business_name if store_info else store_name or 'Elegant Boutique' }}</h1>
+          
+          <div class="store-location">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+            {{ store_location or 'Location not specified' }}
+          </div>
+
+          <div class="store-rating">
+            <div class="stars">
+              {% set rating = store_info.rating if store_info else 4.8 %}
+              {% for i in range(5) %}
+                <svg class="star" viewBox="0 0 24 24" fill="{{ '#fbbf24' if i < rating else '#e5e7eb' }}">
+                  <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+                </svg>
+              {% endfor %}
+            </div>
+            <span class="rating-text">{{ "%.1f"|format(store_info.rating if store_info else 4.8) }}</span>
+            <span class="rating-count">({{ store_info.rating_count if store_info and store_info.rating_count else 0 }} reviews)</span>
+          </div>
+
+          <div class="store-stats">
+            <div class="stat-item">
+              <div class="stat-number">{{ store_info.products_count if store_info else products_sold_display or '0' }}</div>
+              <div class="stat-label">Products</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-number">{{ store_info.followers_count if store_info else followers_display or '0' }}</div>
+              <div class="stat-label">Followers</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-number">{{ "%.1f"|format(store_info.rating if store_info else 4.8) }}</div>
+              <div class="stat-label">Rating</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-number">{{ store_info.joined_date if store_info else 'Recently' }}</div>
+              <div class="stat-label">Joined</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="store-actions">
+          <button class="btn btn-primary" id="followBtn" onclick="toggleFollow()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="12" y1="5" x2="12" y2="19"></line>
               <line x1="5" y1="12" x2="19" y2="12"></line>
             </svg>
             <span>Follow</span>
           </button>
 
-          <button
-            class="btn btn-chat"
-            onclick="handleChat()"
-            style="
-              display: flex;
-              align-items: center;
-              gap: 10px;
-              padding: 12px 22px;
-              border-radius: 10px;
-              border: 2px solid #667eea;
-              background: #fff;
-              color: #667eea;
-              font-weight: 700;
-              font-size: 16px;
-            "
-            aria-label="Chat with store"
-          >
-            <!-- Outline chat icon -->
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              style="flex-shrink: 0"
-            >
-              <path
-                d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
-              ></path>
+          <button class="btn btn-secondary" onclick="handleChat()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
             </svg>
             <span>Chat</span>
           </button>
         </div>
       </div>
-
-      {# call the content area below here #} {% block content_area %} {#
-      Featured carousel (same height as banner) #}
-      <div
-        class="content-area carousel-area"
-        style="position: relative; padding: 0; overflow: hidden"
-      >
-        <div
-          class="carousel"
-          style="
-            display: flex;
-            transition: transform 0.45s ease;
-            height: var(--banner-height);
-            width: 100%;
-          "
-          id="storeCarousel"
-        >
-          <div
-            class="carousel-slide"
-            style="min-width:100%;height:var(--banner-height);background-size:cover;background-position:center;background-image:url({{ url_for('static', filename='images/banner_1.jpg') }})"
-          ></div>
-          <div
-            class="carousel-slide"
-            style="min-width:100%;height:var(--banner-height);background-size:cover;background-position:center;background-image:url({{ url_for('static', filename='images/banner_2.jpg') }})"
-          ></div>
-          <div
-            class="carousel-slide"
-            style="min-width:100%;height:var(--banner-height);background-size:cover;background-position:center;background-image:url({{ url_for('static', filename='images/banner_3.jpg') }})"
-          ></div>
-        </div>
-
-        <!-- Arrows -->
-        <button
-          id="carouselPrev"
-          aria-label="Previous"
-          style="
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: rgba(255, 255, 255, 0.8);
-            border: none;
-            border-radius: 50%;
-            width: 44px;
-            height: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
-            cursor: pointer;
-          "
-        >
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <polyline points="15,18 9,12 15,6"></polyline>
-          </svg>
-        </button>
-        <button
-          id="carouselNext"
-          aria-label="Next"
-          style="
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: rgba(255, 255, 255, 0.8);
-            border: none;
-            border-radius: 50%;
-            width: 44px;
-            height: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
-            cursor: pointer;
-          "
-        >
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <polyline points="9,18 15,12 9,6"></polyline>
-          </svg>
-        </button>
-
-        <!-- Dots -->
-        <div
-          id="carouselDots"
-          style="
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            bottom: 12px;
-            display: flex;
-            gap: 8px;
-          "
-        ></div>
-
-        <!-- Product listing inside the content area -->
-        <div class="products-listing" style="margin-top: 18px; width: 100%">
-          {% include 'main/partials/content_area.html' %}
-        </div>
-      </div>
-
-      {% endblock %}
     </div>
 
-    {# Include buyer footer partial and ensure its CSS is loaded by the global
-    buyer css files above #} {% include 'main/partials/_footer.html' %}
+    <!-- Store Description -->
+    {% if store_info and store_info.store_description %}
+    <div class="store-description">
+      <div class="description-card">
+        <h2 class="description-title">About Our Store</h2>
+        <p class="description-text">{{ store_info.store_description }}</p>
+      </div>
+    </div>
+    {% else %}
+    <div class="store-description">
+      <div class="description-card">
+        <h2 class="description-title">About Our Store</h2>
+        <p class="description-text">Welcome to our premium store! We offer high-quality products with excellent customer service. Our commitment to quality and customer satisfaction has made us a trusted choice for shoppers worldwide.</p>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Store Features -->
+    <div class="store-features">
+      <div class="section-header">
+        <h2 class="section-title">Why Shop With Us</h2>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+              <polyline points="3.27,6.96 12,12.01 20.73,6.96"></polyline>
+              <line x1="12" y1="22.08" x2="12" y2="12"></line>
+            </svg>
+          </div>
+          <h3 class="feature-title">Fast Shipping</h3>
+          <p class="feature-description">Quick and reliable delivery to your doorstep. Most orders ship within 24 hours.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <h3 class="feature-title">Quality Guarantee</h3>
+          <p class="feature-description">All products are carefully inspected and come with our quality guarantee.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              <polyline points="9,22 9,12 15,12 15,22"></polyline>
+            </svg>
+          </div>
+          <h3 class="feature-title">Easy Returns</h3>
+          <p class="feature-description">30-day return policy with free return shipping on defective items.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+          </div>
+          <h3 class="feature-title">24/7 Support</h3>
+          <p class="feature-description">Our customer support team is available around the clock to help you.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Store Categories -->
+    <div class="store-categories">
+      <div class="section-header">
+        <h2 class="section-title">Shop by Category</h2>
+      </div>
+      <div class="categories-grid">
+        <div class="category-card" onclick="filterByCategory('clothing')">
+          <div class="category-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <path d="M16 10a4 4 0 0 1-8 0"></path>
+            </svg>
+          </div>
+          <div class="category-name">Clothing</div>
+          <div class="category-count">{{ (store_info.products_count if store_info else 0) // 2 }} items</div>
+        </div>
+        <div class="category-card" onclick="filterByCategory('accessories')">
+          <div class="category-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1"></path>
+            </svg>
+          </div>
+          <div class="category-name">Accessories</div>
+          <div class="category-count">{{ (store_info.products_count if store_info else 0) // 3 }} items</div>
+        </div>
+        <div class="category-card" onclick="filterByCategory('shoes')">
+          <div class="category-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M2 18h20l-2-6H4l-2 6z"></path>
+              <path d="M6 12V7a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v5"></path>
+            </svg>
+          </div>
+          <div class="category-name">Footwear</div>
+          <div class="category-count">{{ (store_info.products_count if store_info else 0) // 4 }} items</div>
+        </div>
+        <div class="category-card" onclick="filterByCategory('bags')">
+          <div class="category-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <path d="M16 10a4 4 0 0 1-8 0"></path>
+            </svg>
+          </div>
+          <div class="category-name">Bags</div>
+          <div class="category-count">{{ (store_info.products_count if store_info else 0) // 5 }} items</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Store Policies -->
+    <div class="store-policies">
+      <div class="section-header">
+        <h2 class="section-title">Store Policies</h2>
+      </div>
+      <div class="policies-grid">
+        <div class="policy-card">
+          <h3 class="policy-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+            </svg>
+            Shipping Policy
+          </h3>
+          <p class="policy-description">
+            Free shipping on orders over ₱2,000. Standard delivery takes 3-7 business days. Express delivery available for additional fee.
+          </p>
+        </div>
+        <div class="policy-card">
+          <h3 class="policy-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            </svg>
+            Return Policy
+          </h3>
+          <p class="policy-description">
+            30-day return policy. Items must be unworn with original tags. Free returns for defective items.
+          </p>
+        </div>
+        <div class="policy-card">
+          <h3 class="policy-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            Payment Security
+          </h3>
+          <p class="policy-description">
+            Secure payment processing with SSL encryption. We accept major credit cards, PayPal, and bank transfers.
+          </p>
+        </div>
+        <div class="policy-card">
+          <h3 class="policy-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            Quality Assurance
+          </h3>
+          <p class="policy-description">
+            All products undergo quality inspection before shipping. We guarantee authentic products only.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Products Section -->
+    <div class="products-section">
+      <div class="section-header">
+        <h2 class="section-title">Our Products</h2>
+        <a href="#" class="view-all-btn">
+          View All
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9,18 15,12 9,6"></polyline>
+          </svg>
+        </a>
+      </div>
+
+      <div class="product-grid" id="productGrid">
+        <!-- Products will be loaded here -->
+      </div>
+    </div>
+
+    <!-- Include Footer -->
+    {% include 'main/partials/_footer.html' %}
 
     <script>
+      // Store functionality
       function toggleFollow() {
         const btn = document.getElementById("followBtn");
+        const icon = btn.querySelector('svg');
+        const text = btn.querySelector('span');
+        
         if (btn.classList.contains("following")) {
           btn.classList.remove("following");
-          btn.innerHTML = "+ Follow";
+          btn.classList.remove("btn-success");
+          btn.classList.add("btn-primary");
+          icon.innerHTML = '<line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>';
+          text.textContent = "Follow";
         } else {
           btn.classList.add("following");
-          btn.innerHTML = "✓ Following";
+          btn.classList.remove("btn-primary");
+          btn.classList.add("btn-success");
+          icon.innerHTML = '<polyline points="20,6 9,17 4,12"></polyline>';
+          text.textContent = "Following";
         }
       }
+
       function handleChat() {
-        alert("💬 Opening chat with Elegant Boutique...");
+        // TODO: Implement chat functionality
+        alert("💬 Opening chat with {{ store_name or 'store' }}...");
       }
-      // Simple carousel behavior: auto-advance, arrows and dots
-      document.addEventListener("DOMContentLoaded", function () {
-        const carousel = document.getElementById("storeCarousel");
-        if (!carousel) return;
-        const slides = carousel.querySelectorAll(".carousel-slide");
-        const prev = document.getElementById("carouselPrev");
-        const next = document.getElementById("carouselNext");
-        const dotsWrap = document.getElementById("carouselDots");
-        let idx = 0;
-        const total = slides.length;
-        let timer = null;
 
-        function render() {
-          carousel.style.transform = "translateX(" + -idx * 100 + "%)";
-          // refresh dots
-          if (!dotsWrap) return;
-          dotsWrap.innerHTML = "";
-          for (let i = 0; i < total; i++) {
-            const d = document.createElement("button");
-            d.className = "dot";
-            d.style.width = "10px";
-            d.style.height = "10px";
-            d.style.borderRadius = "50%";
-            d.style.border = "none";
-            d.style.background = i === idx ? "#764ba2" : "rgba(0,0,0,0.18)";
-            d.style.cursor = "pointer";
-            d.onclick = (function (n) {
-              return function () {
-                idx = n;
-                render();
-                resetTimer();
-              };
-            })(i);
-            dotsWrap.appendChild(d);
-          }
+      // Product loading and rendering
+      function createProductCard(product) {
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        card.onclick = () => window.location.href = `/product/${product.id}`;
+        
+        const discount = product.originalPrice && product.originalPrice > product.price 
+          ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+          : 0;
+
+        card.innerHTML = `
+          <div class="product-image-container">
+            <img 
+              src="${product.primaryImage || '/static/image/banner.png'}" 
+              alt="${product.name}"
+              class="product-image"
+              loading="lazy"
+            />
+            <div class="product-actions">
+              <button class="action-btn" onclick="event.stopPropagation(); toggleWishlist(${product.id})" aria-label="Add to wishlist">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                </svg>
+              </button>
+              <button class="action-btn" onclick="event.stopPropagation(); quickAddToCart(${product.id})" aria-label="Quick add to cart">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                  <line x1="3" y1="6" x2="21" y2="6"></line>
+                  <path d="M16 10a4 4 0 0 1-8 0"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="product-info">
+            <h3 class="product-name">${product.name}</h3>
+            <div class="product-price">
+              <span class="current-price">₱${Number(product.price).toLocaleString()}</span>
+              ${product.originalPrice ? `<span class="original-price">₱${Number(product.originalPrice).toLocaleString()}</span>` : ''}
+              ${discount > 0 ? `<span class="discount-badge">-${discount}%</span>` : ''}
+            </div>
+            <div class="product-rating">
+              <div class="stars">
+                ${Array(5).fill().map((_, i) => `
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="${i < 4 ? '#fbbf24' : '#e5e7eb'}">
+                    <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+                  </svg>
+                `).join('')}
+              </div>
+              <span>4.${Math.floor(Math.random() * 9)} (${Math.floor(Math.random() * 100) + 10})</span>
+            </div>
+          </div>
+        `;
+        
+        return card;
+      }
+
+      function toggleWishlist(productId) {
+        // TODO: Implement wishlist functionality
+        console.log('Toggle wishlist for product:', productId);
+      }
+
+      function quickAddToCart(productId) {
+        // TODO: Implement quick add to cart
+        console.log('Quick add to cart for product:', productId);
+      }
+
+      // Category filtering
+      function filterByCategory(category) {
+        console.log('Filtering by category:', category);
+        // TODO: Implement category filtering
+        alert(`Filtering products by ${category}`);
+      }
+
+      // Load products for this store
+      document.addEventListener('DOMContentLoaded', function() {
+        const productGrid = document.getElementById('productGrid');
+        const sellerId = {{ store_info.id if store_info else 'null' }};
+        
+        // Always try to fetch from API first
+        const apiUrl = sellerId ? `/api/products?seller_id=${sellerId}&limit=12` : '/api/products?limit=12';
+        
+        fetch(apiUrl)
+          .then(response => response.json())
+          .then(data => {
+            if (data.products && data.products.length > 0) {
+              data.products.forEach(product => {
+                productGrid.appendChild(createProductCard(product));
+              });
+            } else {
+              // Show sample products if no real products found
+              loadSampleProducts();
+            }
+          })
+          .catch(error => {
+            console.error('Error loading products:', error);
+            // Fallback to sample products on error
+            loadSampleProducts();
+          });
+
+        function loadSampleProducts() {
+          const sampleProducts = [
+            {
+              id: 1,
+              name: "Premium Cotton T-Shirt",
+              price: 899,
+              originalPrice: 1299,
+              primaryImage: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop"
+            },
+            {
+              id: 2,
+              name: "Elegant Summer Dress",
+              price: 2499,
+              primaryImage: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=400&h=400&fit=crop"
+            },
+            {
+              id: 3,
+              name: "Classic Denim Jeans",
+              price: 1899,
+              originalPrice: 2499,
+              primaryImage: "https://images.unsplash.com/photo-1542272604-787c3835535d?w=400&h=400&fit=crop"
+            },
+            {
+              id: 4,
+              name: "Cozy Knit Sweater",
+              price: 1599,
+              primaryImage: "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=400&h=400&fit=crop"
+            },
+            {
+              id: 5,
+              name: "Stylish Blazer",
+              price: 3299,
+              primaryImage: "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400&h=400&fit=crop"
+            },
+            {
+              id: 6,
+              name: "Casual Sneakers",
+              price: 2199,
+              originalPrice: 2899,
+              primaryImage: "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&h=400&fit=crop"
+            },
+            {
+              id: 7,
+              name: "Designer Handbag",
+              price: 4599,
+              primaryImage: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=400&h=400&fit=crop"
+            },
+            {
+              id: 8,
+              name: "Luxury Watch",
+              price: 8999,
+              originalPrice: 12999,
+              primaryImage: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=400&fit=crop"
+            },
+            {
+              id: 9,
+              name: "Comfortable Sneakers",
+              price: 3299,
+              primaryImage: "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&h=400&fit=crop"
+            },
+            {
+              id: 10,
+              name: "Casual Backpack",
+              price: 1899,
+              originalPrice: 2499,
+              primaryImage: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&h=400&fit=crop"
+            },
+            {
+              id: 11,
+              name: "Wireless Headphones",
+              price: 5999,
+              primaryImage: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop"
+            },
+            {
+              id: 12,
+              name: "Smartphone Case",
+              price: 799,
+              originalPrice: 999,
+              primaryImage: "https://images.unsplash.com/photo-1556656793-08538906a9f8?w=400&h=400&fit=crop"
+            }
+          ];
+          
+          sampleProducts.forEach(product => {
+            productGrid.appendChild(createProductCard(product));
+          });
         }
-
-        function prevSlide() {
-          idx = (idx - 1 + total) % total;
-          render();
-          resetTimer();
-        }
-        function nextSlide() {
-          idx = (idx + 1) % total;
-          render();
-          resetTimer();
-        }
-
-        if (prev) prev.addEventListener("click", prevSlide);
-        if (next) next.addEventListener("click", nextSlide);
-
-        function startTimer() {
-          timer = setInterval(function () {
-            idx = (idx + 1) % total;
-            render();
-          }, 5000);
-        }
-        function resetTimer() {
-          if (timer) clearInterval(timer);
-          startTimer();
-        }
-
-        render();
-        startTimer();
-
-        // pause on hover
-        carousel.addEventListener("mouseenter", function () {
-          if (timer) clearInterval(timer);
-        });
-        carousel.addEventListener("mouseleave", function () {
-          resetTimer();
-        });
       });
     </script>
   </body>

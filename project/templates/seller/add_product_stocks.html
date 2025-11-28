@@ -322,6 +322,243 @@ extra_css %}
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   }
 
+  /* Size Modal Enhancements - Match Product Management Style */
+  .size-group-container {
+    margin-bottom: 1.5rem;
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 1rem;
+    border: 1px solid #e2e8f0;
+  }
+
+  .size-group-header {
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .size-group-header strong {
+    color: #1e293b;
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+
+  .size-group-hint {
+    color: #64748b;
+    font-size: 0.9rem;
+    font-weight: 400;
+  }
+
+  .size-group-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 0.75rem;
+  }
+
+  .size-selection-box {
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    min-height: 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .size-selection-box:hover {
+    border-color: #a259f7;
+    box-shadow: 0 2px 8px rgba(162, 89, 247, 0.1);
+  }
+
+  .size-selection-box.selected {
+    border-color: #a259f7;
+    background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
+    box-shadow: 0 2px 12px rgba(162, 89, 247, 0.15);
+  }
+
+  .size-name {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 0.95rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .size-category-badge {
+    background: #e0e7ff;
+    color: #3730a3;
+    padding: 0.125rem 0.375rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    align-self: flex-start;
+    margin-bottom: 0.5rem;
+  }
+
+  .stock-input-small {
+    width: 100%;
+    padding: 0.375rem 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+  }
+
+  .stock-input-small:focus {
+    outline: none;
+    border-color: #a259f7;
+    box-shadow: 0 0 0 3px rgba(162, 89, 247, 0.1);
+  }
+
+  .custom-size-item {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .custom-size-name {
+    font-weight: 600;
+    color: #1e293b;
+    min-width: 80px;
+  }
+
+  .remove-custom-size {
+    background: #fee2e2;
+    color: #dc2626;
+    border: none;
+    border-radius: 4px;
+    padding: 0.25rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    transition: all 0.2s ease;
+  }
+
+  .remove-custom-size:hover {
+    background: #fecaca;
+    transform: scale(1.1);
+  }
+
+  /* Modal Summary Cards - Match Product Management Style */
+  .stock-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .summary-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1.25rem;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+  }
+
+  .summary-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+  }
+
+  .summary-icon {
+    background: linear-gradient(135deg, #a259f7 0%, #9333ea 100%);
+    border-radius: 8px;
+    padding: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+  }
+
+  .summary-icon i {
+    width: 20px;
+    height: 20px;
+  }
+
+  .summary-content {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .summary-label {
+    font-size: 0.875rem;
+    color: #64748b;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+  }
+
+  .summary-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+  }
+
+  /* Variant List Container */
+  .variant-list-container {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+  }
+
+  .variant-list-header {
+    padding: 1.25rem;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .variant-list-header h3 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1e293b;
+  }
+
+  .variant-list-header p {
+    margin: 0;
+    color: #64748b;
+    font-size: 0.875rem;
+  }
+
+  .variant-stock-list {
+    padding: 1.25rem;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  /* Custom scrollbar for the variant list */
+  .variant-stock-list::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .variant-stock-list::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 3px;
+  }
+
+  .variant-stock-list::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+  }
+
+  .variant-stock-list::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+
   .variant-photo-upload:hover {
     border-color: #a259f7;
     background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
@@ -1685,17 +1922,17 @@ extra_css %}
   }
 </script>
 
-<!-- Size selection modal -->
+<!-- Size Selection Modal - Matching Product Management Design -->
 <div id="sizeSelectModal" class="modal">
-  <div class="modal-content size-modal-content">
+  <div class="modal-content variant-stock-modal">
     <div class="modal-header">
       <div class="modal-header-content">
         <div class="modal-icon">
           <i data-lucide="ruler"></i>
         </div>
         <div class="modal-title-section">
-          <h2 class="modal-title">Select Sizes & Stock</h2>
-          <p class="modal-subtitle">Choose sizes and set stock quantities</p>
+          <h2 class="modal-title">Size & Stock Management</h2>
+          <p class="modal-subtitle" id="sizeModalVariantName">Select sizes and set stock quantities</p>
         </div>
       </div>
       <button class="close-btn" id="sizeModalClose">
@@ -1703,17 +1940,41 @@ extra_css %}
       </button>
     </div>
     <div class="modal-body">
-      <div class="size-modal-note">
-        <i data-lucide="info"></i>
-        Click size boxes to select them and enter stock amounts.
+      <div class="variant-stock-container">
+        <div class="stock-summary">
+          <div class="summary-card">
+            <div class="summary-icon">
+              <i data-lucide="package"></i>
+            </div>
+            <div class="summary-content">
+              <span class="summary-label">Selected Sizes</span>
+              <span class="summary-value" id="selectedSizesCount">0</span>
+            </div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-icon">
+              <i data-lucide="layers"></i>
+            </div>
+            <div class="summary-content">
+              <span class="summary-label">Total Stock</span>
+              <span class="summary-value" id="totalVariantStock">0</span>
+            </div>
+          </div>
+        </div>
+        <div class="variant-list-container">
+          <div class="variant-list-header">
+            <h3>Available Sizes</h3>
+            <p>Click size boxes to select them and enter stock quantities</p>
+          </div>
+          <div id="sizeOptionsContainer" class="variant-stock-list"></div>
+        </div>
       </div>
-      <div id="sizeOptionsContainer" class="size-options-area"></div>
     </div>
     <div class="modal-footer">
       <button
         type="button"
         id="sizeModalCancel"
-        class="btn-secondary"
+        class="btn-secondary close-btn"
         title="Cancel changes"
       >
         <i data-lucide="x"></i>

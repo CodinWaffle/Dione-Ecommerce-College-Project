@@ -430,7 +430,7 @@ body {
 /* Color Selection */
 .color-section {
   margin-bottom: 45px;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease;
 }
 
 .section-label {
@@ -449,7 +449,7 @@ body {
   letter-spacing: normal;
   color: var(--selected-color, #8e44ad);
   margin-left: 8px;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: color 0.2s ease;
   display: inline-block;
 }
 
@@ -478,7 +478,7 @@ body {
   border-radius: 50%;
   border: 3px solid #e5e7eb;
   cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.15s ease;
   position: relative;
   background-clip: padding-box;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -563,12 +563,12 @@ body {
 }
 
 .color-option.color-circle.active {
-  transform: scale(1.25) translateY(-5px);
+  transform: scale(1.1) translateY(-2px);
   border-color: #8e44ad;
-  box-shadow: 0 0 0 4px #fff, 0 0 0 8px #8e44ad,
-    0 15px 40px rgba(142, 68, 173, 0.5), 0 5px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px #8e44ad,
+    0 8px 20px rgba(142, 68, 173, 0.3), 0 3px 10px rgba(0, 0, 0, 0.15);
   z-index: 10;
-  animation: colorPulse 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: colorPulse 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .color-option.color-circle.active::before {
@@ -577,16 +577,16 @@ body {
 
 @keyframes colorPulse {
   0% {
-    transform: scale(1.2) translateY(-4px);
+    transform: scale(1.05) translateY(-1px);
   }
   30% {
-    transform: scale(1.35) translateY(-8px);
+    transform: scale(1.15) translateY(-3px);
   }
   60% {
-    transform: scale(1.2) translateY(-4px);
+    transform: scale(1.05) translateY(-1px);
   }
   100% {
-    transform: scale(1.25) translateY(-5px);
+    transform: scale(1.1) translateY(-2px);
   }
 }
 
@@ -1216,8 +1216,9 @@ body {
 .store-info-section {
   margin-top: 2rem;
   padding: 1.5rem;
-  background: linear-gradient(135deg, 
-    rgba(108, 92, 231, 0.06) 0%, 
+  background: linear-gradient(
+    135deg,
+    rgba(108, 92, 231, 0.06) 0%,
     rgba(168, 85, 247, 0.04) 50%,
     rgba(124, 58, 237, 0.03) 100%
   );
@@ -1225,21 +1226,20 @@ body {
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(108, 92, 231, 0.12);
   border-radius: 16px;
-  box-shadow: 
-    0 8px 32px rgba(108, 92, 231, 0.08),
+  box-shadow: 0 8px 32px rgba(108, 92, 231, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .store-info-section:hover {
-  background: linear-gradient(135deg, 
-    rgba(108, 92, 231, 0.08) 0%, 
+  background: linear-gradient(
+    135deg,
+    rgba(108, 92, 231, 0.08) 0%,
     rgba(168, 85, 247, 0.06) 50%,
     rgba(124, 58, 237, 0.04) 100%
   );
   border-color: rgba(108, 92, 231, 0.16);
-  box-shadow: 
-    0 12px 40px rgba(108, 92, 231, 0.12),
+  box-shadow: 0 12px 40px rgba(108, 92, 231, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.3);
   transform: translateY(-2px);
 }
@@ -1254,8 +1254,9 @@ body {
 .store-avatar {
   width: 60px;
   height: 60px;
-  background: linear-gradient(135deg, 
-    rgba(108, 92, 231, 0.9) 0%, 
+  background: linear-gradient(
+    135deg,
+    rgba(108, 92, 231, 0.9) 0%,
     rgba(124, 58, 237, 0.8) 100%
   );
   border-radius: 50%;
@@ -1264,8 +1265,7 @@ body {
   justify-content: center;
   color: white;
   font-size: 1.5rem;
-  box-shadow: 
-    0 4px 16px rgba(108, 92, 231, 0.3),
+  box-shadow: 0 4px 16px rgba(108, 92, 231, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
   border: 2px solid rgba(255, 255, 255, 0.15);
   flex-shrink: 0;
@@ -1372,27 +1372,27 @@ body {
 }
 
 .btn-view-shop {
-  background: linear-gradient(135deg, 
-    rgba(255, 255, 255, 0.9) 0%, 
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.9) 0%,
     rgba(255, 255, 255, 0.8) 100%
   );
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(108, 92, 231, 0.2);
   color: #6c5ce7;
-  box-shadow: 
-    0 4px 16px rgba(108, 92, 231, 0.1),
+  box-shadow: 0 4px 16px rgba(108, 92, 231, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
 .btn-view-shop:hover {
-  background: linear-gradient(135deg, 
-    rgba(255, 255, 255, 0.95) 0%, 
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.95) 0%,
     rgba(255, 255, 255, 0.85) 100%
   );
   border-color: rgba(108, 92, 231, 0.3);
-  box-shadow: 
-    0 6px 20px rgba(108, 92, 231, 0.15),
+  box-shadow: 0 6px 20px rgba(108, 92, 231, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.5);
   transform: translateY(-1px);
   color: #5b4bd6;

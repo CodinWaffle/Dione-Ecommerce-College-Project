@@ -102,12 +102,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
     removeBtn.addEventListener("click", () => {
       customItem.remove();
+      updateModalSummary();
+    });
+
+    // Add event listener to stock input for summary updates
+    stockInput.addEventListener("input", () => {
+      updateModalSummary();
     });
 
     customItem.appendChild(nameSpan);
     customItem.appendChild(stockInput);
     customItem.appendChild(removeBtn);
     container.appendChild(customItem);
+
+    // Update summary after adding
+    updateModalSummary();
 
     // Initialize Lucide icons for the new button
     if (window.lucide) {
@@ -119,6 +128,15 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!sizeModal || !sizeOptionsContainer) return;
     currentSizeModalRow = row;
     sizeOptionsContainer.innerHTML = "";
+
+    // Update modal subtitle with variant info
+    const colorInput = row.querySelector('input[name^="color_"]');
+    const skuInput = row.querySelector('input[name^="sku_"]');
+    const variantName = colorInput?.value || skuInput?.value || 'Variant';
+    const modalSubtitle = document.getElementById('sizeModalVariantName');
+    if (modalSubtitle) {
+      modalSubtitle.textContent = `Managing sizes for: ${variantName}`;
+    }
 
     // read existing size stocks from the row if any
     const existingSizeInputs = row.querySelectorAll(".size-stock-input");
@@ -190,6 +208,9 @@ document.addEventListener("DOMContentLoaded", function () {
             stockInput.style.display = "none";
             stockInput.value = "";
           }
+          
+          // Update modal summary
+          updateModalSummary();
         });
 
         // Handle stock input changes
@@ -198,6 +219,9 @@ document.addEventListener("DOMContentLoaded", function () {
           if (value < 0) {
             e.target.value = "0";
           }
+          
+          // Update modal summary
+          updateModalSummary();
         });
 
         wrapper.appendChild(sizeName);
@@ -266,61 +290,61 @@ document.addEventListener("DOMContentLoaded", function () {
       sizeOptionsContainer.appendChild(groupWrap);
     });
 
-    // Add custom size section
-    // Preview section removed for more compact modal design
-
+    // Add custom size section with improved styling
     const customSizeSection = document.createElement("div");
-    customSizeSection.className = "custom-size-section";
+    customSizeSection.className = "size-group-container";
 
     const customHeader = document.createElement("div");
-    customHeader.className = "custom-size-header";
+    customHeader.className = "size-group-header";
 
-    const customIcon = document.createElement("div");
-    customIcon.className = "custom-size-icon";
-    customIcon.innerHTML = '<i data-lucide="plus"></i>';
+    const customTitle = document.createElement("strong");
+    customTitle.textContent = "Custom Sizes";
 
-    const customTitle = document.createElement("h4");
-    customTitle.textContent = "Add Custom Sizes";
+    const customHint = document.createElement("span");
+    customHint.className = "size-group-hint";
+    customHint.textContent = " — Add your own size labels";
 
-    customHeader.appendChild(customIcon);
     customHeader.appendChild(customTitle);
+    customHeader.appendChild(customHint);
 
     const inputGroup = document.createElement("div");
     inputGroup.className = "custom-size-input-group";
+    inputGroup.style.cssText = `
+      display: grid;
+      grid-template-columns: 1fr 120px auto;
+      gap: 0.75rem;
+      align-items: end;
+      margin-bottom: 1rem;
+    `;
 
     const inputWrapper = document.createElement("div");
-    inputWrapper.className = "custom-size-input-wrapper";
-
-    const inputLabel = document.createElement("label");
-    inputLabel.textContent = "Custom Size Name";
-
     const customInput = document.createElement("input");
     customInput.type = "text";
-    customInput.className = "custom-size-input";
+    customInput.className = "stock-input-small";
     customInput.placeholder = "e.g., 7 UK, 28W, Medium-Large";
     customInput.id = "customSizeInput";
+    customInput.style.marginTop = "0";
 
     const stockWrapper = document.createElement("div");
-    stockWrapper.className = "custom-size-input-wrapper";
-
-    const stockLabel = document.createElement("label");
-    stockLabel.textContent = "Stock Quantity";
-
     const customStockInput = document.createElement("input");
     customStockInput.type = "number";
-    customStockInput.className = "custom-size-input";
-    customStockInput.placeholder = "0";
+    customStockInput.className = "stock-input-small";
+    customStockInput.placeholder = "Stock";
     customStockInput.min = "0";
     customStockInput.id = "customStockInput";
+    customStockInput.style.marginTop = "0";
 
     const addBtn = document.createElement("button");
     addBtn.type = "button";
-    addBtn.className = "add-custom-size-btn";
-    addBtn.innerHTML = '<i data-lucide="plus"></i>Add Size';
+    addBtn.className = "btn-primary";
+    addBtn.style.cssText = `
+      padding: 0.375rem 0.75rem;
+      font-size: 0.875rem;
+      height: fit-content;
+    `;
+    addBtn.innerHTML = '<i data-lucide="plus"></i>Add';
 
-    inputWrapper.appendChild(inputLabel);
     inputWrapper.appendChild(customInput);
-    stockWrapper.appendChild(stockLabel);
     stockWrapper.appendChild(customStockInput);
 
     inputGroup.appendChild(inputWrapper);
@@ -349,12 +373,21 @@ document.addEventListener("DOMContentLoaded", function () {
         addCustomSizeToList(sizeName, stockValue, customSizesList);
         customInput.value = "";
         customStockInput.value = "";
+        customInput.focus();
       }
     });
 
     // Allow Enter key to add custom size
     customInput.addEventListener("keypress", (e) => {
       if (e.key === "Enter") {
+        e.preventDefault();
+        addBtn.click();
+      }
+    });
+
+    customStockInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
         addBtn.click();
       }
     });
@@ -434,11 +467,52 @@ document.addEventListener("DOMContentLoaded", function () {
       // ignore prefill errors
     }
 
+    // Update initial summary
+    updateModalSummary();
+
     // Show modal via CSS class for consistent styling
     try {
       sizeModal.classList.add("active");
     } catch (e) {
       sizeModal.style.display = "block";
+    }
+  }
+
+  function updateModalSummary() {
+    if (!sizeOptionsContainer) return;
+    
+    const selectedBoxes = sizeOptionsContainer.querySelectorAll('.size-selection-box.selected');
+    const customSizes = sizeOptionsContainer.querySelectorAll('.custom-size-item');
+    
+    let totalSelected = selectedBoxes.length + customSizes.length;
+    let totalStock = 0;
+    
+    // Count stock from selected size boxes
+    selectedBoxes.forEach(box => {
+      const stockInput = box.querySelector('.stock-input-small');
+      if (stockInput && stockInput.value) {
+        totalStock += parseInt(stockInput.value) || 0;
+      }
+    });
+    
+    // Count stock from custom sizes
+    customSizes.forEach(customItem => {
+      const stockInput = customItem.querySelector('.stock-input-small');
+      if (stockInput && stockInput.value) {
+        totalStock += parseInt(stockInput.value) || 0;
+      }
+    });
+    
+    // Update summary display
+    const selectedCountEl = document.getElementById('selectedSizesCount');
+    const totalStockEl = document.getElementById('totalVariantStock');
+    
+    if (selectedCountEl) {
+      selectedCountEl.textContent = totalSelected;
+    }
+    
+    if (totalStockEl) {
+      totalStockEl.textContent = totalStock;
     }
   }
 

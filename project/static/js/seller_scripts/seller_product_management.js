@@ -64,9 +64,19 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!p) return null;
     const totalStock =
       p.total_stock != null ? p.total_stock : p.stock != null ? p.stock : 0;
-    // If stock is zero, treat product as out-of-stock for display and filtering
-    const inferredStatus =
-      totalStock === 0 ? "out-of-stock" : (p.status || "").toString();
+
+    // Determine status based on backend data, not just stock
+    let displayStatus;
+    if (p.is_draft) {
+      displayStatus = "draft";
+    } else if (totalStock === 0) {
+      displayStatus = "Not Active"; // Zero stock = Not Active
+    } else if (p.status === "active") {
+      displayStatus = "Active"; // Has stock and active = Active
+    } else {
+      displayStatus = p.status || "draft";
+    }
+
     return {
       id: p.id,
       name: p.name || p.productName || "",
@@ -76,7 +86,7 @@ document.addEventListener("DOMContentLoaded", function () {
       price: p.price || p.amount || 0,
       stock: totalStock,
       total_stock: totalStock,
-      status: inferredStatus,
+      status: displayStatus,
       raw: p,
     };
   }
@@ -84,6 +94,29 @@ document.addEventListener("DOMContentLoaded", function () {
   let products = Array.isArray(preloaded)
     ? preloaded.map(normalizeProduct).filter(Boolean)
     : [];
+
+  // Refresh products from server to ensure data is current
+  async function refreshProductsFromServer() {
+    try {
+      console.log("Refreshing products from server...");
+      const response = await fetch("/seller/products");
+      if (response.ok) {
+        // The server response contains the full HTML page, but we can extract the JSON data
+        const text = await response.text();
+        const match = text.match(
+          /window\.__SELLER_PRODUCTS__\s*=\s*(\[.*?\]);/s
+        );
+        if (match) {
+          const serverProducts = JSON.parse(match[1]);
+          products = serverProducts.map(normalizeProduct).filter(Boolean);
+          renderProducts(products);
+          console.log("Products refreshed from server:", products.length);
+        }
+      }
+    } catch (error) {
+      console.warn("Could not refresh products from server:", error);
+    }
+  }
 
   // If no preloaded data, try to parse server-rendered table rows so JS doesn't wipe them.
   function parseServerRenderedRows() {
@@ -122,6 +155,14 @@ document.addEventListener("DOMContentLoaded", function () {
       .filter((p) => p.id !== null);
     return parsed;
   }
+
+  // If no products from server data, parse table rows
+  if (products.length === 0) {
+    products = parseServerRenderedRows().map(normalizeProduct).filter(Boolean);
+  }
+
+  // Refresh products from server when page loads to ensure current data
+  setTimeout(refreshProductsFromServer, 100);
 
   // Tab elements
   const tabAll = document.getElementById("tabAll");
@@ -199,14 +240,10 @@ document.addEventListener("DOMContentLoaded", function () {
   function updateCounts() {
     const total = products.length;
     const out = products.filter(
-      (p) => p.stock === 0 || p.total_stock === 0 || p.status === "out-of-stock"
+      (p) => p.status === "Not Active" || p.stock === 0 || p.total_stock === 0
     ).length;
-    // Active listings should be products that are active AND have stock > 0
-    const active = products.filter((p) => {
-      const stock =
-        p.total_stock != null ? p.total_stock : p.stock != null ? p.stock : 0;
-      return p.status === "active" && stock > 0;
-    }).length;
+    // Active listings should be products that show as "Active"
+    const active = products.filter((p) => p.status === "Active").length;
     document.getElementById("countAll").textContent = total;
     document.getElementById("countOut").textContent = out;
     document.getElementById("countActive").textContent = active;
@@ -248,11 +285,11 @@ document.addEventListener("DOMContentLoaded", function () {
       let matchesStatus = true;
       if (statusValue) {
         if (statusValue === "out-of-stock") {
-          matchesStatus =
-            product.total_stock === 0 || product.status === "out-of-stock";
+          matchesStatus = product.status === "Not Active";
         } else if (statusValue === "active") {
-          matchesStatus =
-            product.status === "active" && product.total_stock > 0;
+          matchesStatus = product.status === "Active";
+        } else if (statusValue === "draft") {
+          matchesStatus = product.status === "draft";
         } else {
           matchesStatus = product.status === statusValue;
         }
@@ -284,7 +321,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 </td>
                 <td class="col-center">${product.category}</td>
                 <td class="col-center">${product.subcategory || "—"}</td>
-                <td class="col-center">$${
+                <td class="col-center">₱${
                   product.price ? parseFloat(product.price).toFixed(2) : "0.00"
                 }</td>
                 <td class="col-center">${
@@ -411,6 +448,61 @@ document.addEventListener("DOMContentLoaded", function () {
     // Make sure button is not disabled
     addProductBtn.disabled = false;
     addProductBtn.style.pointerEvents = "auto";
+  }
+
+  // Delete confirmation modal handlers
+  const deleteModal = document.getElementById("deleteConfirmModal");
+  const closeDeleteModal = document.getElementById("closeDeleteModal");
+  const cancelDelete = document.getElementById("cancelDelete");
+  const confirmDelete = document.getElementById("confirmDelete");
+
+  // Close modal handlers
+  [closeDeleteModal, cancelDelete].forEach((btn) => {
+    if (btn) {
+      btn.addEventListener("click", hideDeleteConfirmation);
+    }
+  });
+
+  // Confirm delete handler
+  if (confirmDelete) {
+    confirmDelete.addEventListener("click", async function () {
+      if (productToDelete && !isDeletingProduct) {
+        isDeletingProduct = true;
+
+        // Disable the button to prevent double clicks
+        confirmDelete.disabled = true;
+        confirmDelete.textContent = "Deleting...";
+
+        try {
+          const success = await deleteProduct(productToDelete.id);
+          console.log("Delete operation success:", success);
+
+          // Always hide the modal after attempting delete
+          hideDeleteConfirmation();
+
+          if (!success) {
+            console.error("Delete operation failed");
+          }
+        } catch (error) {
+          console.error("Error in delete confirmation:", error);
+          hideDeleteConfirmation();
+        } finally {
+          // Reset button state
+          isDeletingProduct = false;
+          confirmDelete.disabled = false;
+          confirmDelete.textContent = "Yes, Delete";
+        }
+      }
+    });
+  }
+
+  // Close on backdrop click
+  if (deleteModal) {
+    deleteModal.addEventListener("click", function (e) {
+      if (e.target === deleteModal) {
+        hideDeleteConfirmation();
+      }
+    });
   } else {
     console.error("[v0] CRITICAL: addProductBtn not found - button won't work");
   }
@@ -904,8 +996,15 @@ document.addEventListener("DOMContentLoaded", function () {
       if (delBtn) {
         const id = parseInt(delBtn.dataset.id);
         const product = products.find((p) => p.id === id);
+
+        console.log(`Delete button clicked for product ID: ${id}`);
+        console.log("Product found in frontend array:", product);
+
         if (product) {
           showDeleteConfirmation(product);
+        } else {
+          console.error(`Product with ID ${id} not found in frontend array`);
+          showNotification("Product not found", "error");
         }
       }
     });
@@ -1405,6 +1504,7 @@ if (sizeModal) {
 
 // Delete confirmation functionality
 let productToDelete = null;
+let isDeletingProduct = false; // Prevent duplicate delete requests
 
 function showDeleteConfirmation(product) {
   productToDelete = product;
@@ -1420,12 +1520,23 @@ function showDeleteConfirmation(product) {
 
 function hideDeleteConfirmation() {
   const modal = document.getElementById("deleteConfirmModal");
+  const confirmDelete = document.getElementById("confirmDelete");
+
   modal.classList.remove("active");
   productToDelete = null;
+
+  // Reset deletion state and button
+  isDeletingProduct = false;
+  if (confirmDelete) {
+    confirmDelete.disabled = false;
+    confirmDelete.textContent = "Yes, Delete";
+  }
 }
 
 async function deleteProduct(productId) {
   try {
+    console.log(`Attempting to delete product ID: ${productId}`);
+
     const response = await fetch(`/seller/product/${productId}/delete`, {
       method: "DELETE",
       headers: {
@@ -1433,25 +1544,47 @@ async function deleteProduct(productId) {
       },
     });
 
+    console.log(`Delete response status: ${response.status}`);
+
     if (response.ok) {
       const result = await response.json();
+      console.log("Delete response:", result);
 
-      // Remove from frontend array
+      // Remove from frontend array immediately
+      const productName =
+        products.find((p) => p.id === productId)?.name || "Product";
       products = products.filter((p) => p.id !== productId);
-      renderProducts(products);
+
+      // Update UI immediately using existing filter function
+      filterProducts();
+      updateCounts();
 
       // Show success message
-      showNotification("Product deleted successfully", "success");
+      showNotification("Product deleted", "success");
 
       return true;
     } else {
-      const error = await response.json();
-      showNotification(error.message || "Failed to delete product", "error");
+      let errorMessage = "Failed to delete product";
+      try {
+        const error = await response.json();
+        errorMessage = error.message || errorMessage;
+        console.log("Delete error response:", error);
+      } catch (jsonError) {
+        console.log("Could not parse error response as JSON");
+
+        if (response.status === 404) {
+          errorMessage = "Product not found or already deleted";
+        } else if (response.status === 403) {
+          errorMessage = "You don't have permission to delete this product";
+        }
+      }
+
+      showNotification(errorMessage, "error");
       return false;
     }
   } catch (error) {
     console.error("Delete error:", error);
-    showNotification("Network error occurred while deleting product", "error");
+    // Network error notification removed as requested
     return false;
   }
 }
@@ -1495,39 +1628,5 @@ function showNotification(message, type = "info") {
   }, 3000);
 }
 
-// Set up delete modal event listeners
-document.addEventListener("DOMContentLoaded", function () {
-  const deleteModal = document.getElementById("deleteConfirmModal");
-  const closeDeleteModal = document.getElementById("closeDeleteModal");
-  const cancelDelete = document.getElementById("cancelDelete");
-  const confirmDelete = document.getElementById("confirmDelete");
-
-  // Close modal handlers
-  [closeDeleteModal, cancelDelete].forEach((btn) => {
-    if (btn) {
-      btn.addEventListener("click", hideDeleteConfirmation);
-    }
-  });
-
-  // Confirm delete handler
-  if (confirmDelete) {
-    confirmDelete.addEventListener("click", async function () {
-      if (productToDelete) {
-        const success = await deleteProduct(productToDelete.id);
-        if (success) {
-          hideDeleteConfirmation();
-        }
-      }
-    });
-  }
-
-  // Close on backdrop click
-  if (deleteModal) {
-    deleteModal.addEventListener("click", function (e) {
-      if (e.target === deleteModal) {
-        hideDeleteConfirmation();
-      }
-    });
-  }
-});
+// Duplicate DOMContentLoaded listener removed to prevent double event handlers
 window.openSizeModalForVariant = openSizeModalForVariant;

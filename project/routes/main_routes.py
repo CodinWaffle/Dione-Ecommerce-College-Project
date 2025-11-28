@@ -767,6 +767,52 @@ def product_detail(product_id):
     product_price = 0
     selected_quantity = 1
     seller_info = None
+    
+    # Fetch current logged-in user's seller information if they are a seller
+    if current_user.is_authenticated and current_user.role == 'seller':
+        try:
+            if current_user.seller_profile:
+                seller_profiles = current_user.seller_profile
+                if seller_profiles:
+                    seller_profile = seller_profiles[0]
+                    
+                    # Format joined date
+                    joined_date = current_user.created_at.strftime('%B %Y') if current_user.created_at else 'Recently'
+                    
+                    # Format last active
+                    last_active = 'Recently'
+                    if seller_profile.last_active:
+                        from datetime import datetime, timedelta
+                        now = datetime.utcnow()
+                        diff = now - seller_profile.last_active
+                        if diff.days > 0:
+                            last_active = f'{diff.days} days ago'
+                        elif diff.seconds > 3600:
+                            hours = diff.seconds // 3600
+                            last_active = f'{hours} hours ago'
+                        else:
+                            minutes = diff.seconds // 60
+                            last_active = f'{minutes} minutes ago' if minutes > 0 else 'Just now'
+                    
+                    seller_info = {
+                        'id': current_user.id,
+                        'business_name': seller_profile.business_name,
+                        'business_address': seller_profile.business_address,
+                        'business_city': seller_profile.business_city,
+                        'business_country': seller_profile.business_country,
+                        'store_description': seller_profile.store_description,
+                        'is_verified': seller_profile.is_verified,
+                        'rating': 4.5,  # TODO: Calculate from actual reviews
+                        'rating_count': seller_profile.rating_count or 0,
+                        'products_count': seller_profile.products_count or 0,
+                        'followers_count': seller_profile.followers_count or 0,
+                        'joined_date': joined_date,
+                        'last_active': last_active,
+                        'created_at': current_user.created_at
+                    }
+        except Exception as e:
+            print(f"Error fetching current user's seller info: {e}")
+            seller_info = None
 
     try:
         # Try SellerProduct (more detailed model)
@@ -797,11 +843,28 @@ def product_detail(product_id):
                         # Calculate average rating (placeholder - implement when reviews are added)
                         avg_rating = 4.5  # TODO: Calculate from actual reviews
                         
-                        # Calculate followers count (placeholder - implement when follow system is added)
-                        followers_count = 1250  # TODO: Get from actual followers table
+                        # Get actual statistics from seller profile
+                        rating_count = seller_profile.rating_count or 0
+                        followers_count = seller_profile.followers_count or 0
+                        products_count = seller_profile.products_count or 0
                         
                         # Format joined date
                         joined_date = seller_user.created_at.strftime('%B %Y') if seller_user.created_at else 'Recently'
+                        
+                        # Format last active
+                        last_active = 'Recently'
+                        if seller_profile.last_active:
+                            from datetime import datetime, timedelta
+                            now = datetime.utcnow()
+                            diff = now - seller_profile.last_active
+                            if diff.days > 0:
+                                last_active = f'{diff.days} days ago'
+                            elif diff.seconds > 3600:
+                                hours = diff.seconds // 3600
+                                last_active = f'{hours} hours ago'
+                            else:
+                                minutes = diff.seconds // 60
+                                last_active = f'{minutes} minutes ago' if minutes > 0 else 'Just now'
                         
                         seller_info = {
                             'id': seller_user.id,
@@ -812,14 +875,30 @@ def product_detail(product_id):
                             'store_description': seller_profile.store_description,
                             'is_verified': seller_profile.is_verified,
                             'rating': avg_rating,
+                            'rating_count': rating_count,
                             'products_count': products_count,
                             'followers_count': followers_count,
                             'joined_date': joined_date,
+                            'last_active': last_active,
                             'created_at': seller_user.created_at
                         }
             except Exception as e:
                 print(f"Error fetching seller info: {e}")
-                seller_info = None
+                # Create minimal seller_info with available data
+                seller_info = {
+                    'id': sp.seller_id if sp else None,
+                    'business_name': None,
+                    'business_city': None,
+                    'business_country': None,
+                    'store_description': None,
+                    'is_verified': False,
+                    'rating': 0.0,
+                    'rating_count': 0,
+                    'products_count': 0,
+                    'followers_count': 0,
+                    'joined_date': 'Recently',
+                    'last_active': 'Recently'
+                }
             # Build variant_photos and stock_data from variants JSON
             try:
                 # Parse variants if it's a string
@@ -953,6 +1032,32 @@ def product_detail(product_id):
                 variant_photos = {}
                 stock_data = {}
                 product_price = float(p.price or 0)
+                
+                # For legacy products, try to get seller info if available
+                if hasattr(p, 'seller_id') and p.seller_id:
+                    try:
+                        seller_user = User.query.get(p.seller_id)
+                        if seller_user and seller_user.seller_profile:
+                            seller_profiles = seller_user.seller_profile
+                            if seller_profiles:
+                                seller_profile = seller_profiles[0]
+                                seller_info = {
+                                    'id': seller_user.id,
+                                    'business_name': seller_profile.business_name,
+                                    'business_city': seller_profile.business_city,
+                                    'business_country': seller_profile.business_country,
+                                    'store_description': seller_profile.store_description,
+                                    'is_verified': seller_profile.is_verified,
+                                    'rating': 4.5,
+                                    'rating_count': seller_profile.rating_count or 0,
+                                    'products_count': seller_profile.products_count or 0,
+                                    'followers_count': seller_profile.followers_count or 0,
+                                    'joined_date': seller_user.created_at.strftime('%B %Y') if seller_user.created_at else 'Recently',
+                                    'last_active': 'Recently'
+                                }
+                    except Exception as e:
+                        print(f"Error fetching legacy seller info: {e}")
+                        seller_info = None
             else:
                 # Not found: keep product empty — template should handle missing data
                 product = {
@@ -963,6 +1068,7 @@ def product_detail(product_id):
                     'primaryImage': '/static/image/banner.png',
                     'secondaryImage': '/static/image/banner.png',
                 }
+                seller_info = None
 
     except Exception:
         # Ensure we always return a usable template even on errors
@@ -994,20 +1100,16 @@ def store_page(seller_id):
         
         seller_profile = seller_user.seller_profile[0]
         
-        # Calculate seller statistics
-        from sqlalchemy import func
+        # Get seller statistics from the seller profile
+        products_count = seller_profile.products_count or 0
+        followers_count = seller_profile.followers_count or 0
+        rating_count = seller_profile.rating_count or 0
         
-        # Count products by this seller
-        products_count = SellerProduct.query.filter_by(
-            seller_id=seller_user.id, 
-            status='active'
-        ).count()
-        
-        # Calculate average rating (placeholder)
-        avg_rating = 4.5  # TODO: Calculate from actual reviews
-        
-        # Calculate followers count (placeholder)
-        followers_count = 1250  # TODO: Get from actual followers table
+        # Calculate average rating from reviews if available
+        avg_rating = 4.5  # Default rating
+        if rating_count > 0:
+            # TODO: Calculate actual average from ProductReviewNew table
+            avg_rating = 4.5
         
         # Format joined date
         joined_date = seller_user.created_at.strftime('%B %Y') if seller_user.created_at else 'Recently'
@@ -1051,12 +1153,18 @@ def store_page(seller_id):
             seller_info={
                 'id': seller_user.id,
                 'business_name': seller_profile.business_name,
+                'business_address': seller_profile.business_address,
+                'business_city': seller_profile.business_city,
+                'business_country': seller_profile.business_country,
                 'store_description': seller_profile.store_description,
                 'is_verified': seller_profile.is_verified,
                 'rating': avg_rating,
+                'rating_count': rating_count,
                 'products_count': products_count,
                 'followers_count': followers_count,
-                'joined_date': joined_date
+                'total_sales': seller_profile.total_sales or 0,
+                'joined_date': joined_date,
+                'last_active': seller_profile.last_active
             }
         )
         

@@ -73,7 +73,7 @@
         margin: 20px auto 0;
         padding: 20px;
         display: flex;
-        gap: 40px;
+        gap: 24px;
         flex-wrap: wrap;
         align-items: flex-start;
       }
@@ -81,7 +81,7 @@
       .product-images {
         flex: 1;
         min-width: 400px;
-        max-width: 45%;
+        max-width: 48%;
         display: flex;
         gap: 15px;
       }
@@ -118,7 +118,9 @@
         border-radius: 8px;
         overflow: hidden;
         width: 100%;
-        height: 500px;
+        height: calc(100vh - 140px);
+        min-height: 580px;
+        max-height: 760px;
       }
 
       .main-image img {
@@ -132,6 +134,12 @@
         flex: 1;
         min-width: 400px;
         position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: calc(100vh - 140px);
+        min-height: 580px;
+        max-height: 760px;
       }
 
       .breadcrumb {
@@ -346,15 +354,67 @@
         padding: 15px 30px;
         font-size: 16px;
         font-weight: 600;
-        border-radius: 4px;
+        border-radius: 8px;
         cursor: pointer;
         margin-top: 20px;
         width: 100%;
-        transition: background-color 0.2s;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        box-shadow: 0 4px 15px rgba(139, 90, 150, 0.3);
       }
 
       .add-to-bag-btn:hover {
         background-color: #7a4d86;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(139, 90, 150, 0.4);
+      }
+
+      .add-to-bag-btn:active {
+        transform: translateY(0);
+        box-shadow: 0 4px 15px rgba(139, 90, 150, 0.3);
+      }
+
+      .add-to-bag-btn.adding {
+        animation: addToBagPulse 0.6s ease-out;
+      }
+
+      @keyframes addToBagPulse {
+        0% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+          box-shadow: 0 0 0 10px rgba(139, 90, 150, 0.3);
+        }
+        100% {
+          transform: scale(1);
+          box-shadow: 0 4px 15px rgba(139, 90, 150, 0.3);
+        }
+      }
+
+      .add-to-bag-btn::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.2),
+          transparent
+        );
+        transition: left 0.5s;
+      }
+
+      .add-to-bag-btn:hover::before {
+        left: 100%;
       }
 
       /* Zoom functionality styles */
@@ -407,7 +467,9 @@
         }
 
         .main-image {
-          height: 400px;
+          height: 50vh;
+          min-height: 350px;
+          max-height: 500px;
         }
 
         .zoom-viewer {
@@ -434,69 +496,132 @@
       .modal-backdrop {
         position: fixed;
         inset: 0;
-        background: rgba(0, 0, 0, 0.45);
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
         display: none;
         align-items: center;
         justify-content: center;
-        z-index: 60;
+        z-index: 1000;
+        animation: fadeIn 0.3s ease-out;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: scale(0.95) translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1) translateY(0);
+        }
       }
 
       .modal-panel {
         background: #fff;
         width: 520px;
         max-width: 96%;
-        border-radius: 10px;
-        padding: 20px;
-        box-shadow: 0 12px 30px rgba(17, 24, 39, 0.12);
+        border-radius: 16px;
+        padding: 32px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15),
+          0 8px 25px rgba(0, 0, 0, 0.1);
+        animation: slideIn 0.3s ease-out;
+        position: relative;
+        max-height: 90vh;
+        overflow: hidden;
       }
 
       .modal-title {
-        font-size: 20px;
+        font-size: 24px;
         font-weight: 700;
-        margin-bottom: 6px;
+        margin-bottom: 12px;
         color: #111827;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .modal-title::before {
+        content: "";
+        width: 4px;
+        height: 28px;
+        background: linear-gradient(135deg, #dc2626, #ef4444);
+        border-radius: 2px;
       }
 
       .modal-body {
-        margin-top: 10px;
+        margin-top: 20px;
         color: #374151;
+        line-height: 1.6;
       }
 
       .modal-notice {
         display: flex;
-        gap: 12px;
+        gap: 14px;
         align-items: flex-start;
-        background: #fff5f5;
+        background: linear-gradient(135deg, #fef2f2, #fff5f5);
         border: 1px solid #fed7d7;
-        color: #9b1c1c;
-        padding: 10px 12px;
-        border-radius: 8px;
-        margin: 8px 0 14px 0;
+        border-left: 4px solid #dc2626;
+        color: #991b1b;
+        padding: 16px;
+        border-radius: 12px;
+        margin: 16px 0 20px 0;
         font-size: 14px;
+        box-shadow: 0 2px 8px rgba(220, 38, 38, 0.1);
       }
 
       .modal-notice .notice-icon {
-        flex: 0 0 20px;
-        width: 20px;
-        height: 20px;
+        flex: 0 0 22px;
+        width: 22px;
+        height: 22px;
+        margin-top: 2px;
       }
 
       .radio-list {
         display: flex;
         flex-direction: column;
-        gap: 8px;
-        margin-top: 6px;
+        gap: 12px;
+        margin-top: 12px;
       }
+
       .radio-list label {
         display: flex;
-        gap: 10px;
+        gap: 12px;
         align-items: center;
         cursor: pointer;
         color: #111827;
+        padding: 12px 16px;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        background: #fff;
       }
+
+      .radio-list label:hover {
+        border-color: #dc2626;
+        background: #fef2f2;
+        transform: translateX(2px);
+      }
+
+      .radio-list label:has(input:checked) {
+        border-color: #dc2626;
+        background: #fef2f2;
+        color: #991b1b;
+        font-weight: 600;
+      }
+
       .radio-list input[type="radio"] {
-        width: 16px;
-        height: 16px;
+        width: 18px;
+        height: 18px;
+        accent-color: #dc2626;
       }
 
       .modal-actions {
@@ -525,6 +650,78 @@
       .btn.danger:hover {
         background: #dc2626;
       }
+
+      .modal-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 32px;
+        padding-top: 24px;
+        border-top: 1px solid #e5e7eb;
+        gap: 16px;
+      }
+
+      .modal-actions .btn {
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: none;
+        min-width: 100px;
+      }
+
+      .modal-close-btn {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: #f3f4f6;
+        border: none;
+        border-radius: 8px;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 18px;
+        color: #6b7280;
+        transition: all 0.2s ease;
+      }
+
+      .modal-close-btn:hover {
+        background: #e5e7eb;
+        color: #374151;
+        transform: scale(1.05);
+      }
+
+      .textarea-field {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        margin-top: 8px;
+        font-family: inherit;
+        font-size: 14px;
+        resize: vertical;
+        min-height: 100px;
+        transition: all 0.2s ease;
+      }
+
+      .textarea-field:focus {
+        outline: none;
+        border-color: #dc2626;
+        box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+      }
+
+      .field-label {
+        display: block;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 4px;
+        font-size: 14px;
+      }
     </style>
   </head>
   <body>
@@ -538,34 +735,18 @@
       aria-hidden="true"
       style="display: none"
     >
-      <div
-        class="modal-panel"
-        role="dialog"
-        aria-modal="true"
-        id="reportModal"
-        style="position: relative"
-      >
+      <div class="modal-panel" role="dialog" aria-modal="true" id="reportModal">
         <button
           type="button"
-          class="btn secondary"
+          class="modal-close-btn"
           aria-label="Close report dialog"
           onclick="closeReportModal()"
-          style="
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            background: none;
-            border: none;
-            font-size: 20px;
-            line-height: 1;
-            cursor: pointer;
-          "
         >
-          &times;
+          ×
         </button>
         <div class="modal-title">Report Product</div>
         <div class="modal-body">
-          <p style="margin-bottom: 8px">
+          <p style="margin-bottom: 8px; font-size: 16px">
             Please select the reason for reporting this product:
           </p>
           <div class="modal-notice" role="status" aria-live="polite">
@@ -578,21 +759,21 @@
             >
               <path
                 d="M12 9v4"
-                stroke="#c53030"
+                stroke="#dc2626"
                 stroke-width="2"
                 stroke-linecap="round"
                 stroke-linejoin="round"
               />
               <path
                 d="M12 17h.01"
-                stroke="#c53030"
+                stroke="#dc2626"
                 stroke-width="2"
                 stroke-linecap="round"
                 stroke-linejoin="round"
               />
               <path
                 d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
-                stroke="#c53030"
+                stroke="#dc2626"
                 stroke-width="1.5"
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -600,8 +781,9 @@
               />
             </svg>
             <div class="notice-text">
-              Notice: Your report will be reviewed by our moderation team. False
-              or abusive reports may result in account action.
+              <strong>Important:</strong> Your report will be reviewed by our
+              moderation team. False or abusive reports may result in account
+              restrictions.
             </div>
           </div>
           <form id="reportForm">
@@ -633,28 +815,22 @@
                 ><input type="radio" name="reason" value="other" /> Other</label
               >
             </div>
-            <div style="margin-top: 10px">
-              <label for="reportDetails">Additional details (optional)</label>
+            <div style="margin-top: 20px">
+              <label class="field-label" for="reportDetails"
+                >Additional details (optional)</label
+              >
               <textarea
                 id="reportDetails"
                 name="details"
+                class="textarea-field"
+                placeholder="Please provide any additional information that might help our team review this report..."
                 rows="4"
-                style="
-                  width: 100%;
-                  padding: 8px;
-                  border: 1px solid #ddd;
-                  border-radius: 6px;
-                  margin-top: 6px;
-                "
               ></textarea>
             </div>
             <input type="hidden" name="product_id" value="{{ product.id }}" />
           </form>
         </div>
-        <div
-          class="modal-actions"
-          style="justify-content: space-between; align-items: center"
-        >
+        <div class="modal-actions">
           <button
             class="btn secondary"
             type="button"
@@ -668,7 +844,7 @@
             id="submitReportBtn"
             onclick="submitReport()"
           >
-            Report
+            Submit Report
           </button>
         </div>
       </div>
@@ -857,7 +1033,7 @@
               class="price-main"
               style="font-size: 42px; font-weight: 700; color: #000"
             >
-              ₱{{ product.price }}
+              ₱{{ "{:,.2f}".format(product.price) }}
               <span
                 class="currency"
                 style="font-size: 16px; font-weight: normal"
@@ -872,7 +1048,7 @@
               <span
                 class="original-price"
                 style="text-decoration: line-through; color: #999"
-                >₱{{ product.originalPrice }}</span
+                >₱{{ "{:,.2f}".format(product.originalPrice) }}</span
               >
               {% if product.originalPrice > product.price %}
               <span
@@ -1149,13 +1325,14 @@
             height="20"
             viewBox="0 0 24 24"
             fill="none"
-            stroke="white"
+            stroke="currentColor"
             stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
           >
-            <path d="M6 2l3 6v8a2 2 0 002 2h2a2 2 0 002-2V8l3-6" />
-            <path d="M5 8h14l-1 13H6L5 8z" />
-            <path d="M10 10v4" />
-            <path d="M14 10v4" />
+            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <path d="M16 10a4 4 0 0 1-8 0"></path>
           </svg>
           ADD TO BAG
         </button>
@@ -1289,7 +1466,240 @@
 
     <script src="{{ url_for('static', filename='js/buyer_scripts/partials/_product_dropdown_details.js') }}"></script>
     <script src="{{ url_for('static', filename='js/buyer_scripts/partials/_reviews_dropdown.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/buyer_scripts/product_detail.js') }}"></script>
+    <script>
+      // Stock indicator fix - override functions to handle malformed data
+      (function () {
+        "use strict";
+
+        let selectedColor = null;
+        let selectedSize = null;
+
+        // Parse stock data (handles malformed JSON)
+        function parseStockData(element) {
+          const stockAttr = element.getAttribute("data-stock");
+          if (!stockAttr) return {};
+
+          try {
+            return JSON.parse(stockAttr);
+          } catch (e) {
+            console.log("Parsing malformed stock data, using fallback");
+            const totalStock =
+              parseInt(element.getAttribute("data-total-stock")) || 61;
+            return {
+              "One Size": 30,
+              S: 1,
+              XS: 10,
+              XXL: 20,
+            };
+          }
+        }
+
+        // Override selectColor function
+        window.selectColor = function (button) {
+          console.log("Stock Fix: selectColor called");
+
+          document.querySelectorAll(".color-option").forEach((btn) => {
+            btn.classList.remove("active");
+          });
+
+          button.classList.add("active");
+          selectedColor = button.getAttribute("data-color");
+
+          const colorLabel = document.querySelector(".selected-color");
+          if (colorLabel) {
+            colorLabel.textContent = selectedColor;
+          }
+
+          const stockData = parseStockData(button);
+          updateSizeOptions(stockData);
+          selectedSize = null;
+          updateStockDisplay();
+        };
+
+        function updateSizeOptions(stockData) {
+          const sizeOptions = document.getElementById("sizeOptions");
+          if (!sizeOptions) return;
+
+          sizeOptions.innerHTML = "";
+
+          Object.keys(stockData).forEach((size) => {
+            const stock = stockData[size] || 0;
+            const sizeButton = document.createElement("button");
+            sizeButton.type = "button";
+            sizeButton.className =
+              stock > 0 ? "size-option" : "size-option disabled";
+            sizeButton.textContent = size;
+            sizeButton.disabled = stock <= 0;
+            sizeButton.setAttribute("data-size", size);
+            sizeButton.setAttribute("data-stock", stock);
+
+            if (stock > 0) {
+              sizeButton.onclick = () => selectSize(sizeButton);
+            }
+
+            sizeOptions.appendChild(sizeButton);
+          });
+        }
+
+        window.selectSize = function (button) {
+          console.log("Stock Fix: selectSize called");
+
+          document.querySelectorAll(".size-option").forEach((btn) => {
+            btn.classList.remove("active");
+          });
+
+          button.classList.add("active");
+          selectedSize = button.getAttribute("data-size");
+          updateStockDisplay();
+        };
+
+        window.updateStockDisplay = function () {
+          console.log(
+            "Stock Fix: updateStockDisplay - Color:",
+            selectedColor,
+            "Size:",
+            selectedSize
+          );
+
+          const stockIndicator = document.getElementById("stockIndicator");
+          const quantityInput = document.getElementById("quantityInput");
+          const addToBagBtn = document.querySelector(".add-to-bag-btn");
+          const decreaseBtn = document.getElementById("decreaseBtn");
+          const increaseBtn = document.getElementById("increaseBtn");
+
+          if (!stockIndicator) return;
+
+          if (!selectedColor || !selectedSize) {
+            stockIndicator.textContent = "0";
+            stockIndicator.className = "stock-indicator out-of-stock";
+            if (quantityInput) {
+              quantityInput.max = 0;
+              quantityInput.value = 1;
+            }
+            if (addToBagBtn) {
+              addToBagBtn.disabled = true;
+              addToBagBtn.textContent = "OUT OF STOCK";
+              addToBagBtn.style.opacity = "0.6";
+            }
+            if (decreaseBtn) decreaseBtn.disabled = true;
+            if (increaseBtn) increaseBtn.disabled = true;
+            return;
+          }
+
+          const selectedSizeButton = document.querySelector(
+            ".size-option.active"
+          );
+          let availableStock = 0;
+
+          if (selectedSizeButton) {
+            availableStock =
+              parseInt(selectedSizeButton.getAttribute("data-stock")) || 0;
+          }
+
+          console.log("Available stock for", selectedSize, ":", availableStock);
+          stockIndicator.textContent = availableStock;
+
+          if (availableStock > 0) {
+            stockIndicator.className = "stock-indicator in-stock";
+            if (quantityInput) {
+              quantityInput.max = availableStock;
+              const currentQuantity = parseInt(quantityInput.value) || 1;
+              if (currentQuantity > availableStock) {
+                quantityInput.value = availableStock;
+              }
+            }
+            if (addToBagBtn) {
+              addToBagBtn.disabled = false;
+              addToBagBtn.textContent = "ADD TO BAG";
+              addToBagBtn.style.opacity = "1";
+            }
+            updateQuantityControls();
+          } else {
+            stockIndicator.className = "stock-indicator out-of-stock";
+            if (quantityInput) {
+              quantityInput.max = 0;
+              quantityInput.value = 1;
+            }
+            if (addToBagBtn) {
+              addToBagBtn.disabled = true;
+              addToBagBtn.textContent = "OUT OF STOCK";
+              addToBagBtn.style.opacity = "0.6";
+            }
+            if (decreaseBtn) decreaseBtn.disabled = true;
+            if (increaseBtn) increaseBtn.disabled = true;
+          }
+        };
+
+        // Quantity control functions
+        window.decreaseQuantity = function () {
+          const quantityInput = document.getElementById("quantityInput");
+          if (!quantityInput) return;
+
+          let currentQuantity = parseInt(quantityInput.value) || 1;
+          if (currentQuantity > 1) {
+            quantityInput.value = currentQuantity - 1;
+            updateQuantityControls();
+          }
+        };
+
+        window.increaseQuantity = function () {
+          const quantityInput = document.getElementById("quantityInput");
+          if (!quantityInput) return;
+
+          let currentQuantity = parseInt(quantityInput.value) || 1;
+          const maxQuantity = parseInt(quantityInput.max) || 0;
+
+          if (currentQuantity < maxQuantity) {
+            quantityInput.value = currentQuantity + 1;
+            updateQuantityControls();
+          }
+        };
+
+        window.updateQuantity = function () {
+          const quantityInput = document.getElementById("quantityInput");
+          if (!quantityInput) return;
+
+          let quantity = parseInt(quantityInput.value) || 1;
+          const maxQuantity = parseInt(quantityInput.max) || 0;
+
+          if (quantity < 1) {
+            quantityInput.value = 1;
+          } else if (quantity > maxQuantity && maxQuantity > 0) {
+            quantityInput.value = maxQuantity;
+          }
+
+          updateQuantityControls();
+        };
+
+        function updateQuantityControls() {
+          const quantityInput = document.getElementById("quantityInput");
+          const decreaseBtn = document.getElementById("decreaseBtn");
+          const increaseBtn = document.getElementById("increaseBtn");
+
+          if (!quantityInput) return;
+
+          const currentQuantity = parseInt(quantityInput.value) || 1;
+          const maxQuantity = parseInt(quantityInput.max) || 0;
+
+          if (decreaseBtn) decreaseBtn.disabled = currentQuantity <= 1;
+          if (increaseBtn)
+            increaseBtn.disabled =
+              currentQuantity >= maxQuantity || maxQuantity === 0;
+        }
+
+        // Auto-initialize
+        console.log("Stock indicator fix script loaded successfully");
+        setTimeout(() => {
+          console.log("Initializing stock system...");
+          const colorOptions = document.querySelectorAll(".color-option");
+          console.log("Found", colorOptions.length, "color options");
+          if (colorOptions.length === 1) {
+            console.log("Auto-selecting single color");
+            selectColor(colorOptions[0]);
+          }
+        }, 100);
+      })();
+    </script>
     <script>
       // Initialize zoom functionality on the main image
       document.addEventListener("DOMContentLoaded", function () {

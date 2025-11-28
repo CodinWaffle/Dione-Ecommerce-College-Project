@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Elegant Boutique - Premium Store</title>
+
+    <!-- Modern CSS Framework -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+      :root {
+        --primary-color: #6366f1;
+        --primary-dark: #4f46e5;
+        --secondary-color: #8b5cf6;
+        --accent-color: #06b6d4;
+        --success-color: #10b981;
+        --warning-color: #f59e0b;
+        --error-color: #ef4444;
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f2937;
+        --gray-900: #111827;
+        --white: #ffffff;
+        --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        --border-radius: 12px;
+        --border-radius-lg: 16px;
+        --border-radius-xl: 20px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: var(--gray-50);
+        color: var(--gray-900);
+        margin: 0;
+        line-height: 1.6;
+      }
+
+      /* Simple Header */
+      .header {
+        background: var(--white);
+        border-bottom: 1px solid var(--gray-200);
+        padding: 16px 0;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+
+      .header-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .logo {
+        font-size: 24px;
+        font-weight: 800;
+        color: var(--primary-color);
+        text-decoration: none;
+      }
+
+      .nav-links {
+        display: flex;
+        gap: 32px;
+        align-items: center;
+      }
+
+      .nav-link {
+        color: var(--gray-600);
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.2s ease;
+      }
+
+      .nav-link:hover {
+        color: var(--primary-color);
+      }
+
+      /* Hero Banner */
+      .hero-banner {
+        position: relative;
+        width: 100%;
+        height: 400px;
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        overflow: hidden;
+      }
+
+      .hero-banner::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.05"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.05"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.05"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+        opacity: 0.3;
+      }
+
+      .hero-content {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2;
+      }
+
+      /* Store Profile Card */
+      .store-profile-card {
+        position: relative;
+        max-width: 1200px;
+        margin: -200px auto 0;
+        padding: 0 24px;
+        z-index: 10;
+      }
+
+      .profile-card {
+        background: var(--white);
+        border-radius: var(--border-radius-xl);
+        padding: 32px;
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--gray-200);
+        display: flex;
+        align-items: center;
+        gap: 32px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .profile-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-color), var(--secondary-color), var(--accent-color));
+      }
+
+      .store-avatar {
+        position: relative;
+        flex-shrink: 0;
+      }
+
+      .avatar-container {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 4px solid var(--white);
+        box-shadow: var(--shadow-lg);
+        position: relative;
+      }
+
+      .avatar-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .verified-badge {
+        position: absolute;
+        bottom: 8px;
+        right: 8px;
+        width: 32px;
+        height: 32px;
+        background: var(--success-color);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 3px solid var(--white);
+        box-shadow: var(--shadow-md);
+      }
+
+      .store-info {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .store-name {
+        font-size: 32px;
+        font-weight: 800;
+        color: var(--gray-900);
+        margin: 0 0 8px 0;
+        line-height: 1.2;
+      }
+
+      .store-location {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--gray-600);
+        font-size: 16px;
+        font-weight: 500;
+        margin-bottom: 16px;
+      }
+
+      .store-rating {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+
+      .stars {
+        display: flex;
+        gap: 2px;
+      }
+
+      .star {
+        width: 20px;
+        height: 20px;
+        color: #fbbf24;
+      }
+
+      .rating-text {
+        font-weight: 600;
+        color: var(--gray-900);
+      }
+
+      .rating-count {
+        color: var(--gray-500);
+        font-size: 14px;
+      }
+
+      .store-stats {
+        display: flex;
+        gap: 32px;
+        align-items: center;
+      }
+
+      .stat-item {
+        text-align: center;
+      }
+
+      .stat-number {
+        font-size: 24px;
+        font-weight: 800;
+        color: var(--gray-900);
+        line-height: 1;
+        margin-bottom: 4px;
+      }
+
+      .stat-label {
+        font-size: 14px;
+        color: var(--gray-500);
+        font-weight: 500;
+      }
+
+      .store-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-end;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 12px 24px;
+        border-radius: var(--border-radius);
+        font-weight: 600;
+        font-size: 14px;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        border: none;
+        min-width: 140px;
+      }
+
+      .btn-primary {
+        background: var(--primary-color);
+        color: var(--white);
+        box-shadow: var(--shadow-sm);
+      }
+
+      .btn-primary:hover {
+        background: var(--primary-dark);
+        box-shadow: var(--shadow-md);
+        transform: translateY(-1px);
+      }
+
+      .btn-secondary {
+        background: var(--white);
+        color: var(--primary-color);
+        border: 2px solid var(--primary-color);
+      }
+
+      .btn-secondary:hover {
+        background: var(--primary-color);
+        color: var(--white);
+        transform: translateY(-1px);
+      }
+
+      .btn-success {
+        background: var(--success-color);
+        color: var(--white);
+      }
+
+      /* Store Description */
+      .store-description {
+        max-width: 1200px;
+        margin: 40px auto;
+        padding: 0 24px;
+      }
+
+      .description-card {
+        background: var(--white);
+        border-radius: var(--border-radius-lg);
+        padding: 32px;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--gray-200);
+      }
+
+      .description-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--gray-900);
+        margin-bottom: 16px;
+      }
+
+      .description-text {
+        color: var(--gray-600);
+        line-height: 1.7;
+        font-size: 16px;
+      }
+
+      /* Products Section */
+      .products-section {
+        max-width: 1200px;
+        margin: 40px auto;
+        padding: 0 24px;
+      }
+
+      .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 32px;
+      }
+
+      .section-title {
+        font-size: 28px;
+        font-weight: 800;
+        color: var(--gray-900);
+        margin: 0;
+      }
+
+      .view-all-btn {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        transition: all 0.2s ease;
+      }
+
+      .view-all-btn:hover {
+        color: var(--primary-dark);
+        transform: translateX(2px);
+      }
+
+      /* Product Grid */
+      .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 24px;
+        margin-bottom: 48px;
+      }
+
+      /* Enhanced Product Card */
+      .product-card {
+        background: var(--white);
+        border-radius: var(--border-radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--gray-200);
+        transition: all 0.3s ease;
+        position: relative;
+        cursor: pointer;
+      }
+
+      .product-card:hover {
+        box-shadow: var(--shadow-lg);
+        transform: translateY(-4px);
+      }
+
+      .product-image-container {
+        position: relative;
+        aspect-ratio: 1;
+        overflow: hidden;
+        background: var(--gray-100);
+      }
+
+      .product-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+      }
+
+      .product-card:hover .product-image {
+        transform: scale(1.05);
+      }
+
+      .product-actions {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        opacity: 0;
+        transform: translateX(10px);
+        transition: all 0.3s ease;
+      }
+
+      .product-card:hover .product-actions {
+        opacity: 1;
+        transform: translateX(0);
+      }
+
+      .action-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--white);
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: var(--shadow-md);
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .action-btn:hover {
+        background: var(--primary-color);
+        color: var(--white);
+        transform: scale(1.1);
+      }
+
+      .product-info {
+        padding: 20px;
+      }
+
+      .product-name {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin: 0 0 8px 0;
+        line-height: 1.4;
+      }
+
+      .product-price {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+
+      .current-price {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--gray-900);
+      }
+
+      .original-price {
+        font-size: 14px;
+        color: var(--gray-400);
+        text-decoration: line-through;
+      }
+
+      .discount-badge {
+        background: var(--error-color);
+        color: var(--white);
+        font-size: 12px;
+        font-weight: 600;
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+
+      .product-rating {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 14px;
+        color: var(--gray-500);
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .hero-banner {
+          height: 300px;
+        }
+
+        .store-profile-card {
+          margin: -150px auto 0;
+          padding: 0 16px;
+        }
+
+        .profile-card {
+          flex-direction: column;
+          text-align: center;
+          padding: 24px;
+          gap: 24px;
+        }
+
+        .avatar-container {
+          width: 100px;
+          height: 100px;
+        }
+
+        .store-name {
+          font-size: 24px;
+        }
+
+        .store-stats {
+          gap: 24px;
+        }
+
+        .store-actions {
+          flex-direction: row;
+          width: 100%;
+        }
+
+        .btn {
+          flex: 1;
+          min-width: auto;
+        }
+
+        .product-grid {
+          grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+          gap: 16px;
+        }
+
+        .section-title {
+          font-size: 24px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .hero-banner {
+          height: 250px;
+        }
+
+        .store-profile-card {
+          margin: -125px auto 0;
+          padding: 0 12px;
+        }
+
+        .profile-card {
+          padding: 20px;
+        }
+
+        .store-stats {
+          gap: 16px;
+        }
+
+        .stat-number {
+          font-size: 20px;
+        }
+
+        .product-grid {
+          grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+          gap: 12px;
+        }
+      }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+      <div class="header-content">
+        <a href="#" class="logo">DIONE</a>
+        <div class="nav-links">
+          <a href="#" class="nav-link">Home</a>
+          <a href="#" class="nav-link">Shop</a>
+          <a href="#" class="nav-link">About</a>
+          <a href="#" class="nav-link">Contact</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hero Banner -->
+    <div class="hero-banner">
+      <div class="hero-content">
+        <!-- Optional: Add store banner content here -->
+      </div>
+    </div>
+
+    <!-- Store Profile Card -->
+    <div class="store-profile-card">
+      <div class="profile-card">
+        <div class="store-avatar">
+          <div class="avatar-container">
+            <img
+              src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=160&h=160&fit=crop"
+              alt="Elegant Boutique Logo"
+            />
+            <div class="verified-badge">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                <polyline points="20,6 9,17 4,12"></polyline>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="store-info">
+          <h1 class="store-name">Elegant Boutique</h1>
+          
+          <div class="store-location">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+            Manila, Philippines
+          </div>
+
+          <div class="store-rating">
+            <div class="stars">
+              <svg class="star" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+              </svg>
+              <svg class="star" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+              </svg>
+              <svg class="star" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+              </svg>
+              <svg class="star" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+              </svg>
+              <svg class="star" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+              </svg>
+            </div>
+            <span class="rating-text">4.8</span>
+            <span class="rating-count">(2,847 reviews)</span>
+          </div>
+
+          <div class="store-stats">
+            <div class="stat-item">
+              <div class="stat-number">1.2K</div>
+              <div class="stat-label">Products Sold</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-number">8.5K</div>
+              <div class="stat-label">Followers</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-number">4.8</div>
+              <div class="stat-label">Rating</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="store-actions">
+          <button class="btn btn-primary" id="followBtn" onclick="toggleFollow()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>Follow</span>
+          </button>
+
+          <button class="btn btn-secondary" onclick="handleChat()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span>Chat</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Store Description -->
+    <div class="store-description">
+      <div class="description-card">
+        <h2 class="description-title">About Our Store</h2>
+        <p class="description-text">Welcome to Elegant Boutique, your premier destination for high-quality fashion and lifestyle products. We curate the finest selection of clothing, accessories, and home goods from around the world. Our commitment to excellence and customer satisfaction has made us a trusted name in the industry for over a decade.</p>
+      </div>
+    </div>
+
+    <!-- Products Section -->
+    <div class="products-section">
+      <div class="section-header">
+        <h2 class="section-title">Our Products</h2>
+        <a href="#" class="view-all-btn">
+          View All
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9,18 15,12 9,6"></polyline>
+          </svg>
+        </a>
+      </div>
+
+      <div class="product-grid" id="productGrid">
+        <!-- Sample Products -->
+      </div>
+    </div>
+
+    <script>
+      // Store functionality
+      function toggleFollow() {
+        const btn = document.getElementById("followBtn");
+        const icon = btn.querySelector('svg');
+        const text = btn.querySelector('span');
+        
+        if (btn.classList.contains("following")) {
+          btn.classList.remove("following");
+          btn.classList.remove("btn-success");
+          btn.classList.add("btn-primary");
+          icon.innerHTML = '<line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>';
+          text.textContent = "Follow";
+        } else {
+          btn.classList.add("following");
+          btn.classList.remove("btn-primary");
+          btn.classList.add("btn-success");
+          icon.innerHTML = '<polyline points="20,6 9,17 4,12"></polyline>';
+          text.textContent = "Following";
+        }
+      }
+
+      function handleChat() {
+        alert("💬 Opening chat with Elegant Boutique...");
+      }
+
+      // Product loading and rendering
+      function createProductCard(product) {
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        card.onclick = () => alert(`Viewing ${product.name}`);
+        
+        const discount = product.originalPrice && product.originalPrice > product.price 
+          ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+          : 0;
+
+        card.innerHTML = `
+          <div class="product-image-container">
+            <img 
+              src="${product.primaryImage}" 
+              alt="${product.name}"
+              class="product-image"
+              loading="lazy"
+            />
+            <div class="product-actions">
+              <button class="action-btn" onclick="event.stopPropagation(); alert('Added to wishlist!')" aria-label="Add to wishlist">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                </svg>
+              </button>
+              <button class="action-btn" onclick="event.stopPropagation(); alert('Added to cart!')" aria-label="Quick add to cart">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                  <line x1="3" y1="6" x2="21" y2="6"></line>
+                  <path d="M16 10a4 4 0 0 1-8 0"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="product-info">
+            <h3 class="product-name">${product.name}</h3>
+            <div class="product-price">
+              <span class="current-price">₱${Number(product.price).toLocaleString()}</span>
+              ${product.originalPrice ? `<span class="original-price">₱${Number(product.originalPrice).toLocaleString()}</span>` : ''}
+              ${discount > 0 ? `<span class="discount-badge">-${discount}%</span>` : ''}
+            </div>
+            <div class="product-rating">
+              <div class="stars">
+                ${Array(5).fill().map((_, i) => `
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="${i < 4 ? '#fbbf24' : '#e5e7eb'}">
+                    <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+                  </svg>
+                `).join('')}
+              </div>
+              <span>4.${Math.floor(Math.random() * 9)} (${Math.floor(Math.random() * 100) + 10})</span>
+            </div>
+          </div>
+        `;
+        
+        return card;
+      }
+
+      // Load sample products
+      document.addEventListener('DOMContentLoaded', function() {
+        const productGrid = document.getElementById('productGrid');
+        
+        const sampleProducts = [
+          {
+            id: 1,
+            name: "Premium Cotton T-Shirt",
+            price: 899,
+            originalPrice: 1299,
+            primaryImage: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop"
+          },
+          {
+            id: 2,
+            name: "Elegant Summer Dress",
+            price: 2499,
+            primaryImage: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=400&h=400&fit=crop"
+          },
+          {
+            id: 3,
+            name: "Classic Denim Jeans",
+            price: 1899,
+            originalPrice: 2499,
+            primaryImage: "https://images.unsplash.com/photo-1542272604-787c3835535d?w=400&h=400&fit=crop"
+          },
+          {
+            id: 4,
+            name: "Cozy Knit Sweater",
+            price: 1599,
+            primaryImage: "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=400&h=400&fit=crop"
+          },
+          {
+            id: 5,
+            name: "Stylish Blazer",
+            price: 3299,
+            primaryImage: "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400&h=400&fit=crop"
+          },
+          {
+            id: 6,
+            name: "Casual Sneakers",
+            price: 2199,
+            originalPrice: 2899,
+            primaryImage: "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&h=400&fit=crop"
+          },
+          {
+            id: 7,
+            name: "Designer Handbag",
+            price: 4599,
+            primaryImage: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=400&h=400&fit=crop"
+          },
+          {
+            id: 8,
+            name: "Luxury Watch",
+            price: 8999,
+            originalPrice: 12999,
+            primaryImage: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=400&fit=crop"
+          }
+        ];
+        
+        sampleProducts.forEach(product => {
+          productGrid.appendChild(createProductCard(product));
+        });
+      });
+    </script>
+</body>
+</html>

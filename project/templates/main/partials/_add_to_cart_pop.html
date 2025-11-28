@@ -93,7 +93,7 @@
                 >
               </div>
               <div class="cart-product-price">
-                ${{ "%.2f"|format(product_price) }} USD
+                ${{ "{:,.2f}".format(product_price) }} USD
               </div>
             </div>
           </div>
@@ -104,7 +104,7 @@
           <div class="cart-subtotal-section">
             <div class="cart-subtotal-label">Subtotal</div>
             <div class="cart-subtotal-amount">
-              ${{ "%.2f"|format(product_price) }} USD
+              ${{ "{:,.2f}".format(product_price) }} USD
             </div>
           </div>
 
