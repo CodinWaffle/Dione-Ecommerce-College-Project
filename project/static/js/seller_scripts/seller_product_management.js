@@ -1630,3 +1630,519 @@ function showNotification(message, type = "info") {
 
 // Duplicate DOMContentLoaded listener removed to prevent double event handlers
 window.openSizeModalForVariant = openSizeModalForVariant;
+
+// Enhanced Edit Modal Functionality
+function initializeEnhancedEditModal() {
+  console.log("Initializing enhanced edit modal functionality");
+  
+  // Tab switching functionality
+  const editTabs = document.querySelectorAll('.edit-tab');
+  const tabPanes = document.querySelectorAll('.tab-pane');
+  
+  editTabs.forEach(tab => {
+    tab.addEventListener('click', function() {
+      const targetTab = this.dataset.tab;
+      
+      // Remove active class from all tabs and panes
+      editTabs.forEach(t => t.classList.remove('active'));
+      tabPanes.forEach(p => p.classList.remove('active'));
+      
+      // Add active class to clicked tab and corresponding pane
+      this.classList.add('active');
+      const targetPane = document.getElementById(`tab-${targetTab}`);
+      if (targetPane) {
+        targetPane.classList.add('active');
+      }
+    });
+  });
+  
+  // Category/Subcategory dependency
+  const categorySelect = document.getElementById('editProductCategory');
+  const subcategorySelect = document.getElementById('editProductSubcategory');
+  
+  if (categorySelect && subcategorySelect) {
+    categorySelect.addEventListener('change', function() {
+      updateSubcategoryOptions(this.value, subcategorySelect);
+    });
+  }
+  
+  // Image upload handlers
+  setupImageUploadHandlers();
+  
+  // Size guide and certification handlers
+  setupMediaUploadHandlers();
+  
+  // Form validation
+  setupFormValidation();
+}
+
+function updateSubcategoryOptions(category, subcategorySelect) {
+  const subcategoryOptions = {
+    'clothing': [
+      { value: 'tops', text: 'Tops' },
+      { value: 'bottoms', text: 'Bottoms' },
+      { value: 'dresses', text: 'Dresses' },
+      { value: 'outwear', text: 'Outerwear' },
+      { value: 'activewear', text: 'Activewear' },
+      { value: 'sleepwear', text: 'Sleepwear' },
+      { value: 'undergarments', text: 'Undergarments' },
+      { value: 'swimwear', text: 'Swimwear' },
+      { value: 'occasionwear', text: 'Occasion Wear' }
+    ],
+    'shoes': [
+      { value: 'heels', text: 'Heels' },
+      { value: 'flats', text: 'Flats' },
+      { value: 'sandals', text: 'Sandals' },
+      { value: 'sneakers', text: 'Sneakers' },
+      { value: 'boots', text: 'Boots' },
+      { value: 'slippers', text: 'Slippers' },
+      { value: 'occasion-shoes', text: 'Occasion Shoes' }
+    ],
+    'accessories': [
+      { value: 'bags', text: 'Bags' },
+      { value: 'jewelry', text: 'Jewelry' },
+      { value: 'hair-accessories', text: 'Hair Accessories' },
+      { value: 'belts', text: 'Belts' },
+      { value: 'scarves-wraps', text: 'Scarves & Wraps' },
+      { value: 'sunglasses', text: 'Sunglasses' },
+      { value: 'watches', text: 'Watches' },
+      { value: 'hats-caps', text: 'Hats & Caps' }
+    ]
+  };
+  
+  // Clear existing options
+  subcategorySelect.innerHTML = '<option value="">Select Subcategory</option>';
+  
+  // Add new options based on category
+  if (category && subcategoryOptions[category]) {
+    subcategoryOptions[category].forEach(option => {
+      const optionElement = document.createElement('option');
+      optionElement.value = option.value;
+      optionElement.textContent = option.text;
+      subcategorySelect.appendChild(optionElement);
+    });
+  }
+}
+
+function setupImageUploadHandlers() {
+  // Primary image upload
+  const primaryImageInput = document.getElementById('editPrimaryImage');
+  const primaryImageDisplay = document.getElementById('primaryImageDisplay');
+  const primaryImagePreview = document.getElementById('primaryImagePreview');
+  
+  if (primaryImageInput) {
+    primaryImageInput.addEventListener('change', function(e) {
+      handleImageUpload(e, primaryImageDisplay, primaryImagePreview);
+    });
+  }
+  
+  // Secondary image upload
+  const secondaryImageInput = document.getElementById('editSecondaryImage');
+  const secondaryImageDisplay = document.getElementById('secondaryImageDisplay');
+  const secondaryImagePreview = document.getElementById('secondaryImagePreview');
+  
+  if (secondaryImageInput) {
+    secondaryImageInput.addEventListener('change', function(e) {
+      handleImageUpload(e, secondaryImageDisplay, secondaryImagePreview);
+    });
+  }
+}
+
+function handleImageUpload(event, displayElement, previewContainer) {
+  const file = event.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      if (displayElement) {
+        displayElement.src = e.target.result;
+        displayElement.style.display = 'block';
+      }
+      
+      // Hide placeholder
+      const placeholder = previewContainer?.querySelector('.upload-placeholder');
+      if (placeholder) {
+        placeholder.style.display = 'none';
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+function setupMediaUploadHandlers() {
+  // Size guide photo handler
+  const addSizeGuideBtn = document.getElementById('addSizeGuideBtn');
+  if (addSizeGuideBtn) {
+    addSizeGuideBtn.addEventListener('click', function() {
+      addSizeGuideUpload();
+    });
+  }
+  
+  // Certification photo handler
+  const addCertificationBtn = document.getElementById('addCertificationBtn');
+  if (addCertificationBtn) {
+    addCertificationBtn.addEventListener('click', function() {
+      addCertificationUpload();
+    });
+  }
+}
+
+function addSizeGuideUpload() {
+  const sizeGuideGrid = document.getElementById('sizeGuideGrid');
+  const currentCount = sizeGuideGrid.children.length;
+  
+  if (currentCount >= 5) {
+    alert('Maximum 5 size guide photos allowed');
+    return;
+  }
+  
+  const uploadItem = createUploadItem('size-guide', currentCount + 1);
+  sizeGuideGrid.appendChild(uploadItem);
+}
+
+function addCertificationUpload() {
+  const certificationsGrid = document.getElementById('certificationsGrid');
+  const currentCount = certificationsGrid.children.length;
+  
+  if (currentCount >= 5) {
+    alert('Maximum 5 certification photos allowed');
+    return;
+  }
+  
+  const uploadItem = createUploadItem('certification', currentCount + 1);
+  certificationsGrid.appendChild(uploadItem);
+}
+
+function createUploadItem(type, index) {
+  const div = document.createElement('div');
+  div.className = `${type}-upload-item`;
+  div.innerHTML = `
+    <div class="upload-item-preview">
+      <img style="display: none; width: 100%; height: 120px; object-fit: cover; border-radius: 6px;" />
+      <div class="upload-placeholder">
+        <i data-lucide="image"></i>
+        <span>${type === 'size-guide' ? 'Size Guide' : 'Certificate'} ${index}</span>
+      </div>
+    </div>
+    <input type="file" accept="image/*" style="display: none;" />
+    <button type="button" class="btn-upload" onclick="this.previousElementSibling.click()">
+      <i data-lucide="upload"></i>
+      Choose Image
+    </button>
+    <button type="button" class="btn-remove" onclick="this.parentElement.remove()">
+      <i data-lucide="trash-2"></i>
+    </button>
+  `;
+  
+  // Setup file input handler
+  const fileInput = div.querySelector('input[type="file"]');
+  const imgElement = div.querySelector('img');
+  const placeholder = div.querySelector('.upload-placeholder');
+  
+  fileInput.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        imgElement.src = e.target.result;
+        imgElement.style.display = 'block';
+        placeholder.style.display = 'none';
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+  
+  // Re-initialize Lucide icons
+  if (window.lucide) {
+    lucide.createIcons();
+  }
+  
+  return div;
+}
+
+function setupFormValidation() {
+  const form = document.getElementById('editProductForm');
+  if (form) {
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      validateAndSaveProduct();
+    });
+  }
+}
+
+function validateAndSaveProduct() {
+  const form = document.getElementById('editProductForm');
+  const formData = new FormData(form);
+  
+  // Basic validation
+  const requiredFields = ['name', 'category', 'price', 'description', 'materials', 'details_fit'];
+  const missingFields = [];
+  
+  requiredFields.forEach(field => {
+    const value = formData.get(field);
+    if (!value || value.trim() === '') {
+      missingFields.push(field);
+    }
+  });
+  
+  if (missingFields.length > 0) {
+    alert(`Please fill in the following required fields: ${missingFields.join(', ')}`);
+    return;
+  }
+  
+  // Show loading state
+  const saveBtn = document.getElementById('saveProductDetails');
+  const originalText = saveBtn.innerHTML;
+  saveBtn.innerHTML = '<i data-lucide="loader-2" class="spinning"></i> Saving...';
+  saveBtn.disabled = true;
+  
+  // Prepare data for submission
+  const productData = {
+    id: window.__currentModalProductId,
+    name: formData.get('name'),
+    category: formData.get('category'),
+    subcategory: formData.get('subcategory'),
+    description: formData.get('description'),
+    price: parseFloat(formData.get('price')),
+    compare_at_price: formData.get('compare_at_price') ? parseFloat(formData.get('compare_at_price')) : null,
+    discount_type: formData.get('discount_type'),
+    discount_value: formData.get('discount_value') ? parseFloat(formData.get('discount_value')) : null,
+    voucher_type: formData.get('voucher_type'),
+    materials: formData.get('materials'),
+    details_fit: formData.get('details_fit'),
+    status: formData.get('status'),
+    base_sku: formData.get('base_sku'),
+    low_stock_threshold: formData.get('low_stock_threshold') ? parseInt(formData.get('low_stock_threshold')) : 5
+  };
+  
+  // Submit to server
+  fetch(`/seller/product/${productData.id}/update`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(productData)
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      alert('Product updated successfully!');
+      closeEditModal();
+      // Refresh the product list
+      location.reload();
+    } else {
+      alert('Error updating product: ' + (data.error || 'Unknown error'));
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('Error updating product. Please try again.');
+  })
+  .finally(() => {
+    // Restore button state
+    saveBtn.innerHTML = originalText;
+    saveBtn.disabled = false;
+  });
+}
+
+function loadProductDataIntoEditModal(productData) {
+  // Set modal title
+  const modalTitle = document.getElementById('editModalProductName');
+  if (modalTitle) {
+    modalTitle.textContent = productData.name || 'Product';
+  }
+  
+  // Basic Info Tab
+  const nameInput = document.getElementById('editProductName');
+  if (nameInput) nameInput.value = productData.name || '';
+  
+  const categorySelect = document.getElementById('editProductCategory');
+  if (categorySelect) {
+    categorySelect.value = productData.category || '';
+    // Trigger subcategory update
+    updateSubcategoryOptions(productData.category, document.getElementById('editProductSubcategory'));
+  }
+  
+  const subcategorySelect = document.getElementById('editProductSubcategory');
+  if (subcategorySelect) {
+    // Wait for subcategory options to be populated
+    setTimeout(() => {
+      subcategorySelect.value = productData.subcategory || '';
+    }, 100);
+  }
+  
+  const descriptionTextarea = document.getElementById('editProductDescription');
+  if (descriptionTextarea) descriptionTextarea.value = productData.description || '';
+  
+  const statusSelect = document.getElementById('editProductStatus');
+  if (statusSelect) statusSelect.value = productData.status || 'active';
+  
+  const skuInput = document.getElementById('editProductSKU');
+  if (skuInput) skuInput.value = productData.base_sku || '';
+  
+  // Media Tab
+  const primaryImageDisplay = document.getElementById('primaryImageDisplay');
+  if (primaryImageDisplay && productData.primary_image) {
+    primaryImageDisplay.src = productData.primary_image;
+    primaryImageDisplay.style.display = 'block';
+    const placeholder = document.querySelector('#primaryImagePreview .upload-placeholder');
+    if (placeholder) placeholder.style.display = 'none';
+  }
+  
+  const secondaryImageDisplay = document.getElementById('secondaryImageDisplay');
+  if (secondaryImageDisplay && productData.secondary_image) {
+    secondaryImageDisplay.src = productData.secondary_image;
+    secondaryImageDisplay.style.display = 'block';
+    const placeholder = document.querySelector('#secondaryImagePreview .upload-placeholder');
+    if (placeholder) placeholder.style.display = 'none';
+  }
+  
+  // Pricing Tab
+  const priceInput = document.getElementById('editProductPrice');
+  if (priceInput) priceInput.value = productData.price || '';
+  
+  const comparePriceInput = document.getElementById('editComparePrice');
+  if (comparePriceInput) comparePriceInput.value = productData.compare_at_price || '';
+  
+  const discountTypeSelect = document.getElementById('editDiscountType');
+  if (discountTypeSelect) discountTypeSelect.value = productData.discount_type || '';
+  
+  const discountValueInput = document.getElementById('editDiscountValue');
+  if (discountValueInput) discountValueInput.value = productData.discount_value || '';
+  
+  const voucherTypeSelect = document.getElementById('editVoucherType');
+  if (voucherTypeSelect) voucherTypeSelect.value = productData.voucher_type || '';
+  
+  const lowStockInput = document.getElementById('editLowStockThreshold');
+  if (lowStockInput) lowStockInput.value = productData.low_stock_threshold || 5;
+  
+  // Details Tab
+  const materialsTextarea = document.getElementById('editProductMaterials');
+  if (materialsTextarea) materialsTextarea.value = productData.materials || '';
+  
+  const detailsFitTextarea = document.getElementById('editProductDetailsFit');
+  if (detailsFitTextarea) detailsFitTextarea.value = productData.details_fit || '';
+  
+  // Variants Tab
+  updateVariantsSummary(productData);
+}
+
+function updateVariantsSummary(productData) {
+  const totalVariantsElement = document.getElementById('editTotalVariants');
+  const totalStockElement = document.getElementById('editTotalStock');
+  
+  if (totalVariantsElement) {
+    const variantCount = productData.variants ? Object.keys(productData.variants).length : 0;
+    totalVariantsElement.textContent = variantCount;
+  }
+  
+  if (totalStockElement) {
+    totalStockElement.textContent = productData.total_stock || 0;
+  }
+}
+
+function closeEditModal() {
+  const modal = document.getElementById('productDetailModal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
+  
+  // Reset form
+  const form = document.getElementById('editProductForm');
+  if (form) {
+    form.reset();
+  }
+  
+  // Reset to first tab
+  const firstTab = document.querySelector('.edit-tab');
+  const firstPane = document.querySelector('.tab-pane');
+  if (firstTab && firstPane) {
+    document.querySelectorAll('.edit-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    firstTab.classList.add('active');
+    firstPane.classList.add('active');
+  }
+}
+
+// Initialize enhanced edit modal when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+  initializeEnhancedEditModal();
+  
+  // Override the existing edit button functionality
+  const editButtons = document.querySelectorAll('.edit-product');
+  editButtons.forEach(button => {
+    button.addEventListener('click', function(e) {
+      e.preventDefault();
+      const productId = this.dataset.id;
+      if (productId) {
+        openEnhancedEditModal(productId);
+      }
+    });
+  });
+});
+
+function openEnhancedEditModal(productId) {
+  // Set current product ID
+  window.__currentModalProductId = productId;
+  
+  // Fetch product data
+  fetch(`/seller/product/${productId}/details`)
+    .then(response => response.json())
+    .then(data => {
+      if (data.success !== false) {
+        loadProductDataIntoEditModal(data);
+        
+        // Show modal
+        const modal = document.getElementById('productDetailModal');
+        if (modal) {
+          modal.style.display = 'flex';
+        }
+      } else {
+        alert('Error loading product data: ' + (data.error || 'Unknown error'));
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('Error loading product data. Please try again.');
+    });
+}
+
+// Add CSS for spinning animation
+const style = document.createElement('style');
+style.textContent = `
+  .spinning {
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  
+  .btn-remove {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    margin-top: 8px;
+  }
+  
+  .btn-remove:hover {
+    background: #c82333;
+  }
+  
+  .upload-item-preview {
+    position: relative;
+    height: 120px;
+    border: 2px dashed #dee2e6;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+    margin-bottom: 8px;
+  }
+`;
+document.head.appendChild(style);

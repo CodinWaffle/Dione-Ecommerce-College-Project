@@ -572,10 +572,175 @@ def cart():
         total=total
     )
 
+@main.route('/api/products/<int:product_id>/colors/<color_name>/sizes')
+def get_sizes_for_color(product_id, color_name):
+    """API endpoint to get available sizes for a specific product color"""
+    try:
+        from flask import jsonify
+        from project.models import SellerProduct, ProductVariant, VariantSize
+        
+        # Get the product
+        product = SellerProduct.query.get(product_id)
+        if not product:
+            return jsonify({'error': 'Product not found'}), 404
+        
+        # Initialize response data
+        response_data = {
+            'product_id': product_id,
+            'color_name': color_name,
+            'sizes': []
+        }
+        
+        # Method 1: Try to get from ProductVariant and VariantSize tables (new structure)
+        variant = ProductVariant.query.filter_by(
+            product_id=product_id,
+            variant_name=color_name
+        ).first()
+        
+        if variant:
+            # Get sizes from VariantSize table
+            variant_sizes = VariantSize.query.filter_by(variant_id=variant.id).all()
+            for size in variant_sizes:
+                response_data['sizes'].append({
+                    'variant_id': variant.id,
+                    'size_id': size.id,
+                    'size_label': size.size_label,
+                    'stock': size.stock_quantity,
+                    'sku': size.sku or f"{product.base_sku or 'P'}{product_id}-{color_name}-{size.size_label}",
+                    'available': size.stock_quantity > 0
+                })
+        else:
+            # Method 2: Fallback to variants JSON structure (legacy)
+            try:
+                variants_data = product.variants or {}
+                if isinstance(variants_data, str):
+                    import json
+                    variants_data = json.loads(variants_data)
+                
+                # Look for the color in variants
+                color_variant = None
+                for key, variant_info in variants_data.items():
+                    if key.lower() == color_name.lower():
+                        color_variant = variant_info
+                        break
+                
+                if color_variant and isinstance(color_variant, dict):
+                    # Get stock data for this color
+                    stock_info = color_variant.get('stock', {})
+                    
+                    # Create size entries from stock data
+                    for size_label, stock_count in stock_info.items():
+                        response_data['sizes'].append({
+                            'variant_id': None,  # No variant_id for legacy structure
+                            'size_id': None,
+                            'size_label': size_label,
+                            'stock': int(stock_count) if isinstance(stock_count, (int, str)) else 0,
+                            'sku': f"{product.base_sku or 'P'}{product_id}-{color_name}-{size_label}",
+                            'available': int(stock_count) > 0 if isinstance(stock_count, (int, str)) else False
+                        })
+                
+            except Exception as e:
+                print(f"Error parsing variants JSON: {e}")
+        
+        # Sort sizes by common size order
+        size_order = {'XS': 1, 'S': 2, 'M': 3, 'L': 4, 'XL': 5, 'XXL': 6, '2XL': 6, '3XL': 7}
+        response_data['sizes'].sort(key=lambda x: size_order.get(x['size_label'], 999))
+        
+        return jsonify(response_data)
+        
+    except Exception as e:
+        print(f"Error in get_sizes_for_color: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': 'Internal server error'}), 500
+
+@main.route('/api/products/<int:product_id>/variants')
+def get_product_variants(product_id):
+    """API endpoint to get all variants for a product"""
+    try:
+        from flask import jsonify
+        from project.models import SellerProduct, ProductVariant, VariantSize
+        
+        # Get the product
+        product = SellerProduct.query.get(product_id)
+        if not product:
+            return jsonify({'error': 'Product not found'}), 404
+        
+        response_data = {
+            'product_id': product_id,
+            'variants': []
+        }
+        
+        # Method 1: Try ProductVariant table (new structure)
+        variants = ProductVariant.query.filter_by(product_id=product_id).all()
+        
+        if variants:
+            for variant in variants:
+                variant_data = {
+                    'variant_id': variant.id,
+                    'color_name': variant.variant_name,
+                    'color_hex': '#000000',  # Default, could be stored in variant
+                    'images': variant.images_json or [],
+                    'sizes': []
+                }
+                
+                # Get sizes for this variant
+                sizes = VariantSize.query.filter_by(variant_id=variant.id).all()
+                for size in sizes:
+                    variant_data['sizes'].append({
+                        'size_id': size.id,
+                        'size_label': size.size_label,
+                        'stock': size.stock_quantity,
+                        'sku': size.sku,
+                        'available': size.stock_quantity > 0
+                    })
+                
+                response_data['variants'].append(variant_data)
+        else:
+            # Method 2: Fallback to variants JSON (legacy)
+            try:
+                variants_data = product.variants or {}
+                if isinstance(variants_data, str):
+                    import json
+                    variants_data = json.loads(variants_data)
+                
+                for color_name, variant_info in variants_data.items():
+                    if isinstance(variant_info, dict):
+                        variant_data = {
+                            'variant_id': None,
+                            'color_name': color_name,
+                            'color_hex': variant_info.get('hex', '#000000'),
+                            'images': variant_info.get('images', []),
+                            'sizes': []
+                        }
+                        
+                        # Get stock data
+                        stock_info = variant_info.get('stock', {})
+                        for size_label, stock_count in stock_info.items():
+                            variant_data['sizes'].append({
+                                'size_id': None,
+                                'size_label': size_label,
+                                'stock': int(stock_count) if isinstance(stock_count, (int, str)) else 0,
+                                'sku': f"{product.base_sku or 'P'}{product_id}-{color_name}-{size_label}",
+                                'available': int(stock_count) > 0 if isinstance(stock_count, (int, str)) else False
+                            })
+                        
+                        response_data['variants'].append(variant_data)
+                        
+            except Exception as e:
+                print(f"Error parsing variants JSON: {e}")
+        
+        return jsonify(response_data)
+        
+    except Exception as e:
+        print(f"Error in get_product_variants: {e}")
+        return jsonify({'error': 'Internal server error'}), 500
+
 @main.route('/add-to-cart', methods=['POST'])
 def add_to_cart():
-    """Add item to cart with variant information"""
+    """Add item to cart with enhanced variant and stock validation"""
     from flask import session, request, jsonify
+    from project.models import SellerProduct, ProductVariant, VariantSize, CartItem, db
     
     try:
         data = request.get_json()
@@ -585,53 +750,204 @@ def add_to_cart():
         color = data.get('color')
         size = data.get('size')
         quantity = int(data.get('quantity', 1))
-        color_hex = data.get('color_hex', '#000000')
-        image_url = data.get('image_url')
+        variant_id = data.get('variant_id')  # New: variant_id for direct variant reference
+        size_id = data.get('size_id')  # New: size_id for direct size reference
         
         # Validate required fields
-        if not all([product_id, color, size]):
-            return jsonify({'error': 'Missing required fields'}), 400
+        if not product_id:
+            return jsonify({'error': 'Product ID is required'}), 400
         
-        # Get or create cart items in session
+        # Get product information
+        product = SellerProduct.query.get(product_id)
+        if not product:
+            return jsonify({'error': 'Product not found'}), 404
+        
+        # Stock validation and variant resolution
+        available_stock = 0
+        actual_variant_id = variant_id
+        actual_size_id = size_id
+        product_name = product.name
+        product_price = float(product.price)
+        seller_id = product.seller_id
+        variant_image = product.primary_image
+        
+        # Method 1: Use variant_id and size_id if provided (new structure)
+        if variant_id and size_id:
+            variant_size = VariantSize.query.filter_by(
+                variant_id=variant_id,
+                id=size_id
+            ).first()
+            
+            if variant_size:
+                available_stock = variant_size.stock_quantity
+                color = ProductVariant.query.get(variant_id).variant_name if not color else color
+                size = variant_size.size_label if not size else size
+                
+                # Get variant images if available
+                variant = ProductVariant.query.get(variant_id)
+                if variant and variant.images_json:
+                    variant_image = variant.images_json[0] if variant.images_json else product.primary_image
+            else:
+                return jsonify({'error': 'Variant not found'}), 404
+                
+        # Method 2: Use color and size to find variant (legacy support)
+        elif color and size:
+            # Try to find in ProductVariant table first
+            variant = ProductVariant.query.filter_by(
+                product_id=product_id,
+                variant_name=color
+            ).first()
+            
+            if variant:
+                variant_size = VariantSize.query.filter_by(
+                    variant_id=variant.id,
+                    size_label=size
+                ).first()
+                
+                if variant_size:
+                    available_stock = variant_size.stock_quantity
+                    actual_variant_id = variant.id
+                    actual_size_id = variant_size.id
+                    
+                    # Get variant images
+                    if variant.images_json:
+                        variant_image = variant.images_json[0] if variant.images_json else product.primary_image
+            else:
+                # Fallback to variants JSON structure
+                try:
+                    variants_data = product.variants or {}
+                    if isinstance(variants_data, str):
+                        import json
+                        variants_data = json.loads(variants_data)
+                    
+                    color_variant = variants_data.get(color, {})
+                    if isinstance(color_variant, dict):
+                        stock_info = color_variant.get('stock', {})
+                        available_stock = int(stock_info.get(size, 0))
+                        
+                        # Get variant images
+                        images = color_variant.get('images', [])
+                        if images:
+                            variant_image = images[0]
+                            
+                except Exception as e:
+                    print(f"Error parsing variants JSON: {e}")
+        else:
+            return jsonify({'error': 'Color and size are required'}), 400
+        
+        # Validate stock availability
+        if available_stock < quantity:
+            return jsonify({
+                'error': 'Insufficient stock',
+                'available_stock': available_stock,
+                'requested_quantity': quantity
+            }), 409
+        
+        # Determine user identification for cart persistence
+        user_id = current_user.id if current_user.is_authenticated else None
+        session_id = session.get('session_id') if not user_id else None
+        
+        # Ensure session ID exists for anonymous users
+        if not user_id and not session_id:
+            import uuid
+            session_id = str(uuid.uuid4())
+            session['session_id'] = session_id
+        
+        # Check if item already exists in cart (database)
+        existing_cart_item = None
+        if user_id:
+            existing_cart_item = CartItem.query.filter_by(
+                user_id=user_id,
+                product_id=product_id,
+                color=color,
+                size=size
+            ).first()
+        elif session_id:
+            existing_cart_item = CartItem.query.filter_by(
+                session_id=session_id,
+                product_id=product_id,
+                color=color,
+                size=size
+            ).first()
+        
+        if existing_cart_item:
+            # Check if total quantity would exceed stock
+            total_quantity = existing_cart_item.quantity + quantity
+            if total_quantity > available_stock:
+                return jsonify({
+                    'error': 'Total quantity would exceed available stock',
+                    'available_stock': available_stock,
+                    'current_in_cart': existing_cart_item.quantity,
+                    'requested_additional': quantity
+                }), 409
+            
+            # Update existing item
+            existing_cart_item.quantity = total_quantity
+            existing_cart_item.updated_at = datetime.utcnow()
+            db.session.commit()
+            cart_item = existing_cart_item
+        else:
+            # Create new cart item
+            cart_item = CartItem(
+                user_id=user_id,
+                session_id=session_id,
+                product_id=product_id,
+                product_name=product_name,
+                product_price=product_price,
+                color=color,
+                size=size,
+                quantity=quantity,
+                variant_image=variant_image,
+                seller_id=seller_id
+            )
+            db.session.add(cart_item)
+            db.session.commit()
+        
+        # Update session cart for immediate UI feedback
         cart_items = session.get('cart_items', [])
-        
-        # Create unique item ID
-        item_id = f"{product_id}_{color}_{size}"
-        
-        # Check if item already exists in cart
-        existing_item = None
+        session_item = None
         for item in cart_items:
             if (item.get('product_id') == product_id and 
                 item.get('color') == color and 
                 item.get('size') == size):
-                existing_item = item
+                session_item = item
                 break
         
-        if existing_item:
-            # Update quantity
-            existing_item['quantity'] += quantity
+        if session_item:
+            session_item['quantity'] = cart_item.quantity
         else:
-            # Add new item
-            new_item = {
-                'id': item_id,
+            cart_items.append({
+                'id': cart_item.id,
                 'product_id': product_id,
+                'product_name': product_name,
+                'product_price': product_price,
                 'color': color,
                 'size': size,
                 'quantity': quantity,
-                'color_hex': color_hex,
-                'image_url': image_url,
+                'variant_image': variant_image,
+                'seller_id': seller_id,
                 'added_at': datetime.now().isoformat()
-            }
-            cart_items.append(new_item)
+            })
         
-        # Save to session
         session['cart_items'] = cart_items
-        session.permanent = True
+        
+        # Get total cart count
+        if user_id:
+            total_count = db.session.query(db.func.sum(CartItem.quantity)).filter_by(user_id=user_id).scalar() or 0
+        else:
+            total_count = db.session.query(db.func.sum(CartItem.quantity)).filter_by(session_id=session_id).scalar() or 0
         
         return jsonify({
             'success': True,
             'message': 'Item added to cart',
-            'cart_count': sum(item['quantity'] for item in cart_items)
+            'cart_count': int(total_count),
+            'item': cart_item.to_dict() if hasattr(cart_item, 'to_dict') else {
+                'product_id': product_id,
+                'color': color,
+                'size': size,
+                'quantity': cart_item.quantity,
+                'available_stock': available_stock
+            }
         })
         
     except Exception as e:
@@ -755,6 +1071,212 @@ def my_purchases():
         nav_items=nav_items,
         orders=sample_orders
     )
+
+@main.route('/test/color-selection')
+def test_color_selection():
+    """Test page for color selection debugging"""
+    return """<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Selection Test - DEBUGGING</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .test-container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        .color-section { margin-bottom: 30px; }
+        .section-label { font-weight: bold; margin-bottom: 15px; display: block; font-size: 16px; }
+        .selected-color { color: #8e44ad; margin-left: 10px; }
+        .color-options { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
+        .color-option { width: 60px; height: 60px; border-radius: 50%; border: 3px solid #ddd; cursor: pointer; transition: all 0.3s ease; position: relative; }
+        .color-option.active { border-color: #8e44ad !important; transform: scale(1.1) !important; box-shadow: 0 0 0 3px rgba(142, 68, 173, 0.3) !important; }
+        .color-option:hover { outline: 2px solid orange; }
+        .debug-clicked { outline: 3px solid red !important; }
+        .size-options { display: flex; gap: 10px; flex-wrap: wrap; min-height: 50px; align-items: center; }
+        .size-option { padding: 10px 15px; border: 2px solid #ddd; background: white; cursor: pointer; transition: all 0.3s ease; border-radius: 5px; font-weight: bold; margin: 5px; }
+        .size-option.active { border-color: #8e44ad !important; background: #8e44ad !important; color: white !important; transform: scale(1.05) !important; }
+        .size-option.out-of-stock { opacity: 0.5; background: #f0f0f0; cursor: not-allowed; }
+        .debug { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px; padding: 15px; margin-top: 20px; font-family: monospace; font-size: 12px; max-height: 300px; overflow-y: auto; }
+        .test-buttons { margin: 20px 0; }
+        .test-btn { background: #007bff; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; margin: 5px; font-size: 14px; }
+        .test-btn:hover { background: #0056b3; }
+        .status { padding: 10px; border-radius: 5px; margin: 10px 0; font-weight: bold; }
+        .status.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .status.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔧 Color Selection Debug Test</h1>
+        <p><strong>This is a debugging version with extensive logging.</strong></p>
+        
+        <div id="status" class="status">Initializing...</div>
+        
+        <div class="color-section">
+            <label class="section-label">COLOR <span class="selected-color">Select Color</span></label>
+            <div class="color-options">
+                <button type="button" class="color-option" data-color="Red" data-color-hex="#dc3545" data-stock='{"XS": 5, "S": 3, "M": 8, "L": 2, "XL": 0}' style="background-color: #dc3545;"></button>
+                <button type="button" class="color-option" data-color="Blue" data-color-hex="#007bff" data-stock='{"XS": 2, "S": 0, "M": 4, "L": 6, "XL": 3}' style="background-color: #007bff;"></button>
+                <button type="button" class="color-option" data-color="Green" data-color-hex="#28a745" data-stock='{"XS": 0, "S": 7, "M": 1, "L": 9, "XL": 5}' style="background-color: #28a745;"></button>
+                <button type="button" class="color-option" data-color="Purple" data-color-hex="#8e44ad" data-stock='{"XS": 4, "S": 6, "M": 2, "L": 0, "XL": 8}' style="background-color: #8e44ad;"></button>
+            </div>
+        </div>
+
+        <div class="size-section">
+            <label class="section-label">SIZE</label>
+            <div class="size-options" id="sizeOptions">
+                <div style="color: #666; font-style: italic; padding: 10px;">Select a color to view available sizes</div>
+            </div>
+        </div>
+        
+        <div class="test-buttons">
+            <button class="test-btn" onclick="manualTest()">🧪 Manual Test</button>
+            <button class="test-btn" onclick="autoTest()">🤖 Auto Test</button>
+            <button class="test-btn" onclick="clearLog()">🗑️ Clear Log</button>
+            <button class="test-btn" onclick="showDiagnostics()">🔍 Diagnostics</button>
+        </div>
+        
+        <div class="debug" id="debugOutput">Starting debug log...</div>
+    </div>
+
+    <script>
+        let logCount = 0;
+        function log(...args) { 
+            logCount++;
+            const timestamp = new Date().toLocaleTimeString();
+            const message = `[${logCount}] ${timestamp}: ${args.join(' ')}`;
+            console.log(...args); 
+            const debugOutput = document.getElementById('debugOutput'); 
+            if (debugOutput) { 
+                debugOutput.innerHTML += message + '<br>'; 
+                debugOutput.scrollTop = debugOutput.scrollHeight; 
+            } 
+        }
+        
+        function updateStatus(message, isError = false) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = 'status ' + (isError ? 'error' : 'success');
+        }
+        
+        function simpleSelectColor(button) {
+            log("🎯 simpleSelectColor called with:", button.dataset.color);
+            
+            // Visual feedback
+            button.classList.add('debug-clicked');
+            setTimeout(() => button.classList.remove('debug-clicked'), 2000);
+            
+            // Remove active from all
+            document.querySelectorAll('.color-option').forEach(btn => {
+                btn.classList.remove('active');
+                btn.style.transform = '';
+                btn.style.boxShadow = '';
+            });
+            
+            // Add active to clicked
+            button.classList.add('active');
+            button.style.transform = 'scale(1.1)';
+            button.style.boxShadow = '0 0 0 3px rgba(142, 68, 173, 0.3)';
+            
+            // Update text
+            const span = document.querySelector('.selected-color');
+            if (span) span.textContent = button.dataset.color;
+            
+            // Update global state
+            window.selectedColor = button.dataset.color;
+            
+            log('✅ Color selected:', button.dataset.color);
+            updateStatus(`Color "${button.dataset.color}" selected successfully!`);
+            
+            // Load sizes
+            loadSizesForColor(button.dataset.color, button);
+        }
+        
+        function loadSizesForColor(colorName, colorButton) {
+            log('📏 Loading sizes for color:', colorName);
+            const sizeContainer = document.getElementById('sizeOptions');
+            
+            try {
+                const stockData = JSON.parse(colorButton.dataset.stock || '{}');
+                log('📊 Stock data:', JSON.stringify(stockData));
+                
+                sizeContainer.innerHTML = '';
+                const sizes = Object.keys(stockData);
+                
+                sizes.forEach(size => {
+                    const stock = stockData[size];
+                    const sizeBtn = document.createElement('button');
+                    sizeBtn.className = 'size-option' + (stock > 0 ? '' : ' out-of-stock');
+                    sizeBtn.textContent = size + ` (${stock})`;
+                    sizeBtn.dataset.size = size;
+                    sizeBtn.dataset.stock = stock;
+                    sizeBtn.onclick = () => {
+                        log('📐 Size clicked:', size);
+                        document.querySelectorAll('.size-option').forEach(b => b.classList.remove('active'));
+                        sizeBtn.classList.add('active');
+                        window.selectedSize = size;
+                        updateStatus(`Size "${size}" selected!`);
+                    };
+                    sizeContainer.appendChild(sizeBtn);
+                });
+                
+                log(`✅ ${sizes.length} sizes loaded`);
+            } catch (e) {
+                log('❌ Error loading sizes:', e.message);
+                sizeContainer.innerHTML = `<div style="color: red;">Error: ${e.message}</div>`;
+            }
+        }
+        
+        function manualTest() {
+            log('🧪 Manual test - click a color button to test');
+            updateStatus('Manual test mode - click any color button');
+        }
+        
+        function autoTest() {
+            log('🤖 Running automatic test...');
+            const firstColor = document.querySelector('.color-option');
+            if (firstColor) {
+                log('Testing with color:', firstColor.dataset.color);
+                simpleSelectColor(firstColor);
+            } else {
+                log('❌ No color buttons found for auto test');
+                updateStatus('Auto test failed - no color buttons found', true);
+            }
+        }
+        
+        function clearLog() {
+            document.getElementById('debugOutput').innerHTML = 'Log cleared...';
+            logCount = 0;
+        }
+        
+        function showDiagnostics() {
+            log('🔍 DIAGNOSTICS:');
+            log('- Color buttons found:', document.querySelectorAll('.color-option').length);
+            log('- Size container exists:', !!document.getElementById('sizeOptions'));
+            log('- simpleSelectColor type:', typeof simpleSelectColor);
+            log('- Current selected color:', window.selectedColor || 'none');
+            log('- Current selected size:', window.selectedSize || 'none');
+        }
+        
+        // Attach event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🚀 DOM loaded, attaching listeners...');
+            
+            const colorButtons = document.querySelectorAll('.color-option');
+            colorButtons.forEach((btn, index) => {
+                btn.onclick = function(e) {
+                    log(`🖱️ Click event for button ${index + 1}:`, this.dataset.color);
+                    simpleSelectColor(this);
+                };
+                log(`✅ Listener attached to ${btn.dataset.color}`);
+            });
+            
+            updateStatus('All event listeners attached - ready for testing!');
+            log('🎯 Ready! Try clicking a color button.');
+        });
+    </script>
+</body>
+</html>"""
 
 @main.route('/product/<product_id>')
 def product_detail(product_id):
@@ -1073,6 +1595,13 @@ def product_detail(product_id):
     except Exception:
         # Ensure we always return a usable template even on errors
         product = product or {}
+
+    # Debug: Log the stock data being sent to template
+    print("🔍 DEBUG: Final stock_data being sent to template:")
+    for color, sizes in stock_data.items():
+        print(f"  Color: {color}")
+        for size, stock in sizes.items():
+            print(f"    {size}: {stock} (type: {type(stock)})")
 
     return render_template(
         'main/product_detail.html',
@@ -1590,3 +2119,108 @@ def get_nav_items():
             }
         }
     ]
+
+@main.route('/api/product/<int:product_id>/sizes/<color>')
+def get_product_sizes_for_color(product_id, color):
+    """Get available sizes for a specific product and color combination"""
+    try:
+        from project.models import ProductVariant, VariantSize
+        
+        # Try SellerProduct first
+        product = SellerProduct.query.get(product_id)
+        if not product:
+            # Fallback to Product model
+            product = Product.query.get(product_id)
+        
+        if not product:
+            return jsonify({'error': 'Product not found'}), 404
+        
+        sizes_data = {}
+        
+        # First try ProductVariant and VariantSize tables
+        variant = ProductVariant.query.filter_by(
+            product_id=product_id,
+            variant_name=color
+        ).first()
+        
+        if variant:
+            # Get all sizes for this color variant from database tables
+            variant_sizes = VariantSize.query.filter_by(variant_id=variant.id).all()
+            for vs in variant_sizes:
+                sizes_data[vs.size_label] = {
+                    'stock': vs.stock_quantity,
+                    'available': vs.stock_quantity > 0
+                }
+        else:
+            # Fallback to variants JSON structure
+            try:
+                variants_data = product.variants or {}
+                if isinstance(variants_data, str):
+                    import json
+                    variants_data = json.loads(variants_data)
+                
+                # Handle list format (new structure)
+                if isinstance(variants_data, list):
+                    for variant_info in variants_data:
+                        if isinstance(variant_info, dict) and variant_info.get('color', '').lower() == color.lower():
+                            # Found matching color variant
+                            if 'sizeStocks' in variant_info:
+                                for size_stock in variant_info['sizeStocks']:
+                                    if isinstance(size_stock, dict):
+                                        size_name = size_stock.get('size', 'OS')
+                                        stock_qty = int(size_stock.get('stock', 0))
+                                        sizes_data[size_name] = {
+                                            'stock': stock_qty,
+                                            'available': stock_qty > 0
+                                        }
+                            break
+                
+                # Handle dict format (old structure)
+                elif isinstance(variants_data, dict):
+                    # Look for the color in variants data
+                    color_variant = None
+                    for key, variant_info in variants_data.items():
+                        if key.lower() == color.lower():
+                            color_variant = variant_info
+                            break
+                    
+                    if color_variant and isinstance(color_variant, dict):
+                        # Check if it has sizeStocks array (new structure)
+                        if 'sizeStocks' in color_variant:
+                            for size_stock in color_variant['sizeStocks']:
+                                if isinstance(size_stock, dict):
+                                    size_name = size_stock.get('size', 'OS')
+                                    stock_qty = int(size_stock.get('stock', 0))
+                                    sizes_data[size_name] = {
+                                        'stock': stock_qty,
+                                        'available': stock_qty > 0
+                                    }
+                        # Check if it has stock dict (old structure)
+                        elif 'stock' in color_variant and isinstance(color_variant['stock'], dict):
+                            for size_name, stock_qty in color_variant['stock'].items():
+                                stock_qty = int(stock_qty) if stock_qty else 0
+                            sizes_data[size_name] = {
+                                'stock': stock_qty,
+                                'available': stock_qty > 0
+                            }
+                    # Single size variant
+                    else:
+                        size_name = color_variant.get('size', 'One Size')
+                        stock_qty = int(color_variant.get('stock', 0))
+                        sizes_data[size_name] = {
+                            'stock': stock_qty,
+                            'available': stock_qty > 0
+                        }
+                        
+            except Exception as e:
+                print(f"Error parsing variants JSON: {e}")
+        
+        return jsonify({
+            'success': True,
+            'color': color,
+            'sizes': sizes_data
+        })
+        
+    except Exception as e:
+        print(f"Error getting sizes for color: {e}")
+        return jsonify({'error': 'Failed to get sizes'}), 500

@@ -800,12 +800,21 @@ def product_update(product_id):
     if not payload:
         return jsonify({'error': 'Invalid payload'}), 400
 
-    # Apply allowed updates
+    # Apply allowed updates - Enhanced for comprehensive edit modal
     name = payload.get('name')
     description = payload.get('description')
     category = payload.get('category')
     subcategory = payload.get('subcategory')
     price = payload.get('price')
+    compare_at_price = payload.get('compare_at_price')
+    discount_type = payload.get('discount_type')
+    discount_value = payload.get('discount_value')
+    voucher_type = payload.get('voucher_type')
+    materials = payload.get('materials')
+    details_fit = payload.get('details_fit')
+    status = payload.get('status')
+    base_sku = payload.get('base_sku')
+    low_stock_threshold = payload.get('low_stock_threshold')
     total_stock = payload.get('total_stock')
     variants = payload.get('variants')
     attributes = payload.get('attributes')
@@ -823,7 +832,36 @@ def product_update(product_id):
             product.subcategory = str(subcategory) if subcategory else None
         if price is not None:
             try:
-                product.price = float(price)
+                product.price = _to_decimal(price)
+            except (TypeError, ValueError):
+                pass
+        if compare_at_price is not None:
+            try:
+                product.compare_at_price = _to_decimal(compare_at_price) if compare_at_price else None
+            except (TypeError, ValueError):
+                pass
+        if discount_type is not None:
+            product.discount_type = str(discount_type) if discount_type else None
+        if discount_value is not None:
+            try:
+                product.discount_value = _to_decimal(discount_value) if discount_value else None
+            except (TypeError, ValueError):
+                pass
+        if voucher_type is not None:
+            product.voucher_type = str(voucher_type) if voucher_type else None
+        if materials is not None:
+            product.materials = str(materials)
+        if details_fit is not None:
+            product.details_fit = str(details_fit)
+        if status is not None:
+            product.status = str(status)
+            # Update is_draft based on status
+            product.is_draft = (status == 'draft')
+        if base_sku is not None:
+            product.base_sku = str(base_sku) if base_sku else None
+        if low_stock_threshold is not None:
+            try:
+                product.low_stock_threshold = int(low_stock_threshold)
             except (TypeError, ValueError):
                 pass
         if total_stock is not None:

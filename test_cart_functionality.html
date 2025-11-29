@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Test Cart Functionality</title>
+  </head>
+  <body>
+    <h1>Test Add to Cart Functionality</h1>
+    <p>Open browser console and navigate to a product page, then:</p>
+    <ol>
+      <li>Select a color</li>
+      <li>Select a size</li>
+      <li>Adjust quantity</li>
+      <li>Click "Add to Bag"</li>
+      <li>Verify the modal shows the correct color, size, and quantity</li>
+    </ol>
+
+    <p>Console commands to test manually:</p>
+    <pre>
+// Check if functions exist
+console.log("addToBag:", typeof window.addToBag);
+console.log("getSelectedColor:", typeof getSelectedColor);
+console.log("getSelectedSize:", typeof getSelectedSize);
+console.log("getSelectedQuantity:", typeof getSelectedQuantity);
+
+// Test getting current selections
+console.log("Current color:", getSelectedColor());
+console.log("Current size:", getSelectedSize());  
+console.log("Current quantity:", getSelectedQuantity());
+
+// Test modal update
+updateCartModal("Red", "M", 2);
+
+// Test opening modal
+showCartModal();
+    </pre>
+  </body>
+</html>

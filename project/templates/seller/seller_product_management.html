@@ -229,138 +229,316 @@ Dione Ecommerce{% endblock %} {% block extra_css %}
       </div>
     </div>
   </div>
-  <!-- Product Detail Modal -->
+  <!-- Enhanced Product Edit Modal -->
   <div class="modal" id="productDetailModal">
-    <div class="modal-content">
+    <div class="modal-content edit-product-modal">
       <div class="modal-header">
-        <h2 class="modal-title">Product Details</h2>
-        <button class="close-btn" id="closeProductDetailModal">
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-      </div>
-      <div class="modal-body">
-        <div class="product-detail">
-          <div class="product-image-column">
-            <div class="product-image-box">
-              <img
-                src=""
-                alt="Product Image"
-                id="modalProductImage"
-                class="product-image-lg"
-              />
-            </div>
-            <div class="image-actions">
-              <label
-                for="modalProductImageInput"
-                class="btn btn-secondary btn-ghost"
-              >
-                <i data-lucide="image"></i>
-                <span>Change Image</span>
-              </label>
-              <input
-                type="file"
-                id="modalProductImageInput"
-                accept="image/*"
-                style="display: none"
-              />
-            </div>
+        <div class="modal-header-content">
+          <div class="modal-icon">
+            <i data-lucide="edit-3"></i>
           </div>
-          <div class="product-main-column">
-            <div class="form-row">
-              <label for="modalProductName">Name</label>
-              <input type="text" id="modalProductName" class="modal-input" />
-            </div>
-
-            <div class="form-row form-row-split">
-              <div>
-                <label for="modalProductCategory">Category</label>
-                <input
-                  type="text"
-                  id="modalProductCategory"
-                  class="modal-input"
-                  placeholder="Category"
-                />
-              </div>
-              <div>
-                <label for="modalProductSubcategory">Subcategory</label>
-                <input
-                  type="text"
-                  id="modalProductSubcategory"
-                  class="modal-input"
-                  placeholder="Subcategory"
-                />
-              </div>
-            </div>
-
-            <div class="form-row form-row-split">
-              <div>
-                <label for="modalProductPrice">Price</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  id="modalProductPrice"
-                  class="modal-input"
-                />
-              </div>
-              <div>
-                <label for="modalProductStock">Total Stock</label>
-                <input
-                  type="number"
-                  id="modalProductStock"
-                  class="modal-input"
-                />
-              </div>
-            </div>
-
-            <div class="form-row">
-              <label for="modalProductDescription">Description</label>
-              <textarea
-                id="modalProductDescription"
-                class="modal-textarea"
-                rows="5"
-              ></textarea>
-            </div>
+          <div class="modal-title-section">
+            <h2 class="modal-title">Edit Product</h2>
+            <p class="modal-subtitle" id="editModalProductName">Product Name</p>
           </div>
-
-          <aside class="product-side-column">
-            <section class="side-section">
-              <h4 class="side-title">Variants</h4>
-              <div id="modalProductVariants" class="side-content"></div>
-            </section>
-            <section class="side-section">
-              <h4 class="side-title">Attributes</h4>
-              <div id="modalProductAttributes" class="side-content"></div>
-            </section>
-          </aside>
         </div>
-      </div>
-      <div
-        class="modal-footer"
-        style="
-          display: flex;
-          gap: 8px;
-          justify-content: flex-end;
-          padding: 12px 20px;
-          border-top: 1px solid #eee;
-        "
-      >
-        <button
-          class="btn-secondary close-btn"
-          id="closeProductDetailModalFooter"
-        >
-          Close
+        <button class="close-btn" id="closeProductDetailModal">
+          <i data-lucide="x"></i>
         </button>
-        <button class="btn-primary" id="saveProductDetails">
+      </div>
+      
+      <div class="modal-body">
+        <form id="editProductForm" class="edit-product-form">
+          <!-- Tab Navigation -->
+          <div class="edit-tabs">
+            <button type="button" class="edit-tab active" data-tab="basic">
+              <i data-lucide="info"></i>
+              <span>Basic Info</span>
+            </button>
+            <button type="button" class="edit-tab" data-tab="media">
+              <i data-lucide="image"></i>
+              <span>Photos</span>
+            </button>
+            <button type="button" class="edit-tab" data-tab="pricing">
+              <i data-lucide="dollar-sign"></i>
+              <span>Pricing</span>
+            </button>
+            <button type="button" class="edit-tab" data-tab="details">
+              <i data-lucide="file-text"></i>
+              <span>Details</span>
+            </button>
+            <button type="button" class="edit-tab" data-tab="variants">
+              <i data-lucide="layers"></i>
+              <span>Variants</span>
+            </button>
+          </div>
+
+          <!-- Tab Content -->
+          <div class="edit-tab-content">
+            
+            <!-- Basic Info Tab -->
+            <div class="tab-pane active" id="tab-basic">
+              <div class="form-section">
+                <h3 class="section-title">
+                  <i data-lucide="info"></i>
+                  Basic Information
+                </h3>
+                
+                <div class="form-grid">
+                  <div class="form-group full-width">
+                    <label for="editProductName">Product Name *</label>
+                    <input type="text" id="editProductName" name="name" class="form-input" required />
+                  </div>
+
+                  <div class="form-group">
+                    <label for="editProductCategory">Category *</label>
+                    <select id="editProductCategory" name="category" class="form-select" required>
+                      <option value="">Select Category</option>
+                      <option value="clothing">Clothing</option>
+                      <option value="shoes">Shoes</option>
+                      <option value="accessories">Accessories</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="editProductSubcategory">Subcategory</label>
+                    <select id="editProductSubcategory" name="subcategory" class="form-select">
+                      <option value="">Select Subcategory</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group full-width">
+                    <label for="editProductDescription">Description *</label>
+                    <textarea id="editProductDescription" name="description" class="form-textarea" rows="4" required></textarea>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="editProductStatus">Status</label>
+                    <select id="editProductStatus" name="status" class="form-select">
+                      <option value="active">Active</option>
+                      <option value="inactive">Inactive</option>
+                      <option value="draft">Draft</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="editProductSKU">Base SKU</label>
+                    <input type="text" id="editProductSKU" name="base_sku" class="form-input" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Media Tab -->
+            <div class="tab-pane" id="tab-media">
+              <div class="form-section">
+                <h3 class="section-title">
+                  <i data-lucide="image"></i>
+                  Product Photos
+                </h3>
+                
+                <div class="media-grid">
+                  <div class="media-upload-section">
+                    <label>Primary Image *</label>
+                    <div class="image-upload-container">
+                      <div class="image-preview" id="primaryImagePreview">
+                        <img id="primaryImageDisplay" src="" alt="Primary Image" style="display: none;" />
+                        <div class="upload-placeholder">
+                          <i data-lucide="camera"></i>
+                          <span>Upload Primary Image</span>
+                        </div>
+                      </div>
+                      <input type="file" id="editPrimaryImage" name="primary_image" accept="image/*" style="display: none;" />
+                      <button type="button" class="btn-upload" onclick="document.getElementById('editPrimaryImage').click()">
+                        <i data-lucide="upload"></i>
+                        Choose Image
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="media-upload-section">
+                    <label>Secondary Image</label>
+                    <div class="image-upload-container">
+                      <div class="image-preview" id="secondaryImagePreview">
+                        <img id="secondaryImageDisplay" src="" alt="Secondary Image" style="display: none;" />
+                        <div class="upload-placeholder">
+                          <i data-lucide="image"></i>
+                          <span>Upload Secondary Image</span>
+                        </div>
+                      </div>
+                      <input type="file" id="editSecondaryImage" name="secondary_image" accept="image/*" style="display: none;" />
+                      <button type="button" class="btn-upload" onclick="document.getElementById('editSecondaryImage').click()">
+                        <i data-lucide="upload"></i>
+                        Choose Image
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="size-guide-section">
+                  <label>Size Guide Photos</label>
+                  <p class="help-text">Upload up to 5 size guide photos</p>
+                  <div class="size-guide-grid" id="sizeGuideGrid">
+                    <!-- Size guide uploads will be added dynamically -->
+                  </div>
+                  <button type="button" class="btn-add-size-guide" id="addSizeGuideBtn">
+                    <i data-lucide="plus"></i>
+                    Add Size Guide Photo
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Pricing Tab -->
+            <div class="tab-pane" id="tab-pricing">
+              <div class="form-section">
+                <h3 class="section-title">
+                  <i data-lucide="dollar-sign"></i>
+                  Pricing Information
+                </h3>
+                
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label for="editProductPrice">Base Price *</label>
+                    <div class="input-with-prefix">
+                      <span class="prefix">₱</span>
+                      <input type="number" id="editProductPrice" name="price" class="form-input" step="0.01" required />
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="editComparePrice">Compare At Price</label>
+                    <div class="input-with-prefix">
+                      <span class="prefix">₱</span>
+                      <input type="number" id="editComparePrice" name="compare_at_price" class="form-input" step="0.01" />
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="editDiscountType">Discount Type</label>
+                    <select id="editDiscountType" name="discount_type" class="form-select">
+                      <option value="">No Discount</option>
+                      <option value="percentage">Percentage</option>
+                      <option value="fixed">Fixed Amount</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="editDiscountValue">Discount Value</label>
+                    <input type="number" id="editDiscountValue" name="discount_value" class="form-input" step="0.01" />
+                  </div>
+
+                  <div class="form-group">
+                    <label for="editVoucherType">Voucher Type</label>
+                    <select id="editVoucherType" name="voucher_type" class="form-select">
+                      <option value="">No Voucher</option>
+                      <option value="free_shipping">Free Shipping</option>
+                      <option value="buy_one_get_one">Buy One Get One</option>
+                      <option value="bundle_discount">Bundle Discount</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="editLowStockThreshold">Low Stock Threshold</label>
+                    <input type="number" id="editLowStockThreshold" name="low_stock_threshold" class="form-input" min="0" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Details Tab -->
+            <div class="tab-pane" id="tab-details">
+              <div class="form-section">
+                <h3 class="section-title">
+                  <i data-lucide="file-text"></i>
+                  Product Details
+                </h3>
+                
+                <div class="form-grid">
+                  <div class="form-group full-width">
+                    <label for="editProductMaterials">Materials & Care *</label>
+                    <textarea id="editProductMaterials" name="materials" class="form-textarea" rows="4" 
+                              placeholder="e.g., 100% Cotton&#10;Machine wash cold&#10;Tumble dry low" required></textarea>
+                  </div>
+
+                  <div class="form-group full-width">
+                    <label for="editProductDetailsFit">Details & Fit *</label>
+                    <textarea id="editProductDetailsFit" name="details_fit" class="form-textarea" rows="4" 
+                              placeholder="e.g., Relaxed fit&#10;Crew neckline&#10;Short sleeves&#10;Length: 26 inches" required></textarea>
+                  </div>
+                </div>
+
+                <div class="certifications-section">
+                  <label>Certifications (Sustainability)</label>
+                  <p class="help-text">Upload up to 5 certification photos</p>
+                  <div class="certifications-grid" id="certificationsGrid">
+                    <!-- Certification uploads will be added dynamically -->
+                  </div>
+                  <button type="button" class="btn-add-certification" id="addCertificationBtn">
+                    <i data-lucide="plus"></i>
+                    Add Certification Photo
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Variants Tab -->
+            <div class="tab-pane" id="tab-variants">
+              <div class="form-section">
+                <h3 class="section-title">
+                  <i data-lucide="layers"></i>
+                  Product Variants & Stock
+                </h3>
+                
+                <div class="variants-summary">
+                  <div class="summary-card">
+                    <div class="summary-icon">
+                      <i data-lucide="layers"></i>
+                    </div>
+                    <div class="summary-content">
+                      <span class="summary-label">Total Variants</span>
+                      <span class="summary-value" id="editTotalVariants">0</span>
+                    </div>
+                  </div>
+                  <div class="summary-card">
+                    <div class="summary-icon">
+                      <i data-lucide="package"></i>
+                    </div>
+                    <div class="summary-content">
+                      <span class="summary-label">Total Stock</span>
+                      <span class="summary-value" id="editTotalStock">0</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="variants-actions">
+                  <button type="button" class="btn-primary" id="editAddVariantBtn">
+                    <i data-lucide="plus"></i>
+                    Add Variant
+                  </button>
+                  <button type="button" class="btn-secondary" id="editManageStockBtn">
+                    <i data-lucide="settings"></i>
+                    Manage Stock
+                  </button>
+                </div>
+
+                <div class="variants-list" id="editVariantsList">
+                  <!-- Variants will be loaded dynamically -->
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </form>
+      </div>
+      
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" id="closeProductDetailModalFooter">
+          <i data-lucide="x"></i>
+          Cancel
+        </button>
+        <button type="button" class="btn-primary" id="saveProductDetails">
+          <i data-lucide="save"></i>
           Save Changes
         </button>
       </div>
