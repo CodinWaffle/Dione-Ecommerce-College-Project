@@ -165,9 +165,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Show success message
                 showNotification('Payment processed successfully! Redirecting...', 'success');
                 
-                // Redirect to order confirmation or success page
+                // Redirect to order confirmation / success page
                 setTimeout(() => {
-                    window.location.href = '/buyer/order-confirmation';
+                    window.location.href = '/order-success';
                 }, 1500);
             }, 2000);
         });

@@ -307,11 +307,6 @@ Dione Ecommerce{% endblock %} {% block extra_css %}
                     </select>
                   </div>
 
-                  <div class="form-group full-width">
-                    <label for="editProductDescription">Description *</label>
-                    <textarea id="editProductDescription" name="description" class="form-textarea" rows="4" required></textarea>
-                  </div>
-
                   <div class="form-group">
                     <label for="editProductStatus">Status</label>
                     <select id="editProductStatus" name="status" class="form-select">
@@ -324,6 +319,18 @@ Dione Ecommerce{% endblock %} {% block extra_css %}
                   <div class="form-group">
                     <label for="editProductSKU">Base SKU</label>
                     <input type="text" id="editProductSKU" name="base_sku" class="form-input" />
+                  </div>
+
+                  <div class="form-group full-width">
+                    <label for="editProductSubitems">Subitems / Tags</label>
+                    <input
+                      type="text"
+                      id="editProductSubitems"
+                      name="subitems"
+                      class="form-input"
+                      placeholder="Enter comma separated subitems (e.g. Tops, Casual, Summer)"
+                    />
+                    <small class="help-text">Matches the selections from Step 1 (Add Product) subitem checkboxes.</small>
                   </div>
                 </div>
               </div>
@@ -349,6 +356,7 @@ Dione Ecommerce{% endblock %} {% block extra_css %}
                         </div>
                       </div>
                       <input type="file" id="editPrimaryImage" name="primary_image" accept="image/*" style="display: none;" />
+                      <input type="hidden" id="editPrimaryImageValue" name="primary_image_value" />
                       <button type="button" class="btn-upload" onclick="document.getElementById('editPrimaryImage').click()">
                         <i data-lucide="upload"></i>
                         Choose Image
@@ -367,6 +375,7 @@ Dione Ecommerce{% endblock %} {% block extra_css %}
                         </div>
                       </div>
                       <input type="file" id="editSecondaryImage" name="secondary_image" accept="image/*" style="display: none;" />
+                      <input type="hidden" id="editSecondaryImageValue" name="secondary_image_value" />
                       <button type="button" class="btn-upload" onclick="document.getElementById('editSecondaryImage').click()">
                         <i data-lucide="upload"></i>
                         Choose Image
@@ -375,17 +384,6 @@ Dione Ecommerce{% endblock %} {% block extra_css %}
                   </div>
                 </div>
 
-                <div class="size-guide-section">
-                  <label>Size Guide Photos</label>
-                  <p class="help-text">Upload up to 5 size guide photos</p>
-                  <div class="size-guide-grid" id="sizeGuideGrid">
-                    <!-- Size guide uploads will be added dynamically -->
-                  </div>
-                  <button type="button" class="btn-add-size-guide" id="addSizeGuideBtn">
-                    <i data-lucide="plus"></i>
-                    Add Size Guide Photo
-                  </button>
-                </div>
               </div>
             </div>
 
@@ -456,6 +454,11 @@ Dione Ecommerce{% endblock %} {% block extra_css %}
                 
                 <div class="form-grid">
                   <div class="form-group full-width">
+                    <label for="editProductDescription">Product Description *</label>
+                    <textarea id="editProductDescription" name="description" class="form-textarea" rows="4" required></textarea>
+                  </div>
+
+                  <div class="form-group full-width">
                     <label for="editProductMaterials">Materials & Care *</label>
                     <textarea id="editProductMaterials" name="materials" class="form-textarea" rows="4" 
                               placeholder="e.g., 100% Cotton&#10;Machine wash cold&#10;Tumble dry low" required></textarea>
@@ -465,6 +468,30 @@ Dione Ecommerce{% endblock %} {% block extra_css %}
                     <label for="editProductDetailsFit">Details & Fit *</label>
                     <textarea id="editProductDetailsFit" name="details_fit" class="form-textarea" rows="4" 
                               placeholder="e.g., Relaxed fit&#10;Crew neckline&#10;Short sleeves&#10;Length: 26 inches" required></textarea>
+                  </div>
+
+                  <div class="form-group full-width">
+                    <label for="editSizeGuideInput">Size Guide Notes</label>
+                    <textarea
+                      id="editSizeGuideInput"
+                      name="size_guides"
+                      class="form-textarea"
+                      rows="3"
+                      placeholder="Enter comma separated size guide notes or links"
+                    ></textarea>
+                    <small class="help-text">These values map to the Size Guide selections from Step 2 (Add Product Description).</small>
+                  </div>
+
+                  <div class="form-group full-width">
+                    <label for="editCertificationsInput">Certification Notes</label>
+                    <textarea
+                      id="editCertificationsInput"
+                      name="certifications"
+                      class="form-textarea"
+                      rows="3"
+                      placeholder="Enter comma separated certifications or descriptions"
+                    ></textarea>
+                    <small class="help-text">These values map to the Certifications list from Step 2.</small>
                   </div>
                 </div>
 
@@ -511,19 +538,45 @@ Dione Ecommerce{% endblock %} {% block extra_css %}
                   </div>
                 </div>
 
-                <div class="variants-actions">
-                  <button type="button" class="btn-primary" id="editAddVariantBtn">
-                    <i data-lucide="plus"></i>
-                    Add Variant
-                  </button>
-                  <button type="button" class="btn-secondary" id="editManageStockBtn">
-                    <i data-lucide="settings"></i>
-                    Manage Stock
-                  </button>
-                </div>
+                <div class="variant-editor">
+                  <form id="editVariantForm" class="variant-form">
+                    <div class="form-grid">
+                      <div class="form-group">
+                        <label for="editVariantSku">SKU</label>
+                        <input type="text" id="editVariantSku" class="form-input" placeholder="SKU" />
+                      </div>
+                      <div class="form-group">
+                        <label for="editVariantColor">Color</label>
+                        <input type="text" id="editVariantColor" class="form-input" placeholder="Color" />
+                      </div>
+                      <div class="form-group">
+                        <label for="editVariantColorHex">Color Hex</label>
+                        <input type="text" id="editVariantColorHex" class="form-input" placeholder="#000000" />
+                      </div>
+                      <div class="form-group">
+                        <label for="editVariantSize">Size</label>
+                        <input type="text" id="editVariantSize" class="form-input" placeholder="Size" />
+                      </div>
+                      <div class="form-group">
+                        <label for="editVariantStock">Stock</label>
+                        <input type="number" id="editVariantStock" class="form-input" min="0" value="0" />
+                      </div>
+                      <div class="form-group">
+                        <label for="editVariantLowStock">Low Stock</label>
+                        <input type="number" id="editVariantLowStock" class="form-input" min="0" value="0" />
+                      </div>
+                    </div>
+                    <div class="variant-form-actions">
+                      <button type="submit" class="btn-primary" id="editAddVariantBtn">
+                        <i data-lucide="plus"></i>
+                        Add Variant
+                      </button>
+                    </div>
+                  </form>
 
-                <div class="variants-list" id="editVariantsList">
-                  <!-- Variants will be loaded dynamically -->
+                  <div class="variants-list" id="editVariantsList">
+                    <!-- Variants will be loaded dynamically -->
+                  </div>
                 </div>
               </div>
             </div>

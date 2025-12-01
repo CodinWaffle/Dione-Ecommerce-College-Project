@@ -9,7 +9,7 @@
 
 .product-card {
   contain: layout style;
-  transform: translateZ(0); /* Force hardware acceleration */
+  transform: translateZ(0); 
 }
 
 /* Grid Container - Carousel Layout */
@@ -34,7 +34,7 @@
 
 .product-grid .product-card {
   flex: 0 0 calc(25% - 1.125rem);
-  min-width: 200px;
+  min-width: 280px;
 }
 
 @media (max-width: 1400px) {
@@ -61,6 +61,34 @@
 
 .product-card {
   height: 100%;
+  background: #fff;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid #eceff4;
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+  position: relative;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+}
+
+.product-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  box-shadow: 0 12px 28px rgba(27, 39, 51, 0.08);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.product-card:hover::after {
+  opacity: 1;
+}
+
+.product-card:hover {
+  transform: translateY(-4px);
 }
 
 /*
@@ -84,24 +112,14 @@
   width: 100%;
 }
 
-.content-area .product-grid .card-wrapper {
-  /* keep a slightly smaller card appearance */
-  border-radius: 0.5rem;
-}
-
-.content-area .product-grid .image-container {
+.content-area .product-grid .product-image-container {
   /* Reduce image height proportionally to make cards smaller */
-  height: 16rem;
+  aspect-ratio: 1;
 }
 
-.content-area .product-grid .action-button {
+.content-area .product-grid .action-btn {
   width: 2.5rem;
   height: 2.5rem;
-}
-
-.content-area .product-grid .icon {
-  width: 1rem;
-  height: 1rem;
 }
 
 .content-area .product-grid .product-name {
@@ -110,11 +128,6 @@
 
 .content-area .product-grid .current-price {
   font-size: 1.25rem;
-}
-
-.content-area .product-grid .material-badge {
-  font-size: 0.7rem;
-  padding: 0.2rem 0.6rem;
 }
 
 /* Responsive breakpoints for content-area grid */
@@ -158,62 +171,75 @@
    IMAGE CONTAINER
    ============================================ */
 
-.product-card .image-container {
+.product-card .product-image-container {
   position: relative;
   width: 100%;
-  height: 18rem;
+  aspect-ratio: 1;
   overflow: hidden;
-  background-color: #f1f5f9;
+  background-color: #f4f6fb;
 }
 
 .product-card .product-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: opacity 0.2s ease-in-out;
-  will-change: opacity;
+  transition: opacity 0.45s ease, transform 0.45s ease;
+  backface-visibility: hidden;
+}
+
+.product-card .primary-image,
+.product-card .secondary-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .product-card .primary-image {
   opacity: 1;
 }
 
-.product-card.hovered .primary-image {
+.product-card .secondary-image {
   opacity: 0;
 }
 
-.product-card .secondary-image {
-  position: absolute;
-  top: 0;
-  left: 0;
+.product-card.hovered .primary-image {
   opacity: 0;
+  transform: scale(1.02);
 }
 
 .product-card.hovered .secondary-image {
   opacity: 1;
+  transform: scale(1.02);
 }
 
 /* ============================================
    HOVER ACTIONS
    ============================================ */
 
-.product-card .hover-actions {
+.product-card .hover-actions,
+.product-card .product-actions {
   position: absolute;
-  right: 0.75rem;
-  bottom: 0.75rem;
+  top: 12px;
+  right: 12px;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  gap: 0.75rem;
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  gap: 8px;
   opacity: 0;
-  transform: translateX(100%);
-  will-change: opacity, transform;
+  transition: all 0.3s ease;
+}
+
+.product-card:hover .hover-actions,
+.product-card:hover .product-actions {
+  opacity: 1;
 }
 
 /* Action buttons: white circular background, centered icon */
-.product-card .action-button {
-  position: relative; /* needed for tooltip absolute positioning */
+.product-card .action-button,
+.product-card .action-btn {
+  position: relative;
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -222,19 +248,22 @@
   align-items: center;
   justify-content: center;
   padding: 0;
-  border: 1px solid rgba(15, 23, 42, 0.04);
-  box-shadow: 0 4px 12px rgba(2, 6, 23, 0.06);
+  border: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.product-card .action-button:hover,
+.product-card .action-btn:hover {
+  background: #ef4444;
+  color: white;
+  transform: scale(1.1);
 }
 
 .product-card .action-button .icon {
-  width: 18px;
-  height: 18px;
-}
-
-.product-card.hovered .hover-actions {
-  opacity: 1;
-  transform: translateX(0);
+  width: 16px;
+  height: 16px;
 }
 
 /* action-button/icon rules are namespaced to .product-card earlier to avoid global leakage */
@@ -306,76 +335,101 @@
    CARD CONTENT
    ============================================ */
 
-.product-card .card-content {
-  flex: 1;
-  padding: 0.75rem;
+.product-card .card-content,
+.product-card .product-info {
+  padding: 16px 18px 18px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  gap: 10px;
 }
 
 .product-card .product-name {
-  font-size: 1rem;
+  font-size: 1.05rem;
   font-weight: 600;
   color: #0f172a;
-  margin-bottom: 0.5rem;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  line-height: 1.35;
 }
 
-/* ============================================
-   MATERIAL BADGE
-   ============================================ */
-
-.product-card .material-badge-wrapper {
+.product-card .product-price {
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
-}
-
-.product-card .material-label {
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: #475569;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.product-card .material-badge {
-  display: inline-block;
-  background-color: #f1f5f9;
-  color: #475569;
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  border: 1px solid #e2e8f0;
-}
-
-/* ============================================
-   PRICE CONTAINER
-   ============================================ */
-
-.product-card .price-container {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  align-items: baseline;
+  gap: 0.45rem;
 }
 
 .product-card .current-price {
   font-size: 1.25rem;
-  font-weight: bold;
-  color: #0f172a;
+  color: #9ca3af;
+  text-decoration: line-through;
 }
 
-.product-card .original-price {
-  font-size: 0.875rem;
-  color: #94a3b8;
-  text-decoration: line-through;
+.product-card .discount-badge {
+  background: #ef4444;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* ============================================
+   RATING CONTAINER
+   ============================================ */
+
+.product-card .product-rating,
+.product-card .product-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #475569;
+  font-size: 0.85rem;
+}
+
+.product-card .stars {
+  display: flex;
+}
+
+.product-card .product-colors {
+  margin-top: 2px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.product-card .color-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px #d0d7e3;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+}
+
+.product-card .color-dot:focus-visible,
+.product-card .color-dot:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.15);
+}
+
+.product-card .color-dot.active {
+  box-shadow: 0 0 0 1px #111827;
+}
+
+.product-card .color-dot span {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+.product-card .star {
+  width: 12px;
+  height: 12px;
+}
+
+.product-card .rating-value {
+  font-weight: 500;
 }
 
 /* small visual feedback when add-to-cart is clicked */

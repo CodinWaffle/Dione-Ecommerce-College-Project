@@ -1325,7 +1325,10 @@
         </div>
 
         <!-- Add to Bag Button -->
-        <button class="add-to-bag-btn">
+        <button
+          class="add-to-bag-btn"
+          onclick="if(window.addToBag) window.addToBag(); else console.error('addToBag not found');"
+        >
           <svg
             width="20"
             height="20"
@@ -1373,7 +1376,146 @@
     {% include 'main/partials/_footer.html' %}
 
     <!-- Include Add to Cart Popup -->
-    {% include 'main/partials/_add_to_cart_pop.html' %}
+    {% include 'main/partials/_add_to_cart_pop_new.html' %}
+
+    <!-- Backup inline modal in case include fails -->
+    <div
+      id="backupCartModal"
+      class="cart-modal-overlay"
+      style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+      "
+    >
+      <div
+        class="cart-modal"
+        style="
+          background: white;
+          border-radius: 12px;
+          width: 90%;
+          max-width: 1000px;
+          max-height: 90vh;
+          overflow-y: auto;
+          position: relative;
+          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        "
+      >
+        <!-- Modal header -->
+        <div style="padding: 40px 40px 0; display: flex; justify-content: space-between; align-items: flex-start;">
+          <div style="display: flex; align-items: center; gap: 12px; font-size: 28px; font-weight: 700; color: #000;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M6 2l3 6v8a2 2 0 002 2h2a2 2 0 002-2V8l3-6"/>
+              <path d="M5 8h14l-1 13H6L5 8z"/>
+              <path d="M10 10v4"/>
+              <path d="M14 10v4"/>
+            </svg>
+            You've Got Great Taste
+            <span style="font-size: 16px; font-weight: 400; color: #666; margin-left: 8px;">1 Item</span>
+          </div>
+          <button
+            onclick="closeBackupModal()"
+            style="
+              background: none;
+              border: none;
+              font-size: 28px;
+              color: #999;
+              cursor: pointer;
+              padding: 0;
+              line-height: 1;
+              width: 32px;
+              height: 32px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            "
+          >
+            &times;
+          </button>
+        </div>
+
+        <!-- Modal body -->
+        <div style="padding: 40px; padding-top: 20px;">
+          <div style="display: flex; gap: 60px; align-items: flex-start; min-height: 200px;">
+            
+            <!-- Left side - Product section -->
+            <div style="flex: 1;">
+              <div style="display: flex; gap: 24px; align-items: flex-start;">
+                <div style="width: 120px; height: 120px; background-color: #f5f5f5; border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #999; overflow: hidden;">
+                  <img id="backupProductImage" src="/static/images/placeholder.jpg" alt="Product" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
+                </div>
+                <div style="flex: 1;">
+                  <div id="backupProductName" style="font-size: 20px; font-weight: 600; color: #000; margin-bottom: 12px; line-height: 1.3;">Product Name</div>
+                  <div style="font-size: 16px; color: #666; margin-bottom: 16px;">Size: <span id="backupSize">-</span></div>
+                  <div id="backupProductPrice" style="font-size: 18px; font-weight: 600; color: #666;">₱0</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right side - Subtotal and actions -->
+            <div style="flex: 0 0 300px; display: flex; flex-direction: column; gap: 20px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <div style="font-size: 18px; font-weight: 600; color: #000;">Subtotal</div>
+                <div id="backupSubtotal" style="font-size: 18px; font-weight: 600; color: #000;">₱0</div>
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: 16px;">
+                <a href="/cart" style="background-color: #dc2626; color: white; padding: 16px 24px; border: none; border-radius: 6px; font-size: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer; transition: all 0.2s ease; width: 100%; text-decoration: none; display: inline-block; text-align: center;">VIEW BAG & CHECKOUT</a>
+                <a href="#" onclick="closeBackupModal()" style="display: flex; align-items: center; justify-content: center; gap: 8px; color: #666; text-decoration: none; font-size: 16px; font-weight: 500; padding: 12px 8px; transition: all 0.2s ease;">
+                  Continue Shopping
+                  <svg viewBox="0 0 24 24" style="width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2;">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12,5 19,12 12,19"></polyline>
+                  </svg>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recommendations section -->
+          <div style="margin-top: 40px;">
+            <h3 style="font-size: 24px; font-weight: 700; color: #000; margin-bottom: 24px;">Goes well with</h3>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px;">
+              <div style="text-align: left;">
+                <div style="width: 100%; height: 200px; background-color: #f5f5f5; border-radius: 8px; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #999; overflow: hidden;">
+                  <img src="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=200&h=200&fit=crop" alt="Clippable Nano Pouch" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+                <div style="font-size: 16px; font-weight: 600; color: #000; margin-bottom: 8px; line-height: 1.3;">Clippable Nano Pouch</div>
+                <div style="font-size: 16px; font-weight: 600; color: #666;">₱1,200</div>
+              </div>
+              <div style="text-align: left;">
+                <div style="width: 100%; height: 200px; background-color: #f5f5f5; border-radius: 8px; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #999; overflow: hidden;">
+                  <img src="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=200&h=200&fit=crop" alt="New Crew Backpack" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+                <div style="font-size: 16px; font-weight: 600; color: #000; margin-bottom: 8px; line-height: 1.3;">New Crew Backpack 22L Updated</div>
+                <div style="font-size: 16px; font-weight: 600; color: #666;">₱4,900</div>
+              </div>
+              <div style="text-align: left;">
+                <div style="width: 100%; height: 200px; background-color: #f5f5f5; border-radius: 8px; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #999; overflow: hidden;">
+                  <img src="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=200&h=200&fit=crop" alt="Everywhere Backpack" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+                <div style="font-size: 16px; font-weight: 600; color: #000; margin-bottom: 8px; line-height: 1.3;">Everywhere Backpack 22L Metal Hardware</div>
+                <div style="font-size: 16px; font-weight: 600; color: #666;">₱4,900</div>
+              </div>
+              <div style="text-align: left;">
+                <div style="width: 100%; height: 200px; background-color: #f5f5f5; border-radius: 8px; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #999; overflow: hidden;">
+                  <img src="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=200&h=200&fit=crop" alt="City Essentials Pouch" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+                <div style="font-size: 16px; font-weight: 600; color: #000; margin-bottom: 8px; line-height: 1.3;">City Essentials Pouch Mini 2L</div>
+                <div style="font-size: 16px; font-weight: 600; color: #666;">₱1,900</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Variant photo map: mapping color -> photo url(s). Backend should pass `variant_photos` dict. -->
     <script>
@@ -1649,17 +1791,21 @@
 
         // Add to bag functionality
         window.addToBag = function () {
-          console.log("🛒 Add to bag clicked!");
+          try {
+            console.log("🛒 Add to bag clicked!");
 
-          // Check if button is disabled
-          const addToBagBtn = document.querySelector(".add-to-bag-btn");
-          if (addToBagBtn && addToBagBtn.disabled) {
-            console.log("⛔ Button is disabled - checking why...");
-
-            // Check current selections
+            // Validate selections first
             const selectedColor = getSelectedColor();
             const selectedSize = getSelectedSize();
+            const quantity = parseInt(document.getElementById("quantityInput")?.value || 1);
 
+            console.log("Current selections:", {
+              color: selectedColor,
+              size: selectedSize,
+              quantity: quantity
+            });
+
+            // Validate required selections
             if (!selectedColor) {
               alert("Please select a color first");
               return;
@@ -1670,38 +1816,36 @@
               return;
             }
 
-            alert("This size is out of stock. Please select a different size.");
-            return;
-          }
+            if (quantity < 1) {
+              alert("Please select a valid quantity");
+              return;
+            }
 
-          // Get currently selected values
-          const selectedColor = getSelectedColor();
-          const selectedSize = getSelectedSize();
-          const quantity = getSelectedQuantity();
+            // Check if button is disabled due to stock
+            const addToBagBtn = document.querySelector(".add-to-bag-btn");
+            if (addToBagBtn && addToBagBtn.disabled) {
+              console.log("⛔ Button is disabled - likely out of stock");
+              alert("This item is currently out of stock for the selected size");
+              return;
+            }
 
-          console.log("Selected values:", {
-            color: selectedColor,
-            size: selectedSize,
-            quantity: quantity,
-          });
+            // Try to show the new modal first
+            const cartModalOverlay = document.getElementById("cartModalOverlay");
+            if (cartModalOverlay) {
+              console.log("📱 Using new cart modal");
+              updateCartModal(selectedColor, selectedSize, quantity);
+              showCartModal();
+            } else {
+              // Fallback to dynamic modal
+              console.log("📱 Using dynamic modal fallback");
+              createDynamicModal();
+            }
 
-          // Validate selections
-          if (!selectedColor) {
-            alert("Please select a color");
-            return;
-          }
-
-          if (!selectedSize) {
-            alert("Please select a size");
-            return;
-          }
-
-          // Update modal with selected values
-          updateCartModal(selectedColor, selectedSize, quantity);
-
-          // Show the cart modal
-          showCartModal();
-        };
+          } catch (error) {
+            console.error("❌ Error in addToBag:", error);
+            // Last resort: show backup modal
+            showBackupModal();
+          };
 
         // Get currently selected color
         function getSelectedColor() {
@@ -1733,10 +1877,56 @@
             quantity,
           });
 
+          // Get variant-specific information
+          let productPrice = '₱0';
+          let productImage = '/static/images/placeholder.jpg';
+          let numericPrice = 0;
+          
+          // Try to get variant-specific price and image
+          const selectedColorBtn = document.querySelector('.color-option.active');
+          const selectedSizeBtn = document.querySelector('.size-option.active');
+          
+          if (selectedColorBtn) {
+            const variantImage = selectedColorBtn.dataset.image;
+            if (variantImage) {
+              productImage = variantImage;
+            }
+          }
+          
+          if (selectedSizeBtn) {
+            const sizePrice = selectedSizeBtn.dataset.price;
+            if (sizePrice) {
+              numericPrice = parseFloat(sizePrice);
+              productPrice = `₱${numericPrice.toLocaleString()}`;
+            }
+          }
+          
+          // Fallback to main product price if no variant price
+          if (numericPrice === 0) {
+            const mainPriceEl = document.querySelector('.current-price');
+            if (mainPriceEl) {
+              productPrice = mainPriceEl.textContent;
+              const priceMatch = productPrice.match(/[\d,]+/);
+              if (priceMatch) {
+                numericPrice = parseFloat(priceMatch[0].replace(/,/g, ''));
+              }
+            }
+          }
+          
+          // Fallback to main image if no variant image
+          if (productImage === '/static/images/placeholder.jpg') {
+            const mainImage = document.querySelector('.main-image img');
+            if (mainImage) {
+              productImage = mainImage.src;
+            }
+          }
+          
+          // Calculate subtotal
+          const subtotal = numericPrice * quantity;
+          const subtotalFormatted = `₱${subtotal.toLocaleString()}`;
+
           // Update color display
-          const colorDisplay = document.getElementById(
-            "cartModalSelectedColor"
-          );
+          const colorDisplay = document.getElementById("cartModalSelectedColor");
           if (colorDisplay) {
             colorDisplay.textContent = color;
           }
@@ -1748,9 +1938,7 @@
           }
 
           // Update quantity display
-          const quantityDisplay = document.getElementById(
-            "cartModalSelectedQuantity"
-          );
+          const quantityDisplay = document.getElementById("cartModalSelectedQuantity");
           if (quantityDisplay) {
             quantityDisplay.textContent = quantity;
           }
@@ -1758,9 +1946,28 @@
           // Update item count in modal header
           const itemCount = document.querySelector(".cart-item-count");
           if (itemCount) {
-            itemCount.textContent =
-              quantity === 1 ? "1 Item" : `${quantity} Items`;
+            itemCount.textContent = quantity === 1 ? "1 Item" : `${quantity} Items`;
           }
+
+          // Update product price in modal
+          const modalPrice = document.querySelector(".cart-product-price");
+          if (modalPrice) {
+            modalPrice.textContent = productPrice;
+          }
+
+          // Update subtotal in modal
+          const modalSubtotal = document.querySelector(".cart-subtotal-amount");
+          if (modalSubtotal) {
+            modalSubtotal.textContent = subtotalFormatted;
+          }
+
+          // Add item to cart via API
+          addToCartAPI({
+            product_id: {{ product.id }},
+            color: color,
+            size: size,
+            quantity: quantity
+          });
 
           // Update product image in modal
           const modalImage = document.querySelector(".cart-product-image img");
@@ -1774,33 +1981,389 @@
           }
         }
 
-        // Show cart modal
+        // Show cart modal with success animation
         function showCartModal() {
-          console.log("📱 Opening cart modal");
-          const modal = document.getElementById("cartModalOverlay");
-          console.log("Modal element found:", modal);
-          
-          if (modal) {
-            console.log("Adding active class to modal");
-            modal.classList.add("active");
-            document.body.style.overflow = "hidden";
-            
-            // Check if modal is visible after adding class
-            setTimeout(() => {
-              const computedStyle = window.getComputedStyle(modal);
-              console.log("Modal display:", computedStyle.display);
-              console.log("Modal visibility:", computedStyle.visibility);
-              console.log("Modal opacity:", computedStyle.opacity);
-              console.log("Modal classList:", [...modal.classList]);
-            }, 100);
-          } else {
-            console.error("❌ Modal element with ID 'cartModalOverlay' not found!");
-            
-            // Try to find any modal-related elements
-            const allModals = document.querySelectorAll('[id*="modal"], [class*="modal"]');
-            console.log("All modal-related elements found:", allModals);
+          try {
+            console.log("📱 Opening cart modal with success animation");
+
+            // First show the success animation
+            const successAnimation = document.getElementById(
+              "cartSuccessAnimation"
+            );
+            if (successAnimation) {
+              console.log("✅ Showing success animation first");
+              successAnimation.classList.add("active");
+              document.body.style.overflow = "hidden";
+
+              // Hide success animation after 2 seconds and show modal
+              setTimeout(() => {
+                successAnimation.classList.remove("active");
+                console.log("🔄 Success animation complete, showing modal");
+
+                // Show the modal after success animation
+                setTimeout(() => {
+                  const modal = document.getElementById("cartModalOverlay");
+                  if (modal) {
+                    console.log("📱 Opening main cart modal");
+                    modal.classList.add("active");
+                    document.body.style.overflow = "hidden";
+                  } else {
+                    console.error("❌ Cart modal not found, using fallback");
+                    createDynamicModal();
+                  }
+                }, 300);
+              }, 2000);
+            } else {
+              console.log(
+                "🔄 Success animation not found, showing modal directly"
+              );
+              // Fallback to direct modal if success animation not found
+              const modal = document.getElementById("cartModalOverlay");
+              if (modal) {
+                modal.classList.add("active");
+                modal.style.display = "flex";
+                modal.style.opacity = "1";
+                modal.style.visibility = "visible";
+                document.body.style.overflow = "hidden";
+              } else {
+                createDynamicModal();
+              }
+            }
+          } catch (error) {
+            console.error("❌ Error in showCartModal:", error);
+            createDynamicModal();
           }
         }
+
+        // Backup modal close function
+        window.closeBackupModal = function () {
+          const modal = document.getElementById("backupCartModal");
+          if (modal) {
+            modal.style.display = "none";
+            document.body.style.overflow = "auto";
+          }
+        };
+
+        // Show backup modal function
+        window.showBackupModal = function () {
+          const modal = document.getElementById("backupCartModal");
+          if (modal) {
+            // Get current product information with variant data
+            const productName = document.querySelector('.product-name')?.textContent || 'Product';
+            const selectedColor = window.selectedColor || getSelectedColor() || 'Default';
+            const selectedSize = window.selectedSize || getSelectedSize() || 'ONE SIZE';
+            const quantity = parseInt(document.getElementById("quantityInput")?.value || 1);
+            
+            // Get variant-specific information
+            let productPrice = '₱0';
+            let productImage = '/static/images/placeholder.jpg';
+            let numericPrice = 0;
+            
+            // Try to get variant-specific price and image
+            const selectedColorBtn = document.querySelector('.color-option.active');
+            const selectedSizeBtn = document.querySelector('.size-option.active');
+            
+            if (selectedColorBtn) {
+              const variantImage = selectedColorBtn.dataset.image;
+              if (variantImage) {
+                productImage = variantImage;
+              }
+            }
+            
+            if (selectedSizeBtn) {
+              const sizePrice = selectedSizeBtn.dataset.price;
+              if (sizePrice) {
+                numericPrice = parseFloat(sizePrice);
+                productPrice = `₱${numericPrice.toLocaleString()}`;
+              }
+            }
+            
+            // Fallback to main product price if no variant price
+            if (numericPrice === 0) {
+              const mainPriceEl = document.querySelector('.current-price');
+              if (mainPriceEl) {
+                productPrice = mainPriceEl.textContent;
+                const priceMatch = productPrice.match(/[\d,]+/);
+                if (priceMatch) {
+                  numericPrice = parseFloat(priceMatch[0].replace(/,/g, ''));
+                }
+              }
+            }
+            
+            // Fallback to main image if no variant image
+            if (productImage === '/static/images/placeholder.jpg') {
+              const mainImage = document.querySelector('.main-image img');
+              if (mainImage) {
+                productImage = mainImage.src;
+              }
+            }
+            
+            // Calculate subtotal
+            const subtotal = numericPrice * quantity;
+            const subtotalFormatted = `₱${subtotal.toLocaleString()}`;
+
+            // Update modal content
+            const productNameEl = document.getElementById('backupProductName');
+            const productPriceEl = document.getElementById('backupProductPrice');
+            const sizeEl = document.getElementById('backupSize');
+            const subtotalEl = document.getElementById('backupSubtotal');
+            const imageEl = document.getElementById('backupProductImage');
+
+            if (productNameEl) productNameEl.textContent = productName;
+            if (productPriceEl) productPriceEl.textContent = productPrice;
+            if (sizeEl) sizeEl.textContent = selectedSize;
+            if (subtotalEl) subtotalEl.textContent = subtotalFormatted;
+            if (imageEl) imageEl.src = productImage;
+
+            // Add item to cart via API
+            addToCartAPI({
+              product_id: {{ product.id }},
+              color: selectedColor,
+              size: selectedSize,
+              quantity: quantity
+            });
+
+            modal.style.display = "flex";
+            document.body.style.overflow = "hidden";
+          }
+        };
+
+        // Create dynamic modal as last resort
+        function createDynamicModal() {
+          console.log("🚨 Creating dynamic modal with variant data");
+
+          // Remove existing dynamic modal if any
+          const existing = document.getElementById("dynamicCartModal");
+          if (existing) existing.remove();
+
+          // Get current product information
+          const productName = document.querySelector('.product-name')?.textContent || 'Product';
+          const selectedColor = window.selectedColor || getSelectedColor() || 'Default';
+          const selectedSize = window.selectedSize || getSelectedSize() || 'ONE SIZE';
+          const quantity = parseInt(document.getElementById("quantityInput")?.value || 1);
+          
+          // Get variant-specific information
+          let productPrice = '₱0';
+          let productImage = '/static/images/placeholder.jpg';
+          let numericPrice = 0;
+          
+          // Try to get variant-specific price and image
+          const selectedColorBtn = document.querySelector('.color-option.active');
+          const selectedSizeBtn = document.querySelector('.size-option.active');
+          
+          if (selectedColorBtn) {
+            // Get variant image from the selected color button
+            const variantImage = selectedColorBtn.dataset.image;
+            if (variantImage) {
+              productImage = variantImage;
+            }
+          }
+          
+          if (selectedSizeBtn) {
+            // Get price from the selected size button
+            const sizePrice = selectedSizeBtn.dataset.price;
+            if (sizePrice) {
+              numericPrice = parseFloat(sizePrice);
+              productPrice = `₱${numericPrice.toLocaleString()}`;
+            }
+          }
+          
+          // Fallback to main product price if no variant price
+          if (numericPrice === 0) {
+            const mainPriceEl = document.querySelector('.current-price');
+            if (mainPriceEl) {
+              productPrice = mainPriceEl.textContent;
+              // Extract numeric value
+              const priceMatch = productPrice.match(/[\d,]+/);
+              if (priceMatch) {
+                numericPrice = parseFloat(priceMatch[0].replace(/,/g, ''));
+              }
+            }
+          }
+          
+          // Fallback to main image if no variant image
+          if (productImage === '/static/images/placeholder.jpg') {
+            const mainImage = document.querySelector('.main-image img');
+            if (mainImage) {
+              productImage = mainImage.src;
+            }
+          }
+          
+          // Calculate subtotal
+          const subtotal = numericPrice * quantity;
+          const subtotalFormatted = `₱${subtotal.toLocaleString()}`;
+          
+          console.log("Modal data:", {
+            productName,
+            selectedColor,
+            selectedSize,
+            quantity,
+            productPrice,
+            productImage,
+            subtotal: subtotalFormatted
+          });
+
+          // Add item to cart via API
+          addToCartAPI({
+            product_id: {{ product.id }},
+            color: selectedColor,
+            size: selectedSize,
+            quantity: quantity
+          });
+
+          const modal = document.createElement("div");
+          modal.id = "dynamicCartModal";
+          modal.innerHTML = `
+            <div class="cart-modal-overlay active" onclick="closeDynamicModal(event)" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 1; visibility: visible; transition: all 0.3s ease;">
+              <div class="cart-modal" onclick="event.stopPropagation()" style="background: white; border-radius: 12px; width: 90%; max-width: 1000px; max-height: 90vh; overflow-y: auto; position: relative; transform: translateY(0); transition: transform 0.3s ease; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);">
+                
+                <!-- Modal header -->
+                <div class="cart-modal-header" style="padding: 40px 40px 0; display: flex; justify-content: space-between; align-items: flex-start; border-bottom: none;">
+                  <div class="cart-modal-title" style="display: flex; align-items: center; gap: 12px; font-size: 28px; font-weight: 700; color: #000;">
+                    <svg class="cart-bag-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M6 2l3 6v8a2 2 0 002 2h2a2 2 0 002-2V8l3-6"/>
+                      <path d="M5 8h14l-1 13H6L5 8z"/>
+                      <path d="M10 10v4"/>
+                      <path d="M14 10v4"/>
+                    </svg>
+                    You've Got Great Taste
+                    <span class="cart-item-count" style="font-size: 16px; font-weight: 400; color: #666; margin-left: 8px;">1 Item</span>
+                  </div>
+                  <button class="cart-close-button" onclick="closeDynamicModal()" style="background: none; border: none; font-size: 28px; color: #999; cursor: pointer; padding: 0; line-height: 1; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">&times;</button>
+                </div>
+
+                <!-- Modal body -->
+                <div class="cart-modal-body" style="padding: 40px; padding-top: 20px;">
+                  <div class="cart-modal-content-wrapper" style="display: flex; gap: 60px; align-items: flex-start; min-height: 200px;">
+                    
+                    <!-- Left side - Product section -->
+                    <div class="cart-left-section" style="flex: 1;">
+                      <div class="cart-product-section" style="display: flex; gap: 24px; align-items: flex-start;">
+                        <div class="cart-product-image" style="width: 120px; height: 120px; background-color: #f5f5f5; border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #999; overflow: hidden;">
+                          <img src="${productImage}" alt="${productName}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
+                        </div>
+                        <div class="cart-product-details" style="flex: 1;">
+                          <div class="cart-product-name" style="font-size: 20px; font-weight: 600; color: #000; margin-bottom: 12px; line-height: 1.3;">${productName}</div>
+                          <div class="cart-product-color" style="font-size: 16px; color: #666; margin-bottom: 8px;">Color: ${selectedColor}</div>
+                          <div class="cart-product-size" style="font-size: 16px; color: #666; margin-bottom: 16px;">Size: ${selectedSize}</div>
+                          <div class="cart-product-price" style="font-size: 18px; font-weight: 600; color: #666;">${productPrice}</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Right side - Subtotal and actions -->
+                    <div class="cart-right-section" style="flex: 0 0 300px; display: flex; flex-direction: column; gap: 20px;">
+                      <div class="cart-subtotal-section" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                        <div class="cart-subtotal-label" style="font-size: 18px; font-weight: 600; color: #000;">Subtotal</div>
+                        <div class="cart-subtotal-amount" style="font-size: 18px; font-weight: 600; color: #000;">${subtotalFormatted}</div>
+                      </div>
+
+                      <div class="cart-action-buttons" style="display: flex; flex-direction: column; gap: 16px;">
+                        <a class="cart-checkout-button" href="/cart" style="background-color: #dc2626; color: white; padding: 16px 24px; border: none; border-radius: 6px; font-size: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer; transition: all 0.2s ease; width: 100%; text-decoration: none; display: inline-block; text-align: center;">VIEW BAG & CHECKOUT</a>
+                        <a href="#" class="cart-continue-shopping" onclick="closeDynamicModal()" style="display: flex; align-items: center; justify-content: center; gap: 8px; color: #666; text-decoration: none; font-size: 16px; font-weight: 500; padding: 12px 8px; transition: all 0.2s ease;">
+                          Continue Shopping
+                          <svg class="cart-arrow-icon" viewBox="0 0 24 24" style="width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2;">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12,5 19,12 12,19"></polyline>
+                          </svg>
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Recommendations section -->
+                  <div class="cart-recommendations" style="margin-top: 40px; padding-top: 0;">
+                    <h3 class="cart-recommendations-title" style="font-size: 24px; font-weight: 700; color: #000; margin-bottom: 24px;">Goes well with</h3>
+                    <div class="cart-recommendations-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px;">
+                      <div class="cart-recommendation-item" style="text-align: left;">
+                        <div class="cart-recommendation-image" style="width: 100%; height: 200px; background-color: #f5f5f5; border-radius: 8px; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #999; overflow: hidden;">
+                          <img src="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=200&h=200&fit=crop" alt="Clippable Nano Pouch" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                        <div class="cart-recommendation-name" style="font-size: 16px; font-weight: 600; color: #000; margin-bottom: 8px; line-height: 1.3;">Clippable Nano Pouch</div>
+                        <div class="cart-recommendation-price" style="font-size: 16px; font-weight: 600; color: #666;">₱1,200</div>
+                      </div>
+                      <div class="cart-recommendation-item" style="text-align: left;">
+                        <div class="cart-recommendation-image" style="width: 100%; height: 200px; background-color: #f5f5f5; border-radius: 8px; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #999; overflow: hidden;">
+                          <img src="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=200&h=200&fit=crop" alt="New Crew Backpack" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                        <div class="cart-recommendation-name" style="font-size: 16px; font-weight: 600; color: #000; margin-bottom: 8px; line-height: 1.3;">New Crew Backpack 22L Updated</div>
+                        <div class="cart-recommendation-price" style="font-size: 16px; font-weight: 600; color: #666;">₱4,900</div>
+                      </div>
+                      <div class="cart-recommendation-item" style="text-align: left;">
+                        <div class="cart-recommendation-image" style="width: 100%; height: 200px; background-color: #f5f5f5; border-radius: 8px; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #999; overflow: hidden;">
+                          <img src="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=200&h=200&fit=crop" alt="Everywhere Backpack" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                        <div class="cart-recommendation-name" style="font-size: 16px; font-weight: 600; color: #000; margin-bottom: 8px; line-height: 1.3;">Everywhere Backpack 22L Metal Hardware</div>
+                        <div class="cart-recommendation-price" style="font-size: 16px; font-weight: 600; color: #666;">₱4,900</div>
+                      </div>
+                      <div class="cart-recommendation-item" style="text-align: left;">
+                        <div class="cart-recommendation-image" style="width: 100%; height: 200px; background-color: #f5f5f5; border-radius: 8px; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #999; overflow: hidden;">
+                          <img src="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=200&h=200&fit=crop" alt="City Essentials Pouch" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                        <div class="cart-recommendation-name" style="font-size: 16px; font-weight: 600; color: #000; margin-bottom: 8px; line-height: 1.3;">City Essentials Pouch Mini 2L</div>
+                        <div class="cart-recommendation-price" style="font-size: 16px; font-weight: 600; color: #666;">₱1,900</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+          
+          document.body.appendChild(modal);
+          document.body.style.overflow = "hidden";
+          console.log("✅ Dynamic modal created and displayed with new design");
+        }
+
+        // Add to cart API function
+        function addToCartAPI(itemData) {
+          console.log("🛒 Adding to cart:", itemData);
+          
+          fetch('/add-to-cart', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(itemData)
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              console.log('✅ Successfully added to cart:', data);
+              
+              // Update cart count in header if available
+              const cartCountEl = document.querySelector('.cart-count');
+              if (cartCountEl && data.cart_count) {
+                cartCountEl.textContent = data.cart_count;
+              }
+            } else {
+              console.error('❌ Failed to add to cart:', data.error);
+              alert('Failed to add item to cart: ' + (data.error || 'Unknown error'));
+            }
+          })
+          .catch(error => {
+            console.error('❌ Error adding to cart:', error);
+            alert('Error adding item to cart. Please try again.');
+          });
+        }
+
+        // Close dynamic modal function
+        function closeDynamicModal(event) {
+          // Only close if clicking the overlay or close button
+          if (event && event.target !== event.currentTarget && !event.target.classList.contains("cart-close-button")) {
+            return;
+          }
+
+          const modal = document.getElementById("dynamicCartModal");
+          if (modal) {
+            modal.remove();
+            document.body.style.overflow = "auto";
+          }
+        }
+
+        // Make functions available globally
+        window.addToCartAPI = addToCartAPI;
+        window.closeDynamicModal = closeDynamicModal;
 
         // Auto-initialize
         console.log("Stock indicator fix script loaded successfully");
@@ -1815,6 +2378,15 @@
           console.log("- window.debugStockData() - Check stock data");
           console.log("- window.testColorSelection() - Test color selection");
           console.log("- window.testCartModal() - Test cart modal display");
+          console.log(
+            "- window.forceShowModal() - Force show modal (bypass all checks)"
+          );
+          console.log(
+            "- window.testDynamicModal() - Test dynamic modal creation"
+          );
+          console.log(
+            "- window.testAddToBagButton() - Test button click detection"
+          );
         }, 500);
         setTimeout(() => {
           console.log("Initializing stock system...");
@@ -1859,14 +2431,46 @@
           console.warn("Error initializing stock display:", e);
         }
 
-        // Add to bag button functionality
-        const addToBagBtn = document.querySelector(".add-to-bag-btn");
-        if (addToBagBtn) {
-          console.log("🛒 Add to bag button found and event listener added");
-          // Remove any existing onclick attribute to avoid conflicts
-          addToBagBtn.removeAttribute("onclick");
-          addToBagBtn.addEventListener("click", window.addToBag);
-        }
+        // Add to bag button functionality with better timing
+        setTimeout(() => {
+          const addToBagBtn = document.querySelector(".add-to-bag-btn");
+          if (addToBagBtn) {
+            console.log("🛒 Add to bag button found and event listener added");
+
+            // Remove any existing onclick attribute to avoid conflicts
+            addToBagBtn.removeAttribute("onclick");
+
+            // Remove any existing event listeners
+            const newBtn = addToBagBtn.cloneNode(true);
+            addToBagBtn.parentNode.replaceChild(newBtn, addToBagBtn);
+
+            // Add click event listener
+            newBtn.addEventListener("click", function (event) {
+              event.preventDefault();
+              event.stopPropagation();
+              console.log("💯 Button click event fired!");
+
+              if (typeof window.addToBag === "function") {
+                window.addToBag();
+              } else {
+                console.error("❌ window.addToBag function not found!");
+              }
+            });
+
+            // Also add a backup onclick handler
+            newBtn.onclick = function (event) {
+              event.preventDefault();
+              console.log("💯 Backup onclick fired!");
+              if (typeof window.addToBag === "function") {
+                window.addToBag();
+              }
+            };
+
+            console.log("✅ Event listeners attached successfully");
+          } else {
+            console.error("❌ Add to bag button not found!");
+          }
+        }, 100);
 
         // Initialize quantity buttons
         try {
@@ -2390,6 +2994,39 @@
         console.log("✅ Product controls initialized");
       }
 
+      // Test function to verify functionality
+      window.testQuantityControls = function() {
+        console.log("🧪 Testing quantity controls...");
+        
+        const quantityInput = document.getElementById("quantityInput");
+        const decreaseBtn = document.getElementById("decreaseBtn");
+        const increaseBtn = document.getElementById("increaseBtn");
+        const addToBagBtn = document.querySelector(".add-to-bag-btn");
+        
+        console.log("Elements found:", {
+          quantityInput: !!quantityInput,
+          decreaseBtn: !!decreaseBtn,
+          increaseBtn: !!increaseBtn,
+          addToBagBtn: !!addToBagBtn
+        });
+        
+        console.log("Functions available:", {
+          increaseQuantity: typeof window.increaseQuantity,
+          decreaseQuantity: typeof window.decreaseQuantity,
+          updateQuantity: typeof window.updateQuantity,
+          addToBag: typeof window.addToBag
+        });
+        
+        if (quantityInput) {
+          console.log("Current quantity:", quantityInput.value);
+          console.log("Max quantity:", quantityInput.max);
+        }
+        
+        if (addToBagBtn) {
+          console.log("Add to bag button disabled:", addToBagBtn.disabled);
+        }
+      };
+
       // Add a test function accessible from console
       window.testColorSelection = function () {
         console.log("🧪 Testing color selection...");
@@ -2402,31 +3039,81 @@
         }
       };
 
+      // Add simple button test function
+      window.testAddToBagButton = function () {
+        console.log("🧪 Testing add to bag button...");
+
+        const btn = document.querySelector(".add-to-bag-btn");
+        console.log("Button found:", btn);
+        console.log("Button disabled:", btn ? btn.disabled : "N/A");
+        console.log("Button onclick:", btn ? btn.onclick : "N/A");
+
+        if (btn) {
+          console.log("Simulating button click...");
+          btn.click();
+        } else {
+          console.error("❌ Button not found!");
+        }
+      };
+
+      // Add simple modal test function that forces dynamic modal
+      window.testDynamicModal = function () {
+        console.log("🧪 Testing dynamic modal creation...");
+        createDynamicModal();
+      };
+
+      // Add simple modal test function
+      window.forceShowModal = function () {
+        console.log("🚀 Force showing modal...");
+
+        // Update modal with test data
+        updateCartModal("Test Color", "Test Size", 1);
+
+        // Get modal element
+        const modal = document.getElementById("cartModalOverlay");
+        if (modal) {
+          // Remove any existing classes and styles
+          modal.className = "cart-modal-overlay active";
+          modal.style.cssText =
+            "position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 9999; opacity: 1; visibility: visible;";
+          document.body.style.overflow = "hidden";
+
+          console.log("✅ Modal forced to display with inline styles");
+          console.log("Modal element:", modal);
+          console.log("Modal should now be visible!");
+
+          return true;
+        } else {
+          console.error("❌ Modal element not found!");
+          return false;
+        }
+      };
+
       // Add test function for modal
-      window.testCartModal = function() {
+      window.testCartModal = function () {
         console.log("🧪 Testing cart modal...");
-        
+
         // Test if modal element exists
         const modal = document.getElementById("cartModalOverlay");
         console.log("Modal found:", modal);
-        
+
         if (!modal) {
           console.error("❌ Modal element not found!");
           return;
         }
-        
+
         // Test updating modal content first
         updateCartModal("Red", "M", 2);
-        
+
         // Test showing modal
         console.log("📱 Attempting to show modal...");
         showCartModal();
-        
+
         // Check if modal is visible after 500ms
         setTimeout(() => {
           const isVisible = modal.classList.contains("active");
           console.log("Modal has active class:", isVisible);
-          
+
           if (isVisible) {
             console.log("✅ Modal should be visible now!");
             console.log("If you don't see it, there might be a CSS issue.");
@@ -2505,6 +3192,283 @@
       };
 
       console.log("🚀 All debugging and event handling ready!");
+    </script>
+
+    <!-- Final initialization script to ensure functions work -->
+    <script>
+      // Final check and fix for quantity controls
+      document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(function() {
+          console.log('🔧 Final initialization check...');
+          
+          // Ensure functions are available
+          if (typeof window.increaseQuantity !== 'function') {
+            console.log('⚠️ Redefining increaseQuantity function');
+            window.increaseQuantity = function() {
+              const input = document.getElementById('quantityInput');
+              if (input) {
+                const current = parseInt(input.value) || 1;
+                const max = parseInt(input.max) || 10;
+                if (current < max) {
+                  input.value = current + 1;
+                  console.log('Quantity increased to:', input.value);
+                }
+              }
+            };
+          }
+          
+          if (typeof window.decreaseQuantity !== 'function') {
+            console.log('⚠️ Redefining decreaseQuantity function');
+            window.decreaseQuantity = function() {
+              const input = document.getElementById('quantityInput');
+              if (input) {
+                const current = parseInt(input.value) || 1;
+                if (current > 1) {
+                  input.value = current - 1;
+                  console.log('Quantity decreased to:', input.value);
+                }
+              }
+            };
+          }
+          
+          if (typeof window.updateQuantity !== 'function') {
+            console.log('⚠️ Redefining updateQuantity function');
+            window.updateQuantity = function() {
+              const input = document.getElementById('quantityInput');
+              if (input) {
+                let value = parseInt(input.value) || 1;
+                const max = parseInt(input.max) || 10;
+                if (value < 1) value = 1;
+                if (value > max) value = max;
+                input.value = value;
+                console.log('Quantity updated to:', input.value);
+              }
+            };
+          }
+          
+          if (typeof window.addToBag !== 'function') {
+            console.log('⚠️ Redefining addToBag function');
+            window.addToBag = function() {
+              console.log('🛒 Enhanced add to bag clicked!');
+              
+              // Get selections
+              const colorBtn = document.querySelector('.color-option.active');
+              const sizeBtn = document.querySelector('.size-option.active');
+              const quantityInput = document.getElementById('quantityInput');
+              
+              const color = colorBtn ? colorBtn.dataset.color : null;
+              const size = sizeBtn ? sizeBtn.dataset.size : null;
+              const quantity = parseInt(quantityInput ? quantityInput.value : 1);
+              
+              console.log('Selections:', { color, size, quantity });
+              
+              if (!color) {
+                alert('Please select a color');
+                return;
+              }
+              
+              if (!size) {
+                alert('Please select a size');
+                return;
+              }
+              
+              // Make API call to add to cart
+              console.log('🛒 Making API call to add to cart...');
+              fetch('/add-to-cart', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  product_id: {{ product.id }},
+                  color: color,
+                  size: size,
+                  quantity: quantity
+                })
+              })
+              .then(response => response.json())
+              .then(data => {
+                console.log('API Response:', data);
+                if (data.success) {
+                  console.log('✅ Successfully added to cart');
+                  
+                  // Update cart count in header if available
+                  const cartCountEl = document.querySelector('.cart-count');
+                  if (cartCountEl && data.cart_count) {
+                    cartCountEl.textContent = data.cart_count;
+                    console.log('Updated cart count to:', data.cart_count);
+                  }
+                  
+                  // Try to show the modal
+                  try {
+                    if (typeof createDynamicModal === 'function') {
+                      console.log('📱 Showing dynamic modal...');
+                      createDynamicModal();
+                    } else {
+                      console.log('📱 Creating simple modal...');
+                      showSimpleModal(color, size, quantity);
+                    }
+                  } catch (modalError) {
+                    console.error('Modal error:', modalError);
+                    alert(`✅ Added to cart: ${color} ${size} (Qty: ${quantity})`);
+                  }
+                } else {
+                  console.error('❌ Failed to add to cart:', data.error);
+                  alert('Failed to add item to cart: ' + (data.error || 'Unknown error'));
+                }
+              })
+              .catch(error => {
+                console.error('❌ API Error:', error);
+                alert('Error adding item to cart. Please try again.');
+              });
+            };
+          }
+          
+          // Simple modal function as fallback
+          window.showSimpleModal = function(color, size, quantity) {
+            console.log('📱 Creating simple modal fallback...');
+            
+            // Remove existing modal if any
+            const existing = document.getElementById('simpleCartModal');
+            if (existing) existing.remove();
+            
+            // Get product info
+            const productName = document.querySelector('.product-name')?.textContent || 'Product';
+            const productPrice = document.querySelector('.current-price')?.textContent || '₱0';
+            const productImage = document.querySelector('.main-image img')?.src || '';
+            
+            // Create modal HTML
+            const modalHTML = `
+              <div id="simpleCartModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 9999;" onclick="this.remove(); document.body.style.overflow='auto';">
+                <div style="background: white; border-radius: 12px; width: 90%; max-width: 1000px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);" onclick="event.stopPropagation();">
+                  
+                  <!-- Modal header -->
+                  <div style="padding: 40px 40px 0; display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div style="display: flex; align-items: center; gap: 12px; font-size: 28px; font-weight: 700; color: #000;">
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 2l3 6v8a2 2 0 002 2h2a2 2 0 002-2V8l3-6"/>
+                        <path d="M5 8h14l-1 13H6L5 8z"/>
+                        <path d="M10 10v4"/>
+                        <path d="M14 10v4"/>
+                      </svg>
+                      You've Got Great Taste
+                      <span style="font-size: 16px; font-weight: 400; color: #666; margin-left: 8px;">1 Item</span>
+                    </div>
+                    <button onclick="this.closest('#simpleCartModal').remove(); document.body.style.overflow='auto';" style="background: none; border: none; font-size: 28px; color: #999; cursor: pointer; padding: 0; line-height: 1; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">&times;</button>
+                  </div>
+
+                  <!-- Modal body -->
+                  <div style="padding: 40px; padding-top: 20px;">
+                    <div style="display: flex; gap: 60px; align-items: flex-start; min-height: 200px;">
+                      
+                      <!-- Left side - Product section -->
+                      <div style="flex: 1;">
+                        <div style="display: flex; gap: 24px; align-items: flex-start;">
+                          <div style="width: 120px; height: 120px; background-color: #f5f5f5; border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                            <img src="${productImage}" alt="${productName}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
+                          </div>
+                          <div style="flex: 1;">
+                            <div style="font-size: 20px; font-weight: 600; color: #000; margin-bottom: 12px; line-height: 1.3;">${productName}</div>
+                            <div style="font-size: 16px; color: #666; margin-bottom: 8px;">Color: ${color}</div>
+                            <div style="font-size: 16px; color: #666; margin-bottom: 16px;">Size: ${size}</div>
+                            <div style="font-size: 18px; font-weight: 600; color: #666;">${productPrice}</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Right side - Subtotal and actions -->
+                      <div style="flex: 0 0 300px; display: flex; flex-direction: column; gap: 20px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                          <div style="font-size: 18px; font-weight: 600; color: #000;">Subtotal</div>
+                          <div style="font-size: 18px; font-weight: 600; color: #000;">${productPrice}</div>
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 16px;">
+                          <a href="/cart" style="background-color: #dc2626; color: white; padding: 16px 24px; border: none; border-radius: 6px; font-size: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer; transition: all 0.2s ease; width: 100%; text-decoration: none; display: inline-block; text-align: center;">VIEW BAG & CHECKOUT</a>
+                          <a href="#" onclick="this.closest('#simpleCartModal').remove(); document.body.style.overflow='auto';" style="display: flex; align-items: center; justify-content: center; gap: 8px; color: #666; text-decoration: none; font-size: 16px; font-weight: 500; padding: 12px 8px; transition: all 0.2s ease;">
+                            Continue Shopping
+                            <svg viewBox="0 0 24 24" style="width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2;">
+                              <line x1="5" y1="12" x2="19" y2="12"></line>
+                              <polyline points="12,5 19,12 12,19"></polyline>
+                            </svg>
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Recommendations section -->
+                    <div style="margin-top: 40px;">
+                      <h3 style="font-size: 24px; font-weight: 700; color: #000; margin-bottom: 24px;">Goes well with</h3>
+                      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px;">
+                        <div style="text-align: left;">
+                          <div style="width: 100%; height: 200px; background-color: #f5f5f5; border-radius: 8px; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #999;">
+                            <img src="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=200&h=200&fit=crop" alt="Product" style="width: 100%; height: 100%; object-fit: cover;">
+                          </div>
+                          <div style="font-size: 16px; font-weight: 600; color: #000; margin-bottom: 8px;">Clippable Nano Pouch</div>
+                          <div style="font-size: 16px; font-weight: 600; color: #666;">₱1,200</div>
+                        </div>
+                        <div style="text-align: left;">
+                          <div style="width: 100%; height: 200px; background-color: #f5f5f5; border-radius: 8px; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #999;">
+                            <img src="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=200&h=200&fit=crop" alt="Product" style="width: 100%; height: 100%; object-fit: cover;">
+                          </div>
+                          <div style="font-size: 16px; font-weight: 600; color: #000; margin-bottom: 8px;">New Crew Backpack 22L</div>
+                          <div style="font-size: 16px; font-weight: 600; color: #666;">₱4,900</div>
+                        </div>
+                        <div style="text-align: left;">
+                          <div style="width: 100%; height: 200px; background-color: #f5f5f5; border-radius: 8px; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #999;">
+                            <img src="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=200&h=200&fit=crop" alt="Product" style="width: 100%; height: 100%; object-fit: cover;">
+                          </div>
+                          <div style="font-size: 16px; font-weight: 600; color: #000; margin-bottom: 8px;">Everywhere Backpack 22L</div>
+                          <div style="font-size: 16px; font-weight: 600; color: #666;">₱4,900</div>
+                        </div>
+                        <div style="text-align: left;">
+                          <div style="width: 100%; height: 200px; background-color: #f5f5f5; border-radius: 8px; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #999;">
+                            <img src="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=200&h=200&fit=crop" alt="Product" style="width: 100%; height: 100%; object-fit: cover;">
+                          </div>
+                          <div style="font-size: 16px; font-weight: 600; color: #000; margin-bottom: 8px;">City Essentials Pouch</div>
+                          <div style="font-size: 16px; font-weight: 600; color: #666;">₱1,900</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `;
+            
+            // Add modal to page
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+            document.body.style.overflow = 'hidden';
+            
+            console.log('✅ Simple modal displayed');
+          };
+          
+          // Test functions
+          console.log('✅ Function availability check:');
+          console.log('- increaseQuantity:', typeof window.increaseQuantity);
+          console.log('- decreaseQuantity:', typeof window.decreaseQuantity);
+          console.log('- updateQuantity:', typeof window.updateQuantity);
+          console.log('- addToBag:', typeof window.addToBag);
+          
+          // Test elements
+          const quantityInput = document.getElementById('quantityInput');
+          const decreaseBtn = document.getElementById('decreaseBtn');
+          const increaseBtn = document.getElementById('increaseBtn');
+          const addToBagBtn = document.querySelector('.add-to-bag-btn');
+          
+          console.log('✅ Element availability check:');
+          console.log('- quantityInput:', !!quantityInput);
+          console.log('- decreaseBtn:', !!decreaseBtn);
+          console.log('- increaseBtn:', !!increaseBtn);
+          console.log('- addToBagBtn:', !!addToBagBtn);
+          
+          if (quantityInput) {
+            console.log('- Current quantity:', quantityInput.value);
+            console.log('- Max quantity:', quantityInput.max);
+          }
+          
+          console.log('🎯 Final initialization complete!');
+        }, 1000); // Wait 1 second to ensure everything is loaded
+      });
     </script>
   </body>
 </html>

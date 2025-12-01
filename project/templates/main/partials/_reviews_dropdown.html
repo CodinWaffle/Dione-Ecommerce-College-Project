@@ -226,11 +226,120 @@
       {% endif %}
     </div>
     {% endfor %} {% else %}
-    <div class="no-reviews">
-      <i class="fas fa-star-half-alt"></i>
-      <h4>No reviews yet</h4>
-      <p>Be the first to review this product!</p>
+    <!-- Show sample reviews as placeholders when no real reviews exist -->
+    <div class="sample-reviews-header">
+      <h4>Sample Reviews</h4>
+      <p class="muted">
+        Example reviews to show how ratings appear on this product.
+      </p>
     </div>
+
+    <div class="review-card sample" data-review-id="sample-1">
+      <div class="review-card-header">
+        <div class="profile-section">
+          <img
+            src="{{ url_for('static', filename='image/banner.png') }}"
+            alt="Profile"
+            class="profile-photo"
+          />
+          <div class="profile-info">
+            <h3 class="username">Maria S.</h3>
+            <span class="verified-buyer"
+              ><i class="fas fa-check-circle"></i> Verified Buyer</span
+            >
+          </div>
+        </div>
+      </div>
+      <div class="overall-rating">
+        <div class="stars" data-rating="5">
+          <i class="fas fa-star"></i><i class="fas fa-star"></i
+          ><i class="fas fa-star"></i><i class="fas fa-star"></i
+          ><i class="fas fa-star"></i>
+        </div>
+        <span class="rating-text">Excellent quality and fit</span>
+      </div>
+      <div class="review-text">
+        <p>
+          I loved the fabric and the color — exactly as pictured. The size fits
+          perfectly.
+        </p>
+      </div>
+      <div class="product-media">
+        <div class="media-item">
+          <img
+            src="{{ url_for('static', filename='image/banner.png') }}"
+            alt="Review photo"
+            class="product-image"
+            onclick="openImageLightbox('{{ url_for('static', filename='image/banner.png') }}')"
+          />
+        </div>
+      </div>
+    </div>
+
+    <div class="review-card sample" data-review-id="sample-2">
+      <div class="review-card-header">
+        <div class="profile-section">
+          <img
+            src="{{ url_for('static', filename='image/banner.png') }}"
+            alt="Profile"
+            class="profile-photo"
+          />
+          <div class="profile-info">
+            <h3 class="username">Anton K.</h3>
+            <span class="verified-buyer"
+              ><i class="fas fa-check-circle"></i> Verified Buyer</span
+            >
+          </div>
+        </div>
+      </div>
+      <div class="overall-rating">
+        <div class="stars" data-rating="4">
+          <i class="fas fa-star"></i><i class="fas fa-star"></i
+          ><i class="fas fa-star"></i><i class="fas fa-star"></i
+          ><i class="fas fa-star star-empty"></i>
+        </div>
+        <span class="rating-text">Good value for money</span>
+      </div>
+      <div class="review-text">
+        <p>
+          Comfortable and looks great. Delivery was fast. Minor stitching issue
+          but overall satisfied.
+        </p>
+      </div>
+    </div>
+
+    <div class="review-card sample" data-review-id="sample-3">
+      <div class="review-card-header">
+        <div class="profile-section">
+          <img
+            src="{{ url_for('static', filename='image/banner.png') }}"
+            alt="Profile"
+            class="profile-photo"
+          />
+          <div class="profile-info">
+            <h3 class="username">Liza P.</h3>
+            <span class="verified-buyer"
+              ><i class="fas fa-check-circle"></i> Verified Buyer</span
+            >
+          </div>
+        </div>
+      </div>
+      <div class="overall-rating">
+        <div class="stars" data-rating="3">
+          <i class="fas fa-star"></i><i class="fas fa-star"></i
+          ><i class="fas fa-star"></i><i class="fas fa-star star-empty"></i
+          ><i class="fas fa-star star-empty"></i>
+        </div>
+        <span class="rating-text">Average — size down recommended</span>
+      </div>
+      <div class="review-text">
+        <p>
+          The product is okay but runs a bit large. The material is decent for
+          the price.
+        </p>
+      </div>
+    </div>
+
     {% endif %}
   </div>
 </div>

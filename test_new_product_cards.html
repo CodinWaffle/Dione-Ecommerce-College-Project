@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Product Card Design Test</title>
+    <link rel="stylesheet" href="project/static/css/buyer_styles/components/product_card.css">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f9fafb;
+            margin: 0;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #1f2937;
+            margin-bottom: 40px;
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>New Product Card Design</h1>
+        
+        <div class="test-grid">
+            <!-- Product Card 1 - With Discount -->
+            <div class="product-card">
+                <div class="product-image-container">
+                    <img 
+                        src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop" 
+                        alt="PopFlex - Pirouette Skort"
+                        class="product-image"
+                    />
+                    <div class="product-actions">
+                        <button class="action-btn" aria-label="Add to wishlist">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="product-info">
+                    <h3 class="product-name">PopFlex - Pirouette Skort</h3>
+                    <div class="product-price">
+                        <span class="current-price">₱3,330</span>
+                        <span class="original-price">₱3,700</span>
+                        <span class="discount-badge">-10%</span>
+                    </div>
+                    <div class="product-rating">
+                        <div class="stars">
+                            <svg class="star" width="12" height="12" viewBox="0 0 24 24" fill="#fbbf24">
+                                <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+                            </svg>
+                            <svg class="star" width="12" height="12" viewBox="0 0 24 24" fill="#fbbf24">
+                                <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+                            </svg>
+                            <svg class="star" width="12" height="12" viewBox="0 0 24 24" fill="#fbbf24">
+                                <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+                            </svg>
+                            <svg class="star" width="12" height="12" viewBox="0 0 24 24" fill="#fbbf24">
+                                <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+                            </svg>
+                            <svg class="star" width="12" height="12" viewBox="0 0 24 24" fill="#e5e7eb">
+                                <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+                            </svg>
+                        </div>
+                        <span>4.4 (42)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product Card 2 - No Discount -->
+            <div class="product-card">
+                <div class="product-image-container">
+                    <img 
+                        src="https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&h=400&fit=crop" 
+                        alt="Running Sneakers"
+                        class="product-image"
+                    />
+                    <div class="product-actions">
+                        <button class="action-btn" aria-label="Add to wishlist">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="product-info">
+                    <h3 class="product-name">Running Sneakers</h3>
+                    <div class="product-price">
+                        <span class="current-price">₱2,499</span>
+                    </div>
+                    <div class="product-rating">
+                        <div class="stars">
+                            <svg class="star" width="12" height="12" viewBox="0 0 24 24" fill="#fbbf24">
+                                <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+                            </svg>
+                            <svg class="star" width="12" height="12" viewBox="0 0 24 24" fill="#fbbf24">
+                                <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+                            </svg>
+                            <svg class="star" width="12" height="12" viewBox="0 0 24 24" fill="#fbbf24">
+                                <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+                            </svg>
+                            <svg class="star" width="12" height="12" viewBox="0 0 24 24" fill="#fbbf24">
+                                <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+                            </svg>
+                            <svg class="star" width="12" height="12" viewBox="0 0 24 24" fill="#e5e7eb">
+                                <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+                            </svg>
+                        </div>
+                        <span>4.3 (50)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

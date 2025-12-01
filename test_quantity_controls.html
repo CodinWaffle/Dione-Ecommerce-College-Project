@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Quantity Controls</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .quantity-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .quantity-btn {
+            width: 40px;
+            height: 40px;
+            border: 1px solid #ccc;
+            background: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .quantity-btn:hover {
+            background: #f0f0f0;
+        }
+        
+        .quantity-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .quantity-input {
+            width: 60px;
+            height: 40px;
+            text-align: center;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+        
+        .add-to-bag-btn {
+            background: #8b5a96;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 20px 0;
+        }
+        
+        .add-to-bag-btn:hover {
+            background: #7a4d86;
+        }
+        
+        .add-to-bag-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .color-option, .size-option {
+            display: inline-block;
+            padding: 8px 16px;
+            margin: 5px;
+            border: 2px solid #ccc;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        
+        .color-option.active, .size-option.active {
+            border-color: #8b5a96;
+            background: #f0f0f0;
+        }
+        
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+        
+        .log {
+            background: #f5f5f5;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Quantity Controls Test</h1>
+    
+    <div class="test-section">
+        <h3>Color Selection</h3>
+        <div class="color-option" data-color="Red" onclick="selectColor(this)">Red</div>
+        <div class="color-option" data-color="Blue" onclick="selectColor(this)">Blue</div>
+        <div class="color-option" data-color="Green" onclick="selectColor(this)">Green</div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Size Selection</h3>
+        <div class="size-option" data-size="S" onclick="selectSize(this)">S</div>
+        <div class="size-option" data-size="M" onclick="selectSize(this)">M</div>
+        <div class="size-option" data-size="L" onclick="selectSize(this)">L</div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Quantity Controls</h3>
+        <div class="quantity-selector">
+            <button class="quantity-btn" onclick="decreaseQuantity()" id="decreaseBtn">-</button>
+            <input type="number" class="quantity-input" value="1" min="1" max="10" id="quantityInput" onchange="updateQuantity()">
+            <button class="quantity-btn" onclick="increaseQuantity()" id="increaseBtn">+</button>
+        </div>
+        
+        <button class="add-to-bag-btn" onclick="addToBag()">ADD TO BAG</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test Functions</h3>
+        <button onclick="testFunctions()">Test All Functions</button>
+        <button onclick="clearLog()">Clear Log</button>
+    </div>
+    
+    <div class="log" id="log"></div>
+
+    <script>
+        // Logging function
+        function log(message) {
+            const logEl = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logEl.innerHTML += `[${timestamp}] ${message}<br>`;
+            logEl.scrollTop = logEl.scrollHeight;
+            console.log(message);
+        }
+        
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+        
+        // Color selection
+        function selectColor(element) {
+            document.querySelectorAll('.color-option').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+            log(`Color selected: ${element.dataset.color}`);
+        }
+        
+        // Size selection
+        function selectSize(element) {
+            document.querySelectorAll('.size-option').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+            log(`Size selected: ${element.dataset.size}`);
+            
+            // Set max quantity based on size (simulate stock)
+            const quantityInput = document.getElementById('quantityInput');
+            const maxStock = element.dataset.size === 'S' ? 3 : element.dataset.size === 'M' ? 5 : 2;
+            quantityInput.max = maxStock;
+            log(`Max stock for ${element.dataset.size}: ${maxStock}`);
+            updateQuantityControls();
+        }
+        
+        // Get selected values
+        function getSelectedColor() {
+            const selected = document.querySelector('.color-option.active');
+            return selected ? selected.dataset.color : null;
+        }
+        
+        function getSelectedSize() {
+            const selected = document.querySelector('.size-option.active');
+            return selected ? selected.dataset.size : null;
+        }
+        
+        // Quantity control functions
+        window.decreaseQuantity = function () {
+            log('decreaseQuantity() called');
+            const quantityInput = document.getElementById("quantityInput");
+            if (!quantityInput) {
+                log('ERROR: quantityInput not found');
+                return;
+            }
+
+            let currentQuantity = parseInt(quantityInput.value) || 1;
+            log(`Current quantity: ${currentQuantity}`);
+            
+            if (currentQuantity > 1) {
+                quantityInput.value = currentQuantity - 1;
+                log(`Decreased to: ${quantityInput.value}`);
+                updateQuantityControls();
+            } else {
+                log('Cannot decrease below 1');
+            }
+        };
+
+        window.increaseQuantity = function () {
+            log('increaseQuantity() called');
+            const quantityInput = document.getElementById("quantityInput");
+            if (!quantityInput) {
+                log('ERROR: quantityInput not found');
+                return;
+            }
+
+            let currentQuantity = parseInt(quantityInput.value) || 1;
+            const maxQuantity = parseInt(quantityInput.max) || 10;
+            log(`Current: ${currentQuantity}, Max: ${maxQuantity}`);
+
+            if (currentQuantity < maxQuantity) {
+                quantityInput.value = currentQuantity + 1;
+                log(`Increased to: ${quantityInput.value}`);
+                updateQuantityControls();
+            } else {
+                log('Cannot increase beyond max quantity');
+            }
+        };
+
+        window.updateQuantity = function () {
+            log('updateQuantity() called');
+            const quantityInput = document.getElementById("quantityInput");
+            if (!quantityInput) {
+                log('ERROR: quantityInput not found');
+                return;
+            }
+
+            let quantity = parseInt(quantityInput.value) || 1;
+            const maxQuantity = parseInt(quantityInput.max) || 10;
+            log(`Input quantity: ${quantity}, Max: ${maxQuantity}`);
+
+            if (quantity < 1) {
+                quantityInput.value = 1;
+                log('Corrected to minimum: 1');
+            } else if (quantity > maxQuantity && maxQuantity > 0) {
+                quantityInput.value = maxQuantity;
+                log(`Corrected to maximum: ${maxQuantity}`);
+            }
+
+            updateQuantityControls();
+        };
+
+        function updateQuantityControls() {
+            log('updateQuantityControls() called');
+            const quantityInput = document.getElementById("quantityInput");
+            const decreaseBtn = document.getElementById("decreaseBtn");
+            const increaseBtn = document.getElementById("increaseBtn");
+
+            if (!quantityInput) {
+                log('ERROR: quantityInput not found in updateQuantityControls');
+                return;
+            }
+
+            const currentQuantity = parseInt(quantityInput.value) || 1;
+            const maxQuantity = parseInt(quantityInput.max) || 10;
+
+            // Update decrease button
+            if (decreaseBtn) {
+                decreaseBtn.disabled = currentQuantity <= 1;
+                log(`Decrease button disabled: ${decreaseBtn.disabled}`);
+            }
+
+            // Update increase button
+            if (increaseBtn) {
+                increaseBtn.disabled = currentQuantity >= maxQuantity || maxQuantity <= 0;
+                log(`Increase button disabled: ${increaseBtn.disabled}`);
+            }
+
+            log(`Quantity controls updated - Current: ${currentQuantity}, Max: ${maxQuantity}`);
+        }
+
+        // Add to bag function
+        window.addToBag = function () {
+            log('addToBag() called');
+            
+            const selectedColor = getSelectedColor();
+            const selectedSize = getSelectedSize();
+            const quantity = parseInt(document.getElementById("quantityInput")?.value || 1);
+
+            log(`Selections - Color: ${selectedColor}, Size: ${selectedSize}, Quantity: ${quantity}`);
+
+            // Validate required selections
+            if (!selectedColor) {
+                alert("Please select a color first");
+                log('ERROR: No color selected');
+                return;
+            }
+
+            if (!selectedSize) {
+                alert("Please select a size first");
+                log('ERROR: No size selected');
+                return;
+            }
+
+            if (quantity < 1) {
+                alert("Please select a valid quantity");
+                log('ERROR: Invalid quantity');
+                return;
+            }
+
+            log('✅ All validations passed - would add to cart');
+            alert(`Added to cart: ${selectedColor} ${selectedSize} (Qty: ${quantity})`);
+        };
+        
+        // Test function
+        function testFunctions() {
+            log('=== TESTING ALL FUNCTIONS ===');
+            
+            // Test function availability
+            log(`decreaseQuantity available: ${typeof window.decreaseQuantity}`);
+            log(`increaseQuantity available: ${typeof window.increaseQuantity}`);
+            log(`updateQuantity available: ${typeof window.updateQuantity}`);
+            log(`addToBag available: ${typeof window.addToBag}`);
+            
+            // Test elements
+            const quantityInput = document.getElementById("quantityInput");
+            const decreaseBtn = document.getElementById("decreaseBtn");
+            const increaseBtn = document.getElementById("increaseBtn");
+            
+            log(`quantityInput found: ${!!quantityInput}`);
+            log(`decreaseBtn found: ${!!decreaseBtn}`);
+            log(`increaseBtn found: ${!!increaseBtn}`);
+            
+            if (quantityInput) {
+                log(`Current value: ${quantityInput.value}`);
+                log(`Max value: ${quantityInput.max}`);
+            }
+            
+            // Test quantity controls
+            updateQuantityControls();
+            
+            log('=== TEST COMPLETE ===');
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            log('Page loaded - initializing');
+            updateQuantityControls();
+            log('Initialization complete');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add to Cart Modal Test</title>
+    <link rel="stylesheet" href="project/static/css/buyer_styles/partials/_add_to_cart_popup.css">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f9fafb;
+            margin: 0;
+            padding: 40px 20px;
+        }
+        
+        .test-button {
+            background: #8e44ad;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 20px;
+        }
+        
+        .test-button:hover {
+            background: #6c3483;
+        }
+    </style>
+</head>
+<body>
+    <div style="text-align: center;">
+        <h1>Add to Cart Modal Test</h1>
+        <button class="test-button" onclick="showModal()">Test Add to Cart Modal</button>
+        <button class="test-button" onclick="showSuccessAnimation()">Test Success Animation</button>
+    </div>
+
+    <!-- Success Animation -->
+    <div class="cart-success-animation" id="cartSuccessAnimation">
+        <div class="cart-success-content">
+            <div class="cart-success-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 12l2 2 4-4"></path>
+                    <circle cx="12" cy="12" r="10"></circle>
+                </svg>
+            </div>
+            <div class="cart-success-message">Product Successfully Added to Cart</div>
+        </div>
+    </div>
+
+    <!-- Modal overlay -->
+    <div class="cart-modal-overlay" id="cartModalOverlay" onclick="closeCartModal(event)">
+        <div class="cart-modal" onclick="event.stopPropagation()">
+            <!-- Modal header -->
+            <div class="cart-modal-header">
+                <div class="cart-modal-title">
+                    <svg class="cart-bag-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 2l3 6v8a2 2 0 002 2h2a2 2 0 002-2V8l3-6"/>
+                        <path d="M5 8h14l-1 13H6L5 8z"/>
+                        <path d="M10 10v4"/>
+                        <path d="M14 10v4"/>
+                    </svg>
+                    You've Got Great Taste
+                    <span class="cart-item-count">1 Item</span>
+                </div>
+                <button class="cart-close-button" onclick="closeCartModal()">&times;</button>
+            </div>
+
+            <!-- Modal body -->
+            <div class="cart-modal-body">
+                <div class="cart-modal-content-wrapper">
+                    <!-- Left side - Product section -->
+                    <div class="cart-left-section">
+                        <div class="cart-product-section">
+                            <div class="cart-product-image">
+                                <img src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop" 
+                                     alt="PopFlex - Pirouette Skort" 
+                                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
+                            </div>
+                            <div class="cart-product-details">
+                                <div class="cart-product-name">Back to Life Sport Bottle 24oz Straw Lid</div>
+                                <div class="cart-product-size">Size: <span id="cartModalSelectedSize">ONE SIZE</span></div>
+                                <div class="cart-product-price">₱2,200</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right side - Subtotal and actions -->
+                    <div class="cart-right-section">
+                        <div class="cart-subtotal-section">
+                            <div class="cart-subtotal-label">Subtotal</div>
+                            <div class="cart-subtotal-amount">₱2,200</div>
+                        </div>
+
+                        <div class="cart-action-buttons">
+                            <a class="cart-checkout-button" href="#">VIEW BAG & CHECKOUT</a>
+                            <a href="#" class="cart-continue-shopping" onclick="closeCartModal()">
+                                Continue Shopping
+                                <svg class="cart-arrow-icon" viewBox="0 0 24 24">
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                    <polyline points="12,5 19,12 12,19"></polyline>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recommendations section -->
+                <div class="cart-recommendations">
+                    <h3 class="cart-recommendations-title">Goes well with</h3>
+                    <div class="cart-recommendations-grid">
+                        <div class="cart-recommendation-item">
+                            <div class="cart-recommendation-image">
+                                <img src="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=200&h=200&fit=crop" alt="Clippable Nano Pouch" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
+                            </div>
+                            <div class="cart-recommendation-name">Clippable Nano Pouch</div>
+                            <div class="cart-recommendation-price">₱1,200</div>
+                        </div>
+                        <div class="cart-recommendation-item">
+                            <div class="cart-recommendation-image">
+                                <img src="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=200&h=200&fit=crop" alt="New Crew Backpack" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
+                            </div>
+                            <div class="cart-recommendation-name">New Crew Backpack 22L Updated</div>
+                            <div class="cart-recommendation-price">₱4,900</div>
+                        </div>
+                        <div class="cart-recommendation-item">
+                            <div class="cart-recommendation-image">
+                                <img src="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=200&h=200&fit=crop" alt="Everywhere Backpack" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
+                            </div>
+                            <div class="cart-recommendation-name">Everywhere Backpack 22L Metal Hardware</div>
+                            <div class="cart-recommendation-price">₱4,900</div>
+                        </div>
+                        <div class="cart-recommendation-item">
+                            <div class="cart-recommendation-image">
+                                <img src="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=200&h=200&fit=crop" alt="City Essentials Pouch" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
+                            </div>
+                            <div class="cart-recommendation-name">City Essentials Pouch Mini 2L</div>
+                            <div class="cart-recommendation-price">₱1,900</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showSuccessAnimation() {
+            const successAnimation = document.getElementById("cartSuccessAnimation");
+            successAnimation.classList.add("active");
+            document.body.style.overflow = "hidden";
+
+            // Hide success animation after 2 seconds and show modal
+            setTimeout(() => {
+                successAnimation.classList.remove("active");
+                // Show the modal after success animation
+                setTimeout(() => {
+                    showModal();
+                }, 300);
+            }, 2000);
+        }
+
+        function showModal() {
+            const modal = document.getElementById("cartModalOverlay");
+            modal.classList.add("active");
+            document.body.style.overflow = "hidden";
+        }
+
+        function closeCartModal(event) {
+            // Only close if clicking the overlay or close button
+            if (event && event.target !== event.currentTarget && !event.target.classList.contains("cart-close-button")) {
+                return;
+            }
+
+            const modal = document.getElementById("cartModalOverlay");
+            modal.classList.remove("active");
+            document.body.style.overflow = "auto";
+        }
+
+        // Close modal with Escape key
+        document.addEventListener("keydown", function(event) {
+            if (event.key === "Escape") {
+                const successAnimation = document.getElementById("cartSuccessAnimation");
+                const modal = document.getElementById("cartModalOverlay");
+
+                // Close success animation if active
+                if (successAnimation.classList.contains("active")) {
+                    successAnimation.classList.remove("active");
+                    document.body.style.overflow = "auto";
+                }
+                // Close modal if active
+                else if (modal.classList.contains("active")) {
+                    closeCartModal();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

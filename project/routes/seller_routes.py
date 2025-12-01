@@ -116,6 +116,42 @@ def _save_product_photo(base64_data, photo_type):
         return None
 
 
+def _load_variants(variant_payload):
+    """Normalize variants field from DB (JSON/Text/None) to list of dicts."""
+    if not variant_payload:
+        return []
+    try:
+        if isinstance(variant_payload, str):
+            parsed = json.loads(variant_payload)
+        else:
+            parsed = variant_payload
+        return parsed if isinstance(parsed, list) else []
+    except Exception:
+        return []
+
+
+def _recalculate_total_stock(variants):
+    total = 0
+    if not isinstance(variants, list):
+        return total
+    for variant in variants:
+        if not isinstance(variant, dict):
+            continue
+        size_stocks = variant.get('sizeStocks')
+        if isinstance(size_stocks, list) and size_stocks:
+            for ss in size_stocks:
+                try:
+                    total += int(ss.get('stock', 0))
+                except Exception:
+                    continue
+        else:
+            try:
+                total += int(variant.get('stock', 0))
+            except Exception:
+                continue
+    return max(total, 0)
+
+
 @seller_bp.context_processor
 def inject_seller_profile():
     """Inject a lightweight `seller` dict into seller templates.
@@ -424,7 +460,36 @@ def add_product_stocks():
             if request.is_json:
                 json_data = request.get_json()
                 current_app.logger.info(f"Received JSON request: {json_data}")
-                
+
+                # Ensure expected structure exists
+                step1 = json_data.setdefault('step1', {})
+                step3 = json_data.setdefault('step3', {})
+
+                # Persist primary/secondary product images if they are base64 strings
+                for field, photo_type in (('primaryImage', 'primary'), ('secondaryImage', 'secondary')):
+                    photo_data = step1.get(field)
+                    if isinstance(photo_data, str) and photo_data.startswith('data:image/'):
+                        saved_url = _save_product_photo(photo_data, photo_type)
+                        if saved_url:
+                            step1[field] = saved_url
+
+                # Persist variant photos if provided as base64 payloads
+                variants = step3.get('variants') or []
+                processed_variants = []
+                for idx, variant in enumerate(variants, start=1):
+                    if not isinstance(variant, dict):
+                        continue
+
+                    photo_data = variant.get('photo') or variant.get('photoData')
+                    if isinstance(photo_data, str) and photo_data.startswith('data:image/'):
+                        original_name = variant.get('photoName') or variant.get('sku') or f'variant_{idx}'
+                        saved_url = _save_variant_photo(photo_data, original_name, idx)
+                        if saved_url:
+                            variant['photo'] = saved_url
+                    processed_variants.append(variant)
+
+                step3['variants'] = processed_variants
+
                 # Validate JSON data structure
                 if not json_data:
                     return jsonify({
@@ -744,16 +809,7 @@ def product_details(product_id):
     ).first_or_404()
     
     # Variants may be stored as a JSON string or as a Python list (db.JSON).
-    variants = []
-    if product.variants:
-        try:
-            # If it's a string, attempt to decode
-            if isinstance(product.variants, str):
-                variants = json.loads(product.variants)
-            else:
-                variants = product.variants
-        except Exception:
-            variants = []
+    variants = _load_variants(product.variants)
     
     try:
         if isinstance(product.attributes, str):
@@ -818,6 +874,7 @@ def product_update(product_id):
     total_stock = payload.get('total_stock')
     variants = payload.get('variants')
     attributes = payload.get('attributes')
+    subitems = payload.get('subitems')
     primary_image = payload.get('primary_image')
     secondary_image = payload.get('secondary_image')
 
@@ -904,8 +961,16 @@ def product_update(product_id):
                 # ignore failures and leave provided total_stock handling below
                 pass
         if attributes is not None:
-            # attributes may already be a dict/object; store directly
+            if not isinstance(attributes, dict):
+                attributes = {}
             product.attributes = attributes
+        if subitems is not None:
+            try:
+                attributes = product.attributes or {}
+                attributes['subitems'] = subitems
+                product.attributes = attributes
+            except Exception:
+                pass
         if primary_image is not None:
             product.primary_image = primary_image
         if secondary_image is not None:
@@ -919,6 +984,66 @@ def product_update(product_id):
         db.session.rollback()
         current_app.logger.error('Failed to update product: %s', exc)
         return jsonify({'error': 'Failed to update'}), 500
+
+
+@seller_bp.route('/product/<int:product_id>/variants', methods=['POST'])
+def add_product_variant(product_id):
+    """Append a new variant to a product."""
+    product = SellerProduct.query.filter_by(
+        id=product_id,
+        seller_id=current_user.id
+    ).first_or_404()
+
+    payload = request.get_json(silent=True) or {}
+    try:
+        variant = {
+            'sku': (payload.get('sku') or '').strip(),
+            'color': (payload.get('color') or '').strip(),
+            'colorHex': payload.get('colorHex') or payload.get('colorHEX') or '#000000',
+            'size': (payload.get('size') or '').strip(),
+            'stock': int(payload.get('stock') or 0),
+            'lowStock': int(payload.get('lowStock') or 0),
+            'photo': payload.get('photo'),
+            'sizeStocks': payload.get('sizeStocks') if isinstance(payload.get('sizeStocks'), list) else []
+        }
+
+        variants = _load_variants(product.variants)
+        variants.append(variant)
+        product.variants = variants
+        product.total_stock = _recalculate_total_stock(variants)
+        db.session.add(product)
+        db.session.commit()
+
+        return jsonify({'success': True, 'variants': variants})
+    except Exception as exc:
+        current_app.logger.error('Failed to add variant: %s', exc)
+        db.session.rollback()
+        return jsonify({'success': False, 'error': 'Failed to add variant'}), 500
+
+
+@seller_bp.route('/product/<int:product_id>/variants/<int:variant_index>', methods=['DELETE'])
+def delete_product_variant(product_id, variant_index):
+    """Remove an existing variant by index."""
+    product = SellerProduct.query.filter_by(
+        id=product_id,
+        seller_id=current_user.id
+    ).first_or_404()
+
+    variants = _load_variants(product.variants)
+    if variant_index < 0 or variant_index >= len(variants):
+        return jsonify({'success': False, 'error': 'Variant not found'}), 404
+
+    try:
+        variants.pop(variant_index)
+        product.variants = variants
+        product.total_stock = _recalculate_total_stock(variants)
+        db.session.add(product)
+        db.session.commit()
+        return jsonify({'success': True, 'variants': variants})
+    except Exception as exc:
+        current_app.logger.error('Failed to delete variant: %s', exc)
+        db.session.rollback()
+        return jsonify({'success': False, 'error': 'Failed to delete variant'}), 500
 
 
 @seller_bp.route('/dashboard')

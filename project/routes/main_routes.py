@@ -1,16 +1,23 @@
 """
 Main routes for Dione Ecommerce
 """
-from flask import Blueprint, render_template, jsonify, redirect, url_for, flash, current_app
+from flask import Blueprint, render_template, jsonify, redirect, url_for, flash, current_app, session
 from flask import request
 from flask_login import login_required, current_user, logout_user
 from project import db
-from project.models import Product, User, SellerProduct, ProductReport, Seller
+from project.models import Product, User, SellerProduct, ProductReport, Seller, CartItem, Order, OrderItem
+
 from sqlalchemy import func
 import hashlib
+import json
+import uuid
+from decimal import Decimal
+from datetime import datetime, timedelta
+from collections import defaultdict
 
 main = Blueprint('main', __name__)
 
+MAX_CART_ITEM_QUANTITY = 100
 
 def generate_color_from_name(color_name):
     """Generate a consistent color hex from a color name"""
@@ -78,9 +85,203 @@ def _normalize_image_path(path):
     if not path:
         return None
     s = str(path)
+    if s.startswith('data:'):
+        return s
     if s.startswith('/') or s.startswith('http'):
         return s
     return '/static/' + s.lstrip('/')
+
+
+def _extract_image_value(image_value):
+    """Extract a usable string path from nested image structures."""
+    if not image_value:
+        return None
+
+    if isinstance(image_value, list):
+        for entry in image_value:
+            resolved = _extract_image_value(entry)
+            if resolved:
+                return resolved
+        return None
+
+    if isinstance(image_value, dict):
+        for key in ('url', 'path', 'src', 'image', 'image_url', 'value', 'file'):
+            if key in image_value and image_value[key]:
+                resolved = _extract_image_value(image_value[key])
+                if resolved:
+                    return resolved
+        return None
+
+    if isinstance(image_value, bytes):
+        try:
+            image_value = image_value.decode('utf-8')
+        except Exception:
+            return None
+
+    if isinstance(image_value, str):
+        stripped = image_value.strip().strip('"')
+        if not stripped:
+            return None
+        if (stripped.startswith('[') and stripped.endswith(']')) or (
+            stripped.startswith('{') and stripped.endswith('}')
+        ):
+            try:
+                parsed = json.loads(stripped)
+                return _extract_image_value(parsed)
+            except Exception:
+                pass
+        return stripped
+
+    return str(image_value)
+
+
+def _resolve_image_source(*sources, default='/static/image/banner_1.png'):
+    """Return the first normalized image path from the provided sources."""
+    for src in sources:
+        resolved = _extract_image_value(src)
+        if not resolved:
+            continue
+        normalized = _normalize_image_path(resolved)
+        if normalized:
+            return normalized
+    return default
+
+
+def _parse_variants_structure(raw_variants):
+    """Return variants data parsed from potential JSON strings."""
+    if not raw_variants:
+        return None
+    if isinstance(raw_variants, str):
+        try:
+            return json.loads(raw_variants)
+        except Exception:
+            return None
+    return raw_variants
+
+
+def _find_variant_by_color(variants_data, color_name):
+    """Locate a variant entry (dict) matching the provided color name."""
+    if not variants_data or not color_name:
+        return None
+
+    normalized_color = str(color_name).strip().lower()
+
+    if isinstance(variants_data, dict):
+        for key, variant_info in variants_data.items():
+            if str(key).strip().lower() == normalized_color:
+                return variant_info
+    elif isinstance(variants_data, list):
+        for variant_info in variants_data:
+            if not isinstance(variant_info, dict):
+                continue
+            variant_color = (
+                variant_info.get('color')
+                or variant_info.get('color_name')
+                or variant_info.get('variant_name')
+                or variant_info.get('variantName')
+                or variant_info.get('name')
+            )
+            if variant_color and str(variant_color).strip().lower() == normalized_color:
+                return variant_info
+    return None
+
+
+def _build_stock_map_from_variant(variant_info):
+    """Extract a {size_label: stock_count} mapping from assorted variant schemas."""
+    stock_map = {}
+    if not isinstance(variant_info, dict):
+        return stock_map
+
+    raw_stock = variant_info.get('stock')
+    if isinstance(raw_stock, dict):
+        stock_map.update(raw_stock)
+    elif raw_stock is not None and variant_info.get('size'):
+        stock_map[variant_info.get('size')] = raw_stock
+
+    size_stocks = variant_info.get('sizeStocks') or variant_info.get('sizes')
+    if isinstance(size_stocks, list):
+        for entry in size_stocks:
+            if not isinstance(entry, dict):
+                continue
+            size_label = (
+                entry.get('size')
+                or entry.get('size_label')
+                or entry.get('label')
+                or entry.get('name')
+            )
+            stock_value = (
+                entry.get('stock')
+                or entry.get('quantity')
+                or entry.get('qty')
+                or entry.get('value')
+            )
+            if size_label:
+                stock_map[size_label] = stock_value
+
+    return stock_map
+
+
+def _iter_variant_entries(variants_data):
+    """Yield (color_name, variant_info) tuples from dict or list variant structures."""
+    if isinstance(variants_data, dict):
+        for key, value in variants_data.items():
+            yield key, value
+    elif isinstance(variants_data, list):
+        for idx, entry in enumerate(variants_data, start=1):
+            if not isinstance(entry, dict):
+                continue
+            color_name = (
+                entry.get('color')
+                or entry.get('color_name')
+                or entry.get('variant_name')
+                or entry.get('variantName')
+                or entry.get('name')
+                or f"Variant {idx}"
+            )
+            yield color_name, entry
+
+
+def _extract_variant_images(variant_info):
+    """Return raw image data stored on a variant entry regardless of schema."""
+    if not isinstance(variant_info, dict):
+        return None
+    return (
+        variant_info.get('images')
+        or variant_info.get('image')
+        or variant_info.get('imageUrls')
+        or variant_info.get('photos')
+        or variant_info.get('gallery')
+    )
+
+
+def _generate_cart_item_sku(product, color=None, size=None, fallback=None):
+    """Generate a readable SKU for cart display without requiring a DB column."""
+    if fallback:
+        return fallback
+
+    base = None
+    try:
+        base = (product.base_sku if product else None) or getattr(product, 'sku', None)
+    except Exception:
+        base = None
+
+    if base:
+        base = str(base).strip()
+
+    if not base:
+        if product and getattr(product, 'id', None):
+            base = f"SKU{product.id}"
+        else:
+            base = 'SKU'
+
+    parts = [base]
+    if color:
+        parts.append(str(color).strip().upper().replace(' ', ''))
+    if size:
+        parts.append(str(size).strip().upper())
+
+    return '-'.join([p for p in parts if p])
+
 
 @main.before_request
 def check_suspension():
@@ -119,8 +320,8 @@ def index():
         return {
             'id': sp.id,
             'name': sp.name,
-            'primaryImage': _normalize_image_path(sp.primary_image) or '/static/image/banner.png',
-            'secondaryImage': _normalize_image_path(sp.secondary_image) or _normalize_image_path(sp.primary_image) or '/static/image/banner.png',
+            'primaryImage': _normalize_image_path(sp.primary_image) or '/static/image/banner_1.png',
+            'secondaryImage': _normalize_image_path(sp.secondary_image) or _normalize_image_path(sp.primary_image) or '/static/image/banner_1.png',
             'material': (sp.materials or 'Premium Material').split('\n')[0] if sp.materials else 'Premium Material',
             'price': float(sp.price or 0),
             'originalPrice': float(sp.compare_at_price) if sp.compare_at_price and sp.compare_at_price > sp.price else None,
@@ -204,8 +405,8 @@ def api_products():
         items.append({
             'id': sp.id,
             'name': sp.name,
-            'primaryImage': _normalize_image_path(sp.primary_image) or '/static/image/banner.png',
-            'secondaryImage': _normalize_image_path(sp.secondary_image) or _normalize_image_path(sp.primary_image) or '/static/image/banner.png',
+            'primaryImage': _normalize_image_path(sp.primary_image) or '/static/image/banner_1.png',
+            'secondaryImage': _normalize_image_path(sp.secondary_image) or _normalize_image_path(sp.primary_image) or '/static/image/banner_1.png',
             'material': (sp.materials or 'Premium Material').split('\n')[0] if sp.materials else 'Premium Material',
             'price': float(sp.price or 0),
             'originalPrice': float(sp.compare_at_price) if sp.compare_at_price and sp.compare_at_price > sp.price else None,
@@ -251,8 +452,8 @@ def api_product_variant(product_id, variant_id):
                 'variant': {
                     'color': variant.get('color'),
                     'images': {
-                        'primary': _normalize_image_path(sp.primary_image) or '/static/image/banner.png',
-                        'secondary': _normalize_image_path(sp.secondary_image) or _normalize_image_path(sp.primary_image) or '/static/image/banner.png'
+                        'primary': _normalize_image_path(sp.primary_image) or '/static/image/banner_1.png',
+                        'secondary': _normalize_image_path(sp.secondary_image) or _normalize_image_path(sp.primary_image) or '/static/image/banner_1.png'
                     },
                     'stock': {variant.get('size', 'OS'): variant.get('stock', 0)}
                 }
@@ -314,8 +515,8 @@ def api_product(product_id):
                             # Set color hex for styling (store in variant_photos for now)
                             if color not in variant_photos:
                                 variant_photos[color] = {
-                                    'primary': _normalize_image_path(sp.primary_image) or '/static/image/banner.png',
-                                    'secondary': _normalize_image_path(sp.secondary_image) or _normalize_image_path(sp.primary_image) or '/static/image/banner.png',
+                                    'primary': _normalize_image_path(sp.primary_image) or '/static/image/banner_1.png',
+                                    'secondary': _normalize_image_path(sp.secondary_image) or _normalize_image_path(sp.primary_image) or '/static/image/banner_1.png',
                                     'color_hex': color_hex
                                 }
                 elif isinstance(variants_data, dict):
@@ -337,8 +538,8 @@ def api_product(product_id):
                 stock_data = {}
 
             # fallback to top-level images with proper normalization
-            primary = _normalize_image_path(sp.primary_image) or '/static/image/banner.png'
-            secondary = _normalize_image_path(sp.secondary_image) or _normalize_image_path(sp.primary_image) or '/static/image/banner.png'
+            primary = _normalize_image_path(sp.primary_image) or '/static/image/banner_1.png'
+            secondary = _normalize_image_path(sp.secondary_image) or _normalize_image_path(sp.primary_image) or '/static/image/banner_1.png'
 
             payload = {
                 'id': sp.id,
@@ -433,8 +634,8 @@ def homepage():
         d = {
             'id': sp.id,
             'name': sp.name,
-            'primaryImage': sp.primary_image or '/static/image/banner.png',
-            'secondaryImage': sp.secondary_image or sp.primary_image or '/static/image/banner.png',
+            'primaryImage': sp.primary_image or '/static/image/banner_1.png',
+            'secondaryImage': sp.secondary_image or sp.primary_image or '/static/image/banner_1.png',
             'material': (sp.materials or 'Premium Material').split('\n')[0] if sp.materials else 'Premium Material',
             'price': float(sp.price or 0),
             'originalPrice': float(sp.compare_at_price) if sp.compare_at_price and sp.compare_at_price > sp.price else None,
@@ -496,81 +697,128 @@ def cart():
     """Display shopping cart with items grouped by store"""
     from flask import session
     nav_items = get_nav_items()
-    
-    # Get cart items from session
-    cart_items = session.get('cart_items', [])
-    
-    # Group cart items by store
-    stores_with_items = {}
-    
-    for item in cart_items:
+
+    raw_items = []
+    session_items = session.get('cart_items', [])
+
+    def _cart_item_sort_key(item):
+        """Return a datetime for ordering cart entries (newest first)."""
+        ts = item.get('added_at') or item.get('created_at')
+        if isinstance(ts, datetime):
+            return ts
+        if not ts:
+            return datetime.min
         try:
-            # Get product and seller information
+            ts_str = str(ts).strip()
+            if ts_str.endswith('Z'):
+                ts_str = ts_str[:-1] + '+00:00'
+            return datetime.fromisoformat(ts_str)
+        except Exception:
+            return datetime.min
+
+    if current_user.is_authenticated:
+        db_items = (
+            CartItem.query
+            .filter_by(user_id=current_user.id)
+            .order_by(CartItem.created_at.desc())
+            .all()
+        )
+        raw_items = [item.to_dict() for item in db_items]
+
+        # Merge any lingering session items (guest cart before login)
+        if session_items:
+            existing_keys = {
+                (item.get('product_id'), item.get('color'), item.get('size'))
+                for item in raw_items
+            }
+            for s_item in session_items:
+                key = (s_item.get('product_id'), s_item.get('color'), s_item.get('size'))
+                if key not in existing_keys:
+                    raw_items.append(s_item)
+    else:
+        raw_items = session_items
+
+    # Ensure newest additions appear first
+    raw_items = sorted(raw_items, key=_cart_item_sort_key, reverse=True)
+
+    cart_items = []
+    subtotal = 0
+    total_items = 0
+
+    for item in raw_items:
+        try:
             product = SellerProduct.query.get(item.get('product_id'))
-            if product:
-                seller_user = User.query.get(product.seller_id)
-                if seller_user and seller_user.seller_profile:
-                    seller_profile = seller_user.seller_profile[0]
-                    store_id = seller_user.id
-                    store_name = seller_profile.business_name
-                    
-                    # Get variant photo
-                    variant_photo = item.get('image_url', product.primary_image or '/static/image/banner.png')
-                    
-                    # Create enhanced item data
-                    enhanced_item = {
-                        'id': item.get('id', f"{item.get('product_id')}_{item.get('color')}_{item.get('size')}"),
-                        'product_id': item.get('product_id'),
-                        'name': product.name,
-                        'price': float(product.price),
-                        'quantity': item.get('quantity', 1),
-                        'color': item.get('color', 'Default'),
-                        'size': item.get('size', 'One Size'),
-                        'image_url': variant_photo,
-                        'color_hex': item.get('color_hex', '#000000')
-                    }
-                    
-                    # Group by store
-                    if store_id not in stores_with_items:
-                        stores_with_items[store_id] = {
-                            'store_info': {
-                                'id': store_id,
-                                'name': store_name,
-                                'is_verified': seller_profile.is_verified,
-                                'avatar': '/static/image/default-store.png'  # TODO: Add store avatar
-                            },
-                            'items': []
-                        }
-                    
-                    stores_with_items[store_id]['items'].append(enhanced_item)
+            seller_user = User.query.get(product.seller_id) if product else None
+            seller_profile = seller_user.seller_profile[0] if seller_user and seller_user.seller_profile else None
+            store_name = seller_profile.business_name if seller_profile else 'Dione Store'
+
+            price = float(item.get('product_price') or item.get('price') or 0)
+            quantity = int(item.get('quantity') or 1)
+            item_subtotal = price * quantity
+            subtotal += item_subtotal
+            total_items += quantity
+
+            image_url = (
+                item.get('variant_image')
+                or item.get('image_url')
+                or (product and _normalize_image_path(product.primary_image))
+                or '/static/image/banner_1.png'
+            )
+
+            cart_items.append({
+                'id': item.get('id') or f"{item.get('product_id')}_{item.get('color')}_{item.get('size')}",
+                'product_id': item.get('product_id'),
+                'name': item.get('product_name') or (product.name if product else 'Product'),
+                'sku': _generate_cart_item_sku(product, item.get('color'), item.get('size'), item.get('sku')),
+                'price': price,
+                'quantity': quantity,
+                'color': item.get('color') or 'Default',
+                'size': item.get('size') or 'One Size',
+                'image_url': image_url,
+                'store_name': store_name,
+                'subtotal': round(item_subtotal, 2),
+                'max_quantity': MAX_CART_ITEM_QUANTITY
+            })
         except Exception as e:
             print(f"Error processing cart item: {e}")
             continue
-    
-    # Calculate summary values
-    subtotal = 0
-    total_items = 0
-    
-    for store_data in stores_with_items.values():
-        for item in store_data['items']:
-            item_total = item['price'] * item['quantity']
-            subtotal += item_total
-            total_items += item['quantity']
-    
-    discount = subtotal * 0.2 if subtotal > 0 else 0  # 20% discount
-    delivery_fee = 15 if subtotal > 0 else 0
-    total = subtotal - discount + delivery_fee if subtotal > 0 else 0
-    
+
+    # Group items by store for UI organization
+    store_groups = []
+    if cart_items:
+        store_lookup = {}
+        for item in cart_items:
+            store_key = item.get('store_name', 'Dione Store')
+            if store_key not in store_lookup:
+                group = {
+                    'store_name': store_key,
+                    'items_list': [],
+                    'item_count': 0
+                }
+                store_lookup[store_key] = group
+                store_groups.append(group)
+
+            group = store_lookup[store_key]
+            group['items_list'].append(item)
+            group['item_count'] += 1
+
+    discount = 0  # Apply promo logic later
+    delivery_fee = 0 if subtotal >= 1500 or subtotal == 0 else 150
+    total = subtotal - discount + delivery_fee
+
     return render_template(
         'main/cart.html',
         nav_items=nav_items,
-        stores_with_items=stores_with_items,
+        cart_items=cart_items,
+        store_groups=store_groups,
         total_items=total_items,
         subtotal=subtotal,
         discount=discount,
         delivery_fee=delivery_fee,
-        total=total
+        total=total,
+        max_cart_quantity=MAX_CART_ITEM_QUANTITY
     )
+
 
 @main.route('/api/products/<int:product_id>/colors/<color_name>/sizes')
 def get_sizes_for_color(product_id, color_name):
@@ -612,33 +860,26 @@ def get_sizes_for_color(product_id, color_name):
         else:
             # Method 2: Fallback to variants JSON structure (legacy)
             try:
-                variants_data = product.variants or {}
-                if isinstance(variants_data, str):
-                    import json
-                    variants_data = json.loads(variants_data)
-                
-                # Look for the color in variants
-                color_variant = None
-                for key, variant_info in variants_data.items():
-                    if key.lower() == color_name.lower():
-                        color_variant = variant_info
-                        break
-                
-                if color_variant and isinstance(color_variant, dict):
-                    # Get stock data for this color
-                    stock_info = color_variant.get('stock', {})
-                    
-                    # Create size entries from stock data
+                variants_data = _parse_variants_structure(product.variants)
+                color_variant = _find_variant_by_color(variants_data, color_name)
+
+                if color_variant:
+                    stock_info = _build_stock_map_from_variant(color_variant)
                     for size_label, stock_count in stock_info.items():
+                        try:
+                            stock_value = int(stock_count)
+                        except Exception:
+                            stock_value = int(float(stock_count) if stock_count else 0)
+
                         response_data['sizes'].append({
                             'variant_id': None,  # No variant_id for legacy structure
                             'size_id': None,
                             'size_label': size_label,
-                            'stock': int(stock_count) if isinstance(stock_count, (int, str)) else 0,
+                            'stock': stock_value,
                             'sku': f"{product.base_sku or 'P'}{product_id}-{color_name}-{size_label}",
-                            'available': int(stock_count) > 0 if isinstance(stock_count, (int, str)) else False
+                            'available': stock_value > 0
                         })
-                
+
             except Exception as e:
                 print(f"Error parsing variants JSON: {e}")
         
@@ -699,34 +940,36 @@ def get_product_variants(product_id):
         else:
             # Method 2: Fallback to variants JSON (legacy)
             try:
-                variants_data = product.variants or {}
-                if isinstance(variants_data, str):
-                    import json
-                    variants_data = json.loads(variants_data)
-                
-                for color_name, variant_info in variants_data.items():
-                    if isinstance(variant_info, dict):
-                        variant_data = {
-                            'variant_id': None,
-                            'color_name': color_name,
-                            'color_hex': variant_info.get('hex', '#000000'),
-                            'images': variant_info.get('images', []),
-                            'sizes': []
-                        }
-                        
-                        # Get stock data
-                        stock_info = variant_info.get('stock', {})
-                        for size_label, stock_count in stock_info.items():
-                            variant_data['sizes'].append({
-                                'size_id': None,
-                                'size_label': size_label,
-                                'stock': int(stock_count) if isinstance(stock_count, (int, str)) else 0,
-                                'sku': f"{product.base_sku or 'P'}{product_id}-{color_name}-{size_label}",
-                                'available': int(stock_count) > 0 if isinstance(stock_count, (int, str)) else False
-                            })
-                        
-                        response_data['variants'].append(variant_data)
-                        
+                variants_data = _parse_variants_structure(product.variants)
+                for color_name, variant_info in _iter_variant_entries(variants_data):
+                    if not isinstance(variant_info, dict):
+                        continue
+
+                    variant_data = {
+                        'variant_id': None,
+                        'color_name': color_name,
+                        'color_hex': variant_info.get('hex', '#000000'),
+                        'images': _extract_variant_images(variant_info) or [],
+                        'sizes': []
+                    }
+
+                    stock_info = _build_stock_map_from_variant(variant_info)
+                    for size_label, stock_count in stock_info.items():
+                        try:
+                            stock_value = int(stock_count)
+                        except Exception:
+                            stock_value = int(float(stock_count) if stock_count else 0)
+
+                        variant_data['sizes'].append({
+                            'size_id': None,
+                            'size_label': size_label,
+                            'stock': stock_value,
+                            'sku': f"{product.base_sku or 'P'}{product_id}-{color_name}-{size_label}",
+                            'available': stock_value > 0
+                        })
+
+                    response_data['variants'].append(variant_data)
+
             except Exception as e:
                 print(f"Error parsing variants JSON: {e}")
         
@@ -752,11 +995,22 @@ def add_to_cart():
         quantity = int(data.get('quantity', 1))
         variant_id = data.get('variant_id')  # New: variant_id for direct variant reference
         size_id = data.get('size_id')  # New: size_id for direct size reference
+        incoming_sku = (data.get('sku') or '').strip() or None
         
         # Validate required fields
         if not product_id:
             return jsonify({'error': 'Product ID is required'}), 400
         
+        # Enforce per-item max quantity
+        if quantity < 1:
+            return jsonify({'error': 'Quantity must be at least 1'}), 400
+
+        if quantity > MAX_CART_ITEM_QUANTITY:
+            return jsonify({
+                'error': f'Maximum of {MAX_CART_ITEM_QUANTITY} units per variant is allowed in the cart',
+                'max_quantity': MAX_CART_ITEM_QUANTITY
+            }), 400
+
         # Get product information
         product = SellerProduct.query.get(product_id)
         if not product:
@@ -769,72 +1023,67 @@ def add_to_cart():
         product_name = product.name
         product_price = float(product.price)
         seller_id = product.seller_id
-        variant_image = product.primary_image
+        fallback_image = _resolve_image_source(
+            product.primary_image,
+            '/static/image/banner_1.png'
+        )
+        variant_image = fallback_image
         
+        resolved_sku = _generate_cart_item_sku(product, color, size, incoming_sku)
+
         # Method 1: Use variant_id and size_id if provided (new structure)
         if variant_id and size_id:
             variant_size = VariantSize.query.filter_by(
                 variant_id=variant_id,
                 id=size_id
             ).first()
-            
+
             if variant_size:
                 available_stock = variant_size.stock_quantity
                 color = ProductVariant.query.get(variant_id).variant_name if not color else color
                 size = variant_size.size_label if not size else size
-                
+
                 # Get variant images if available
                 variant = ProductVariant.query.get(variant_id)
                 if variant and variant.images_json:
-                    variant_image = variant.images_json[0] if variant.images_json else product.primary_image
-            else:
-                return jsonify({'error': 'Variant not found'}), 404
-                
-        # Method 2: Use color and size to find variant (legacy support)
+                    variant_image = _resolve_image_source(
+                        variant.images_json,
+                        product.primary_image,
+                        fallback_image
+                    )
         elif color and size:
-            # Try to find in ProductVariant table first
-            variant = ProductVariant.query.filter_by(
-                product_id=product_id,
-                variant_name=color
-            ).first()
-            
-            if variant:
-                variant_size = VariantSize.query.filter_by(
-                    variant_id=variant.id,
-                    size_label=size
-                ).first()
-                
-                if variant_size:
-                    available_stock = variant_size.stock_quantity
-                    actual_variant_id = variant.id
-                    actual_size_id = variant_size.id
-                    
-                    # Get variant images
-                    if variant.images_json:
-                        variant_image = variant.images_json[0] if variant.images_json else product.primary_image
-            else:
-                # Fallback to variants JSON structure
-                try:
-                    variants_data = product.variants or {}
-                    if isinstance(variants_data, str):
-                        import json
-                        variants_data = json.loads(variants_data)
-                    
-                    color_variant = variants_data.get(color, {})
-                    if isinstance(color_variant, dict):
-                        stock_info = color_variant.get('stock', {})
-                        available_stock = int(stock_info.get(size, 0))
-                        
-                        # Get variant images
-                        images = color_variant.get('images', [])
-                        if images:
-                            variant_image = images[0]
-                            
-                except Exception as e:
-                    print(f"Error parsing variants JSON: {e}")
+            # Method 2: Use color and size to find variant (legacy support)
+            try:
+                variants_data = _parse_variants_structure(product.variants)
+                color_variant = _find_variant_by_color(variants_data, color)
+
+                if color_variant:
+                    stock_info = _build_stock_map_from_variant(color_variant)
+                    for size_label, stock_count in stock_info.items():
+                        label_normalized = str(size_label).strip().lower()
+                        if label_normalized == str(size).strip().lower():
+                            try:
+                                available_stock = int(stock_count)
+                            except Exception:
+                                available_stock = int(float(stock_count) if stock_count else 0)
+                            break
+
+                    images = _extract_variant_images(color_variant)
+                    resolved_img = _resolve_image_source(
+                        images,
+                        product.primary_image,
+                        fallback_image
+                    )
+                    if resolved_img:
+                        variant_image = resolved_img
+            except Exception as e:
+                print(f"Error parsing variants JSON: {e}")
         else:
             return jsonify({'error': 'Color and size are required'}), 400
-        
+
+        if not variant_image:
+            variant_image = fallback_image
+
         # Validate stock availability
         if available_stock < quantity:
             return jsonify({
@@ -872,7 +1121,21 @@ def add_to_cart():
         
         if existing_cart_item:
             # Check if total quantity would exceed stock
+            if existing_cart_item.quantity >= MAX_CART_ITEM_QUANTITY:
+                return jsonify({
+                    'error': f'Maximum quantity of {MAX_CART_ITEM_QUANTITY} for this variant is already in your cart',
+                    'max_quantity': MAX_CART_ITEM_QUANTITY
+                }), 409
+
             total_quantity = existing_cart_item.quantity + quantity
+            if total_quantity > MAX_CART_ITEM_QUANTITY:
+                return jsonify({
+                    'error': f'You can only keep up to {MAX_CART_ITEM_QUANTITY} of the same variant in your cart',
+                    'max_quantity': MAX_CART_ITEM_QUANTITY,
+                    'current_in_cart': existing_cart_item.quantity,
+                    'requested_additional': quantity
+                }), 409
+
             if total_quantity > available_stock:
                 return jsonify({
                     'error': 'Total quantity would exceed available stock',
@@ -884,6 +1147,8 @@ def add_to_cart():
             # Update existing item
             existing_cart_item.quantity = total_quantity
             existing_cart_item.updated_at = datetime.utcnow()
+            if variant_image and variant_image != existing_cart_item.variant_image:
+                existing_cart_item.variant_image = variant_image
             db.session.commit()
             cart_item = existing_cart_item
         else:
@@ -915,6 +1180,7 @@ def add_to_cart():
         
         if session_item:
             session_item['quantity'] = cart_item.quantity
+            session_item['max_quantity'] = MAX_CART_ITEM_QUANTITY
         else:
             cart_items.append({
                 'id': cart_item.id,
@@ -926,33 +1192,235 @@ def add_to_cart():
                 'quantity': quantity,
                 'variant_image': variant_image,
                 'seller_id': seller_id,
-                'added_at': datetime.now().isoformat()
+                'added_at': datetime.now().isoformat(),
+                'max_quantity': MAX_CART_ITEM_QUANTITY
             })
         
         session['cart_items'] = cart_items
         
-        # Get total cart count
+        # Get total cart count (count distinct cart item rows, not sum of quantities)
         if user_id:
-            total_count = db.session.query(db.func.sum(CartItem.quantity)).filter_by(user_id=user_id).scalar() or 0
+            total_count = db.session.query(db.func.count(CartItem.id)).filter_by(user_id=user_id).scalar() or 0
         else:
-            total_count = db.session.query(db.func.sum(CartItem.quantity)).filter_by(session_id=session_id).scalar() or 0
+            total_count = db.session.query(db.func.count(CartItem.id)).filter_by(session_id=session_id).scalar() or 0
         
+        # Build a stable item payload to return to the client. Ensure common keys exist
+        if hasattr(cart_item, 'to_dict'):
+            item_payload = cart_item.to_dict()
+        else:
+            item_payload = {
+                'id': getattr(cart_item, 'id', None),
+                'product_id': product_id,
+                'product_name': product_name,
+                'product_price': product_price,
+                'color': color,
+                'size': size,
+                'quantity': getattr(cart_item, 'quantity', quantity),
+                'variant_image': variant_image,
+                'available_stock': available_stock
+            }
+
+        item_payload['sku'] = item_payload.get('sku') or resolved_sku
+
+        # Normalize and ensure fields are present
+        try:
+            item_payload['product_name'] = item_payload.get('product_name') or product_name
+            # Ensure numeric price
+            item_payload['product_price'] = float(item_payload.get('product_price') or product_price or 0)
+            item_payload['variant_image'] = item_payload.get('variant_image') or variant_image or _normalize_image_path(product.primary_image) or '/static/image/banner.png'
+            item_payload['quantity'] = int(item_payload.get('quantity') or quantity or 1)
+            item_payload['sku'] = item_payload.get('sku') or _generate_cart_item_sku(product, color, size, resolved_sku)
+            item_payload['max_quantity'] = MAX_CART_ITEM_QUANTITY
+        except Exception:
+            # best-effort defaults
+            item_payload.setdefault('product_name', product_name)
+            item_payload.setdefault('product_price', float(product_price or 0))
+            item_payload.setdefault('variant_image', variant_image or fallback_image)
+            item_payload.setdefault('quantity', int(quantity or 1))
+            item_payload.setdefault('sku', _generate_cart_item_sku(product, color, size, resolved_sku))
+            item_payload.setdefault('max_quantity', MAX_CART_ITEM_QUANTITY)
+
         return jsonify({
             'success': True,
             'message': 'Item added to cart',
             'cart_count': int(total_count),
-            'item': cart_item.to_dict() if hasattr(cart_item, 'to_dict') else {
-                'product_id': product_id,
-                'color': color,
-                'size': size,
-                'quantity': cart_item.quantity,
-                'available_stock': available_stock
-            }
+            'item': item_payload
         })
         
     except Exception as e:
         print(f"Error adding to cart: {e}")
         return jsonify({'error': 'Failed to add item to cart'}), 500
+
+
+@main.route('/remove-from-cart', methods=['POST'])
+def remove_from_cart():
+    """Remove an item from the cart (DB + session) and return updated totals."""
+    from flask import session, request, jsonify
+    from project.models import CartItem
+
+    try:
+        data = request.get_json(force=True, silent=True) or request.form or {}
+        item_id = data.get('item_id') or data.get('id')
+
+        if not item_id:
+            return jsonify({'error': 'Item id is required'}), 400
+
+        user_id = current_user.id if current_user.is_authenticated else None
+        session_id = session.get('session_id') if not user_id else None
+
+        # Try to find the cart item in DB
+        cart_item = None
+        try:
+            # allow numeric ids
+            item_id_int = int(item_id)
+        except Exception:
+            item_id_int = None
+
+        if item_id_int:
+            if user_id:
+                cart_item = CartItem.query.filter_by(id=item_id_int, user_id=user_id).first()
+            elif session_id:
+                cart_item = CartItem.query.filter_by(id=item_id_int, session_id=session_id).first()
+
+        # If not found by id, try matching by composed id key used in session
+        if not cart_item:
+            # Remove from session store only if present
+            pass
+
+        # Remove DB row if exists
+        if cart_item:
+            db.session.delete(cart_item)
+            db.session.commit()
+
+        # Remove from session['cart_items'] if present
+        session_items = session.get('cart_items', [])
+        new_session_items = []
+        removed = False
+        for it in session_items:
+            # match by id or by product/color/size composite
+            if (str(it.get('id')) == str(item_id)) or (str(it.get('id')) == str(item_id_int)):
+                removed = True
+                continue
+            # also allow matching by product/color/size composite id created earlier
+            if isinstance(it.get('id'), str) and str(it.get('id')) == str(item_id):
+                removed = True
+                continue
+            new_session_items.append(it)
+
+        if removed:
+            session['cart_items'] = new_session_items
+
+        # Recompute cart summary values
+        raw_items = []
+        if current_user.is_authenticated:
+            db_items = CartItem.query.filter_by(user_id=current_user.id).all()
+            raw_items = [item.to_dict() for item in db_items]
+        else:
+            raw_items = session.get('cart_items', [])
+
+        subtotal = 0
+        total_count = 0
+        for item in raw_items:
+            try:
+                price = float(item.get('product_price') or item.get('price') or 0)
+                quantity = int(item.get('quantity') or 1)
+                subtotal += price * quantity
+                total_count += 1
+            except Exception:
+                continue
+
+        return jsonify({'success': True, 'cart_count': int(total_count), 'subtotal': round(subtotal, 2)})
+    except Exception as e:
+        print(f"Error removing cart item: {e}")
+        return jsonify({'error': 'Failed to remove item'}), 500
+
+
+@main.route('/update-cart-quantity', methods=['POST'])
+def update_cart_quantity():
+    """Update the quantity of a cart item while enforcing limits."""
+    from flask import session, request, jsonify
+    from project.models import CartItem, SellerProduct
+
+    try:
+        data = request.get_json(force=True, silent=True) or request.form or {}
+        item_id = data.get('item_id') or data.get('id')
+        desired_quantity = data.get('quantity')
+
+        if not item_id:
+            return jsonify({'error': 'Item id is required'}), 400
+
+        try:
+            desired_quantity = int(desired_quantity)
+        except Exception:
+            return jsonify({'error': 'Quantity must be a number'}), 400
+
+        if desired_quantity < 1:
+            desired_quantity = 1
+        if desired_quantity > MAX_CART_ITEM_QUANTITY:
+            return jsonify({
+                'error': f'Maximum of {MAX_CART_ITEM_QUANTITY} units per variant is allowed in the cart',
+                'max_quantity': MAX_CART_ITEM_QUANTITY
+            }), 400
+
+        user_id = current_user.id if current_user.is_authenticated else None
+        session_id = session.get('session_id') if not user_id else None
+
+        cart_item = None
+        try:
+            item_id_int = int(item_id)
+        except Exception:
+            item_id_int = None
+
+        if item_id_int:
+            if user_id:
+                cart_item = CartItem.query.filter_by(id=item_id_int, user_id=user_id).first()
+            elif session_id:
+                cart_item = CartItem.query.filter_by(id=item_id_int, session_id=session_id).first()
+
+        if not cart_item:
+            return jsonify({'error': 'Cart item not found'}), 404
+
+        cart_item.quantity = desired_quantity
+        cart_item.updated_at = datetime.utcnow()
+        db.session.commit()
+
+        # Update session cache
+        session_items = session.get('cart_items', [])
+        for it in session_items:
+            if str(it.get('id')) == str(cart_item.id):
+                it['quantity'] = desired_quantity
+                it['max_quantity'] = MAX_CART_ITEM_QUANTITY
+                break
+        session['cart_items'] = session_items
+
+        # Recompute summary data
+        if user_id:
+            db_items = CartItem.query.filter_by(user_id=user_id).all()
+            raw_items = [item.to_dict() for item in db_items]
+        else:
+            raw_items = session.get('cart_items', [])
+
+        subtotal = 0
+        total_count = 0
+        for item in raw_items:
+            try:
+                price = float(item.get('product_price') or item.get('price') or 0)
+                quantity = int(item.get('quantity') or 1)
+                subtotal += price * quantity
+                total_count += 1
+            except Exception:
+                continue
+
+        return jsonify({
+            'success': True,
+            'quantity': desired_quantity,
+            'cart_count': int(total_count),
+            'subtotal': round(subtotal, 2)
+        })
+    except Exception as e:
+        print(f"Error updating cart quantity: {e}")
+        return jsonify({'error': 'Failed to update quantity'}), 500
+
 
 @main.route('/checkout')
 @login_required
@@ -1013,270 +1481,235 @@ def payment():
         total=total
     )
 
+@main.route('/order-success')
+@login_required
+def order_success():
+    """Show order confirmation message with quick actions"""
+    nav_items = get_nav_items()
+
+    cart_items = session.get('cart_items', []) or []
+    subtotal = 0
+    total_items = 0
+    for item in cart_items:
+        try:
+            price = float(item.get('product_price') or item.get('price') or 0)
+            qty = int(item.get('quantity') or 1)
+        except Exception:
+            price = 0
+            qty = 1
+        subtotal += price * qty
+        total_items += qty
+
+    delivery_fee = 0 if subtotal >= 1500 or subtotal == 0 else 150
+    total = subtotal + delivery_fee
+
+    order_number = session.get('latest_order_number')
+    if not order_number:
+        order_number = f"DIO-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
+        session['latest_order_number'] = order_number
+
+    order_summary = {
+        'order_number': order_number,
+        'items_count': total_items,
+        'subtotal': subtotal,
+        'delivery_fee': delivery_fee,
+        'total': total,
+        'estimated_delivery': session.get('latest_order_eta', '3-5 business days')
+    }
+
+    return render_template(
+        'main/order_success.html',
+        nav_items=nav_items,
+        order_summary=order_summary
+    )
+
 @main.route('/my-purchases')
 @login_required
 def my_purchases():
-    """Display user's purchase history and reviews"""
+    """Display buyer purchases grouped by order status with review deadlines"""
     nav_items = get_nav_items()
-    
-    # TODO: Fetch actual orders from database
-    # For now, using sample data structure
+    selected_status = request.args.get('status') or 'pending'
+
+    status_tabs = [
+        {'id': 'pending', 'label': 'Pending'},
+        {'id': 'shipping', 'label': 'Shipping'},
+        {'id': 'in_transit', 'label': 'In Transit'},
+        {'id': 'to_receive', 'label': 'To Be Received'},
+        {'id': 'delivered', 'label': 'Delivered'},
+        {'id': 'completed', 'label': 'Completed'},
+    ]
+
+    now = datetime.utcnow()
     sample_orders = [
         {
-            'id': 'ORD-2024-001',
-            'date': 'November 20, 2024',
-            'status': 'delivered',
-            'total': 914.00,
+            'id': 'ORD-2024-3412',
+            'placed_at': now - timedelta(days=1, hours=3),
+            'status': 'pending',
+            'status_message': 'Awaiting payment confirmation',
+            'total': 1899.00,
             'items': [
                 {
                     'id': 1,
-                    'name': 'Premium Cotton T-Shirt',
-                    'variant': 'Color: Navy Blue, Size: M',
-                    'price': 899.00,
+                    'name': 'PopFlex - Pirouette Skort',
+                    'variant': 'Cool White · L',
+                    'price': 1899.00,
                     'quantity': 1,
-                    'image': '/static/image/banner.png'
+                    'image': '/static/uploads/products/sample_skirt.png'
                 }
             ],
-            'reviews': [
-                {
-                    'reviewer': 'Maria S.',
-                    'date': 'November 22, 2024',
-                    'ratings': {'product': 5, 'store': 4, 'delivery': 5},
-                    'content': 'Excellent quality t-shirt! The fabric is soft and comfortable.',
-                    'photos': ['/static/image/banner.png', '/static/image/banner.png']
-                }
-            ]
+            'timeline': {
+                'next_action': 'Complete payment to proceed with shipping',
+                'eta': None
+            }
         },
         {
-            'id': 'ORD-2024-002',
-            'date': 'November 25, 2024',
-            'status': 'processing',
-            'total': 1314.00,
+            'id': 'ORD-2024-3375',
+            'placed_at': now - timedelta(days=3),
+            'status': 'shipping',
+            'status_message': 'Package is being prepared by the seller',
+            'total': 2499.00,
             'items': [
                 {
                     'id': 2,
-                    'name': 'Casual Denim Jeans',
-                    'variant': 'Color: Dark Blue, Size: 32',
-                    'price': 1299.00,
+                    'name': 'AeroCore Running Shoes',
+                    'variant': 'Slate Gray · 42',
+                    'price': 2499.00,
                     'quantity': 1,
-                    'image': '/static/image/banner.png'
+                    'image': '/static/uploads/products/sample_shoes.png'
                 }
             ],
-            'reviews': []
+            'timeline': {
+                'next_action': 'Seller will hand this to the courier soon',
+                'eta': (now + timedelta(days=2)).strftime('%b %d, %Y')
+            }
+        },
+        {
+            'id': 'ORD-2024-3321',
+            'placed_at': now - timedelta(days=5),
+            'status': 'in_transit',
+            'status_message': 'Courier has picked up the parcel',
+            'total': 1420.00,
+            'tracking_number': 'JPX123456789',
+            'items': [
+                {
+                    'id': 3,
+                    'name': 'Zenlinen Relax Tee',
+                    'variant': 'Moss Green · M',
+                    'price': 710.00,
+                    'quantity': 2,
+                    'image': '/static/uploads/products/sample_top.png'
+                }
+            ],
+            'timeline': {
+                'next_action': 'Currently with courier – expect delivery soon',
+                'eta': (now + timedelta(days=1)).strftime('%b %d, %Y')
+            }
+        },
+        {
+            'id': 'ORD-2024-3278',
+            'placed_at': now - timedelta(days=7),
+            'status': 'to_receive',
+            'status_message': 'Out for delivery',
+            'total': 985.00,
+            'tracking_number': 'PHL556677889',
+            'items': [
+                {
+                    'id': 4,
+                    'name': 'CozyKnit Lounge Pants',
+                    'variant': 'Charcoal · L',
+                    'price': 985.00,
+                    'quantity': 1,
+                    'image': '/static/uploads/products/sample_pants.png'
+                }
+            ],
+            'timeline': {
+                'next_action': 'Please be available to receive your parcel',
+                'eta': now.strftime('%b %d, %Y')
+            }
+        },
+        {
+            'id': 'ORD-2024-3204',
+            'placed_at': now - timedelta(days=10),
+            'status': 'delivered',
+            'status_message': 'Delivered successfully',
+            'delivered_at': now - timedelta(days=2),
+            'review_deadline': (now - timedelta(days=2)) + timedelta(days=7),
+            'total': 2050.00,
+            'items': [
+                {
+                    'id': 5,
+                    'name': 'Aurora Silk Dress',
+                    'variant': 'Rose Dawn · S',
+                    'price': 2050.00,
+                    'quantity': 1,
+                    'image': '/static/uploads/products/sample_dress.png',
+                    'is_reviewed': False
+                }
+            ],
+            'timeline': {
+                'next_action': 'Write a review within 7 days',
+                'eta': None
+            }
+        },
+        {
+            'id': 'ORD-2024-3011',
+            'placed_at': now - timedelta(days=20),
+            'status': 'completed',
+            'status_message': 'Automatically completed after review window',
+            'delivered_at': now - timedelta(days=12),
+            'review_deadline': (now - timedelta(days=12)) + timedelta(days=7),
+            'total': 1599.00,
+            'items': [
+                {
+                    'id': 6,
+                    'name': 'Lumina Wireless Earbuds',
+                    'variant': 'Frost White',
+                    'price': 1599.00,
+                    'quantity': 1,
+                    'image': '/static/uploads/products/sample_earbuds.png',
+                    'is_reviewed': True,
+                    'review': {
+                        'rating': 5,
+                        'title': 'Crystal clear sound',
+                        'comment': 'Battery easily lasts my daily commute.'
+                    }
+                }
+            ],
+            'timeline': {
+                'next_action': 'Order completed',
+                'eta': None
+            }
         }
     ]
-    
+
+    statuses_data = {tab['id']: {'orders': []} for tab in status_tabs}
+    status_counts = {tab['id']: 0 for tab in status_tabs}
+
+    for order in sample_orders:
+        status_key = order['status']
+        if status_key not in statuses_data:
+            continue
+        review_deadline = order.get('review_deadline')
+        if review_deadline:
+            remaining_days = (review_deadline - now).days
+            order['review_days_left'] = max(0, remaining_days)
+            order['auto_complete_on'] = review_deadline.strftime('%b %d, %Y')
+            order['auto_completed'] = review_deadline < now and status_key == 'completed'
+        statuses_data[status_key]['orders'].append(order)
+        status_counts[status_key] += 1
+
+    if selected_status not in statuses_data:
+        selected_status = 'pending'
+
     return render_template(
         'main/my_purchases.html',
         nav_items=nav_items,
-        orders=sample_orders
+        status_tabs=status_tabs,
+        statuses_data=statuses_data,
+        status_counts=status_counts,
+        selected_status=selected_status,
+        now=now
     )
-
-@main.route('/test/color-selection')
-def test_color_selection():
-    """Test page for color selection debugging"""
-    return """<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Color Selection Test - DEBUGGING</title>
-    <style>
-        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
-        .test-container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
-        .color-section { margin-bottom: 30px; }
-        .section-label { font-weight: bold; margin-bottom: 15px; display: block; font-size: 16px; }
-        .selected-color { color: #8e44ad; margin-left: 10px; }
-        .color-options { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
-        .color-option { width: 60px; height: 60px; border-radius: 50%; border: 3px solid #ddd; cursor: pointer; transition: all 0.3s ease; position: relative; }
-        .color-option.active { border-color: #8e44ad !important; transform: scale(1.1) !important; box-shadow: 0 0 0 3px rgba(142, 68, 173, 0.3) !important; }
-        .color-option:hover { outline: 2px solid orange; }
-        .debug-clicked { outline: 3px solid red !important; }
-        .size-options { display: flex; gap: 10px; flex-wrap: wrap; min-height: 50px; align-items: center; }
-        .size-option { padding: 10px 15px; border: 2px solid #ddd; background: white; cursor: pointer; transition: all 0.3s ease; border-radius: 5px; font-weight: bold; margin: 5px; }
-        .size-option.active { border-color: #8e44ad !important; background: #8e44ad !important; color: white !important; transform: scale(1.05) !important; }
-        .size-option.out-of-stock { opacity: 0.5; background: #f0f0f0; cursor: not-allowed; }
-        .debug { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px; padding: 15px; margin-top: 20px; font-family: monospace; font-size: 12px; max-height: 300px; overflow-y: auto; }
-        .test-buttons { margin: 20px 0; }
-        .test-btn { background: #007bff; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; margin: 5px; font-size: 14px; }
-        .test-btn:hover { background: #0056b3; }
-        .status { padding: 10px; border-radius: 5px; margin: 10px 0; font-weight: bold; }
-        .status.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .status.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-    </style>
-</head>
-<body>
-    <div class="test-container">
-        <h1>🔧 Color Selection Debug Test</h1>
-        <p><strong>This is a debugging version with extensive logging.</strong></p>
-        
-        <div id="status" class="status">Initializing...</div>
-        
-        <div class="color-section">
-            <label class="section-label">COLOR <span class="selected-color">Select Color</span></label>
-            <div class="color-options">
-                <button type="button" class="color-option" data-color="Red" data-color-hex="#dc3545" data-stock='{"XS": 5, "S": 3, "M": 8, "L": 2, "XL": 0}' style="background-color: #dc3545;"></button>
-                <button type="button" class="color-option" data-color="Blue" data-color-hex="#007bff" data-stock='{"XS": 2, "S": 0, "M": 4, "L": 6, "XL": 3}' style="background-color: #007bff;"></button>
-                <button type="button" class="color-option" data-color="Green" data-color-hex="#28a745" data-stock='{"XS": 0, "S": 7, "M": 1, "L": 9, "XL": 5}' style="background-color: #28a745;"></button>
-                <button type="button" class="color-option" data-color="Purple" data-color-hex="#8e44ad" data-stock='{"XS": 4, "S": 6, "M": 2, "L": 0, "XL": 8}' style="background-color: #8e44ad;"></button>
-            </div>
-        </div>
-
-        <div class="size-section">
-            <label class="section-label">SIZE</label>
-            <div class="size-options" id="sizeOptions">
-                <div style="color: #666; font-style: italic; padding: 10px;">Select a color to view available sizes</div>
-            </div>
-        </div>
-        
-        <div class="test-buttons">
-            <button class="test-btn" onclick="manualTest()">🧪 Manual Test</button>
-            <button class="test-btn" onclick="autoTest()">🤖 Auto Test</button>
-            <button class="test-btn" onclick="clearLog()">🗑️ Clear Log</button>
-            <button class="test-btn" onclick="showDiagnostics()">🔍 Diagnostics</button>
-        </div>
-        
-        <div class="debug" id="debugOutput">Starting debug log...</div>
-    </div>
-
-    <script>
-        let logCount = 0;
-        function log(...args) { 
-            logCount++;
-            const timestamp = new Date().toLocaleTimeString();
-            const message = `[${logCount}] ${timestamp}: ${args.join(' ')}`;
-            console.log(...args); 
-            const debugOutput = document.getElementById('debugOutput'); 
-            if (debugOutput) { 
-                debugOutput.innerHTML += message + '<br>'; 
-                debugOutput.scrollTop = debugOutput.scrollHeight; 
-            } 
-        }
-        
-        function updateStatus(message, isError = false) {
-            const status = document.getElementById('status');
-            status.textContent = message;
-            status.className = 'status ' + (isError ? 'error' : 'success');
-        }
-        
-        function simpleSelectColor(button) {
-            log("🎯 simpleSelectColor called with:", button.dataset.color);
-            
-            // Visual feedback
-            button.classList.add('debug-clicked');
-            setTimeout(() => button.classList.remove('debug-clicked'), 2000);
-            
-            // Remove active from all
-            document.querySelectorAll('.color-option').forEach(btn => {
-                btn.classList.remove('active');
-                btn.style.transform = '';
-                btn.style.boxShadow = '';
-            });
-            
-            // Add active to clicked
-            button.classList.add('active');
-            button.style.transform = 'scale(1.1)';
-            button.style.boxShadow = '0 0 0 3px rgba(142, 68, 173, 0.3)';
-            
-            // Update text
-            const span = document.querySelector('.selected-color');
-            if (span) span.textContent = button.dataset.color;
-            
-            // Update global state
-            window.selectedColor = button.dataset.color;
-            
-            log('✅ Color selected:', button.dataset.color);
-            updateStatus(`Color "${button.dataset.color}" selected successfully!`);
-            
-            // Load sizes
-            loadSizesForColor(button.dataset.color, button);
-        }
-        
-        function loadSizesForColor(colorName, colorButton) {
-            log('📏 Loading sizes for color:', colorName);
-            const sizeContainer = document.getElementById('sizeOptions');
-            
-            try {
-                const stockData = JSON.parse(colorButton.dataset.stock || '{}');
-                log('📊 Stock data:', JSON.stringify(stockData));
-                
-                sizeContainer.innerHTML = '';
-                const sizes = Object.keys(stockData);
-                
-                sizes.forEach(size => {
-                    const stock = stockData[size];
-                    const sizeBtn = document.createElement('button');
-                    sizeBtn.className = 'size-option' + (stock > 0 ? '' : ' out-of-stock');
-                    sizeBtn.textContent = size + ` (${stock})`;
-                    sizeBtn.dataset.size = size;
-                    sizeBtn.dataset.stock = stock;
-                    sizeBtn.onclick = () => {
-                        log('📐 Size clicked:', size);
-                        document.querySelectorAll('.size-option').forEach(b => b.classList.remove('active'));
-                        sizeBtn.classList.add('active');
-                        window.selectedSize = size;
-                        updateStatus(`Size "${size}" selected!`);
-                    };
-                    sizeContainer.appendChild(sizeBtn);
-                });
-                
-                log(`✅ ${sizes.length} sizes loaded`);
-            } catch (e) {
-                log('❌ Error loading sizes:', e.message);
-                sizeContainer.innerHTML = `<div style="color: red;">Error: ${e.message}</div>`;
-            }
-        }
-        
-        function manualTest() {
-            log('🧪 Manual test - click a color button to test');
-            updateStatus('Manual test mode - click any color button');
-        }
-        
-        function autoTest() {
-            log('🤖 Running automatic test...');
-            const firstColor = document.querySelector('.color-option');
-            if (firstColor) {
-                log('Testing with color:', firstColor.dataset.color);
-                simpleSelectColor(firstColor);
-            } else {
-                log('❌ No color buttons found for auto test');
-                updateStatus('Auto test failed - no color buttons found', true);
-            }
-        }
-        
-        function clearLog() {
-            document.getElementById('debugOutput').innerHTML = 'Log cleared...';
-            logCount = 0;
-        }
-        
-        function showDiagnostics() {
-            log('🔍 DIAGNOSTICS:');
-            log('- Color buttons found:', document.querySelectorAll('.color-option').length);
-            log('- Size container exists:', !!document.getElementById('sizeOptions'));
-            log('- simpleSelectColor type:', typeof simpleSelectColor);
-            log('- Current selected color:', window.selectedColor || 'none');
-            log('- Current selected size:', window.selectedSize || 'none');
-        }
-        
-        // Attach event listeners
-        document.addEventListener('DOMContentLoaded', function() {
-            log('🚀 DOM loaded, attaching listeners...');
-            
-            const colorButtons = document.querySelectorAll('.color-option');
-            colorButtons.forEach((btn, index) => {
-                btn.onclick = function(e) {
-                    log(`🖱️ Click event for button ${index + 1}:`, this.dataset.color);
-                    simpleSelectColor(this);
-                };
-                log(`✅ Listener attached to ${btn.dataset.color}`);
-            });
-            
-            updateStatus('All event listeners attached - ready for testing!');
-            log('🎯 Ready! Try clicking a color button.');
-        });
-    </script>
-</body>
-</html>"""
 
 @main.route('/product/<product_id>')
 def product_detail(product_id):
@@ -2154,64 +2587,34 @@ def get_product_sizes_for_color(product_id, color):
         else:
             # Fallback to variants JSON structure
             try:
-                variants_data = product.variants or {}
-                if isinstance(variants_data, str):
-                    import json
-                    variants_data = json.loads(variants_data)
-                
-                # Handle list format (new structure)
-                if isinstance(variants_data, list):
-                    for variant_info in variants_data:
-                        if isinstance(variant_info, dict) and variant_info.get('color', '').lower() == color.lower():
-                            # Found matching color variant
-                            if 'sizeStocks' in variant_info:
-                                for size_stock in variant_info['sizeStocks']:
-                                    if isinstance(size_stock, dict):
-                                        size_name = size_stock.get('size', 'OS')
-                                        stock_qty = int(size_stock.get('stock', 0))
-                                        sizes_data[size_name] = {
-                                            'stock': stock_qty,
-                                            'available': stock_qty > 0
-                                        }
-                            break
-                
-                # Handle dict format (old structure)
-                elif isinstance(variants_data, dict):
-                    # Look for the color in variants data
-                    color_variant = None
-                    for key, variant_info in variants_data.items():
-                        if key.lower() == color.lower():
-                            color_variant = variant_info
-                            break
-                    
-                    if color_variant and isinstance(color_variant, dict):
-                        # Check if it has sizeStocks array (new structure)
-                        if 'sizeStocks' in color_variant:
-                            for size_stock in color_variant['sizeStocks']:
-                                if isinstance(size_stock, dict):
-                                    size_name = size_stock.get('size', 'OS')
-                                    stock_qty = int(size_stock.get('stock', 0))
-                                    sizes_data[size_name] = {
-                                        'stock': stock_qty,
-                                        'available': stock_qty > 0
-                                    }
-                        # Check if it has stock dict (old structure)
-                        elif 'stock' in color_variant and isinstance(color_variant['stock'], dict):
-                            for size_name, stock_qty in color_variant['stock'].items():
-                                stock_qty = int(stock_qty) if stock_qty else 0
+                variants_data = _parse_variants_structure(product.variants)
+                color_variant = _find_variant_by_color(variants_data, color)
+
+                if color_variant:
+                    stock_info = _build_stock_map_from_variant(color_variant)
+                    if stock_info:
+                        for size_name, stock_qty in stock_info.items():
+                            try:
+                                stock_value = int(stock_qty)
+                            except Exception:
+                                stock_value = int(float(stock_qty) if stock_qty else 0)
+
                             sizes_data[size_name] = {
-                                'stock': stock_qty,
-                                'available': stock_qty > 0
+                                'stock': stock_value,
+                                'available': stock_value > 0
                             }
-                    # Single size variant
                     else:
+                        # Single-size schema fallback
                         size_name = color_variant.get('size', 'One Size')
-                        stock_qty = int(color_variant.get('stock', 0))
+                        try:
+                            stock_value = int(color_variant.get('stock', 0))
+                        except Exception:
+                            stock_value = int(float(color_variant.get('stock', 0)) or 0)
                         sizes_data[size_name] = {
-                            'stock': stock_qty,
-                            'available': stock_qty > 0
+                            'stock': stock_value,
+                            'available': stock_value > 0
                         }
-                        
+
             except Exception as e:
                 print(f"Error parsing variants JSON: {e}")
         

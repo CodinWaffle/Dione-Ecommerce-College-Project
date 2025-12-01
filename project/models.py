@@ -350,6 +350,54 @@ class SellerProduct(db.Model):
     return self
 
 
+class CartItem(db.Model):
+  """Persistent cart item storage for both authenticated and guest buyers."""
+  __tablename__ = 'cart_items'
+
+  id = db.Column(db.Integer, primary_key=True)
+  user_id = db.Column(db.Integer, db.ForeignKey(User.id, ondelete='CASCADE'))
+  session_id = db.Column(db.String(255), index=True)
+  product_id = db.Column(db.Integer, nullable=False, index=True)
+  product_name = db.Column(db.String(255), nullable=False)
+  product_price = db.Column(db.Numeric(10, 2), nullable=False)
+  color = db.Column(db.String(100))
+  size = db.Column(db.String(50))
+  quantity = db.Column(db.Integer, nullable=False, default=1)
+  variant_image = db.Column(db.String(500))
+  seller_id = db.Column(db.Integer, db.ForeignKey(User.id, ondelete='CASCADE'))
+  created_at = db.Column(db.DateTime, nullable=False, server_default=db.func.now())
+  updated_at = db.Column(db.DateTime, nullable=False, server_default=db.func.now(), onupdate=db.func.now())
+
+  user = db.relationship('User', foreign_keys=[user_id], backref='cart_items')
+  seller = db.relationship('User', foreign_keys=[seller_id])
+
+  __table_args__ = (
+    db.CheckConstraint('quantity > 0', name='cart_items_quantity_positive'),
+    db.CheckConstraint('product_price >= 0', name='cart_items_price_positive'),
+    db.UniqueConstraint('user_id', 'session_id', 'product_id', 'color', 'size', name='uniq_cart_item'),
+  )
+
+  def __repr__(self):
+    return f'<CartItem {self.product_name} x{self.quantity}>'
+
+  def to_dict(self):
+    return {
+      'id': self.id,
+      'product_id': self.product_id,
+      'product_name': self.product_name,
+      'product_price': float(self.product_price or 0),
+      'color': self.color,
+      'size': self.size,
+      'quantity': self.quantity,
+      'variant_image': self.variant_image,
+      'seller_id': self.seller_id,
+      'user_id': self.user_id,
+      'session_id': self.session_id,
+      'created_at': self.created_at.isoformat() if self.created_at else None,
+      'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+    }
+
+
 class Warning(db.Model):
   """Records warning emails sent to users by admins."""
   id = db.Column(db.Integer, primary_key=True)
@@ -394,7 +442,11 @@ class ProductVariant(db.Model):
   __tablename__ = 'product_variants'
   
   id = db.Column(db.Integer, primary_key=True)
-  product_id = db.Column(db.Integer, db.ForeignKey('seller_product_management.id'), nullable=False)
+  product_id = db.Column(
+    db.Integer,
+    db.ForeignKey('seller_product_management.id', ondelete='CASCADE'),
+    nullable=False
+  )
   variant_name = db.Column(db.String(255), nullable=False)  # e.g., "Black", "Red"
   variant_sku = db.Column(db.String(255))
   images_json = db.Column(db.JSON)
@@ -429,7 +481,11 @@ class ProductDescription(db.Model):
   __tablename__ = 'product_descriptions'
   
   id = db.Column(db.Integer, primary_key=True)
-  product_id = db.Column(db.Integer, db.ForeignKey('seller_product_management.id'), nullable=False)
+  product_id = db.Column(
+    db.Integer,
+    db.ForeignKey('seller_product_management.id', ondelete='CASCADE'),
+    nullable=False
+  )
   description_text = db.Column(db.Text)
   materials = db.Column(db.Text)
   care_instructions = db.Column(db.Text)
@@ -500,7 +556,11 @@ class OrderItem(db.Model):
   
   id = db.Column(db.Integer, primary_key=True)
   order_id = db.Column(db.Integer, db.ForeignKey('orders.id'), nullable=False)
-  product_id = db.Column(db.Integer, db.ForeignKey('seller_product_management.id'), nullable=False)
+  product_id = db.Column(
+    db.Integer,
+    db.ForeignKey('seller_product_management.id', ondelete='CASCADE'),
+    nullable=False
+  )
   
   # Item details
   product_name = db.Column(db.String(255), nullable=False)

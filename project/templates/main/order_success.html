@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Order Confirmed - Dione</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/buyer_styles/order_success.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/buyer_styles/partials/_header_buyer.css') }}"
+    />
+  </head>
+  <body>
+    {% include 'main/partials/_header_buyer.html' %}
+
+    <main class="success-container">
+      <section class="success-card">
+        <div class="success-icon">
+          <i data-lucide="sparkles"></i>
+        </div>
+        <h1>Thank you for your purchase!</h1>
+        <p class="success-message">
+          Your order has been placed successfully. We emailed a confirmation and we'll keep you posted once it ships.
+        </p>
+
+        <div class="summary-panel">
+          <div class="summary-item">
+            <span class="summary-label">Order number</span>
+            <span class="summary-value">{{ order_summary.order_number }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Items</span>
+            <span class="summary-value">{{ order_summary.items_count }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Subtotal</span>
+            <span class="summary-value">₱{{ '%.2f'|format(order_summary.subtotal|default(0)) }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Delivery fee</span>
+            <span class="summary-value">
+              {% if order_summary.delivery_fee == 0 %}
+              <span class="summary-value">FREE</span>
+              {% else %}
+              ₱{{ '%.2f'|format(order_summary.delivery_fee) }}
+              {% endif %}
+            </span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Total</span>
+            <span class="summary-value summary-total">₱{{ '%.2f'|format(order_summary.total|default(0)) }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Estimated delivery</span>
+            <span class="summary-value">{{ order_summary.estimated_delivery or '3-5 business days' }}</span>
+          </div>
+        </div>
+
+        <div class="action-buttons">
+          <a class="action-primary" href="{{ url_for('main.my_purchases') }}">
+            Track my order
+          </a>
+          <a class="action-secondary" href="{{ url_for('main.index') }}">
+            Continue shopping
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      if (window.lucide) {
+        lucide.createIcons();
+      }
+    </script>
+  </body>
+</html>

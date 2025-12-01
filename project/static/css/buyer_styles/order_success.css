@@ -1,0 +1,141 @@
+:root {
+  --primary: #6c5ce7;
+  --primary-dark: #4e3cd3;
+  --gray-50: #f8fafc;
+  --gray-100: #f1f5f9;
+  --gray-300: #cbd5f5;
+  --gray-500: #64748b;
+  --gray-700: #334155;
+  --white: #ffffff;
+}
+
+body {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--gray-50);
+  color: var(--gray-700);
+  margin: 0;
+}
+
+.success-container {
+  max-width: 960px;
+  margin: 60px auto;
+  padding: 0 24px;
+}
+
+.success-card {
+  background: var(--white);
+  border-radius: 24px;
+  padding: 48px;
+  box-shadow: 0 30px 60px rgba(15, 23, 42, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.08);
+}
+
+.success-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 24px;
+  background: rgba(99, 102, 241, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+  color: var(--primary);
+}
+
+.success-icon i {
+  width: 36px;
+  height: 36px;
+}
+
+h1 {
+  font-size: 2.25rem;
+  margin: 0 0 12px;
+  color: var(--gray-700);
+}
+
+.success-message {
+  font-size: 1.1rem;
+  color: var(--gray-500);
+  margin-bottom: 32px;
+}
+
+.summary-panel {
+  background: var(--gray-100);
+  border-radius: 20px;
+  padding: 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 20px;
+}
+
+.summary-item span {
+  display: block;
+}
+
+.summary-label {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--gray-500);
+  margin-bottom: 6px;
+}
+
+.summary-value {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--gray-700);
+}
+
+.summary-total {
+  font-size: 1.5rem;
+  color: var(--primary);
+}
+
+.action-buttons {
+  margin-top: 40px;
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.action-buttons a {
+  flex: 1 1 240px;
+  text-align: center;
+  padding: 16px;
+  border-radius: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  border: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.action-primary {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: var(--white);
+  box-shadow: 0 12px 24px rgba(99, 102, 241, 0.2);
+}
+
+.action-primary:hover {
+  transform: translateY(-2px);
+}
+
+.action-secondary {
+  background: transparent;
+  border-color: var(--gray-300);
+  color: var(--gray-700);
+}
+
+.action-secondary:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+@media (max-width: 640px) {
+  .success-card {
+    padding: 32px;
+  }
+
+  .action-buttons a {
+    flex-basis: 100%;
+  }
+}
