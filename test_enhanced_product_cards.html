@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Product Cards Test</title>
+    <link rel="stylesheet" href="project/static/css/buyer_styles/components/product_card.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f8fafc;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: #1f2937;
+            margin-bottom: 2rem;
+        }
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Enhanced Product Cards - Improved Design & Database Colors</h1>
+        
+        <div class="test-grid" id="productGrid">
+            <!-- Products will be populated here -->
+        </div>
+    </div>
+
+    <!-- Product Card Template -->
+    <template id="productCardTemplate">
+        <div class="product-card">
+            <div class="product-image-container">
+                <img src="/placeholder.svg" alt="" class="product-image primary-image" />
+                <img src="/placeholder.svg" alt="" class="product-image secondary-image" />
+
+                <!-- Hover Actions -->
+                <div class="product-actions">
+                    <button class="action-btn cart-btn" aria-label="Add to cart">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="9" cy="21" r="1"></circle>
+                            <circle cx="20" cy="21" r="1"></circle>
+                            <path d="m1 1 4 4 2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                        </svg>
+                    </button>
+                    <button class="action-btn buy-now-btn" aria-label="Buy now">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 12l2 2 4-4"></path>
+                            <path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Product Info -->
+            <div class="product-info">
+                <h3 class="product-name"></h3>
+
+                <!-- Variant Colors -->
+                <div class="product-colors-section">
+                    <div class="product-colors" role="group" aria-label="Available colors">
+                        <!-- Color dots populated dynamically with tooltips -->
+                    </div>
+                </div>
+
+                <!-- Price and Sold Container -->
+                <div class="product-price-container">
+                    <div class="product-price">
+                        <span class="current-price">₱</span>
+                        <span class="original-price"></span>
+                        <span class="discount-badge" style="display: none;"></span>
+                    </div>
+                    <div class="product-sold">
+                        <span class="sold-count">0 sold</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <script src="project/static/js/buyer_scripts/components/product_card.js"></script>
+    <script>
+        // Test data with color variants
+        const testProducts = [
+            {
+                id: 1,
+                name: "Corset Pirouette Dress",
+                price: 3700,
+                originalPrice: 4200,
+                soldCount: 15,
+                primaryImage: "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=400&h=600&fit=crop",
+                secondaryImage: "https://images.unsplash.com/photo-1539008835657-9e8e9680c956?w=400&h=600&fit=crop",
+                variants: [
+                    { color: "Blue Mist", colorHex: "#7a829a", image: "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=400&h=600&fit=crop" },
+                    { color: "Cool White", colorHex: "#ffffff", image: "https://images.unsplash.com/photo-1583743814966-8936f37f4678?w=400&h=600&fit=crop" },
+                    { color: "Black", colorHex: "#000000", image: "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400&h=600&fit=crop" },
+                    { color: "Bubblegum Pink", colorHex: "#f7b8d5", image: "https://images.unsplash.com/photo-1539008835657-9e8e9680c956?w=400&h=600&fit=crop" }
+                ]
+            },
+            {
+                id: 2,
+                name: "Half Zip Warm Up Hoodie",
+                price: 3680,
+                originalPrice: 4600,
+                soldCount: 8,
+                primaryImage: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400&h=600&fit=crop",
+                secondaryImage: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop",
+                variants: [
+                    { color: "Crimson", colorHex: "#841e34", image: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400&h=600&fit=crop" },
+                    { color: "Black", colorHex: "#000000", image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop" },
+                    { color: "Wild Wind", colorHex: "#838fb9", image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=600&fit=crop" },
+                    { color: "Heather Grey", colorHex: "#d4d4d4", image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop" }
+                ]
+            },
+            {
+                id: 3,
+                name: "Pirouette Skort",
+                price: 3330,
+                originalPrice: 3700,
+                soldCount: 22,
+                primaryImage: "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400&h=600&fit=crop",
+                secondaryImage: "https://images.unsplash.com/photo-1583743814966-8936f37f4678?w=400&h=600&fit=crop",
+                variants: [
+                    { color: "Digital Lavender", colorHex: "#d4bde8", image: "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400&h=600&fit=crop" },
+                    { color: "Nordic Blue", colorHex: "#90a0ba", image: "https://images.unsplash.com/photo-1583743814966-8936f37f4678?w=400&h=600&fit=crop" },
+                    { color: "Meadow", colorHex: "#d9d9d9", image: "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=400&h=600&fit=crop" },
+                    { color: "Butter Cream", colorHex: "#fce9a6", image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop" },
+                    { color: "Café-au-Lait", colorHex: "#c3b1a7", image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=600&fit=crop" }
+                ]
+            }
+        ];
+
+        // Initialize products when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeProducts('productGrid', testProducts);
+        });
+
+        // Mock functions for cart functionality
+        function addToBag(id, name, price, size, color, qty) {
+            console.log(`Added to bag: ${name} (${color}) - ₱${price} x${qty}`);
+            alert(`Added "${name}" in ${color} to cart!`);
+        }
+
+        function updateCartCount(count) {
+            console.log(`Cart count updated to: ${count}`);
+        }
+    </script>
+</body>
+</html>

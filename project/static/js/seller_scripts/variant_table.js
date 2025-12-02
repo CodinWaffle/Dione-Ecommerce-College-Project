@@ -15,6 +15,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!variantTableBody) return;
 
     const newRow = document.createElement("tr");
+    newRow.dataset.variant = rowNumber;
     newRow.innerHTML = `
       <td style="padding: 8px; border: 1px solid #e5e7eb; text-align: center; font-weight: 600; color: #6b7280; width: 36px;">
         ${rowNumber}
@@ -117,6 +118,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (numberCell) {
         numberCell.textContent = index + 1;
       }
+      row.dataset.variant = index + 1;
     });
   }
 

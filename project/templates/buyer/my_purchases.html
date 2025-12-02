@@ -19,6 +19,74 @@
     </div>
   </div>
 
+  {% set status_meta = {
+    'pending': {
+      'label': 'Pending',
+      'icon': 'ri-time-line',
+      'tone': 'warning',
+      'desc': 'Awaiting payment confirmation',
+      'progress': 18
+    },
+    'confirmed': {
+      'label': 'Confirmed',
+      'icon': 'ri-shield-check-line',
+      'tone': 'info',
+      'desc': 'Seller is preparing your order',
+      'progress': 32
+    },
+    'shipping': {
+      'label': 'Shipping',
+      'icon': 'ri-truck-line',
+      'tone': 'progress',
+      'desc': 'Parcel is on its way to the courier',
+      'progress': 55
+    },
+    'in_transit': {
+      'label': 'In Transit',
+      'icon': 'ri-roadster-line',
+      'tone': 'progress',
+      'desc': 'Courier picked up your parcel',
+      'progress': 78
+    },
+    'delivered': {
+      'label': 'Delivered',
+      'icon': 'ri-home-smile-line',
+      'tone': 'success',
+      'desc': 'Package successfully delivered',
+      'progress': 100
+    },
+    'to_review': {
+      'label': 'To Review',
+      'icon': 'ri-star-line',
+      'tone': 'muted',
+      'desc': 'Share feedback for delivered items',
+      'progress': 100
+    }
+  } %}
+
+  <div class="summary-grid">
+    <div class="summary-card">
+      <div class="summary-label">Total Orders</div>
+      <div class="summary-value">{{ status_counts.all }}</div>
+      <p>All-time purchases on Dione</p>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">In Progress</div>
+      <div class="summary-value">{{ status_counts.pending + status_counts.confirmed + status_counts.shipping + status_counts.in_transit }}</div>
+      <p>Orders currently moving</p>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">Delivered</div>
+      <div class="summary-value">{{ status_counts.delivered }}</div>
+      <p>Completed orders this account</p>
+    </div>
+    <div class="summary-card highlight">
+      <div class="summary-label">Need Reviews</div>
+      <div class="summary-value">{{ status_counts.to_review }}</div>
+      <p>Share feedback & earn trust</p>
+    </div>
+  </div>
+
   <!-- Order Status Tabs -->
   <div class="order-tabs">
     <div class="tabs-container">
@@ -70,34 +138,36 @@
   <div class="orders-list">
     {% if orders %}
       {% for order in orders %}
+      {% set meta = status_meta.get(order.status, {'label': 'Processing', 'icon': 'ri-loader-4-line', 'tone': 'progress', 'desc': 'We are working on it', 'progress': 40}) %}
       <div class="order-card" data-status="{{ order.status }}" data-order="{{ order.id }}">
-        <!-- Order Header -->
         <div class="order-header">
-          <div class="order-info">
+          <div class="order-id">
             <div class="order-number">
-              <i class="ri-file-list-3-line"></i>
-              <span>Order #{{ order.order_number }}</span>
+              <span class="label">Order ID</span>
+              <strong>#{{ order.order_number }}</strong>
             </div>
             <div class="order-date">
-              <i class="ri-calendar-line"></i>
+              <span class="label">Placed on</span>
               <span>{{ order.created_at.strftime('%B %d, %Y') }}</span>
             </div>
           </div>
-          
-          <div class="order-status">
-            <span class="status-badge status-{{ order.status }}">
-              {% if order.status == 'pending' %}
-                <i class="ri-time-line"></i> Pending
-              {% elif order.status == 'confirmed' %}
-                <i class="ri-check-line"></i> Confirmed
-              {% elif order.status == 'shipping' %}
-                <i class="ri-truck-line"></i> Shipping
-              {% elif order.status == 'in_transit' %}
-                <i class="ri-map-pin-line"></i> In Transit
-              {% elif order.status == 'delivered' %}
-                <i class="ri-home-line"></i> Delivered
-              {% endif %}
-            </span>
+
+          <div class="order-status-chip tone-{{ meta.tone }}">
+            <i class="{{ meta.icon }}"></i>
+            <div>
+              <strong>{{ meta.label }}</strong>
+              <span>{{ meta.desc }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="order-progress">
+          <div class="progress-labels">
+            <span>Order Progress</span>
+            <span>{{ meta.progress }}%</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill status-{{ order.status }}" style="width: {{ meta.progress }}%"></div>
           </div>
         </div>
 
@@ -145,59 +215,49 @@
           {% endfor %}
         </div>
 
-        <!-- Order Summary -->
-        <div class="order-summary">
-          <div class="summary-left">
+        <div class="order-footer">
+          <div class="order-meta">
             {% if order.tracking_number %}
-            <div class="tracking-info">
-              <i class="ri-truck-line"></i>
-              <span>Tracking: {{ order.tracking_number }}</span>
+            <div class="meta-block">
+              <span class="label">Tracking #</span>
+              <strong>{{ order.tracking_number }}</strong>
             </div>
             {% endif %}
-          </div>
-          
-          <div class="summary-right">
-            <div class="total-amount">
-              <span class="label">Total:</span>
-              <span class="amount">₱{{ "%.2f"|format(order.total_amount) }}</span>
+            <div class="meta-block">
+              <span class="label">Total Paid</span>
+              <strong>₱{{ "%.2f"|format(order.total_amount) }}</strong>
             </div>
           </div>
-        </div>
-
-        <!-- Order Actions -->
-        <div class="order-actions">
-          <button class="btn-secondary" onclick="viewOrderDetails({{ order.id }})">
-            <i class="ri-eye-line"></i>
-            View Details
-          </button>
-          
-          {% if order.tracking_number %}
-          <button class="btn-primary" onclick="trackOrder({{ order.id }})">
-            <i class="ri-map-pin-line"></i>
-            Track Order
-          </button>
-          {% endif %}
-          
-          {% if order.status == 'pending' %}
-          <button class="btn-danger" onclick="cancelOrder({{ order.id }})">
-            <i class="ri-close-line"></i>
-            Cancel Order
-          </button>
-          {% endif %}
-          
-          <!-- Reviews Toggle -->
-          <button class="btn-ghost reviews-toggle" onclick="toggleReviews({{ order.id }})">
-            <i class="ri-chat-3-line"></i>
-            <span id="reviews-count-{{ order.id }}">
-              {% set review_count = order.order_items|selectattr('is_reviewed')|list|length %}
-              {% if review_count > 0 %}
-                {{ review_count }} Review{{ 's' if review_count != 1 else '' }}
-              {% else %}
-                Reviews
-              {% endif %}
-            </span>
-            <i class="ri-arrow-down-s-line toggle-icon"></i>
-          </button>
+          <div class="order-actions">
+            <button class="btn-secondary" onclick="viewOrderDetails({{ order.id }})">
+              <i class="ri-eye-line"></i>
+              View Details
+            </button>
+            {% if order.tracking_number %}
+            <button class="btn-primary" onclick="trackOrder({{ order.id }})">
+              <i class="ri-map-pin-line"></i>
+              Track Order
+            </button>
+            {% endif %}
+            {% if order.status == 'pending' %}
+            <button class="btn-danger" onclick="cancelOrder({{ order.id }})">
+              <i class="ri-close-line"></i>
+              Cancel
+            </button>
+            {% endif %}
+            <button class="btn-ghost reviews-toggle" onclick="toggleReviews({{ order.id }})">
+              <i class="ri-chat-3-line"></i>
+              <span id="reviews-count-{{ order.id }}">
+                {% set review_count = order.order_items|selectattr('is_reviewed')|list|length %}
+                {% if review_count > 0 %}
+                  {{ review_count }} Review{{ 's' if review_count != 1 else '' }}
+                {% else %}
+                  Reviews
+                {% endif %}
+              </span>
+              <i class="ri-arrow-down-s-line toggle-icon"></i>
+            </button>
+          </div>
         </div>
 
         <!-- Reviews Dropdown -->

@@ -26,7 +26,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import desc
 
 from project import db
-from project.models import SellerProduct
+from project.models import SellerProduct, ProductVariant, VariantSize
 
 seller_bp = Blueprint('seller', __name__, url_prefix='/seller')
 
@@ -151,6 +151,71 @@ def _recalculate_total_stock(variants):
                 continue
     return max(total, 0)
 
+
+def _sync_product_variants(product, variant_payload):
+    """Persist variants + sizes from JSON payload into normalized tables."""
+    variants_list = _load_variants(variant_payload)
+
+    # Remove existing variants to ensure clean sync
+    ProductVariant.query.filter_by(product_id=product.id).delete(synchronize_session=False)
+    db.session.flush()
+
+    if not variants_list:
+        return
+
+    for variant in variants_list:
+        if not isinstance(variant, dict):
+            continue
+        color = (
+            variant.get('color')
+            or variant.get('variant_name')
+            or variant.get('colorName')
+        )
+        if not color:
+            continue
+
+        variant_images = None
+        if isinstance(variant.get('images'), (list, tuple)):
+            variant_images = variant.get('images')
+        elif variant.get('photo'):
+            variant_images = [variant.get('photo')]
+
+        pv = ProductVariant(
+            product_id=product.id,
+            variant_name=str(color),
+            variant_sku=variant.get('sku') or variant.get('variant_sku'),
+            images_json=variant_images,
+        )
+        db.session.add(pv)
+        db.session.flush()
+
+        size_entries = []
+        size_stocks = variant.get('sizeStocks')
+        if isinstance(size_stocks, list) and size_stocks:
+            size_entries = size_stocks
+        elif variant.get('size'):
+            size_entries = [{
+                'size': variant.get('size'),
+                'stock': variant.get('stock', 0),
+                'sku': variant.get('sku')
+            }]
+
+        for size_entry in size_entries:
+            if not isinstance(size_entry, dict):
+                continue
+            size_label = size_entry.get('size') or size_entry.get('size_label')
+            if not size_label:
+                continue
+            stock_value = _to_int(size_entry.get('stock', 0), 0)
+            sku_value = size_entry.get('sku') or None
+
+            vs = VariantSize(
+                variant_id=pv.id,
+                size_label=str(size_label),
+                stock_quantity=stock_value,
+                sku=sku_value,
+            )
+            db.session.add(vs)
 
 @seller_bp.context_processor
 def inject_seller_profile():
@@ -320,6 +385,10 @@ def _save_product_draft(workflow_data):
         
         current_app.logger.info(f"Adding product to session...")
         db.session.add(product)
+        db.session.flush()
+
+        # Sync normalized variant tables
+        _sync_product_variants(product, product.variants)
         
         current_app.logger.info(f"Committing to database...")
         db.session.commit()
@@ -960,6 +1029,8 @@ def product_update(product_id):
             except Exception:
                 # ignore failures and leave provided total_stock handling below
                 pass
+            db.session.flush()
+            _sync_product_variants(product, product.variants)
         if attributes is not None:
             if not isinstance(attributes, dict):
                 attributes = {}
@@ -1012,6 +1083,8 @@ def add_product_variant(product_id):
         product.variants = variants
         product.total_stock = _recalculate_total_stock(variants)
         db.session.add(product)
+        db.session.flush()
+        _sync_product_variants(product, product.variants)
         db.session.commit()
 
         return jsonify({'success': True, 'variants': variants})
@@ -1038,6 +1111,8 @@ def delete_product_variant(product_id, variant_index):
         product.variants = variants
         product.total_stock = _recalculate_total_stock(variants)
         db.session.add(product)
+        db.session.flush()
+        _sync_product_variants(product, product.variants)
         db.session.commit()
         return jsonify({'success': True, 'variants': variants})
     except Exception as exc:
@@ -1058,9 +1133,18 @@ def dashboard():
 @seller_bp.route('/orders')
 def orders():
     """Seller orders management"""
+    # Load seller orders from DB and pass to template
+    from project.models import Order
+    try:
+        db_orders = Order.query.filter_by(seller_id=current_user.id).order_by(Order.created_at.desc()).all()
+    except Exception as e:
+        print('Error loading seller orders:', e)
+        db_orders = []
+
     return render_template(
         'seller/seller_order_management.html',
-        active_page='orders'
+        active_page='orders',
+        orders=db_orders
     )
 
 

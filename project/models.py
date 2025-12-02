@@ -257,6 +257,8 @@ class Product(db.Model):
       'originalPrice': compare_price if compare_price > price else None,
       'category': self.category,
       'subcategory': self.subcategory,
+      'colors': [],
+      'variants': [],
     }
 
   def __repr__(self):

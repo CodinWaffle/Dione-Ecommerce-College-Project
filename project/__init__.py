@@ -47,6 +47,7 @@ def create_app(config_name='default'):
     from .routes.seller_routes import seller_bp
     from .routes.chat_routes import chat_bp
     from .routes.rider_routes import rider_bp
+    from .routes.buyer_routes import buyer_bp
 
     # Context processor to make current_user available in all templates
     @app.context_processor
@@ -103,6 +104,8 @@ def create_app(config_name='default'):
     app.register_blueprint(chat_bp)
     app.register_blueprint(seller_bp)
     app.register_blueprint(rider_bp)
+    # Register buyer routes (my purchases, reviews, order tracking)
+    app.register_blueprint(buyer_bp)
     # Ensure DB has chat_messages.attachment column for file uploads.
     try:
         with app.app_context():
@@ -138,4 +141,53 @@ def create_app(config_name='default'):
         # If automatic migration fails, log and continue; developer can run alembic
         app.logger.exception('Automatic check/create for chat_messages.is_read failed')
 
+    # Ensure orders table has buyer_id and seller_id columns compatible with models
+    try:
+        with app.app_context():
+            from sqlalchemy import inspect, text
+            inspector = inspect(db.engine)
+            if 'orders' in inspector.get_table_names():
+                cols = [c.get('name') for c in inspector.get_columns('orders')]
+                to_run = []
+                if 'buyer_id' not in cols:
+                    to_run.append("ALTER TABLE orders ADD COLUMN buyer_id INT NULL")
+                if 'seller_id' not in cols:
+                    to_run.append("ALTER TABLE orders ADD COLUMN seller_id INT NULL")
+
+                if to_run:
+                    with db.engine.connect() as conn:
+                        for stmt in to_run:
+                            try:
+                                conn.execute(text(stmt))
+                                conn.commit()
+                                app.logger.info(f'Added column to orders: {stmt}')
+                            except Exception:
+                                app.logger.exception(f'Failed to run: {stmt}')
+
+                        # Backfill buyer_id from legacy user_id if present and buyer_id is NULL
+                        if 'user_id' in cols:
+                            try:
+                                conn.execute(text('UPDATE orders SET buyer_id = user_id WHERE buyer_id IS NULL'))
+                                conn.commit()
+                                app.logger.info('Backfilled orders.buyer_id from orders.user_id')
+                            except Exception:
+                                app.logger.exception('Failed to backfill orders.buyer_id from user_id')
+                        # Ensure shipping_fee exists (models use shipping_fee, legacy schema may use shipping_amount)
+                        if 'shipping_fee' not in cols:
+                            try:
+                                conn.execute(text('ALTER TABLE orders ADD COLUMN shipping_fee DECIMAL(10,2) NULL'))
+                                conn.commit()
+                                app.logger.info('Added orders.shipping_fee column')
+                            except Exception:
+                                app.logger.exception('Failed to add orders.shipping_fee')
+
+                        if 'shipping_amount' in cols and 'shipping_fee' in [c.get('name') for c in inspector.get_columns('orders')]:
+                            try:
+                                conn.execute(text('UPDATE orders SET shipping_fee = shipping_amount WHERE shipping_fee IS NULL'))
+                                conn.commit()
+                                app.logger.info('Backfilled orders.shipping_fee from shipping_amount')
+                            except Exception:
+                                app.logger.exception('Failed to backfill orders.shipping_fee from shipping_amount')
+    except Exception:
+        app.logger.exception('Automatic check/create for orders.buyer_id/seller_id failed')
     return app

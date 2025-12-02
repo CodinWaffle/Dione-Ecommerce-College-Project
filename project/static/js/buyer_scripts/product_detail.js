@@ -1327,7 +1327,19 @@ function addToBag() {
               updatePopupContent(selectedColor, selectedSize, qty, item);
             });
         } else {
-          updatePopupContent(selectedColor, selectedSize, qty, item);
+          // Get seller information from page data
+          const sellerId = window._pageProductData?.seller_id || 
+                          window._pageProductData?.sellerId ||
+                          (window._pageSellerInfo && window._pageSellerInfo.id);
+          
+          // Add seller info to item data for modal
+          const itemWithSeller = {
+            ...item,
+            sellerId: sellerId,
+            productId: productId
+          };
+          
+          updatePopupContent(selectedColor, selectedSize, qty, itemWithSeller);
         }
 
         // update cart counts
@@ -1583,6 +1595,25 @@ function updatePopupContent(color, size, quantity, itemData) {
     itemCount.textContent = `${itemData.cart_count} Item${
       itemData.cart_count > 1 ? "s" : ""
     }`;
+  }
+
+  // Call the new populateCartModal function if available
+  if (typeof window.populateCartModal === 'function') {
+    try {
+      const modalData = {
+        name: productName,
+        price: basePrice,
+        color: (itemData && itemData.color) || color || '',
+        size: (itemData && itemData.size) || size || '',
+        quantity: qty,
+        image: productImageSrc,
+        sellerId: itemData?.sellerId,
+        productId: itemData?.productId || (window._pageProductData && window._pageProductData.id)
+      };
+      window.populateCartModal(modalData);
+    } catch (e) {
+      console.warn('Error calling populateCartModal:', e);
+    }
   }
 
   // Safety fallback: sometimes modal content is rendered/overwritten by other scripts.

@@ -178,6 +178,7 @@
     const serverProducts = {{ (products|tojson) if products is defined else 'null' }};
 
     const finalCategory = categoryFromBreadcrumb || serverCategory || null;
+    const hasCategoryConstraint = Boolean(finalCategory || serverSubcategory);
 
     // Build query string
     const params = new URLSearchParams();
@@ -226,7 +227,13 @@
         renderProductsFromList(products);
         return;
       }
-      // Fallback: fetch any active products regardless of category
+      if (hasCategoryConstraint) {
+        // Respect category-specific routes: show empty state instead of unrelated items
+        renderProductsFromList([]);
+        if (typeof updateProductCount === 'function') updateProductCount();
+        return;
+      }
+      // Fallback: fetch any active products regardless of category (homepage / no category pages)
       fetchAndRender('limit=48').then((fallback) => {
         if (fallback && fallback.length) renderProductsFromList(fallback);
       });

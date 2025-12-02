@@ -116,76 +116,10 @@
       <!-- Recommendations section -->
       <div class="cart-recommendations">
         <h3 class="cart-recommendations-title">Goes well with</h3>
-        <div class="cart-recommendations-grid">
-          <div class="cart-recommendation-item">
-            <div class="cart-recommendation-image">
-              <img
-                src="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=200&h=200&fit=crop"
-                alt="Clippable Nano Pouch"
-                style="
-                  width: 100%;
-                  height: 100%;
-                  object-fit: cover;
-                  border-radius: 8px;
-                "
-              />
-            </div>
-            <div class="cart-recommendation-name">Clippable Nano Pouch</div>
-            <div class="cart-recommendation-price">₱1,200</div>
-          </div>
-          <div class="cart-recommendation-item">
-            <div class="cart-recommendation-image">
-              <img
-                src="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=200&h=200&fit=crop"
-                alt="New Crew Backpack"
-                style="
-                  width: 100%;
-                  height: 100%;
-                  object-fit: cover;
-                  border-radius: 8px;
-                "
-              />
-            </div>
-            <div class="cart-recommendation-name">
-              New Crew Backpack 22L Updated
-            </div>
-            <div class="cart-recommendation-price">₱4,900</div>
-          </div>
-          <div class="cart-recommendation-item">
-            <div class="cart-recommendation-image">
-              <img
-                src="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=200&h=200&fit=crop"
-                alt="Everywhere Backpack"
-                style="
-                  width: 100%;
-                  height: 100%;
-                  object-fit: cover;
-                  border-radius: 8px;
-                "
-              />
-            </div>
-            <div class="cart-recommendation-name">
-              Everywhere Backpack 22L Metal Hardware
-            </div>
-            <div class="cart-recommendation-price">₱4,900</div>
-          </div>
-          <div class="cart-recommendation-item">
-            <div class="cart-recommendation-image">
-              <img
-                src="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=200&h=200&fit=crop"
-                alt="City Essentials Pouch"
-                style="
-                  width: 100%;
-                  height: 100%;
-                  object-fit: cover;
-                  border-radius: 8px;
-                "
-              />
-            </div>
-            <div class="cart-recommendation-name">
-              City Essentials Pouch Mini 2L
-            </div>
-            <div class="cart-recommendation-price">₱1,900</div>
+        <div class="cart-recommendations-grid" id="cartRecommendationsGrid">
+          <!-- Recommendations will be loaded dynamically -->
+          <div class="cart-recommendations-loading">
+            Loading recommendations...
           </div>
         </div>
       </div>
@@ -271,4 +205,127 @@
     .addEventListener("click", function (event) {
       event.stopPropagation();
     });
+
+  // Function to populate cart modal with product data
+  function populateCartModal(productData) {
+    try {
+      // Update product image
+      const productImage = document.getElementById('cartModalProductImage');
+      if (productImage && productData.image) {
+        productImage.src = productData.image;
+        productImage.alt = productData.name || 'Product';
+      }
+
+      // Update product name
+      const productName = document.getElementById('cartModalProductName');
+      if (productName && productData.name) {
+        productName.textContent = productData.name;
+      }
+
+      // Update color
+      const selectedColor = document.getElementById('cartModalSelectedColor');
+      if (selectedColor && productData.color) {
+        selectedColor.textContent = productData.color;
+      }
+
+      // Update size
+      const selectedSize = document.getElementById('cartModalSelectedSize');
+      if (selectedSize && productData.size) {
+        selectedSize.textContent = productData.size;
+      }
+
+      // Update quantity
+      const selectedQuantity = document.getElementById('cartModalSelectedQuantity');
+      if (selectedQuantity && productData.quantity) {
+        selectedQuantity.textContent = productData.quantity;
+      }
+
+      // Update price
+      const productPrice = document.getElementById('cartModalProductPrice');
+      if (productPrice && productData.price) {
+        productPrice.textContent = `₱${parseFloat(productData.price).toLocaleString()}`;
+      }
+
+      // Update subtotal
+      const subtotalAmount = document.getElementById('cartModalSubtotalAmount');
+      if (subtotalAmount && productData.price && productData.quantity) {
+        const subtotal = parseFloat(productData.price) * parseInt(productData.quantity);
+        subtotalAmount.textContent = `₱${subtotal.toLocaleString()}`;
+      }
+
+      // Load seller recommendations
+      if (productData.sellerId && productData.productId) {
+        loadSellerRecommendations(productData.sellerId, productData.productId);
+      }
+
+    } catch (error) {
+      console.error('Error populating cart modal:', error);
+    }
+  }
+
+  // Function to load seller recommendations
+  async function loadSellerRecommendations(sellerId, excludeProductId) {
+    try {
+      const recommendationsGrid = document.getElementById('cartRecommendationsGrid');
+      if (!recommendationsGrid) return;
+
+      // Show loading state
+      recommendationsGrid.innerHTML = '<div class="cart-recommendations-loading">Loading recommendations...</div>';
+
+      // Fetch seller products
+      const response = await fetch(`/api/seller/${sellerId}/products?limit=4&exclude_id=${excludeProductId}`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to load recommendations');
+      }
+
+      const data = await response.json();
+      const products = data.products || [];
+
+      // Clear loading state
+      recommendationsGrid.innerHTML = '';
+
+      if (products.length === 0) {
+        recommendationsGrid.innerHTML = '<div class="cart-recommendations-loading">No other products available from this seller.</div>';
+        return;
+      }
+
+      // Populate recommendations
+      products.forEach(product => {
+        const recommendationItem = document.createElement('div');
+        recommendationItem.className = 'cart-recommendation-item';
+        recommendationItem.style.cursor = 'pointer';
+        
+        recommendationItem.innerHTML = `
+          <div class="cart-recommendation-image">
+            <img
+              src="${product.primaryImage || '/static/image/banner_1.png'}"
+              alt="${product.name}"
+              style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;"
+            />
+          </div>
+          <div class="cart-recommendation-name">${product.name}</div>
+          <div class="cart-recommendation-price">₱${parseFloat(product.price).toLocaleString()}</div>
+        `;
+
+        // Add click handler to navigate to product
+        recommendationItem.addEventListener('click', () => {
+          window.location.href = `/product/${product.id}`;
+        });
+
+        recommendationsGrid.appendChild(recommendationItem);
+      });
+
+    } catch (error) {
+      console.error('Error loading seller recommendations:', error);
+      const recommendationsGrid = document.getElementById('cartRecommendationsGrid');
+      if (recommendationsGrid) {
+        recommendationsGrid.innerHTML = '<div class="cart-recommendations-loading">Failed to load recommendations.</div>';
+      }
+    }
+  }
+
+  // Make functions globally available
+  window.populateCartModal = populateCartModal;
+  window.loadSellerRecommendations = loadSellerRecommendations;
 </script>

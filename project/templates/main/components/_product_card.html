@@ -20,11 +20,22 @@ component #} {# Usage: Include in the page where you want to use product cards
       <!-- Hover Actions -->
       <div class="product-actions">
         <button
-          class="action-btn wishlist-btn"
-          aria-label="Add to wishlist"
+          class="action-btn cart-btn"
+          aria-label="Add to cart"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+            <circle cx="9" cy="21" r="1"></circle>
+            <circle cx="20" cy="21" r="1"></circle>
+            <path d="m1 1 4 4 2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+          </svg>
+        </button>
+        <button
+          class="action-btn buy-now-btn"
+          aria-label="Buy now"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 12l2 2 4-4"></path>
+            <path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z"></path>
           </svg>
         </button>
       </div>
@@ -34,38 +45,23 @@ component #} {# Usage: Include in the page where you want to use product cards
     <div class="product-info">
       <h3 class="product-name"></h3>
 
-      <!-- Rating -->
-      <div class="product-rating">
-        <div class="stars" aria-hidden="true">
-          <svg class="star" width="12" height="12" viewBox="0 0 24 24" fill="#fbbf24">
-            <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
-          </svg>
-          <svg class="star" width="12" height="12" viewBox="0 0 24 24" fill="#fbbf24">
-            <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
-          </svg>
-          <svg class="star" width="12" height="12" viewBox="0 0 24 24" fill="#fbbf24">
-            <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
-          </svg>
-          <svg class="star" width="12" height="12" viewBox="0 0 24 24" fill="#fbbf24">
-            <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
-          </svg>
-          <svg class="star" width="12" height="12" viewBox="0 0 24 24" fill="#e5e7eb">
-            <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
-          </svg>
-        </div>
-        <span class="rating-value">4.4 (42)</span>
-      </div>
-
-      <!-- Price Container -->
-      <div class="product-price">
-        <span class="current-price">₱</span>
-        <span class="original-price"></span>
-        <span class="discount-badge" style="display: none;"></span>
-      </div>
-
       <!-- Variant Colors -->
-      <div class="product-colors" role="group" aria-label="Available colors">
-        <!-- buttons populated dynamically -->
+      <div class="product-colors-section">
+        <div class="product-colors" role="group" aria-label="Available colors">
+          <!-- Color dots populated dynamically with tooltips -->
+        </div>
+      </div>
+
+      <!-- Price and Sold Container -->
+      <div class="product-price-container">
+        <div class="product-price">
+          <span class="current-price">₱</span>
+          <span class="original-price"></span>
+          <span class="discount-badge" style="display: none;"></span>
+        </div>
+        <div class="product-sold">
+          <span class="sold-count">0 sold</span>
+        </div>
       </div>
     </div>
   </div>

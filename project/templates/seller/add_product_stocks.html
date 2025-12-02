@@ -88,7 +88,7 @@ extra_css %}
                 </tr>
               </thead>
               <tbody id="variantTableBody">
-                <tr>
+                <tr data-variant="1">
                   <td
                     style="
                       padding: 8px;
@@ -1381,10 +1381,17 @@ extra_css %}
     collectSizeStockData(variantNumber) {
       const sizes = [];
 
-      // First, try to find the variant row
-      const variantRow = document.querySelector(
-        `tr[data-variant="${variantNumber}"], #variantTableBody tr:nth-child(${variantNumber})`
-      );
+      const tableBody = document.getElementById("variantTableBody");
+      let variantRow = null;
+      if (tableBody) {
+        variantRow = tableBody.querySelector(`tr[data-variant="${variantNumber}"]`);
+        if (!variantRow) {
+          const rows = tableBody.querySelectorAll("tr");
+          if (rows[variantNumber - 1]) {
+            variantRow = rows[variantNumber - 1];
+          }
+        }
+      }
 
       if (variantRow) {
         // Look for size-stock inputs (created by the size modal)

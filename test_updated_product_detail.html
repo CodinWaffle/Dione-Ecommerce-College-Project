@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Updated Product Detail - Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #fff;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            gap: 40px;
+            align-items: flex-start;
+        }
+
+        .product-images {
+            flex: 1;
+            max-width: 500px;
+        }
+
+        .main-image {
+            width: 100%;
+            height: 600px;
+            background-color: #f8f8f8;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .main-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .thumbnail-images {
+            display: flex;
+            gap: 10px;
+        }
+
+        .thumbnail {
+            width: 80px;
+            height: 80px;
+            border-radius: 4px;
+            border: 2px solid #ddd;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .thumbnail.active {
+            border-color: #8e44ad;
+        }
+
+        .product-details {
+            flex: 1;
+            max-width: 500px;
+        }
+
+        .breadcrumb {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .breadcrumb a {
+            color: #666;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            color: #8e44ad;
+        }
+
+        .product-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .price-section {
+            margin-bottom: 20px;
+        }
+
+        .price-container {
+            display: flex;
+            align-items: baseline;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .price-main {
+            font-size: 42px;
+            font-weight: 700;
+            color: #000;
+        }
+
+        .currency {
+            font-size: 16px;
+            font-weight: normal;
+        }
+
+        .original-price {
+            text-decoration: line-through;
+            color: #999;
+            font-size: 18px;
+        }
+
+        .discount-badge {
+            background-color: #8e44ad;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .sales-section {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .sold-container {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .sold-text {
+            font-weight: 500;
+        }
+
+        .color-section {
+            margin-bottom: 30px;
+        }
+
+        .section-label {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: block;
+            color: #333;
+        }
+
+        .selected-color {
+            font-weight: 400;
+            color: #666;
+            margin-left: 8px;
+        }
+
+        .color-options {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .color-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #ddd;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .color-option:hover {
+            border-color: #8e44ad;
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(142, 68, 173, 0.3);
+        }
+
+        .color-option.active {
+            border-color: #8e44ad !important;
+            transform: scale(1.1) !important;
+            box-shadow: 0 0 0 3px rgba(142, 68, 173, 0.3) !important;
+            z-index: 10;
+        }
+
+        .size-section {
+            margin-bottom: 30px;
+        }
+
+        .size-options {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .size-option {
+            padding: 8px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            background: white;
+            transition: all 0.2s;
+        }
+
+        .size-option:hover {
+            border-color: #8e44ad;
+        }
+
+        .size-option.active {
+            background-color: #8e44ad;
+            color: white;
+            border-color: #8e44ad;
+        }
+
+        .quantity-section {
+            margin-bottom: 25px;
+        }
+
+        .quantity-controls-group {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .quantity-selector {
+            display: flex;
+            align-items: center;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .quantity-btn {
+            width: 40px;
+            height: 40px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .quantity-input {
+            width: 40px;
+            height: 40px;
+            border: none;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        .stock-section {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .stock-indicator {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .add-to-bag-btn {
+            background-color: #000;
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .add-to-bag-btn:hover {
+            background-color: #333;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .shipping-info {
+            margin: 20px 0;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Product Images Section -->
+        <div class="product-images">
+            <div class="main-image">
+                <img src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=500&h=600&fit=crop" alt="Product Image">
+            </div>
+            <div class="thumbnail-images">
+                <img src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=80&h=80&fit=crop" class="thumbnail active" alt="Thumbnail 1">
+                <img src="https://images.unsplash.com/photo-1549298916-b41d501d3772?w=80&h=80&fit=crop" class="thumbnail" alt="Thumbnail 2">
+                <img src="https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=80&h=80&fit=crop" class="thumbnail" alt="Thumbnail 3">
+            </div>
+        </div>
+
+        <!-- Product Details Section -->
+        <div class="product-details">
+            <!-- Breadcrumb -->
+            <nav class="breadcrumb">
+                <a href="#">Home</a> > <a href="#">Tops</a> > <span>Premium Cotton T-Shirt</span>
+            </nav>
+
+            <!-- Product Title -->
+            <h1 class="product-title">Premium Cotton T-Shirt</h1>
+
+            <!-- Price Section -->
+            <div class="price-section">
+                <div class="price-container">
+                    <div class="price-main">
+                        ₱3,330
+                        <span class="currency">PHP</span>
+                    </div>
+                    <span class="original-price">₱3,700</span>
+                    <span class="discount-badge">10% OFF</span>
+                </div>
+
+                <!-- Sales Section -->
+                <div class="sales-section">
+                    <div class="sold-container">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2">
+                            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <path d="M16 10a4 4 0 0 1-8 0"></path>
+                        </svg>
+                        <span class="sold-text">428 sold</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Color Selection -->
+            <div class="color-section">
+                <label class="section-label">
+                    COLOR
+                    <span class="selected-color">Select Color</span>
+                </label>
+                <div class="color-options">
+                    <button class="color-option active" style="background-color: #000000;" onclick="selectColor(this, 'Black')" title="Black"></button>
+                    <button class="color-option" style="background-color: #ffffff; border-color: #ccc;" onclick="selectColor(this, 'White')" title="White"></button>
+                    <button class="color-option" style="background-color: #ef4444;" onclick="selectColor(this, 'Red')" title="Red"></button>
+                    <button class="color-option" style="background-color: #3b82f6;" onclick="selectColor(this, 'Blue')" title="Blue"></button>
+                </div>
+            </div>
+
+            <!-- Size Selection -->
+            <div class="size-section">
+                <label class="section-label">SIZE</label>
+                <div class="size-options">
+                    <button class="size-option" onclick="selectSize(this, 'XS')">XS</button>
+                    <button class="size-option active" onclick="selectSize(this, 'S')">S</button>
+                    <button class="size-option" onclick="selectSize(this, 'M')">M</button>
+                    <button class="size-option" onclick="selectSize(this, 'L')">L</button>
+                    <button class="size-option" onclick="selectSize(this, 'XL')">XL</button>
+                </div>
+            </div>
+
+            <!-- Shipping Info -->
+            <div class="shipping-info">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1565c0" stroke-width="2">
+                    <rect x="1" y="3" width="15" height="13"></rect>
+                    <path d="m16 6 4 4v6"></path>
+                    <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                    <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                </svg>
+                <span>Free shipping on orders over ₱2,000 | Easy returns within 30 days</span>
+            </div>
+
+            <!-- Quantity Section -->
+            <div class="quantity-section">
+                <label class="section-label">QUANTITY</label>
+                <div class="quantity-controls-group">
+                    <div class="quantity-selector">
+                        <button class="quantity-btn" onclick="decreaseQuantity()">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                        </button>
+                        <input type="number" class="quantity-input" value="1" min="1" max="10" id="quantityInput">
+                        <button class="quantity-btn" onclick="increaseQuantity()">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="stock-section">
+                        <span class="stock-indicator">25</span>
+                        <span class="stock-label">in stock</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add to Bag Button -->
+            <button class="add-to-bag-btn" onclick="addToBag()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <path d="M16 10a4 4 0 0 1-8 0"></path>
+                </svg>
+                ADD TO BAG
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function selectColor(button, colorName) {
+            // Remove active class from all color options
+            document.querySelectorAll('.color-option').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Add active class to clicked button
+            button.classList.add('active');
+            
+            // Update selected color text
+            document.querySelector('.selected-color').textContent = colorName;
+            
+            console.log('Selected color:', colorName);
+        }
+
+        function selectSize(button, sizeName) {
+            // Remove active class from all size options
+            document.querySelectorAll('.size-option').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Add active class to clicked button
+            button.classList.add('active');
+            
+            console.log('Selected size:', sizeName);
+        }
+
+        function decreaseQuantity() {
+            const input = document.getElementById('quantityInput');
+            const currentValue = parseInt(input.value);
+            if (currentValue > 1) {
+                input.value = currentValue - 1;
+            }
+        }
+
+        function increaseQuantity() {
+            const input = document.getElementById('quantityInput');
+            const currentValue = parseInt(input.value);
+            const maxValue = parseInt(input.max);
+            if (currentValue < maxValue) {
+                input.value = currentValue + 1;
+            }
+        }
+
+        function addToBag() {
+            const selectedColor = document.querySelector('.color-option.active')?.title || 'No color selected';
+            const selectedSize = document.querySelector('.size-option.active')?.textContent || 'No size selected';
+            const quantity = document.getElementById('quantityInput').value;
+            
+            alert(`Added to bag:\nColor: ${selectedColor}\nSize: ${selectedSize}\nQuantity: ${quantity}`);
+        }
+    </script>
+</body>
+</html>

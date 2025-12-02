@@ -472,48 +472,58 @@ body {
   }
 }
 
-.color-option.color-circle {
-  width: 52px;
-  height: 52px;
+/* Updated color option styles to match product card design */
+.color-option {
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  border: 3px solid #e5e7eb;
+  border: 2px solid #ddd;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
   position: relative;
-  background-clip: padding-box;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
 }
 
-.color-option.color-circle::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  border-radius: 50%;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.3) 0%,
-    rgba(255, 255, 255, 0) 50%,
-    rgba(0, 0, 0, 0.1) 100%
-  );
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.color-option.color-circle:hover:not(.disabled) {
-  transform: scale(1.2) translateY(-4px);
+.color-option:hover:not(.disabled) {
   border-color: #8e44ad;
-  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2), 0 6px 15px rgba(142, 68, 173, 0.3),
-    0 0 0 1px rgba(142, 68, 173, 0.1);
-  z-index: 5;
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(142, 68, 173, 0.3);
 }
 
-.color-option.color-circle:hover:not(.disabled)::before {
-  opacity: 1;
+.color-option.active {
+  border-color: #8e44ad !important;
+  transform: scale(1.1) !important;
+  box-shadow: 0 0 0 3px rgba(142, 68, 173, 0.3) !important;
+  z-index: 10;
+}
+
+.color-option.disabled,
+.color-option.out-of-stock {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.color-option .oos-overlay {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: #dc143c;
+  color: white;
+  font-size: 10px;
+  padding: 1px 3px;
+  border-radius: 50%;
+  font-weight: bold;
+  z-index: 1;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
 }
 
 .color-option.color-circle:hover::after {
@@ -1528,4 +1538,90 @@ body {
   height: 1px;
   background: #dc3545;
   transform: translateY(-50%);
+}
+/* C
+olor dots styling similar to product cards */
+.product-colors {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.color-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid #ddd;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.color-dot:hover {
+  border-color: #8e44ad;
+  transform: scale(1.1);
+}
+
+.color-dot.active {
+  border-color: #8e44ad;
+  transform: scale(1.1);
+  box-shadow: 0 0 0 2px rgba(142, 68, 173, 0.3);
+}
+
+/* Enhanced add to bag button */
+.add-to-bag-btn {
+  background-color: #000 !important;
+  color: white !important;
+  border: none !important;
+  padding: 16px 32px !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+  margin-top: 20px !important;
+  width: 100% !important;
+  transition: all 0.3s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 12px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+}
+
+.add-to-bag-btn:hover {
+  background-color: #333 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+}
+
+.add-to-bag-btn:active {
+  transform: translateY(0) !important;
+}
+
+.add-to-bag-btn:disabled {
+  background-color: #ccc !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Sales section styling */
+.sales-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.sold-container {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.sold-text {
+  font-weight: 500;
 }

@@ -262,7 +262,7 @@ current_user.is_authenticated and (current_user.role|default('buyer') ==
             <span>My Account</span>
           </a>
           <a
-            href="{{ url_for('main.profile') }}?tab=purchases"
+            href="{{ url_for('buyer.my_purchases') }}"
             class="profile-dropdown-item"
           >
             <span>My purchase</span>

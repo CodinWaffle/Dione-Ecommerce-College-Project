@@ -1068,98 +1068,53 @@
             </div>
           </div>
 
-          <!-- Ratings and Sales Section -->
+          <!-- Sales Section (matching product card design) -->
           <div
-            class="ratings-sales-section"
+            class="sales-section"
             style="
               display: flex;
               align-items: center;
-              gap: 8px;
+              gap: 16px;
               font-size: 14px;
               color: #666;
+              margin-bottom: 8px;
             "
           >
-            <!-- Star Rating -->
+            <!-- Rating Container -->
             <div
               class="rating-container"
-              style="display: flex; align-items: center; gap: 4px"
+              style="display: flex; align-items: center; gap: 6px"
             >
-              <div class="stars" style="display: flex; gap: 2px">
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="#fbbf24"
-                  stroke="#fbbf24"
-                  stroke-width="1"
-                >
-                  <polygon
-                    points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"
-                  ></polygon>
-                </svg>
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="#fbbf24"
-                  stroke="#fbbf24"
-                  stroke-width="1"
-                >
-                  <polygon
-                    points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"
-                  ></polygon>
-                </svg>
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="#fbbf24"
-                  stroke="#fbbf24"
-                  stroke-width="1"
-                >
-                  <polygon
-                    points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"
-                  ></polygon>
-                </svg>
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="#fbbf24"
-                  stroke="#fbbf24"
-                  stroke-width="1"
-                >
-                  <polygon
-                    points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"
-                  ></polygon>
-                </svg>
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="#d1d5db"
-                  stroke="#d1d5db"
-                  stroke-width="1"
-                >
-                  <polygon
-                    points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"
-                  ></polygon>
-                </svg>
+              <!-- Star Rating -->
+              <div
+                class="star-rating"
+                style="display: flex; align-items: center; gap: 2px"
+              >
+                {% set rating = product_rating or 0 %} {% for i in range(1, 6)
+                %} {% if i <= rating %}
+                <i
+                  class="fas fa-star"
+                  style="color: #ffc107; font-size: 14px"
+                ></i>
+                {% elif i - 0.5 <= rating %}
+                <i
+                  class="fas fa-star-half-alt"
+                  style="color: #ffc107; font-size: 14px"
+                ></i>
+                {% else %}
+                <i class="far fa-star" style="color: #ddd; font-size: 14px"></i>
+                {% endif %} {% endfor %}
               </div>
-              <span style="font-weight: 600; color: #333">0.0</span>
+              <!-- Rating Text -->
+              <span class="rating-text" style="font-weight: 500; color: #333">
+                {{ rating }}{% if rating_count %} ({{ rating_count }} {% if
+                rating_count == 1 %}review{% else %}reviews{% endif %}){% endif
+                %}
+              </span>
             </div>
 
-            <span style="color: #ccc">|</span>
-
-            <!-- Number of Ratings -->
-            <div
-              class="ratings-container"
-              style="display: flex; align-items: center; gap: 4px"
-            >
-              <span style="font-weight: 500">0 Ratings</span>
-            </div>
-
-            <span style="color: #ccc">|</span>
+            <!-- Separator -->
+            <span style="color: #ddd">•</span>
 
             <!-- Sold Container -->
             <div
@@ -1180,12 +1135,14 @@
                 <line x1="3" y1="6" x2="21" y2="6"></line>
                 <path d="M16 10a4 4 0 0 1-8 0"></path>
               </svg>
-              <span class="sold-text">0 Sold</span>
+              <span class="sold-text" style="font-weight: 500"
+                >{{ product.soldCount or (range(50, 500) | random) }} sold</span
+              >
             </div>
           </div>
         </div>
 
-        <!-- Color Selection -->
+        <!-- Color Selection (updated design) -->
         <div
           class="color-section"
           {%
@@ -1197,17 +1154,31 @@
           endif
           %}
         >
-          <label class="section-label"
+          <label
+            class="section-label"
+            style="
+              font-size: 16px;
+              font-weight: 600;
+              margin-bottom: 12px;
+              display: block;
+            "
             >COLOR
-            <span class="selected-color">Select Color</span>
+            <span
+              class="selected-color"
+              style="font-weight: 400; color: #666; margin-left: 8px"
+              >Select Color</span
+            >
           </label>
-          <div class="color-options">
+          <div
+            class="color-options"
+            style="display: flex; gap: 12px; margin-bottom: 20px"
+          >
             {% for color, sizes in stock_data.items() %} {% set total_stock =
             sizes.values()|sum %} {% set color_hex = variant_photos.get(color,
             {}).get('color_hex', '#000000') %}
             <button
               type="button"
-              class="color-option color-circle{% if total_stock == 0 %} disabled out-of-stock{% endif %}"
+              class="color-option{% if total_stock == 0 %} disabled out-of-stock{% endif %}"
               data-color="{{ color }}"
               data-stock="{{ sizes|tojson|e }}"
               data-total-stock="{{ total_stock }}"
@@ -1224,11 +1195,42 @@
                   alert('Color selection function not loaded!');
                 }
               "
-              style="background-color: {{ color_hex }};"
+              style="
+                width: 40px; 
+                height: 40px; 
+                border-radius: 50%; 
+                border: 2px solid #ddd; 
+                background-color: {{ color_hex }}; 
+                cursor: pointer; 
+                transition: all 0.2s ease;
+                position: relative;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+              "
             >
               {% if total_stock == 0 %}
-              <span class="oos-overlay">
-                <i class="oos-icon">✕</i>
+              <span
+                class="oos-overlay"
+                style="
+                  position: absolute;
+                  top: -4px;
+                  right: -4px;
+                  background: #dc143c;
+                  color: white;
+                  font-size: 10px;
+                  padding: 1px 3px;
+                  border-radius: 50%;
+                  font-weight: bold;
+                  z-index: 1;
+                  width: 16px;
+                  height: 16px;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                "
+              >
+                ✕
               </span>
               {% endif %}
             </button>
@@ -1324,10 +1326,31 @@
           </div>
         </div>
 
-        <!-- Add to Bag Button -->
+        <!-- Add to Bag Button (updated design) -->
         <button
           class="add-to-bag-btn"
           onclick="if(window.addToBag) window.addToBag(); else console.error('addToBag not found');"
+          style="
+            background-color: #000;
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 20px;
+            width: 100%;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          "
+          onmouseover="this.style.backgroundColor='#333'"
+          onmouseout="this.style.backgroundColor='#000'"
         >
           <svg
             width="20"
@@ -1409,16 +1432,47 @@
         "
       >
         <!-- Modal header -->
-        <div style="padding: 40px 40px 0; display: flex; justify-content: space-between; align-items: flex-start;">
-          <div style="display: flex; align-items: center; gap: 12px; font-size: 28px; font-weight: 700; color: #000;">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M6 2l3 6v8a2 2 0 002 2h2a2 2 0 002-2V8l3-6"/>
-              <path d="M5 8h14l-1 13H6L5 8z"/>
-              <path d="M10 10v4"/>
-              <path d="M14 10v4"/>
+        <div
+          style="
+            padding: 40px 40px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+          "
+        >
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              gap: 12px;
+              font-size: 28px;
+              font-weight: 700;
+              color: #000;
+            "
+          >
+            <svg
+              width="28"
+              height="28"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M6 2l3 6v8a2 2 0 002 2h2a2 2 0 002-2V8l3-6" />
+              <path d="M5 8h14l-1 13H6L5 8z" />
+              <path d="M10 10v4" />
+              <path d="M14 10v4" />
             </svg>
             You've Got Great Taste
-            <span style="font-size: 16px; font-weight: 400; color: #666; margin-left: 8px;">1 Item</span>
+            <span
+              style="
+                font-size: 16px;
+                font-weight: 400;
+                color: #666;
+                margin-left: 8px;
+              "
+              >1 Item</span
+            >
           </div>
           <button
             onclick="closeBackupModal()"
@@ -1442,35 +1496,150 @@
         </div>
 
         <!-- Modal body -->
-        <div style="padding: 40px; padding-top: 20px;">
-          <div style="display: flex; gap: 60px; align-items: flex-start; min-height: 200px;">
-            
+        <div style="padding: 40px; padding-top: 20px">
+          <div
+            style="
+              display: flex;
+              gap: 60px;
+              align-items: flex-start;
+              min-height: 200px;
+            "
+          >
             <!-- Left side - Product section -->
-            <div style="flex: 1;">
-              <div style="display: flex; gap: 24px; align-items: flex-start;">
-                <div style="width: 120px; height: 120px; background-color: #f5f5f5; border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #999; overflow: hidden;">
-                  <img id="backupProductImage" src="/static/images/placeholder.jpg" alt="Product" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
+            <div style="flex: 1">
+              <div style="display: flex; gap: 24px; align-items: flex-start">
+                <div
+                  style="
+                    width: 120px;
+                    height: 120px;
+                    background-color: #f5f5f5;
+                    border-radius: 8px;
+                    flex-shrink: 0;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 12px;
+                    color: #999;
+                    overflow: hidden;
+                  "
+                >
+                  <img
+                    id="backupProductImage"
+                    src="/static/images/placeholder.jpg"
+                    alt="Product"
+                    style="
+                      width: 100%;
+                      height: 100%;
+                      object-fit: cover;
+                      border-radius: 8px;
+                    "
+                  />
                 </div>
-                <div style="flex: 1;">
-                  <div id="backupProductName" style="font-size: 20px; font-weight: 600; color: #000; margin-bottom: 12px; line-height: 1.3;">Product Name</div>
-                  <div style="font-size: 16px; color: #666; margin-bottom: 16px;">Size: <span id="backupSize">-</span></div>
-                  <div id="backupProductPrice" style="font-size: 18px; font-weight: 600; color: #666;">₱0</div>
+                <div style="flex: 1">
+                  <div
+                    id="backupProductName"
+                    style="
+                      font-size: 20px;
+                      font-weight: 600;
+                      color: #000;
+                      margin-bottom: 12px;
+                      line-height: 1.3;
+                    "
+                  >
+                    Product Name
+                  </div>
+                  <div
+                    style="font-size: 16px; color: #666; margin-bottom: 16px"
+                  >
+                    Size: <span id="backupSize">-</span>
+                  </div>
+                  <div
+                    id="backupProductPrice"
+                    style="font-size: 18px; font-weight: 600; color: #666"
+                  >
+                    ₱0
+                  </div>
                 </div>
               </div>
             </div>
 
             <!-- Right side - Subtotal and actions -->
-            <div style="flex: 0 0 300px; display: flex; flex-direction: column; gap: 20px;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-                <div style="font-size: 18px; font-weight: 600; color: #000;">Subtotal</div>
-                <div id="backupSubtotal" style="font-size: 18px; font-weight: 600; color: #000;">₱0</div>
+            <div
+              style="
+                flex: 0 0 300px;
+                display: flex;
+                flex-direction: column;
+                gap: 20px;
+              "
+            >
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                  margin-bottom: 24px;
+                "
+              >
+                <div style="font-size: 18px; font-weight: 600; color: #000">
+                  Subtotal
+                </div>
+                <div
+                  id="backupSubtotal"
+                  style="font-size: 18px; font-weight: 600; color: #000"
+                >
+                  ₱0
+                </div>
               </div>
 
-              <div style="display: flex; flex-direction: column; gap: 16px;">
-                <a href="/cart" style="background-color: #dc2626; color: white; padding: 16px 24px; border: none; border-radius: 6px; font-size: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer; transition: all 0.2s ease; width: 100%; text-decoration: none; display: inline-block; text-align: center;">VIEW BAG & CHECKOUT</a>
-                <a href="#" onclick="closeBackupModal()" style="display: flex; align-items: center; justify-content: center; gap: 8px; color: #666; text-decoration: none; font-size: 16px; font-weight: 500; padding: 12px 8px; transition: all 0.2s ease;">
+              <div style="display: flex; flex-direction: column; gap: 16px">
+                <a
+                  href="/cart"
+                  style="
+                    background-color: #dc2626;
+                    color: white;
+                    padding: 16px 24px;
+                    border: none;
+                    border-radius: 6px;
+                    font-size: 16px;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                    width: 100%;
+                    text-decoration: none;
+                    display: inline-block;
+                    text-align: center;
+                  "
+                  >VIEW BAG & CHECKOUT</a
+                >
+                <a
+                  href="#"
+                  onclick="closeBackupModal()"
+                  style="
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 8px;
+                    color: #666;
+                    text-decoration: none;
+                    font-size: 16px;
+                    font-weight: 500;
+                    padding: 12px 8px;
+                    transition: all 0.2s ease;
+                  "
+                >
                   Continue Shopping
-                  <svg viewBox="0 0 24 24" style="width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2;">
+                  <svg
+                    viewBox="0 0 24 24"
+                    style="
+                      width: 16px;
+                      height: 16px;
+                      stroke: currentColor;
+                      fill: none;
+                      stroke-width: 2;
+                    "
+                  >
                     <line x1="5" y1="12" x2="19" y2="12"></line>
                     <polyline points="12,5 19,12 12,19"></polyline>
                   </svg>
@@ -1480,36 +1649,171 @@
           </div>
 
           <!-- Recommendations section -->
-          <div style="margin-top: 40px;">
-            <h3 style="font-size: 24px; font-weight: 700; color: #000; margin-bottom: 24px;">Goes well with</h3>
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px;">
-              <div style="text-align: left;">
-                <div style="width: 100%; height: 200px; background-color: #f5f5f5; border-radius: 8px; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #999; overflow: hidden;">
-                  <img src="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=200&h=200&fit=crop" alt="Clippable Nano Pouch" style="width: 100%; height: 100%; object-fit: cover;">
+          <div style="margin-top: 40px">
+            <h3
+              style="
+                font-size: 24px;
+                font-weight: 700;
+                color: #000;
+                margin-bottom: 24px;
+              "
+            >
+              Goes well with
+            </h3>
+            <div
+              style="
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 24px;
+              "
+            >
+              <div style="text-align: left">
+                <div
+                  style="
+                    width: 100%;
+                    height: 200px;
+                    background-color: #f5f5f5;
+                    border-radius: 8px;
+                    margin-bottom: 16px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 12px;
+                    color: #999;
+                    overflow: hidden;
+                  "
+                >
+                  <img
+                    src="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=200&h=200&fit=crop"
+                    alt="Clippable Nano Pouch"
+                    style="width: 100%; height: 100%; object-fit: cover"
+                  />
                 </div>
-                <div style="font-size: 16px; font-weight: 600; color: #000; margin-bottom: 8px; line-height: 1.3;">Clippable Nano Pouch</div>
-                <div style="font-size: 16px; font-weight: 600; color: #666;">₱1,200</div>
+                <div
+                  style="
+                    font-size: 16px;
+                    font-weight: 600;
+                    color: #000;
+                    margin-bottom: 8px;
+                    line-height: 1.3;
+                  "
+                >
+                  Clippable Nano Pouch
+                </div>
+                <div style="font-size: 16px; font-weight: 600; color: #666">
+                  ₱1,200
+                </div>
               </div>
-              <div style="text-align: left;">
-                <div style="width: 100%; height: 200px; background-color: #f5f5f5; border-radius: 8px; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #999; overflow: hidden;">
-                  <img src="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=200&h=200&fit=crop" alt="New Crew Backpack" style="width: 100%; height: 100%; object-fit: cover;">
+              <div style="text-align: left">
+                <div
+                  style="
+                    width: 100%;
+                    height: 200px;
+                    background-color: #f5f5f5;
+                    border-radius: 8px;
+                    margin-bottom: 16px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 12px;
+                    color: #999;
+                    overflow: hidden;
+                  "
+                >
+                  <img
+                    src="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=200&h=200&fit=crop"
+                    alt="New Crew Backpack"
+                    style="width: 100%; height: 100%; object-fit: cover"
+                  />
                 </div>
-                <div style="font-size: 16px; font-weight: 600; color: #000; margin-bottom: 8px; line-height: 1.3;">New Crew Backpack 22L Updated</div>
-                <div style="font-size: 16px; font-weight: 600; color: #666;">₱4,900</div>
+                <div
+                  style="
+                    font-size: 16px;
+                    font-weight: 600;
+                    color: #000;
+                    margin-bottom: 8px;
+                    line-height: 1.3;
+                  "
+                >
+                  New Crew Backpack 22L Updated
+                </div>
+                <div style="font-size: 16px; font-weight: 600; color: #666">
+                  ₱4,900
+                </div>
               </div>
-              <div style="text-align: left;">
-                <div style="width: 100%; height: 200px; background-color: #f5f5f5; border-radius: 8px; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #999; overflow: hidden;">
-                  <img src="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=200&h=200&fit=crop" alt="Everywhere Backpack" style="width: 100%; height: 100%; object-fit: cover;">
+              <div style="text-align: left">
+                <div
+                  style="
+                    width: 100%;
+                    height: 200px;
+                    background-color: #f5f5f5;
+                    border-radius: 8px;
+                    margin-bottom: 16px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 12px;
+                    color: #999;
+                    overflow: hidden;
+                  "
+                >
+                  <img
+                    src="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=200&h=200&fit=crop"
+                    alt="Everywhere Backpack"
+                    style="width: 100%; height: 100%; object-fit: cover"
+                  />
                 </div>
-                <div style="font-size: 16px; font-weight: 600; color: #000; margin-bottom: 8px; line-height: 1.3;">Everywhere Backpack 22L Metal Hardware</div>
-                <div style="font-size: 16px; font-weight: 600; color: #666;">₱4,900</div>
+                <div
+                  style="
+                    font-size: 16px;
+                    font-weight: 600;
+                    color: #000;
+                    margin-bottom: 8px;
+                    line-height: 1.3;
+                  "
+                >
+                  Everywhere Backpack 22L Metal Hardware
+                </div>
+                <div style="font-size: 16px; font-weight: 600; color: #666">
+                  ₱4,900
+                </div>
               </div>
-              <div style="text-align: left;">
-                <div style="width: 100%; height: 200px; background-color: #f5f5f5; border-radius: 8px; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #999; overflow: hidden;">
-                  <img src="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=200&h=200&fit=crop" alt="City Essentials Pouch" style="width: 100%; height: 100%; object-fit: cover;">
+              <div style="text-align: left">
+                <div
+                  style="
+                    width: 100%;
+                    height: 200px;
+                    background-color: #f5f5f5;
+                    border-radius: 8px;
+                    margin-bottom: 16px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 12px;
+                    color: #999;
+                    overflow: hidden;
+                  "
+                >
+                  <img
+                    src="https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=200&h=200&fit=crop"
+                    alt="City Essentials Pouch"
+                    style="width: 100%; height: 100%; object-fit: cover"
+                  />
                 </div>
-                <div style="font-size: 16px; font-weight: 600; color: #000; margin-bottom: 8px; line-height: 1.3;">City Essentials Pouch Mini 2L</div>
-                <div style="font-size: 16px; font-weight: 600; color: #666;">₱1,900</div>
+                <div
+                  style="
+                    font-size: 16px;
+                    font-weight: 600;
+                    color: #000;
+                    margin-bottom: 8px;
+                    line-height: 1.3;
+                  "
+                >
+                  City Essentials Pouch Mini 2L
+                </div>
+                <div style="font-size: 16px; font-weight: 600; color: #666">
+                  ₱1,900
+                </div>
               </div>
             </div>
           </div>
@@ -1881,18 +2185,18 @@
           let productPrice = '₱0';
           let productImage = '/static/images/placeholder.jpg';
           let numericPrice = 0;
-          
+
           // Try to get variant-specific price and image
           const selectedColorBtn = document.querySelector('.color-option.active');
           const selectedSizeBtn = document.querySelector('.size-option.active');
-          
+
           if (selectedColorBtn) {
             const variantImage = selectedColorBtn.dataset.image;
             if (variantImage) {
               productImage = variantImage;
             }
           }
-          
+
           if (selectedSizeBtn) {
             const sizePrice = selectedSizeBtn.dataset.price;
             if (sizePrice) {
@@ -1900,7 +2204,7 @@
               productPrice = `₱${numericPrice.toLocaleString()}`;
             }
           }
-          
+
           // Fallback to main product price if no variant price
           if (numericPrice === 0) {
             const mainPriceEl = document.querySelector('.current-price');
@@ -1912,7 +2216,7 @@
               }
             }
           }
-          
+
           // Fallback to main image if no variant image
           if (productImage === '/static/images/placeholder.jpg') {
             const mainImage = document.querySelector('.main-image img');
@@ -1920,7 +2224,7 @@
               productImage = mainImage.src;
             }
           }
-          
+
           // Calculate subtotal
           const subtotal = numericPrice * quantity;
           const subtotalFormatted = `₱${subtotal.toLocaleString()}`;
@@ -2053,23 +2357,23 @@
             const selectedColor = window.selectedColor || getSelectedColor() || 'Default';
             const selectedSize = window.selectedSize || getSelectedSize() || 'ONE SIZE';
             const quantity = parseInt(document.getElementById("quantityInput")?.value || 1);
-            
+
             // Get variant-specific information
             let productPrice = '₱0';
             let productImage = '/static/images/placeholder.jpg';
             let numericPrice = 0;
-            
+
             // Try to get variant-specific price and image
             const selectedColorBtn = document.querySelector('.color-option.active');
             const selectedSizeBtn = document.querySelector('.size-option.active');
-            
+
             if (selectedColorBtn) {
               const variantImage = selectedColorBtn.dataset.image;
               if (variantImage) {
                 productImage = variantImage;
               }
             }
-            
+
             if (selectedSizeBtn) {
               const sizePrice = selectedSizeBtn.dataset.price;
               if (sizePrice) {
@@ -2077,7 +2381,7 @@
                 productPrice = `₱${numericPrice.toLocaleString()}`;
               }
             }
-            
+
             // Fallback to main product price if no variant price
             if (numericPrice === 0) {
               const mainPriceEl = document.querySelector('.current-price');
@@ -2089,7 +2393,7 @@
                 }
               }
             }
-            
+
             // Fallback to main image if no variant image
             if (productImage === '/static/images/placeholder.jpg') {
               const mainImage = document.querySelector('.main-image img');
@@ -2097,7 +2401,7 @@
                 productImage = mainImage.src;
               }
             }
-            
+
             // Calculate subtotal
             const subtotal = numericPrice * quantity;
             const subtotalFormatted = `₱${subtotal.toLocaleString()}`;
@@ -2141,16 +2445,16 @@
           const selectedColor = window.selectedColor || getSelectedColor() || 'Default';
           const selectedSize = window.selectedSize || getSelectedSize() || 'ONE SIZE';
           const quantity = parseInt(document.getElementById("quantityInput")?.value || 1);
-          
+
           // Get variant-specific information
           let productPrice = '₱0';
           let productImage = '/static/images/placeholder.jpg';
           let numericPrice = 0;
-          
+
           // Try to get variant-specific price and image
           const selectedColorBtn = document.querySelector('.color-option.active');
           const selectedSizeBtn = document.querySelector('.size-option.active');
-          
+
           if (selectedColorBtn) {
             // Get variant image from the selected color button
             const variantImage = selectedColorBtn.dataset.image;
@@ -2158,7 +2462,7 @@
               productImage = variantImage;
             }
           }
-          
+
           if (selectedSizeBtn) {
             // Get price from the selected size button
             const sizePrice = selectedSizeBtn.dataset.price;
@@ -2167,7 +2471,7 @@
               productPrice = `₱${numericPrice.toLocaleString()}`;
             }
           }
-          
+
           // Fallback to main product price if no variant price
           if (numericPrice === 0) {
             const mainPriceEl = document.querySelector('.current-price');
@@ -2180,7 +2484,7 @@
               }
             }
           }
-          
+
           // Fallback to main image if no variant image
           if (productImage === '/static/images/placeholder.jpg') {
             const mainImage = document.querySelector('.main-image img');
@@ -2188,11 +2492,11 @@
               productImage = mainImage.src;
             }
           }
-          
+
           // Calculate subtotal
           const subtotal = numericPrice * quantity;
           const subtotalFormatted = `₱${subtotal.toLocaleString()}`;
-          
+
           console.log("Modal data:", {
             productName,
             selectedColor,
@@ -2216,7 +2520,7 @@
           modal.innerHTML = `
             <div class="cart-modal-overlay active" onclick="closeDynamicModal(event)" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 1; visibility: visible; transition: all 0.3s ease;">
               <div class="cart-modal" onclick="event.stopPropagation()" style="background: white; border-radius: 12px; width: 90%; max-width: 1000px; max-height: 90vh; overflow-y: auto; position: relative; transform: translateY(0); transition: transform 0.3s ease; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);">
-                
+
                 <!-- Modal header -->
                 <div class="cart-modal-header" style="padding: 40px 40px 0; display: flex; justify-content: space-between; align-items: flex-start; border-bottom: none;">
                   <div class="cart-modal-title" style="display: flex; align-items: center; gap: 12px; font-size: 28px; font-weight: 700; color: #000;">
@@ -2235,7 +2539,7 @@
                 <!-- Modal body -->
                 <div class="cart-modal-body" style="padding: 40px; padding-top: 20px;">
                   <div class="cart-modal-content-wrapper" style="display: flex; gap: 60px; align-items: flex-start; min-height: 200px;">
-                    
+
                     <!-- Left side - Product section -->
                     <div class="cart-left-section" style="flex: 1;">
                       <div class="cart-product-section" style="display: flex; gap: 24px; align-items: flex-start;">
@@ -2309,7 +2613,7 @@
               </div>
             </div>
           `;
-          
+
           document.body.appendChild(modal);
           document.body.style.overflow = "hidden";
           console.log("✅ Dynamic modal created and displayed with new design");
@@ -2318,7 +2622,7 @@
         // Add to cart API function
         function addToCartAPI(itemData) {
           console.log("🛒 Adding to cart:", itemData);
-          
+
           fetch('/add-to-cart', {
             method: 'POST',
             headers: {
@@ -2326,11 +2630,17 @@
             },
             body: JSON.stringify(itemData)
           })
-          .then(response => response.json())
+          .then(response => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+          })
           .then(data => {
+            console.log('📡 Server response:', data);
             if (data.success) {
               console.log('✅ Successfully added to cart:', data);
-              
+
               // Update cart count in header if available
               const cartCountEl = document.querySelector('.cart-count');
               if (cartCountEl && data.cart_count) {
@@ -2995,33 +3305,33 @@
       }
 
       // Test function to verify functionality
-      window.testQuantityControls = function() {
+      window.testQuantityControls = function () {
         console.log("🧪 Testing quantity controls...");
-        
+
         const quantityInput = document.getElementById("quantityInput");
         const decreaseBtn = document.getElementById("decreaseBtn");
         const increaseBtn = document.getElementById("increaseBtn");
         const addToBagBtn = document.querySelector(".add-to-bag-btn");
-        
+
         console.log("Elements found:", {
           quantityInput: !!quantityInput,
           decreaseBtn: !!decreaseBtn,
           increaseBtn: !!increaseBtn,
-          addToBagBtn: !!addToBagBtn
+          addToBagBtn: !!addToBagBtn,
         });
-        
+
         console.log("Functions available:", {
           increaseQuantity: typeof window.increaseQuantity,
           decreaseQuantity: typeof window.decreaseQuantity,
           updateQuantity: typeof window.updateQuantity,
-          addToBag: typeof window.addToBag
+          addToBag: typeof window.addToBag,
         });
-        
+
         if (quantityInput) {
           console.log("Current quantity:", quantityInput.value);
           console.log("Max quantity:", quantityInput.max);
         }
-        
+
         if (addToBagBtn) {
           console.log("Add to bag button disabled:", addToBagBtn.disabled);
         }
@@ -3200,7 +3510,7 @@
       document.addEventListener('DOMContentLoaded', function() {
         setTimeout(function() {
           console.log('🔧 Final initialization check...');
-          
+
           // Ensure functions are available
           if (typeof window.increaseQuantity !== 'function') {
             console.log('⚠️ Redefining increaseQuantity function');
@@ -3216,7 +3526,7 @@
               }
             };
           }
-          
+
           if (typeof window.decreaseQuantity !== 'function') {
             console.log('⚠️ Redefining decreaseQuantity function');
             window.decreaseQuantity = function() {
@@ -3230,7 +3540,7 @@
               }
             };
           }
-          
+
           if (typeof window.updateQuantity !== 'function') {
             console.log('⚠️ Redefining updateQuantity function');
             window.updateQuantity = function() {
@@ -3245,33 +3555,33 @@
               }
             };
           }
-          
+
           if (typeof window.addToBag !== 'function') {
             console.log('⚠️ Redefining addToBag function');
             window.addToBag = function() {
               console.log('🛒 Enhanced add to bag clicked!');
-              
+
               // Get selections
               const colorBtn = document.querySelector('.color-option.active');
               const sizeBtn = document.querySelector('.size-option.active');
               const quantityInput = document.getElementById('quantityInput');
-              
+
               const color = colorBtn ? colorBtn.dataset.color : null;
               const size = sizeBtn ? sizeBtn.dataset.size : null;
               const quantity = parseInt(quantityInput ? quantityInput.value : 1);
-              
+
               console.log('Selections:', { color, size, quantity });
-              
+
               if (!color) {
                 alert('Please select a color');
                 return;
               }
-              
+
               if (!size) {
                 alert('Please select a size');
                 return;
               }
-              
+
               // Make API call to add to cart
               console.log('🛒 Making API call to add to cart...');
               fetch('/add-to-cart', {
@@ -3291,14 +3601,14 @@
                 console.log('API Response:', data);
                 if (data.success) {
                   console.log('✅ Successfully added to cart');
-                  
+
                   // Update cart count in header if available
                   const cartCountEl = document.querySelector('.cart-count');
                   if (cartCountEl && data.cart_count) {
                     cartCountEl.textContent = data.cart_count;
                     console.log('Updated cart count to:', data.cart_count);
                   }
-                  
+
                   // Try to show the modal
                   try {
                     if (typeof createDynamicModal === 'function') {
@@ -3323,25 +3633,25 @@
               });
             };
           }
-          
+
           // Simple modal function as fallback
           window.showSimpleModal = function(color, size, quantity) {
             console.log('📱 Creating simple modal fallback...');
-            
+
             // Remove existing modal if any
             const existing = document.getElementById('simpleCartModal');
             if (existing) existing.remove();
-            
+
             // Get product info
             const productName = document.querySelector('.product-name')?.textContent || 'Product';
             const productPrice = document.querySelector('.current-price')?.textContent || '₱0';
             const productImage = document.querySelector('.main-image img')?.src || '';
-            
+
             // Create modal HTML
             const modalHTML = `
               <div id="simpleCartModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 9999;" onclick="this.remove(); document.body.style.overflow='auto';">
                 <div style="background: white; border-radius: 12px; width: 90%; max-width: 1000px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);" onclick="event.stopPropagation();">
-                  
+
                   <!-- Modal header -->
                   <div style="padding: 40px 40px 0; display: flex; justify-content: space-between; align-items: flex-start;">
                     <div style="display: flex; align-items: center; gap: 12px; font-size: 28px; font-weight: 700; color: #000;">
@@ -3360,7 +3670,7 @@
                   <!-- Modal body -->
                   <div style="padding: 40px; padding-top: 20px;">
                     <div style="display: flex; gap: 60px; align-items: flex-start; min-height: 200px;">
-                      
+
                       <!-- Left side - Product section -->
                       <div style="flex: 1;">
                         <div style="display: flex; gap: 24px; align-items: flex-start;">
@@ -3434,38 +3744,38 @@
                 </div>
               </div>
             `;
-            
+
             // Add modal to page
             document.body.insertAdjacentHTML('beforeend', modalHTML);
             document.body.style.overflow = 'hidden';
-            
+
             console.log('✅ Simple modal displayed');
           };
-          
+
           // Test functions
           console.log('✅ Function availability check:');
           console.log('- increaseQuantity:', typeof window.increaseQuantity);
           console.log('- decreaseQuantity:', typeof window.decreaseQuantity);
           console.log('- updateQuantity:', typeof window.updateQuantity);
           console.log('- addToBag:', typeof window.addToBag);
-          
+
           // Test elements
           const quantityInput = document.getElementById('quantityInput');
           const decreaseBtn = document.getElementById('decreaseBtn');
           const increaseBtn = document.getElementById('increaseBtn');
           const addToBagBtn = document.querySelector('.add-to-bag-btn');
-          
+
           console.log('✅ Element availability check:');
           console.log('- quantityInput:', !!quantityInput);
           console.log('- decreaseBtn:', !!decreaseBtn);
           console.log('- increaseBtn:', !!increaseBtn);
           console.log('- addToBagBtn:', !!addToBagBtn);
-          
+
           if (quantityInput) {
             console.log('- Current quantity:', quantityInput.value);
             console.log('- Max quantity:', quantityInput.max);
           }
-          
+
           console.log('🎯 Final initialization complete!');
         }, 1000); // Wait 1 second to ensure everything is loaded
       });

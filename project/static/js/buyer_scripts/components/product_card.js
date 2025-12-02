@@ -55,23 +55,18 @@ class ProductCard {
     // Set product info
     this.element.querySelector(".product-name").textContent = this.product.name;
 
-    // Set rating if present
-    const ratingEl = this.element.querySelector(".rating-value");
-    if (ratingEl) {
-      if (this.product.rating != null) {
-        const rating = parseFloat(this.product.rating).toFixed(1);
-        const reviewCount =
-          this.product.reviewCount || Math.floor(Math.random() * 100) + 10;
-        ratingEl.textContent = `${rating} (${reviewCount})`;
-      } else {
-        ratingEl.textContent = "4.4 (42)";
-      }
+    // Set sold count
+    const soldEl = this.element.querySelector(".sold-count");
+    if (soldEl) {
+      const soldCount = this.product.soldCount || this.product.sold_count || 0;
+      soldEl.textContent = `${soldCount} sold`;
     }
 
+    // Set colors/variants
+    this.renderColorVariants();
+
     // Set price
-    const priceContainer =
-      this.element.querySelector(".product-price") ||
-      this.element.querySelector(".price-container");
+    const priceContainer = this.element.querySelector(".product-price");
     const currentPriceSpan = priceContainer.querySelector(".current-price");
     const originalPriceSpan = priceContainer.querySelector(".original-price");
     const discountBadge = priceContainer.querySelector(".discount-badge");
@@ -120,11 +115,14 @@ class ProductCard {
     }
 
     // Add button listeners
-    const wishlistBtn = this.element.querySelector(".wishlist-btn");
-    if (wishlistBtn) {
-      wishlistBtn.addEventListener("click", (e) =>
-        this.handleWishlist(e, wishlistBtn)
-      );
+    const cartBtn = this.element.querySelector(".cart-btn");
+    if (cartBtn) {
+      cartBtn.addEventListener("click", (e) => this.handleAddToCart(e));
+    }
+
+    const buyNowBtn = this.element.querySelector(".buy-now-btn");
+    if (buyNowBtn) {
+      buyNowBtn.addEventListener("click", (e) => this.handleBuyNow(e));
     }
 
     return this.element;
@@ -181,10 +179,145 @@ class ProductCard {
     window.location.href = `/product/${this.product.id}`;
   }
 
-  handleWishlist(e, button) {
+  renderColorVariants() {
+    const colorsContainer = this.element.querySelector(".product-colors");
+    if (!colorsContainer) {
+      console.warn("Colors container not found");
+      return;
+    }
+
+    // Clear existing colors
+    colorsContainer.innerHTML = "";
+
+    // Get variants from product data
+    const variants = this.product.variants || [];
+    console.log(`Product ${this.product.name} variants:`, variants);
+
+    // Always show the colors container, even if empty
+    colorsContainer.style.display = "flex";
+
+    if (variants.length === 0) {
+      console.log(`No variants found for product ${this.product.name}, showing default`);
+      // If no variants specified, show a default color indicator
+      const defaultColorDot = document.createElement("div");
+      defaultColorDot.className = "color-dot";
+      defaultColorDot.style.backgroundColor = "#e5e7eb";
+      defaultColorDot.style.cursor = "default";
+      
+      const tooltip = document.createElement("span");
+      tooltip.className = "color-tooltip";
+      tooltip.textContent = "Default";
+      defaultColorDot.appendChild(tooltip);
+      
+      colorsContainer.appendChild(defaultColorDot);
+      return;
+    }
+
+    console.log(`Rendering ${variants.length} color variants for ${this.product.name}`);
+    variants.slice(0, 5).forEach((variant, index) => {
+      const colorDot = document.createElement("button");
+      colorDot.className = `color-dot`;
+      
+      // Use actual color hex from database if available, otherwise fallback to color mapping
+      const colorHex = variant.colorHex || this.getColorValue(variant.color);
+      console.log(`Variant ${index}: ${variant.color} -> ${colorHex}`);
+      
+      colorDot.style.backgroundColor = colorHex;
+      colorDot.setAttribute("aria-label", `Select ${variant.color} variant`);
+      colorDot.dataset.variantIndex = index;
+      
+      // Create tooltip
+      const tooltip = document.createElement("span");
+      tooltip.className = "color-tooltip";
+      tooltip.textContent = variant.color;
+      colorDot.appendChild(tooltip);
+      
+      // Add click handler to change product image
+      colorDot.addEventListener("click", (e) => {
+        e.stopPropagation();
+        this.handleColorSelect(variant, colorDot);
+      });
+
+      if (index === 0) {
+        colorDot.classList.add("active");
+      }
+
+      colorsContainer.appendChild(colorDot);
+    });
+  }
+
+  getColorValue(colorName) {
+    const colorMap = {
+      red: "#ef4444",
+      blue: "#3b82f6", 
+      green: "#10b981",
+      black: "#000000",
+      white: "#ffffff",
+      purple: "#8b5cf6",
+      pink: "#ec4899",
+      yellow: "#f59e0b",
+      orange: "#f97316",
+      gray: "#6b7280",
+      grey: "#6b7280",
+      brown: "#92400e",
+      navy: "#1e3a8a",
+      teal: "#14b8a6",
+      lime: "#84cc16",
+      indigo: "#6366f1",
+      violet: "#8b5cf6",
+      rose: "#f43f5e",
+      emerald: "#10b981",
+      sky: "#0ea5e9",
+      amber: "#f59e0b",
+      slate: "#64748b",
+      zinc: "#71717a",
+      neutral: "#737373",
+      stone: "#78716c",
+      cyan: "#06b6d4",
+      fuchsia: "#d946ef"
+    };
+    return colorMap[colorName.toLowerCase()] || colorName;
+  }
+
+  handleColorSelect(variant, colorDot) {
+    // Remove active class from all color dots
+    this.element.querySelectorAll(".color-dot").forEach(dot => {
+      dot.classList.remove("active");
+    });
+    
+    // Add active class to selected dot
+    colorDot.classList.add("active");
+
+    // Update images to show variant-specific images
+    const primaryImage = this.element.querySelector(".primary-image");
+    const secondaryImage = this.element.querySelector(".secondary-image");
+    
+    if (variant && variant.image) {
+      // Update primary image to variant image
+      primaryImage.src = variant.image;
+      
+      // Update secondary image if variant has one, otherwise use variant image
+      if (variant.secondaryImage) {
+        secondaryImage.src = variant.secondaryImage;
+      } else {
+        // Use variant image as secondary or keep original secondary
+        const originalSecondary = this.product.secondaryImage || this.product.secondary_image;
+        secondaryImage.src = originalSecondary || variant.image;
+      }
+    }
+  }
+
+  handleBuyNow(e) {
     e.stopPropagation();
-    this.isWishlisted = !this.isWishlisted;
-    button.classList.toggle("active");
+    e.preventDefault();
+
+    // Get selected color
+    const activeColorDot = this.element.querySelector(".color-dot.active");
+    const selectedColor = activeColorDot ? activeColorDot.getAttribute("aria-label").replace("Select ", "").replace(" variant", "") : "";
+
+    // Navigate to product detail page with buy now intent
+    const url = `/product/${this.product.id}?buyNow=true${selectedColor ? `&color=${encodeURIComponent(selectedColor)}` : ""}`;
+    window.location.href = url;
   }
 
   handleAddToCart(e) {
@@ -192,55 +325,81 @@ class ProductCard {
     e.stopPropagation();
     e.preventDefault();
 
-    // Default quantity (cards add one item)
+    // Get selected color from active color dot
+    const activeColorDot = this.element.querySelector(".color-dot.active");
+    const selectedColor = activeColorDot ? 
+      activeColorDot.getAttribute("aria-label").replace("Select ", "").replace(" variant", "") : 
+      (this.product.color || "");
+
+    // Default quantity and size (cards add one item with default size)
     const qty = 1;
-    const size = this.product.size || "";
-    const color = this.product.color || "";
+    const size = this.product.size || "One Size";
 
-    // Use global addToBag (which calls addToCart + updates badge)
-    if (typeof addToBag === "function") {
-      addToBag(
-        this.product.id,
-        this.product.name,
-        this.product.price,
-        size,
-        color,
-        qty
-      );
-    } else if (typeof addToCart === "function") {
-      // fallback: call addToCart directly
-      addToCart(
-        this.product.id,
-        this.product.name,
-        this.product.price,
-        size,
-        color,
-        qty
-      );
-      // increment visible badge locally as fallback
-      const current =
-        parseInt(
-          (document.querySelector(".cart-count") || { textContent: 0 })
-            .textContent
-        ) || 0;
-      if (typeof updateCartCount === "function") updateCartCount(current + qty);
-    } else {
-      // Last resort: show native alert
-      alert(`Added "${this.product.name}" to cart`);
-      const current =
-        parseInt(
-          (document.querySelector(".cart-count") || { textContent: 0 })
-            .textContent
-        ) || 0;
-      if (typeof updateCartCount === "function") updateCartCount(current + qty);
-    }
+    // Get variant image if available
+    const selectedVariant = this.product.variants?.find(v => v.color === selectedColor);
+    const variantImage = selectedVariant?.image || this.product.primaryImage;
 
-    // Visual feedback on the button
-    const btn = e.currentTarget;
-    if (btn) {
-      btn.classList.add("added");
-      setTimeout(() => btn.classList.remove("added"), 700);
-    }
+    // Prepare cart data
+    const cartData = {
+      product_id: this.product.id,
+      color: selectedColor,
+      size: size,
+      quantity: qty
+    };
+
+    // Call add to cart API directly
+    fetch("/add-to-cart", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(cartData),
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data && data.success) {
+        // Prepare data for cart modal
+        const modalData = {
+          name: this.product.name,
+          price: this.product.price,
+          color: selectedColor,
+          size: size,
+          quantity: qty,
+          image: variantImage,
+          sellerId: this.product.sellerId || this.product.seller_id,
+          productId: this.product.id
+        };
+
+        // Update cart count
+        if (typeof updateCartCount === "function" && data.cart_count !== undefined) {
+          updateCartCount(data.cart_count);
+        }
+
+        // Populate and show cart modal
+        if (typeof window.populateCartModal === "function") {
+          window.populateCartModal(modalData);
+        }
+
+        // Show success animation then modal
+        if (typeof showCartSuccessAnimation === "function") {
+          showCartSuccessAnimation();
+        } else if (typeof openCartModal === "function") {
+          openCartModal();
+        }
+
+        // Visual feedback on the button
+        const btn = e.currentTarget;
+        if (btn) {
+          btn.classList.add("added");
+          setTimeout(() => btn.classList.remove("added"), 700);
+        }
+      } else {
+        console.error("Add to cart failed:", data.error);
+        alert("Failed to add item to cart. Please try again.");
+      }
+    })
+    .catch(error => {
+      console.error("Error adding to cart:", error);
+      alert("Failed to add item to cart. Please try again.");
+    });
   }
 }
 

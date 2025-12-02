@@ -4,6 +4,7 @@ document.addEventListener("DOMContentLoaded", function () {
   initializeFormValidation();
   initializeDeliveryNote();
   initializeGiftMessage();
+  initializePaymentMethods();
 
   // Auto-format phone number
   const phoneInput = document.getElementById("phone");
@@ -15,6 +16,24 @@ document.addEventListener("DOMContentLoaded", function () {
   const zipInput = document.getElementById("zipCode");
   if (zipInput) {
     zipInput.addEventListener("input", formatZipCode);
+  }
+
+  // Auto-format card number
+  const cardNumberInput = document.getElementById("card-number");
+  if (cardNumberInput) {
+    cardNumberInput.addEventListener("input", formatCardNumber);
+  }
+
+  // Auto-format expiry date
+  const expiryInput = document.getElementById("expiry");
+  if (expiryInput) {
+    expiryInput.addEventListener("input", formatExpiry);
+  }
+
+  // Auto-format GCash number
+  const gcashNumberInput = document.getElementById("gcash-number");
+  if (gcashNumberInput) {
+    gcashNumberInput.addEventListener("input", formatGCashNumber);
   }
 });
 
@@ -224,6 +243,11 @@ function hideGiftMessageField(checkbox) {
 }
 
 function proceedToNextStep() {
+  // This function is deprecated - use completeOrder() instead
+  completeOrder();
+}
+
+function completeOrder() {
   // Validate all required fields
   const requiredFields = document.querySelectorAll(
     "input[required], select[required]"
@@ -242,6 +266,36 @@ function proceedToNextStep() {
     isValid = false;
   }
 
+  // Validate payment method selection
+  const selectedPaymentMethod = document.querySelector(
+    'input[name="payment-method"]:checked'
+  );
+  if (!selectedPaymentMethod) {
+    showNotification("Please select a payment method.", "error");
+    return;
+  }
+
+  // Validate payment method specific fields
+  if (selectedPaymentMethod.value === "credit-card") {
+    const cardNumber = document.getElementById("card-number").value.trim();
+    const expiry = document.getElementById("expiry").value.trim();
+    const cvc = document.getElementById("security-code").value.trim();
+    const cardholderName = document
+      .getElementById("cardholder-name")
+      .value.trim();
+
+    if (!cardNumber || !expiry || !cvc || !cardholderName) {
+      showNotification("Please fill in all card details.", "error");
+      return;
+    }
+  } else if (selectedPaymentMethod.value === "gcash") {
+    const gcashNumber = document.getElementById("gcash-number").value.trim();
+    if (!gcashNumber) {
+      showNotification("Please enter your GCash mobile number.", "error");
+      return;
+    }
+  }
+
   if (!isValid) {
     // Scroll to first error
     const firstError = document.querySelector(".error");
@@ -256,10 +310,10 @@ function proceedToNextStep() {
   // Show loading state
   const button = document.querySelector(".next-step-btn");
   const originalText = button.textContent;
-  button.textContent = "PROCESSING...";
+  button.textContent = "PROCESSING ORDER...";
   button.disabled = true;
 
-  // Collect form data
+  // Collect form data including payment information
   const formData = {
     email: document.getElementById("email").value,
     firstName: document.getElementById("firstName").value,
@@ -271,17 +325,61 @@ function proceedToNextStep() {
     zipCode: document.getElementById("zipCode").value,
     phone: document.getElementById("phone").value,
     country: document.getElementById("country").value,
+    paymentMethod: selectedPaymentMethod.value,
   };
 
-  // Simulate processing and redirect to payment page
-  setTimeout(() => {
-    showNotification("Proceeding to payment...", "success");
+  // Add payment method specific data
+  if (selectedPaymentMethod.value === "credit-card") {
+    formData.cardNumber = document.getElementById("card-number").value;
+    formData.expiry = document.getElementById("expiry").value;
+    formData.cvc = document.getElementById("security-code").value;
+    formData.cardholderName = document.getElementById("cardholder-name").value;
+  } else if (selectedPaymentMethod.value === "gcash") {
+    formData.gcashNumber = document.getElementById("gcash-number").value;
+  }
 
-    // Redirect to payment page after a short delay
-    setTimeout(() => {
-      window.location.href = "/payment";
-    }, 1000);
-  }, 1500);
+  // Process order directly
+  processOrder(formData)
+    .then(() => {
+      showNotification("Order placed successfully!", "success");
+      // Redirect to order confirmation page
+      setTimeout(() => {
+        window.location.href = "/order-success";
+      }, 1000);
+    })
+    .catch((error) => {
+      console.error("Order processing failed:", error);
+      showNotification("Failed to process order. Please try again.", "error");
+      button.textContent = originalText;
+      button.disabled = false;
+    });
+}
+
+async function processOrder(formData) {
+  try {
+    const response = await fetch("/place-order", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formData),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.message || "Order processing failed");
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Error processing order:", error);
+    throw error;
+  }
 }
 
 function showNotification(message, type = "info") {
@@ -372,3 +470,89 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+// Payment method handling
+function initializePaymentMethods() {
+  const paymentMethods = document.querySelectorAll(
+    'input[name="payment-method"]'
+  );
+
+  paymentMethods.forEach((method) => {
+    method.addEventListener("change", function () {
+      handlePaymentMethodChange(this.value);
+    });
+  });
+
+  // Initialize with default selection
+  const defaultMethod = document.querySelector(
+    'input[name="payment-method"]:checked'
+  );
+  if (defaultMethod) {
+    handlePaymentMethodChange(defaultMethod.value);
+  }
+}
+
+function handlePaymentMethodChange(selectedMethod) {
+  // Hide all method content
+  const allMethodContent = document.querySelectorAll(".method-content");
+  allMethodContent.forEach((content) => {
+    content.style.display = "none";
+  });
+
+  // Remove active class from all payment methods
+  const allMethods = document.querySelectorAll(".payment-method");
+  allMethods.forEach((method) => {
+    method.classList.remove("active");
+  });
+
+  // Show selected method content and add active class
+  const selectedMethodElement = document.querySelector(
+    `[data-method="${selectedMethod}"]`
+  );
+  if (selectedMethodElement) {
+    selectedMethodElement.classList.add("active");
+
+    const content = selectedMethodElement.querySelector(".method-content");
+    if (content) {
+      content.style.display = "block";
+    }
+  }
+}
+
+function formatCardNumber(event) {
+  let value = event.target.value.replace(/\s/g, "").replace(/[^0-9]/gi, "");
+  let formattedValue = value.match(/.{1,4}/g)?.join(" ") || value;
+  event.target.value = formattedValue;
+}
+
+function formatExpiry(event) {
+  let value = event.target.value.replace(/\D/g, "");
+
+  if (value.length >= 2) {
+    value = value.substring(0, 2) + "/" + value.substring(2, 4);
+  }
+
+  event.target.value = value;
+}
+
+function formatGCashNumber(event) {
+  let value = event.target.value.replace(/\D/g, "");
+
+  // Format as 09XX XXX XXXX
+  if (value.length > 0) {
+    if (value.length <= 4) {
+      value = value;
+    } else if (value.length <= 7) {
+      value = value.substring(0, 4) + " " + value.substring(4);
+    } else {
+      value =
+        value.substring(0, 4) +
+        " " +
+        value.substring(4, 7) +
+        " " +
+        value.substring(7, 11);
+    }
+  }
+
+  event.target.value = value;
+}

@@ -375,3 +375,143 @@ body {
     padding: 16px;
   }
 }
+
+/* Payment Methods Styles */
+.payment-section {
+  border-top: 1px solid #eee;
+  padding-top: 30px;
+}
+
+.payment-methods {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.payment-method {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.payment-method:hover {
+  border-color: #007bff;
+}
+
+.payment-method.active {
+  border-color: #007bff;
+  background-color: #f8f9ff;
+}
+
+.method-header {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  cursor: pointer;
+}
+
+.method-header input[type="radio"] {
+  margin-right: 12px;
+  accent-color: #007bff;
+}
+
+.method-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  flex: 1;
+}
+
+.card-icons,
+.paypal-logo,
+.gcash-logo,
+.cod-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+}
+
+.card-icon-svg {
+  width: 24px;
+  height: 24px;
+  color: #666;
+}
+
+.paypal-logo {
+  background: #0070ba;
+  color: white;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.gcash-logo svg {
+  width: 24px;
+  height: 24px;
+}
+
+.cod-icon svg {
+  color: #28a745;
+}
+
+.method-subtitle {
+  font-size: 12px;
+  color: #666;
+  margin-top: 2px;
+}
+
+.method-content {
+  padding: 0 16px 16px;
+  border-top: 1px solid #eee;
+  margin-top: 8px;
+}
+
+.method-content .form-group {
+  margin-bottom: 16px;
+}
+
+.method-content .form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.method-content input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.method-content input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.method-content label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: #333;
+}
+
+/* Hide method content by default for non-active methods */
+.payment-method:not(.active) .method-content {
+  display: none;
+}
+
+/* Show method content for active method */
+.payment-method.active .method-content {
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .method-content .form-row {
+    grid-template-columns: 1fr;
+  }
+}
