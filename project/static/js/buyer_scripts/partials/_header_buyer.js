@@ -724,12 +724,14 @@ document.addEventListener("DOMContentLoaded", function () {
   const cartBtn = document.querySelector(".cart-btn");
   const cartCount = document.querySelector(".cart-count");
 
-  cartBtn.addEventListener("click", function () {
-    cartCount.style.animation = "none";
-    setTimeout(() => {
-      cartCount.style.animation = "pulse 0.6s ease";
-    }, 10);
-  });
+  if (cartBtn && cartCount) {
+    cartBtn.addEventListener("click", function () {
+      cartCount.style.animation = "none";
+      setTimeout(() => {
+        cartCount.style.animation = "pulse 0.6s ease";
+      }, 10);
+    });
+  }
 
   // Smooth scroll behavior for any internal navigation
   document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
@@ -767,10 +769,9 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
 
-    // Handle "SHOP ALL" links for each category
+    // Handle "SHOP ALL" links for each category - remove problematic :has-text selector
     const shopAllLink = document.querySelector(
-      `.shop-all-link a[href*="/shop/all/${category}"], 
-       .shop-all-link a:has-text("SHOP ALL ${category.toUpperCase()}")`
+      `.shop-all-link a[href*="/shop/all/${category}"]`
     );
 
     // Since :has-text() isn't standard, iterate through shop-all links

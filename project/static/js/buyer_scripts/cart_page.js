@@ -1,22 +1,24 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", () => {
   if (window.lucide) {
     lucide.createIcons();
   }
 
-  const bootstrapNode = document.getElementById('cart-page-bootstrap');
-  const bootstrapData = bootstrapNode ? JSON.parse(bootstrapNode.textContent || '{}') : {};
+  const bootstrapNode = document.getElementById("cart-page-bootstrap");
+  const bootstrapData = bootstrapNode
+    ? JSON.parse(bootstrapNode.textContent || "{}")
+    : {};
 
-  const cartItems = (bootstrapData.cartItems || []).map(item => ({
+  const cartItems = (bootstrapData.cartItems || []).map((item) => ({
     ...item,
-    selected: item.selected !== false
+    selected: item.selected !== false,
   }));
   const savedItems = bootstrapData.savedItems || [];
-  const checkoutUrl = bootstrapData.checkoutUrl || '/checkout';
+  const checkoutUrl = bootstrapData.checkoutUrl || "/checkout";
   const DEFAULT_MAX_QTY = Number(bootstrapData.maxQuantity || 100);
-  const currency = new Intl.NumberFormat('en-PH', {
-    style: 'currency',
-    currency: 'PHP',
-    minimumFractionDigits: 2
+  const currency = new Intl.NumberFormat("en-PH", {
+    style: "currency",
+    currency: "PHP",
+    minimumFractionDigits: 2,
   });
 
   function getMaxQuantity(item) {
@@ -27,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function findItem(id, source) {
-    return source.find(item => `${item.id}` === `${id}`);
+    return source.find((item) => `${item.id}` === `${id}`);
   }
 
   function removeFromDOM(itemId, className) {
@@ -43,82 +45,98 @@ document.addEventListener('DOMContentLoaded', () => {
   function setCardSelectionState(itemId, isSelected) {
     const card = document.querySelector(`[data-item-id="${itemId}"]`);
     if (!card) return;
-    card.classList.toggle('unselected', !isSelected);
-    const checkbox = card.querySelector('.cart-select');
+    card.classList.toggle("unselected", !isSelected);
+    const checkbox = card.querySelector(".cart-select");
     if (checkbox) {
       checkbox.checked = !!isSelected;
     }
   }
 
-  function notification(message, type = 'info') {
-    const node = document.createElement('div');
+  function notification(message, type = "info") {
+    const node = document.createElement("div");
     node.className = `notification notification-${type}`;
     node.innerHTML = `
       <div class="notification-content">
-        <i data-lucide="${type === 'success' ? 'check-circle' : type === 'error' ? 'x-circle' : 'info'}"></i>
+        <i data-lucide="${
+          type === "success"
+            ? "check-circle"
+            : type === "error"
+            ? "x-circle"
+            : "info"
+        }"></i>
         <span>${message}</span>
       </div>
     `;
     document.body.appendChild(node);
     lucide?.createIcons();
-    requestAnimationFrame(() => node.classList.add('show'));
+    requestAnimationFrame(() => node.classList.add("show"));
     setTimeout(() => {
-      node.classList.remove('show');
+      node.classList.remove("show");
       setTimeout(() => node.remove(), 300);
     }, 3000);
   }
 
   function updateBadges() {
-    const totalItems = cartItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
+    const totalItems = cartItems.reduce(
+      (sum, item) => sum + (item.quantity || 0),
+      0
+    );
     const uniqueItems = cartItems.length;
-    const selectedCount = cartItems.filter(item => item.selected).length;
+    const selectedCount = cartItems.filter((item) => item.selected).length;
 
-    const itemNumber = document.querySelector('.item-number');
-    const itemText = document.querySelector('.item-text');
+    const itemNumber = document.querySelector(".item-number");
+    const itemText = document.querySelector(".item-text");
     if (itemNumber) itemNumber.textContent = totalItems;
-    if (itemText) itemText.textContent = `item${totalItems === 1 ? '' : 's'}`;
+    if (itemText) itemText.textContent = `item${totalItems === 1 ? "" : "s"}`;
 
-    const cartBadge = document.querySelector('.cart-badge');
+    const cartBadge = document.querySelector(".cart-badge");
     if (cartBadge) cartBadge.textContent = uniqueItems;
 
-    const summaryBadge = document.querySelector('.summary-badge');
-    if (summaryBadge) summaryBadge.textContent = `${uniqueItems} item${uniqueItems === 1 ? '' : 's'}`;
+    const summaryBadge = document.querySelector(".summary-badge");
+    if (summaryBadge)
+      summaryBadge.textContent = `${uniqueItems} item${
+        uniqueItems === 1 ? "" : "s"
+      }`;
 
-    const selectedBadge = document.getElementById('selected-summary-count');
+    const selectedBadge = document.getElementById("selected-summary-count");
     if (selectedBadge) {
       selectedBadge.textContent = `${selectedCount} selected`;
     }
 
-    const selectedLabel = document.getElementById('selected-count-label');
+    const selectedLabel = document.getElementById("selected-count-label");
     if (selectedLabel) {
       selectedLabel.textContent = `${selectedCount} selected`;
     }
 
-    const selectAll = document.getElementById('select-all-checkbox');
+    const selectAll = document.getElementById("select-all-checkbox");
     if (selectAll) {
       selectAll.checked = selectedCount === uniqueItems && uniqueItems > 0;
-      selectAll.indeterminate = selectedCount > 0 && selectedCount < uniqueItems;
+      selectAll.indeterminate =
+        selectedCount > 0 && selectedCount < uniqueItems;
     }
   }
 
   function updateSummary() {
     const subtotal = cartItems.reduce(
-      (sum, item) => sum + (item.selected ? Number(item.price) * Number(item.quantity || 1) : 0),
+      (sum, item) =>
+        sum +
+        (item.selected ? Number(item.price) * Number(item.quantity || 1) : 0),
       0
     );
     const deliveryFee = subtotal >= 1500 || subtotal === 0 ? 0 : 150;
     const discount = 0;
     const total = subtotal + deliveryFee - discount;
 
-    const subtotalEl = document.getElementById('subtotal');
-    const deliveryEl = document.getElementById('delivery');
-    const totalEl = document.getElementById('total');
+    const subtotalEl = document.getElementById("subtotal");
+    const deliveryEl = document.getElementById("delivery");
+    const totalEl = document.getElementById("total");
 
     if (subtotalEl) subtotalEl.textContent = currency.format(subtotal);
     if (deliveryEl) {
-      deliveryEl.innerHTML = deliveryFee === 0
-        ? '<span class="free-shipping">FREE</span>'
-        : currency.format(deliveryFee);
+      deliveryEl.innerHTML =
+        deliveryFee === 0
+          ? '<span class="free-shipping">FREE</span>'
+          : currency.format(deliveryFee);
     }
     if (totalEl) totalEl.textContent = currency.format(total);
   }
@@ -134,14 +152,15 @@ document.addEventListener('DOMContentLoaded', () => {
   function toggleSelection(itemId, explicitValue) {
     const item = findItem(itemId, cartItems);
     if (!item) return;
-    const nextState = typeof explicitValue === 'boolean' ? explicitValue : !item.selected;
+    const nextState =
+      typeof explicitValue === "boolean" ? explicitValue : !item.selected;
     item.selected = nextState;
     setCardSelectionState(itemId, nextState);
     persistAndRefresh();
   }
 
   function selectAllItems(isChecked) {
-    cartItems.forEach(item => {
+    cartItems.forEach((item) => {
       item.selected = isChecked;
       setCardSelectionState(item.id, isChecked);
     });
@@ -149,28 +168,40 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function goToCheckout() {
-    const selectedItems = cartItems.filter(item => item.selected);
+    const selectedItems = cartItems.filter((item) => item.selected);
     if (!selectedItems.length) {
-      notification('Please select at least one item to proceed.', 'info');
+      notification("Please select at least one item to proceed.", "info");
       return;
     }
 
-    // Store selected IDs so checkout page can retrieve them later (sessionStorage best-effort)
-    try {
-      sessionStorage.setItem('checkout:selectedItems', JSON.stringify(selectedItems.map(item => item.id)));
-    } catch (err) {
-      console.warn('Unable to store selected checkout items', err);
-    }
-
-    window.location.href = checkoutUrl;
+    // Send selected item IDs to backend
+    fetch("/set-checkout-items", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        selected_item_ids: selectedItems.map((item) => item.id),
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          window.location.href = checkoutUrl;
+        } else {
+          notification("Failed to proceed to checkout", "error");
+        }
+      })
+      .catch((error) => {
+        console.error("Error setting checkout items:", error);
+        notification("Failed to proceed to checkout", "error");
+      });
   }
 
   function syncQuantity(itemId, quantity) {
-    return fetch('/update-cart-quantity', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ item_id: itemId, quantity })
-    }).then(res => res.json());
+    return fetch("/update-cart-quantity", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ item_id: itemId, quantity }),
+    }).then((res) => res.json());
   }
 
   window.updateQuantity = function updateQuantity(itemId, delta) {
@@ -182,7 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const newQty = Math.max(1, Math.min(maxAllowed, proposed));
 
     if (newQty === item.quantity && delta > 0 && proposed > maxAllowed) {
-      notification(`Maximum of ${maxAllowed} per item.`, 'info');
+      notification(`Maximum of ${maxAllowed} per item.`, "info");
       return;
     }
 
@@ -197,33 +228,40 @@ document.addEventListener('DOMContentLoaded', () => {
       qtyInput.max = maxAllowed;
     }
 
-    const priceNode = document.querySelector(`[data-item-id="${itemId}"] .product-price`);
-    if (priceNode) priceNode.textContent = currency.format(Number(item.price) * newQty);
+    const priceNode = document.querySelector(
+      `[data-item-id="${itemId}"] .product-price`
+    );
+    if (priceNode)
+      priceNode.textContent = currency.format(Number(item.price) * newQty);
 
-    const unitPriceNode = document.querySelector(`[data-item-id="${itemId}"] .unit-price`);
+    const unitPriceNode = document.querySelector(
+      `[data-item-id="${itemId}"] .unit-price`
+    );
     if (unitPriceNode) {
       if (newQty > 1) {
-        unitPriceNode.textContent = `${currency.format(Number(item.price))} each`;
-        unitPriceNode.style.display = 'block';
+        unitPriceNode.textContent = `${currency.format(
+          Number(item.price)
+        )} each`;
+        unitPriceNode.style.display = "block";
       } else {
-        unitPriceNode.style.display = 'none';
+        unitPriceNode.style.display = "none";
       }
     }
 
     const card = document.querySelector(`[data-item-id="${itemId}"]`);
-    card?.classList.add('updating');
-    setTimeout(() => card?.classList.remove('updating'), 300);
+    card?.classList.add("updating");
+    setTimeout(() => card?.classList.remove("updating"), 300);
 
     syncQuantity(itemId, newQty)
-      .then(data => {
+      .then((data) => {
         if (!data?.success) {
-          throw new Error(data?.error || 'Failed to update quantity');
+          throw new Error(data?.error || "Failed to update quantity");
         }
         persistAndRefresh();
       })
-      .catch(err => {
-        console.error('Error updating quantity:', err);
-        notification('Could not update quantity. Please try again.', 'error');
+      .catch((err) => {
+        console.error("Error updating quantity:", err);
+        notification("Could not update quantity. Please try again.", "error");
       });
   };
 
@@ -231,31 +269,31 @@ document.addEventListener('DOMContentLoaded', () => {
     const item = findItem(itemId, cartItems);
     if (!item || !confirm(`Remove "${item.name}" from your cart?`)) return;
 
-    fetch('/remove-from-cart', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ item_id: itemId })
+    fetch("/remove-from-cart", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ item_id: itemId }),
     })
-      .then(response => response.json())
-      .then(data => {
+      .then((response) => response.json())
+      .then((data) => {
         if (!data?.success) {
-          throw new Error(data?.error || 'Failed to remove item');
+          throw new Error(data?.error || "Failed to remove item");
         }
 
         cartItems.splice(cartItems.indexOf(item), 1);
-        removeFromDOM(itemId, 'removing');
+        removeFromDOM(itemId, "removing");
         persistAndRefresh();
 
-        if (typeof updateCartCount === 'function') {
+        if (typeof updateCartCount === "function") {
           updateCartCount(cartItems.length);
         } else {
-          const headerCount = document.querySelector('.cart-count');
+          const headerCount = document.querySelector(".cart-count");
           if (headerCount) headerCount.textContent = cartItems.length;
         }
       })
-      .catch(err => {
-        console.error('Error removing cart item:', err);
-        notification('Failed to remove item. Please try again.', 'error');
+      .catch((err) => {
+        console.error("Error removing cart item:", err);
+        notification("Failed to remove item. Please try again.", "error");
       });
   };
 
@@ -265,44 +303,44 @@ document.addEventListener('DOMContentLoaded', () => {
 
     savedItems.push(item);
     cartItems.splice(cartItems.indexOf(item), 1);
-    removeFromDOM(itemId, 'saving');
-    notification(`"${item.name}" saved for later`, 'success');
+    removeFromDOM(itemId, "saving");
+    notification(`"${item.name}" saved for later`, "success");
     persistAndRefresh();
   };
 
-  document.addEventListener('click', event => {
-    const selectBox = event.target.closest('.cart-select');
+  document.addEventListener("click", (event) => {
+    const selectBox = event.target.closest(".cart-select");
     if (selectBox) {
       toggleSelection(selectBox.dataset.itemId, selectBox.checked);
       return;
     }
 
-    const actionBtn = event.target.closest('[data-cart-action]');
+    const actionBtn = event.target.closest("[data-cart-action]");
     if (!actionBtn) {
       return;
     }
 
     const { cartAction: action, itemId } = actionBtn.dataset;
     switch (action) {
-      case 'remove':
+      case "remove":
         removeItem(itemId);
         break;
-      case 'increase':
+      case "increase":
         updateQuantity(itemId, 1);
         break;
-      case 'decrease':
+      case "decrease":
         updateQuantity(itemId, -1);
         break;
-      case 'save':
+      case "save":
         saveForLater(itemId);
         break;
-      case 'edit':
-        notification('Edit functionality coming soon!', 'info');
+      case "edit":
+        notification("Edit functionality coming soon!", "info");
         break;
-      case 'apply-promo':
+      case "apply-promo":
         applyPromoCode();
         break;
-      case 'checkout':
+      case "checkout":
         goToCheckout();
         break;
       default:
@@ -310,14 +348,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  const selectAllCheckbox = document.getElementById('select-all-checkbox');
+  const selectAllCheckbox = document.getElementById("select-all-checkbox");
   if (selectAllCheckbox) {
-    selectAllCheckbox.addEventListener('change', e => {
+    selectAllCheckbox.addEventListener("change", (e) => {
       selectAllItems(e.target.checked);
     });
   }
 
-  cartItems.forEach(item => {
+  cartItems.forEach((item) => {
     const initialState = item.selected !== false;
     item.selected = initialState;
     setCardSelectionState(item.id, initialState);

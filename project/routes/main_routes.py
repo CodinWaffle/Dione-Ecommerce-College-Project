@@ -5,7 +5,7 @@ from flask import Blueprint, render_template, jsonify, redirect, url_for, flash,
 from flask import request
 from flask_login import login_required, current_user, logout_user
 from project import db
-from project.models import Product, User, SellerProduct, ProductReport, Seller, CartItem, Order, OrderItem
+from project.models import Product, User, SellerProduct, ProductReport, Seller, CartItem, Order, OrderItem, Buyer
 
 from sqlalchemy import func
 import hashlib
@@ -1549,6 +1549,7 @@ def update_cart_quantity():
     """Update the quantity of a cart item while enforcing limits."""
     from flask import session, request, jsonify
     from project.models import CartItem, SellerProduct
+    from datetime import datetime
 
     try:
         data = request.get_json(force=True, silent=True) or request.form or {}
@@ -1578,20 +1579,26 @@ def update_cart_quantity():
         try:
             item_id_int = int(item_id)
         except Exception:
-            item_id_int = None
+            return jsonify({'error': 'Invalid item ID'}), 400
 
-        if item_id_int:
-            if user_id:
-                cart_item = CartItem.query.filter_by(id=item_id_int, user_id=user_id).first()
-            elif session_id:
-                cart_item = CartItem.query.filter_by(id=item_id_int, session_id=session_id).first()
+        if user_id:
+            cart_item = CartItem.query.filter_by(id=item_id_int, user_id=user_id).first()
+        elif session_id:
+            cart_item = CartItem.query.filter_by(id=item_id_int, session_id=session_id).first()
 
         if not cart_item:
             return jsonify({'error': 'Cart item not found'}), 404
 
+        # Update cart item quantity
         cart_item.quantity = desired_quantity
         cart_item.updated_at = datetime.utcnow()
-        db.session.commit()
+        
+        try:
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            print(f"Database error updating cart quantity: {e}")
+            return jsonify({'error': 'Database error occurred'}), 500
 
         # Update session cache
         session_items = session.get('cart_items', [])
@@ -1616,7 +1623,7 @@ def update_cart_quantity():
                 price = float(item.get('product_price') or item.get('price') or 0)
                 quantity = int(item.get('quantity') or 1)
                 subtotal += price * quantity
-                total_count += 1
+                total_count += quantity
             except Exception:
                 continue
 
@@ -1624,44 +1631,296 @@ def update_cart_quantity():
             'success': True,
             'quantity': desired_quantity,
             'cart_count': int(total_count),
-            'subtotal': round(subtotal, 2)
+            'subtotal': round(subtotal, 2),
+            'message': 'Quantity updated successfully'
         })
     except Exception as e:
         print(f"Error updating cart quantity: {e}")
+        db.session.rollback()
         return jsonify({'error': 'Failed to update quantity'}), 500
 
+
+@main.route('/set-checkout-items', methods=['POST'])
+@login_required
+def set_checkout_items():
+    """Set selected cart items for checkout"""
+    try:
+        data = request.get_json()
+        selected_item_ids = data.get('selected_item_ids', [])
+        
+        # Store selected item IDs in session
+        session['selected_cart_items'] = selected_item_ids
+        
+        return jsonify({'success': True, 'message': 'Checkout items set successfully'})
+    except Exception as e:
+        print(f'Error setting checkout items: {e}')
+        return jsonify({'error': 'Failed to set checkout items'}), 500
 
 @main.route('/checkout')
 @login_required
 def buyer_checkout():
-    """Display checkout page"""
+    """Display checkout page with user's shipping address and cart items"""
     nav_items = get_nav_items()
-    cart_items = []  # TODO: Fetch cart items from session/database
     
-    # Calculate summary values
+    # Fetch user's comprehensive shipping address from Buyer profile
+    user_address = None
+    buyer_profile = Buyer.query.filter_by(user_id=current_user.id).first()
+    if buyer_profile:
+        # Parse additional address data from JSON
+        additional_data = {}
+        try:
+            import json
+            if buyer_profile.preferred_language:
+                additional_data = json.loads(buyer_profile.preferred_language)
+        except (json.JSONDecodeError, TypeError):
+            # If parsing fails, initialize empty data
+            additional_data = {}
+        
+        user_address = {
+            'first_name': additional_data.get('first_name', current_user.username or ''),
+            'last_name': additional_data.get('last_name', ''),
+            'address': buyer_profile.address or '',
+            'apartment': additional_data.get('apartment', ''),
+            'region': additional_data.get('region', ''),
+            'state': additional_data.get('state', ''),
+            'city': buyer_profile.city or '',
+            'barangay': additional_data.get('barangay', ''),
+            'zip_code': buyer_profile.zip_code or '',
+            'phone': buyer_profile.phone or '',
+            'country': buyer_profile.country or 'Philippines'
+        }
+    
+    # Fetch cart items for the current user (only selected for checkout)
+    cart_items = []
+    cart_db_items = CartItem.query.filter_by(user_id=current_user.id).all()
+    
+    # Get selected item IDs from session storage (passed from cart page)
+    selected_item_ids = session.get('selected_cart_items', [])
+    
     subtotal = 0
-    discount = 0
-    delivery_fee = 0
-    total = 0
+    for item in cart_db_items:
+        # Only include items that are selected for checkout
+        if not selected_item_ids or item.id in selected_item_ids:
+            cart_item = {
+                'id': item.id,
+                'name': item.product_name,
+                'price': float(item.product_price or 0),
+                'quantity': int(item.quantity or 1),
+                'size': item.size,
+                'color': item.color,
+                'image_url': item.variant_image or item.product_image,
+                'store_name': 'Dione Store',
+                'selected_for_checkout': True
+            }
+            cart_items.append(cart_item)
+            subtotal += cart_item['price'] * cart_item['quantity']
     
-    if cart_items:
-        subtotal = sum(float(item.get('price', 0)) * int(item.get('quantity', 1)) for item in cart_items)
-        discount = subtotal * 0.2  # 20% discount
-        delivery_fee = 15
-        total = subtotal - discount + delivery_fee
+    # Calculate fees in PHP peso
+    discount = 0  # No discount for now
+    delivery_fee = 150 if subtotal < 1500 else 0  # Free shipping over ₱1500
+    total = subtotal - discount + delivery_fee
     
     return render_template(
         'main/checkout.html',
         nav_items=nav_items,
         cart_items=cart_items,
+        user_address=user_address,
         subtotal=subtotal,
         discount=discount,
         delivery_fee=delivery_fee,
         total=total
     )
 
-# DEPRECATED: Payment route removed - payment is now integrated into checkout
-# @main.route('/payment')
+@main.route('/update-address', methods=['POST'])
+@login_required
+def update_address():
+    """Update user's shipping address with comprehensive data"""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+        
+        # Get or create buyer profile
+        buyer_profile = Buyer.query.filter_by(user_id=current_user.id).first()
+        if not buyer_profile:
+            buyer_profile = Buyer(user_id=current_user.id)
+            db.session.add(buyer_profile)
+        
+        # Update buyer profile with comprehensive address data
+        buyer_profile.phone = data.get('phone', '')
+        buyer_profile.address = data.get('address', '')
+        buyer_profile.city = data.get('city', '')
+        buyer_profile.zip_code = data.get('zipCode', '')
+        buyer_profile.country = data.get('country', '')
+        
+        # Store region, province, and barangay in preferred_language field as JSON for now
+        # In production, you would add proper fields to the database schema
+        additional_address_data = {
+            'region': data.get('region', ''),
+            'state': data.get('state', ''),  # state = province
+            'barangay': data.get('barangay', ''),
+            'first_name': data.get('firstName', ''),
+            'last_name': data.get('lastName', ''),
+            'apartment': data.get('apartment', '')
+        }
+        
+        # Store additional data as JSON string (temporary solution)
+        import json
+        buyer_profile.preferred_language = json.dumps(additional_address_data)
+        
+        # Update username if first name is provided
+        if data.get('firstName'):
+            current_user.username = data.get('firstName')
+        
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': 'Address updated successfully'})
+    
+    except Exception as e:
+        print(f'Error updating address: {e}')
+        db.session.rollback()
+        return jsonify({'error': 'Failed to update address'}), 500
+
+@main.route('/lookup-address/<zipcode>')
+def lookup_address(zipcode):
+    """Lookup Philippines address by ZIP code with comprehensive data"""
+    try:
+        # Comprehensive Philippines ZIP code database with region, province, city, and barangay
+        zip_database = {
+            '1000': {'region': 'National Capital Region (NCR)', 'province': 'Metro Manila', 'city': 'Manila', 'barangay': 'Malate'},
+            '1001': {'region': 'National Capital Region (NCR)', 'province': 'Metro Manila', 'city': 'Manila', 'barangay': 'Intramuros'},
+            '1002': {'region': 'National Capital Region (NCR)', 'province': 'Metro Manila', 'city': 'Manila', 'barangay': 'Binondo'},
+            '1003': {'region': 'National Capital Region (NCR)', 'province': 'Metro Manila', 'city': 'Manila', 'barangay': 'Santa Cruz'},
+            '1004': {'region': 'National Capital Region (NCR)', 'province': 'Metro Manila', 'city': 'Manila', 'barangay': 'Quiapo'},
+            '1005': {'region': 'National Capital Region (NCR)', 'province': 'Metro Manila', 'city': 'Manila', 'barangay': 'San Nicolas'},
+            '1100': {'region': 'National Capital Region (NCR)', 'province': 'Metro Manila', 'city': 'Quezon City', 'barangay': 'Diliman'},
+            '1101': {'region': 'National Capital Region (NCR)', 'province': 'Metro Manila', 'city': 'Quezon City', 'barangay': 'Kamuning'},
+            '1102': {'region': 'National Capital Region (NCR)', 'province': 'Metro Manila', 'city': 'Quezon City', 'barangay': 'Sacred Heart'},
+            '1103': {'region': 'National Capital Region (NCR)', 'province': 'Metro Manila', 'city': 'Quezon City', 'barangay': 'Laging Handa'},
+            '1104': {'region': 'National Capital Region (NCR)', 'province': 'Metro Manila', 'city': 'Quezon City', 'barangay': 'Bagong Silangan'},
+            '1105': {'region': 'National Capital Region (NCR)', 'province': 'Metro Manila', 'city': 'Quezon City', 'barangay': 'Novaliches'},
+            '1106': {'region': 'National Capital Region (NCR)', 'province': 'Metro Manila', 'city': 'Quezon City', 'barangay': 'Fairview'},
+            '1200': {'region': 'National Capital Region (NCR)', 'province': 'Metro Manila', 'city': 'Makati', 'barangay': 'Poblacion'},
+            '1201': {'region': 'National Capital Region (NCR)', 'province': 'Metro Manila', 'city': 'Makati', 'barangay': 'Legazpi Village'},
+            '1202': {'region': 'National Capital Region (NCR)', 'province': 'Metro Manila', 'city': 'Makati', 'barangay': 'San Lorenzo'},
+            '1203': {'region': 'National Capital Region (NCR)', 'province': 'Metro Manila', 'city': 'Makati', 'barangay': 'Bel-Air'},
+            '1300': {'region': 'National Capital Region (NCR)', 'province': 'Metro Manila', 'city': 'Pasay', 'barangay': 'Malibay'},
+            '1400': {'region': 'National Capital Region (NCR)', 'province': 'Metro Manila', 'city': 'Caloocan', 'barangay': 'Bagong Barrio'},
+            '1500': {'region': 'National Capital Region (NCR)', 'province': 'Metro Manila', 'city': 'Taguig', 'barangay': 'Bonifacio Global City'},
+            '1600': {'region': 'National Capital Region (NCR)', 'province': 'Metro Manila', 'city': 'Pasig', 'barangay': 'San Antonio'},
+            '1700': {'region': 'National Capital Region (NCR)', 'province': 'Metro Manila', 'city': 'Parañaque', 'barangay': 'Baclaran'},
+            '1800': {'region': 'National Capital Region (NCR)', 'province': 'Metro Manila', 'city': 'Marikina', 'barangay': 'Parang'},
+            '4000': {'region': 'CALABARZON (Region IV-A)', 'province': 'Laguna', 'city': 'San Pablo', 'barangay': 'Poblacion'},
+            '4100': {'region': 'CALABARZON (Region IV-A)', 'province': 'Rizal', 'city': 'Antipolo', 'barangay': 'Beverly Hills'},
+            '4200': {'region': 'CALABARZON (Region IV-A)', 'province': 'Batangas', 'city': 'Batangas City', 'barangay': 'Poblacion'},
+            '4300': {'region': 'CALABARZON (Region IV-A)', 'province': 'Quezon', 'city': 'Lucena', 'barangay': 'Dalahican'},
+            '4400': {'region': 'Bicol Region (Region V)', 'province': 'Camarines Sur', 'city': 'Naga', 'barangay': 'Poblacion'},
+            '4500': {'region': 'Bicol Region (Region V)', 'province': 'Albay', 'city': 'Legazpi', 'barangay': 'Bagong Abre'},
+            '5000': {'region': 'Bicol Region (Region V)', 'province': 'Albay', 'city': 'Legaspi', 'barangay': 'Albay District'},
+            '6000': {'region': 'Western Visayas (Region VI)', 'province': 'Iloilo', 'city': 'Iloilo City', 'barangay': 'City Proper'},
+            '7000': {'region': 'Central Visayas (Region VII)', 'province': 'Cebu', 'city': 'Cebu City', 'barangay': 'Lahug'},
+            '8000': {'region': 'Davao Region (Region XI)', 'province': 'Davao del Sur', 'city': 'Davao City', 'barangay': 'Poblacion District'},
+            '9000': {'region': 'Northern Mindanao (Region X)', 'province': 'Misamis Oriental', 'city': 'Cagayan de Oro', 'barangay': 'Nazareth'},
+            '2600': {'region': 'Cordillera Administrative Region (CAR)', 'province': 'Benguet', 'city': 'Baguio', 'barangay': 'Burnham-Legarda'}
+        }
+        
+        address_data = zip_database.get(zipcode)
+        
+        if address_data:
+            return jsonify({'success': True, 'data': address_data})
+        else:
+            return jsonify({'success': False, 'message': 'ZIP code not found'}), 404
+            
+    except Exception as e:
+        print(f'Error looking up address: {e}')
+        return jsonify({'error': 'Failed to lookup address'}), 500
+
+@main.route('/philippines-address-api')
+def philippines_address_api():
+    """Comprehensive Philippines address API for dropdowns"""
+    try:
+        # Comprehensive Philippines address data
+        philippines_data = {
+            'regions': {
+                'NCR': {
+                    'name': 'National Capital Region (NCR)',
+                    'provinces': {
+                        'Metro Manila': {
+                            'cities': {
+                                'Manila': ['Binondo', 'Ermita', 'Intramuros', 'Malate', 'Paco', 'Pandacan', 'Port Area', 'Quiapo', 'Sampaloc', 'San Andres', 'San Miguel', 'San Nicolas', 'Santa Ana', 'Santa Cruz', 'Tondo'],
+                                'Quezon City': ['Bagong Pag-asa', 'Bagong Silangan', 'Bago Bantay', 'Batasan Hills', 'Commonwealth', 'Cubao', 'Diliman', 'Fairview', 'Kamuning', 'La Loma', 'Libis', 'Novaliches', 'Project 4', 'Project 6', 'Sacred Heart', 'Tandang Sora'],
+                                'Makati': ['Bel-Air', 'Cembo', 'Comembo', 'Dasmarinas', 'East Rembo', 'Forbes Park', 'Guadalupe Nuevo', 'Guadalupe Viejo', 'Kasilawan', 'La Paz', 'Legazpi Village', 'Magallanes', 'Olympia', 'Palanan', 'Pembo', 'Pinagkaisahan', 'Pio del Pilar', 'Poblacion', 'Rizal', 'San Antonio', 'San Isidro', 'San Lorenzo', 'Santa Cruz', 'Singkamas', 'South Cembo', 'Tejeros', 'Urdaneta', 'Valenzuela', 'West Rembo'],
+                                'Pasig': ['Bagong Ilog', 'Bagong Katipunan', 'Bambang', 'Buting', 'Caniogan', 'Dela Paz', 'Kalawaan', 'Kapasigan', 'Kapitolyo', 'Malinao', 'Manggahan', 'Maybunga', 'Oranbo', 'Palatiw', 'Pinagbuhatan', 'Pineda', 'Rosario', 'Sagad', 'San Antonio', 'San Joaquin', 'San Jose', 'San Miguel', 'San Nicolas', 'Santa Lucia', 'Santa Rosa', 'Santo Tomas', 'Santolan', 'Sumilang', 'Ugong', 'Wawa'],
+                                'Caloocan': ['Bagong Silang', 'Bagumbayan North', 'Bagumbayan South', 'Banlic', 'Barangka', 'Bonifacio', 'Buena Park', 'Caybiga', 'Deparo', 'Grace Park East', 'Grace Park West', 'Libjo', 'Letre', 'Maypajo', 'Morning Breeze', 'Poblacion', 'Tala', 'Tandang Sora'],
+                                'Pasay': ['Baclaran', 'Maricaban', 'Malibay', 'San Isidro', 'San Rafael', 'Santa Clara', 'Santo Niño', 'Tripa de Gallina', 'Villamor'],
+                                'Taguig': ['Bagumbayan', 'Bambang', 'Bayanan', 'Bicutan', 'Central Bicutan', 'Central Signal Village', 'Fort Bonifacio', 'Hagonoy', 'Ibayo-Tipas', 'Ligid-Tipas', 'Lower Bicutan', 'Maharlika Village', 'Napindan', 'New Lower Bicutan', 'North Daang Hari', 'North Signal Village', 'Palingon', 'Pinagsama', 'San Miguel', 'Santa Ana', 'South Daang Hari', 'South Signal Village', 'Tuktukan', 'Upper Bicutan', 'Ususan', 'Wawa', 'Western Bicutan'],
+                                'Parañaque': ['B.F. Homes', 'Baclaran', 'Don Bosco', 'Don Galo', 'La Huerta', 'Marcelo Green', 'Merville', 'Moonwalk', 'San Antonio', 'San Dionisio', 'San Isidro', 'San Martin de Porres', 'Santo Niño', 'Sun Valley', 'Tambo', 'Vitalez'],
+                                'Las Piñas': ['Almanza Dos', 'Almanza Uno', 'B.F. International Village', 'Daniel Fajardo', 'Elias Aldana', 'Ilaya', 'Manuyo Dos', 'Manuyo Uno', 'Pamplona Dos', 'Pamplona Tres', 'Pamplona Uno', 'Pilar', 'Pulang Lupa Dos', 'Pulang Lupa Uno', 'Talon Dos', 'Talon Kuatro', 'Talon Singko', 'Talon Tres', 'Talon Uno', 'Zapote'],
+                                'Muntinlupa': ['Alabang', 'Bayanan', 'Buli', 'Cupang', 'Poblacion', 'Putatan', 'Sucat', 'Tunasan'],
+                                'Marikina': ['Barangka', 'Calumpang', 'Concepcion Dos', 'Concepcion Uno', 'Fortune', 'Industrial Valley Complex', 'Jesus de la Peña', 'Malanday', 'Marikina Heights', 'Nangka', 'Parang', 'San Roque', 'Santa Elena', 'Santo Niño', 'Tañong', 'Tumana'],
+                                'Valenzuela': ['Arkong Bato', 'Bagbaguin', 'Bignay', 'Bisig', 'Canumay East', 'Canumay West', 'Coloong', 'Dalandanan', 'Gen. T. de Leon', 'Hen. T. de Leon', 'Isla', 'Karuhatan', 'Lawang Bato', 'Lingunan', 'Mabolo', 'Malanday', 'Malinta', 'Mapulang Lupa', 'Marulas', 'Maysan', 'Palasan', 'Parada', 'Pariancillo Villa', 'Paso de Blas', 'Pasolo', 'Poblacion', 'Polo', 'Punturin', 'Rincon', 'Tagalag', 'Ugong', 'Viente Reales', 'Wawang Pulo']
+                            }
+                        }
+                    }
+                },
+                'CAR': {
+                    'name': 'Cordillera Administrative Region (CAR)',
+                    'provinces': {
+                        'Benguet': {
+                            'cities': {
+                                'Baguio': ['Aurora Hill', 'Burnham-Legarda', 'Camp Allen', 'Campo Filipino', 'Country Club Village', 'Dizon Subdivision', 'Dominican Hill-Mirador', 'Engineers Hill', 'Happy Hollow', 'Irisan', 'Loakan-Apugan', 'Lourdes Extension', 'Lourdes Lower', 'Lourdes Proper', 'Lualhati', 'Malcolm Square-Perfecto', 'Magsaysay', 'Market Area', 'Middle Quezon Hill', 'Military Cut-off', 'Mines View', 'New Lucban', 'Outlook Drive', 'Pacdal', 'Pinsao-Pilot Project', 'Poliwes', 'Pucsusan', 'Quezon Hill', 'Quirino Hill', 'Rock Quarry', 'Salud Mitra', 'San Antonio', 'San Luis', 'San Roque', 'San Vicente', 'Santa Scholastica', 'Santo Rosario', 'Santo Tomas', 'Scouthill', 'Session Road Area', 'Slaughter House Area', 'South Drive', 'Teodoro Halsema', 'Trancoville', 'Upper Quezon Hill', 'Victoria Village', 'West Quirino Hill']
+                            }
+                        }
+                    }
+                },
+                'REGION_IV_A': {
+                    'name': 'CALABARZON (Region IV-A)',
+                    'provinces': {
+                        'Laguna': {
+                            'cities': {
+                                'San Pablo': ['I-A', 'I-B', 'I-C', 'II-A', 'II-B', 'II-C', 'II-D', 'II-E', 'II-F', 'III-A', 'III-B', 'III-C', 'III-D', 'III-E', 'III-F', 'IV-A', 'IV-B', 'IV-C', 'V-A', 'V-B', 'V-C', 'V-D', 'VI-A', 'VI-B', 'VI-C', 'VI-D', 'VI-E', 'VII-A', 'VII-B', 'VII-C', 'VII-D', 'VII-E']
+                            }
+                        },
+                        'Rizal': {
+                            'cities': {
+                                'Antipolo': ['Beverly Hills', 'Cupang', 'Dalig', 'De La Paz', 'Dela Paz', 'Fortune', 'Inarawan', 'Mayamot', 'Muntindilaw', 'San Isidro', 'San Jose', 'San Juan', 'San Luis', 'San Roque', 'Santa Cruz', 'Santo Niño', 'Taktak']
+                            }
+                        },
+                        'Batangas': {
+                            'cities': {
+                                'Batangas City': ['Alangilan', 'Balagtas', 'Balete', 'Banaba Center', 'Banaba East', 'Banaba Ibaba', 'Banaba Kanluran', 'Banaba Silangan', 'Barangay 1', 'Barangay 2', 'Barangay 3', 'Barangay 4', 'Barangay 5', 'Barangay 6', 'Barangay 7', 'Barangay 8', 'Barangay 9', 'Barangay 10', 'Barangay 11', 'Barangay 12', 'Barangay 13', 'Barangay 14', 'Barangay 15', 'Barangay 16', 'Barangay 17', 'Barangay 18', 'Barangay 19', 'Barangay 20', 'Barangay 21', 'Barangay 22', 'Barangay 23', 'Barangay 24', 'Bilogo', 'Bolbok', 'Bukal', 'Calicanto', 'Catandala', 'Concepcion', 'Conde Itaas', 'Conde Labac', 'Cumba', 'Dumantay', 'Dumuclay', 'Gulod Itaas', 'Gulod Labac', 'Haligue Kanluran', 'Haligue Silangan', 'Ilijan', 'Kumba', 'Libjo', 'Liponpon', 'Maapas', 'Mahabang Dahilig', 'Mahabang Parang', 'Malibayo', 'Malitam', 'Maruclap', 'Pallocan Kanluran', 'Pallocan Silangan', 'Pinamucan', 'Pinamucan Ibaba', 'Poblacion', 'Rita', 'San Agapito', 'San Agustin', 'San Andres', 'San Antonio', 'San Isidro', 'San Jose Sico', 'San Miguel', 'Santa Clara', 'Santa Rita Karsada', 'Santa Rita Proper', 'Santo Domingo', 'Santo Niño', 'Santo Tomas', 'Simlong', 'Sirang Lupa', 'Sorosoro Ibaba', 'Sorosoro Ilaya', 'Sorosoro Karsada', 'Tabangao', 'Talahib Pandayan', 'Talahib Payapa', 'Talumpok Kanluran', 'Talumpok Silangan', 'Tingga Itaas', 'Tingga Labac', 'Wawa']
+                            }
+                        },
+                        'Quezon': {
+                            'cities': {
+                                'Lucena': ['Barangay 1', 'Barangay 2', 'Barangay 3', 'Barangay 4', 'Barangay 5', 'Barangay 6', 'Barangay 7', 'Barangay 8', 'Barangay 9', 'Barangay 10', 'Bocohan', 'Cotta', 'Dalahican', 'Domoit', 'Gulang-Gulang', 'Ibabang Dupay', 'Ibabang Iyam', 'Ibabang Talim', 'Ilayang Dupay', 'Ilayang Iyam', 'Ilayang Talim', 'Isabang', 'Kalumpang', 'Kanlurang Mayao', 'Kulapis', 'Libutad', 'Market View', 'Mayao Castillo', 'Mayao Crossing', 'Mayao Kanluran', 'Mayao Parada', 'Ransohan', 'Sagurong', 'Silangang Mayao', 'Talipan']
+                            }
+                        }
+                    }
+                },
+                'REGION_V': {
+                    'name': 'Bicol Region (Region V)',
+                    'provinces': {
+                        'Albay': {
+                            'cities': {
+                                'Legazpi': ['Bagong Abre', 'Banquerohan', 'Bariis', 'Bascaran', 'Bitano', 'Bogtong', 'Bonot', 'Buenavista', 'Cabagñan', 'Cabangan', 'Cruzada', 'Dap-dap', 'Dita', 'Estanza', 'Gogon', 'Guadalupe', 'Homapon', 'Ilawod', 'Kapantawan', 'Kawit-East', 'Kawit-West', 'Lamba', 'Landang', 'Lapu-lapu', 'Lourdes', 'Mabinit', 'Maoyod', 'Mariawa', 'Matanag', 'Oro Site', 'Pinaric', 'PNR-Site', 'Poblacion', 'Portrerro', 'Rawis', 'Sagrada Familia', 'San Joaquin', 'San Rafael', 'San Roque', 'Santa Cruz', 'Serranzana', 'Tula-tula Grande', 'Tula-tula Pequeño', 'Victory Village North', 'Victory Village South', 'Washington Drive', 'Yabo']
+                            }
+                        },
+                        'Camarines Sur': {
+                            'cities': {
+                                'Naga': ['Abella', 'Bagumbayan North', 'Bagumbayan South', 'Balatas', 'Calauag', 'Cararayan', 'Carolina', 'Concepcion Grande', 'Concepcion Pequeña', 'Dayangdang', 'Del Rosario', 'Dinaga', 'Igualdad Interior', 'Lerma', 'Liboton', 'Mabolo', 'Pacol', 'Panicuason', 'Peñafrancia', 'Poblacion I', 'Poblacion II', 'Poblacion III', 'Poblacion IV', 'Sabang', 'San Felipe', 'San Francisco', 'San Isidro', 'Tabuco', 'Tinago', 'Triangulo']
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        return jsonify({'success': True, 'data': philippines_data})
+        
+    except Exception as e:
+        print(f'Error getting Philippines address data: {e}')
+        return jsonify({'error': 'Failed to get address data'}), 500
 # @login_required
 # def payment():
 #     """Display payment page"""
@@ -1694,38 +1953,52 @@ def buyer_checkout():
 @main.route('/order-success')
 @login_required
 def order_success():
-    """Show order confirmation message with quick actions"""
+    """Show order confirmation with actual order details from database"""
+    from project.models import Order, OrderItem
     nav_items = get_nav_items()
-
-    cart_items = session.get('cart_items', []) or []
-    subtotal = 0
-    total_items = 0
-    for item in cart_items:
-        try:
-            price = float(item.get('product_price') or item.get('price') or 0)
-            qty = int(item.get('quantity') or 1)
-        except Exception:
-            price = 0
-            qty = 1
-        subtotal += price * qty
-        total_items += qty
-
-    delivery_fee = 0 if subtotal >= 1500 or subtotal == 0 else 150
-    total = subtotal + delivery_fee
 
     order_number = session.get('latest_order_number')
     if not order_number:
+        # Fallback to a default if no order number in session
         order_number = f"DIO-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
-        session['latest_order_number'] = order_number
 
-    order_summary = {
-        'order_number': order_number,
-        'items_count': total_items,
-        'subtotal': subtotal,
-        'delivery_fee': delivery_fee,
-        'total': total,
-        'estimated_delivery': session.get('latest_order_eta', '3-5 business days')
-    }
+    # Fetch the actual order from the database
+    order = Order.query.filter_by(order_number=order_number, buyer_id=current_user.id).first()
+    
+    print(f"DEBUG: Looking for order {order_number} for user {current_user.id}")
+    print(f"DEBUG: Order found: {order is not None}")
+    
+    if order:
+        # Get order items
+        order_items = OrderItem.query.filter_by(order_id=order.id).all()
+        
+        print(f"DEBUG: Found {len(order_items)} order items for order {order.id}")
+        
+        # Calculate totals from actual order data
+        total_items = sum(item.quantity for item in order_items)
+        subtotal = sum(item.total_price for item in order_items)
+        delivery_fee = order.shipping_fee or 0
+        total = order.total_amount or (subtotal + delivery_fee)
+        
+        order_summary = {
+            'order_number': order.order_number,
+            'items_count': total_items,
+            'subtotal': subtotal,
+            'delivery_fee': delivery_fee,
+            'total': total,
+            'estimated_delivery': session.get('latest_order_eta', '3-5 business days'),
+            'order_items': order_items  # Add the actual order items
+        }
+    else:
+        # Fallback if order not found
+        order_summary = {
+            'order_number': order_number,
+            'items_count': 0,
+            'subtotal': 0,
+            'delivery_fee': 0,
+            'total': 0,
+            'estimated_delivery': '3-5 business days'
+        }
 
     return render_template(
         'main/order_success.html',
@@ -1737,10 +2010,7 @@ def order_success():
 @main.route('/place-order', methods=['POST'])
 @login_required
 def place_order():
-    """Create orders from the current user's cart items.
-    Creates one Order per seller, creates OrderItem rows, decrements stock where possible,
-    clears the cart, and stores the latest order number in session for the success page.
-    """
+    """Create orders from the current user's cart items."""
     from project.models import CartItem, Order, OrderItem, SellerProduct, ProductVariant, VariantSize
     from project import db
 
@@ -1753,6 +2023,8 @@ def place_order():
         data = request.get_json()
         if not data:
             return jsonify({'error': 'No data provided'}), 400
+        
+        print(f"DEBUG: Received order data: {data}")  # Debug log
         
         # Extract shipping information
         shipping_info = {
@@ -1782,6 +2054,8 @@ def place_order():
         cart_items = CartItem.query.filter_by(user_id=user.id).all()
         if not cart_items:
             return jsonify({'error': 'No items in cart'}), 400
+        
+        print(f"DEBUG: Found {len(cart_items)} cart items for user {user.id}")  # Debug log
 
         # Group by seller_id
         groups = {}
@@ -1790,98 +2064,107 @@ def place_order():
 
         created_orders = []
         for seller_id, items in groups.items():
-            order_number = f"DIO-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}-{seller_id}"
-            subtotal = 0
-            for it in items:
-                subtotal += float(it.product_price or 0) * int(it.quantity or 1)
+            try:
+                print(f"DEBUG: Processing order for seller {seller_id} with {len(items)} items")
+                order_number = f"DIO-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}-{seller_id}"
+                subtotal = 0
+                for it in items:
+                    subtotal += float(it.product_price or 0) * int(it.quantity or 1)
 
-            delivery_fee = 0 if subtotal >= 1500 or subtotal == 0 else 150
-            total_amount = subtotal + delivery_fee
+                delivery_fee = 0 if subtotal >= 1500 or subtotal == 0 else 150
+                total_amount = subtotal + delivery_fee
 
-            order = Order(
-                order_number=order_number,
-                buyer_id=user.id,
-                seller_id=seller_id,
-                total_amount=total_amount,
-                shipping_fee=delivery_fee,
-                tax_amount=0,
-                discount_amount=0,
-                status='pending',
-                payment_status='paid',
-                shipping_address={
-                    'first_name': shipping_info['first_name'],
-                    'last_name': shipping_info['last_name'],
-                    'email': shipping_info['email'],
-                    'address': shipping_info['address'],
-                    'apartment': shipping_info['apartment'],
-                    'city': shipping_info['city'],
-                    'state': shipping_info['state'],
-                    'zip_code': shipping_info['zip_code'],
-                    'phone': shipping_info['phone'],
-                    'country': shipping_info['country']
-                },
-                billing_address={
-                    'payment_method': payment_info['method'],
-                    'card_number_last4': payment_info['card_number'][-4:] if payment_info['card_number'] else '',
-                    'cardholder_name': payment_info['cardholder_name'],
-                    'gcash_number': payment_info['gcash_number'],
-                    'payment_status': 'processed'
-                }
-            )
-            db.session.add(order)
-            db.session.flush()
-
-            # Create OrderItems and adjust stock
-            for it in items:
-                oi = OrderItem(
-                    order_id=order.id,
-                    product_id=it.product_id,
-                    product_name=it.product_name,
-                    product_image=it.variant_image,
-                    variant_name=f"{it.color} · {it.size}",
-                    size=it.size,
-                    color=it.color,
-                    quantity=it.quantity,
-                    unit_price=it.product_price,
-                    total_price=(float(it.product_price or 0) * int(it.quantity or 1))
+                order = Order(
+                    order_number=order_number,
+                    buyer_id=user.id,
+                    seller_id=seller_id,
+                    total_amount=total_amount,
+                    shipping_fee=delivery_fee,
+                    tax_amount=0,
+                    discount_amount=0,
+                    status='pending',
+                    payment_status='pending' if payment_info['method'] == 'cod' else 'paid',
+                    shipping_address={
+                        'first_name': shipping_info['first_name'],
+                        'last_name': shipping_info['last_name'],
+                        'email': shipping_info['email'],
+                        'address': shipping_info['address'],
+                        'apartment': shipping_info['apartment'],
+                        'city': shipping_info['city'],
+                        'state': shipping_info['state'],
+                        'zip_code': shipping_info['zip_code'],
+                        'phone': shipping_info['phone'],
+                        'country': shipping_info['country']
+                    },
+                    billing_address={
+                        'payment_method': payment_info['method'],
+                        'card_number_last4': payment_info['card_number'][-4:] if payment_info['card_number'] else '',
+                        'cardholder_name': payment_info['cardholder_name'],
+                        'gcash_number': payment_info['gcash_number'],
+                        'payment_status': 'processed'
+                    }
                 )
-                db.session.add(oi)
+                db.session.add(order)
+                db.session.flush()
 
-                # Try to decrement VariantSize if it exists
+                # Create OrderItems and adjust stock
+                for it in items:
+                    oi = OrderItem(
+                        order_id=order.id,
+                        product_id=it.product_id,
+                        product_name=it.product_name,
+                        product_image=it.variant_image,  # Now this field exists in the database
+                        variant_name=f"{it.color} · {it.size}",
+                        size=it.size,
+                        color=it.color,
+                        quantity=it.quantity,
+                        unit_price=it.product_price,
+                        total_price=(float(it.product_price or 0) * int(it.quantity or 1))
+                    )
+                    db.session.add(oi)
+
+                    # Try to decrement VariantSize if it exists
+                    try:
+                        pv = ProductVariant.query.filter_by(product_id=it.product_id, variant_name=it.color).first()
+                        if pv:
+                            vs = VariantSize.query.filter_by(variant_id=pv.id, size_label=it.size).first()
+                            if vs:
+                                vs.stock_quantity = max(0, (vs.stock_quantity or 0) - int(it.quantity or 0))
+                                db.session.add(vs)
+                    except Exception:
+                        pass
+
+                    # Update seller product total_stock if present
+                    try:
+                        sp = SellerProduct.query.get(it.product_id)
+                        if sp and sp.total_stock is not None:
+                            sp.total_stock = max(0, (sp.total_stock or 0) - int(it.quantity or 0))
+                            db.session.add(sp)
+                    except Exception:
+                        pass
+
+                # Commit order and remove cart items
+                db.session.commit()
+                created_orders.append(order_number)
+                print(f"DEBUG: Successfully created order {order_number}")
+                
+                # Remove cart items for this seller
+                for it in items:
+                    try:
+                        db.session.delete(it)
+                    except Exception:
+                        pass
+                db.session.commit()
+            
+            except Exception as e:
+                print(f"ERROR: Failed to create order for seller {seller_id}: {str(e)}")
+                db.session.rollback()  # Ensure clean rollback
+                # Wait a moment and retry once
                 try:
-                    # find variant by product and color
-                    pv = ProductVariant.query.filter_by(product_id=it.product_id, variant_name=it.color).first()
-                    if pv:
-                        vs = VariantSize.query.filter_by(variant_id=pv.id, size_label=it.size).first()
-                        if vs:
-                            vs.stock_quantity = max(0, (vs.stock_quantity or 0) - int(it.quantity or 0))
-                            db.session.add(vs)
-
-                except Exception:
-                    # ignore if schema mismatch or queries fail
+                    db.session.commit()  # Clear any pending state
+                except:
                     pass
-
-                # Update seller product total_stock if present
-                try:
-                    sp = SellerProduct.query.get(it.product_id)
-                    if sp and sp.total_stock is not None:
-                        sp.total_stock = max(0, (sp.total_stock or 0) - int(it.quantity or 0))
-                        db.session.add(sp)
-                except Exception:
-                    pass
-
-            # Commit per-seller order so partial successes persist less likely
-            db.session.commit()
-            created_orders.append(order_number)
-
-            # Remove cart items for this seller
-            for it in items:
-                try:
-                    db.session.delete(it)
-                except Exception:
-                    pass
-
-            db.session.commit()
+                continue
 
         # Clear session cart cache
         session.pop('cart_items', None)
