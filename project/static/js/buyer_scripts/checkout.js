@@ -372,3 +372,115 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+// Address Modal Functions
+function openAddressModal() {
+  const modal = document.getElementById('addressModal');
+  const modalInputs = {
+    'modal-firstName': document.getElementById('firstName').value,
+    'modal-lastName': document.getElementById('lastName').value,
+    'modal-address': document.getElementById('address').value,
+    'modal-apartment': document.getElementById('apartment').value,
+    'modal-city': document.getElementById('city').value,
+    'modal-state': document.getElementById('state').value,
+    'modal-zipCode': document.getElementById('zipCode').value,
+    'modal-phone': document.getElementById('phone').value,
+    'modal-country': document.getElementById('country').value
+  };
+
+  // Pre-fill modal with existing data
+  Object.keys(modalInputs).forEach(id => {
+    const input = document.getElementById(id);
+    if (input) {
+      input.value = modalInputs[id] || '';
+    }
+  });
+
+  modal.style.display = 'flex';
+}
+
+function closeAddressModal() {
+  const modal = document.getElementById('addressModal');
+  modal.style.display = 'none';
+}
+
+function saveAddress() {
+  const modalForm = document.getElementById('addressForm');
+  const formData = new FormData(modalForm);
+  
+  // Validate required fields
+  const requiredFields = ['firstName', 'lastName', 'address', 'city', 'state', 'zipCode', 'phone', 'country'];
+  let isValid = true;
+  
+  requiredFields.forEach(fieldName => {
+    const value = formData.get(fieldName)?.trim();
+    if (!value) {
+      isValid = false;
+      const field = document.getElementById(`modal-${fieldName}`);
+      if (field) {
+        field.style.borderColor = '#dc3545';
+      }
+    }
+  });
+  
+  if (!isValid) {
+    showNotification('Please fill in all required fields', 'error');
+    return;
+  }
+
+  // Update hidden form fields
+  const hiddenInputs = {
+    'firstName': formData.get('firstName'),
+    'lastName': formData.get('lastName'),
+    'address': formData.get('address'),
+    'apartment': formData.get('apartment'),
+    'city': formData.get('city'),
+    'state': formData.get('state'),
+    'zipCode': formData.get('zipCode'),
+    'phone': formData.get('phone'),
+    'country': formData.get('country')
+  };
+
+  Object.keys(hiddenInputs).forEach(id => {
+    const input = document.getElementById(id);
+    if (input) {
+      input.value = hiddenInputs[id] || '';
+    }
+  });
+
+  // Update address display
+  updateAddressDisplay(hiddenInputs);
+  
+  // Save to backend (optional - you can implement this later)
+  // saveAddressToBackend(hiddenInputs);
+  
+  closeAddressModal();
+  showNotification('Address updated successfully', 'success');
+}
+
+function updateAddressDisplay(addressData) {
+  const addressDisplay = document.getElementById('shipping-address-display');
+  
+  const addressHTML = `
+    <div class="address-details">
+      <div class="address-name">${addressData.firstName} ${addressData.lastName}</div>
+      <div class="address-line">${addressData.address}</div>
+      ${addressData.apartment ? `<div class="address-line">${addressData.apartment}</div>` : ''}
+      <div class="address-line">${addressData.city}, ${addressData.country} ${addressData.zipCode}</div>
+      <div class="address-phone">${addressData.phone}</div>
+    </div>
+  `;
+  
+  addressDisplay.innerHTML = addressHTML;
+}
+
+// Load cart items on page load
+document.addEventListener('DOMContentLoaded', function() {
+  loadCartSummary();
+});
+
+function loadCartSummary() {
+  // This function will load cart items from the backend
+  // For now, we'll rely on the server-side rendering
+  console.log('Cart summary loading...');
+}
