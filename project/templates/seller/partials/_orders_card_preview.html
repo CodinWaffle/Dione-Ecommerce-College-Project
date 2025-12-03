@@ -1,23 +1,231 @@
-{# Macro partial to render a compact order preview card used in order management
-#} {% macro render_order_card(order) %} {%- set oid = order.id if order is not
-none and (order.id is defined) else (order.order_id if order is mapping and
-order.order_id is defined else (order.get('id') if order is mapping else 'N/A'))
--%} {%- set customer = (order.customer_name if order is not none and
-(order.customer_name is defined) else (order.get('customer_name') if order is
-mapping else (order.customer if order is not none and (order.customer is
-defined) else 'Customer'))) -%} {%- set amount = (order.total_amount if order is
-not none and (order.total_amount is defined) else (order.get('total_amount') if
-order is mapping else (order.amount if order is not none and (order.amount is
-defined) else '0.00'))) -%} {%- set status = (order.status if order is not none
-and (order.status is defined) else (order.get('status') if order is mapping else
-'unknown')) -%}
+{# Macro partial to render a detailed order preview card used in seller order management #}
+{% macro render_order_card(order, index=None) %}
+{%- set placeholder_image = '/static/image/banner.png' -%}
+{%- set status_options = [
+  ('pending', 'Pending'),
+  ('confirmed', 'Confirmed'),
+  ('shipping', 'To Ship'),
+  ('in_transit', 'In Transit'),
+  ('delivered', 'Delivered'),
+  ('completed', 'Completed'),
+  ('cancelled', 'Cancelled')
+] -%}
+{%- set status_labels = {
+  'pending': 'Pending',
+  'confirmed': 'Confirmed',
+  'shipping': 'To Ship',
+  'in_transit': 'In Transit',
+  'delivered': 'Delivered',
+  'completed': 'Completed',
+  'cancelled': 'Cancelled'
+} -%}
 
-<div class="order-item">
-  <div class="order-info">
-    <span class="order-id">#{{ oid }}</span>
-    <span class="order-customer">{{ customer }}</span>
+{%- set order_id = order.id if order is not none and (order.id is defined) else (
+  order.get('id') if order is mapping else None)
+-%}
+{%- set order_number = order.order_number if order is not none and (order.order_number is defined) else (
+  order.get('order_number') if order is mapping else order_id)
+-%}
+{%- set status_value = (order.status if order is not none and (order.status is defined) else (
+  order.get('status') if order is mapping else 'pending'))|lower -%}
+{%- set status_label = status_labels.get(status_value, status_value.replace('_', ' ').title()) -%}
+
+{%- set created_at = order.created_at if order is not none and (order.created_at is defined) else (
+  order.get('created_at') if order is mapping else None)
+-%}
+{%- set updated_at = order.updated_at if order is not none and (order.updated_at is defined) else (
+  order.get('updated_at') if order is mapping else None)
+-%}
+{%- if created_at is string -%}{%- set created_label = created_at -%}{%- elif created_at -%}{%- set created_label = created_at.strftime('%b %d, %Y') -%}{%- else -%}{%- set created_label = '—' -%}{%- endif -%}
+{%- if updated_at is string -%}{%- set updated_label = updated_at -%}{%- elif updated_at -%}{%- set updated_label = updated_at.strftime('%b %d, %Y %I:%M %p') -%}{%- else -%}{%- set updated_label = created_label -%}{%- endif -%}
+
+{%- set billing = None -%}
+{%- if order is not none and (order.billing_address is defined) -%}
+  {%- set billing = order.billing_address -%}
+{%- elif order is mapping -%}
+  {%- set billing = order.get('billing_address') -%}
+{%- endif -%}
+{%- set billing_map = billing if billing is mapping else None -%}
+{%- set payment_method_value = '' -%}
+{%- if billing -%}
+  {%- if billing.payment_method is defined and billing.payment_method -%}
+    {%- set payment_method_value = billing.payment_method -%}
+  {%- elif billing_map and billing_map.get('payment_method') -%}
+    {%- set payment_method_value = billing_map.get('payment_method') -%}
+  {%- elif billing.method is defined and billing.method -%}
+    {%- set payment_method_value = billing.method -%}
+  {%- elif billing_map and billing_map.get('method') -%}
+    {%- set payment_method_value = billing_map.get('method') -%}
+  {%- endif -%}
+{%- endif -%}
+{%- set payment_map = {
+  'cod': 'Cash on Delivery',
+  'cash_on_delivery': 'Cash on Delivery',
+  'gcash': 'GCash',
+  'credit-card': 'Credit Card',
+  'credit_card': 'Credit Card',
+  'card': 'Card',
+  'paypal': 'PayPal'
+} -%}
+{%- set payment_label = payment_map.get(payment_method_value|lower, payment_method_value|replace('_', ' ')|title if payment_method_value else 'Manual Payment') -%}
+
+{%- set shipping = None -%}
+{%- if order is not none and (order.shipping_address is defined) -%}
+  {%- set shipping = order.shipping_address -%}
+{%- elif order is mapping -%}
+  {%- set shipping = order.get('shipping_address') -%}
+{%- endif -%}
+{%- set shipping_map = shipping if shipping is mapping else None -%}
+{%- set customer_name = 'Customer' -%}
+{%- if order is not none and (order.customer_name is defined) and order.customer_name -%}
+  {%- set customer_name = order.customer_name -%}
+{%- elif shipping -%}
+  {%- set first_name = None -%}
+  {%- if shipping.first_name is defined and shipping.first_name -%}
+    {%- set first_name = shipping.first_name -%}
+  {%- elif shipping_map and shipping_map.get('first_name') -%}
+    {%- set first_name = shipping_map.get('first_name') -%}
+  {%- endif -%}
+  {%- set last_name = None -%}
+  {%- if shipping.last_name is defined and shipping.last_name -%}
+    {%- set last_name = shipping.last_name -%}
+  {%- elif shipping_map and shipping_map.get('last_name') -%}
+    {%- set last_name = shipping_map.get('last_name') -%}
+  {%- endif -%}
+  {%- if first_name or last_name -%}
+    {%- set customer_name = (first_name or '') ~ (' ' if first_name and last_name else '') ~ (last_name or '') -%}
+  {%- elif (shipping.email is defined and shipping.email) or (shipping_map and shipping_map.get('email')) -%}
+    {%- set customer_name = shipping.email if shipping.email is defined else shipping_map.get('email') -%}
+  {%- endif -%}
+{%- endif -%}
+
+{%- set order_items = [] -%}
+{%- if order is not none and (order.order_items is defined) and order.order_items -%}
+  {%- set order_items = order.order_items -%}
+{%- elif order is mapping and order.get('order_items') -%}
+  {%- set order_items = order.get('order_items') -%}
+{%- endif -%}
+{%- set item_count = order_items|length -%}
+{%- set first_item = order_items[0] if item_count > 0 else None -%}
+{%- set first_item_map = first_item if first_item is mapping else None -%}
+
+{%- set product_name = 'Order Items' -%}
+{%- set product_image = placeholder_image -%}
+{%- set variant_info = '' -%}
+{%- set quantity_value = 1 -%}
+{%- if first_item is not none -%}
+  {%- if first_item.product_name is defined and first_item.product_name -%}
+    {%- set product_name = first_item.product_name -%}
+  {%- elif first_item_map and first_item_map.get('product_name') -%}
+    {%- set product_name = first_item_map.get('product_name') -%}
+  {%- endif -%}
+  {%- if first_item.product_image is defined and first_item.product_image -%}
+    {%- set product_image = first_item.product_image -%}
+  {%- elif first_item_map and first_item_map.get('product_image') -%}
+    {%- set product_image = first_item_map.get('product_image') -%}
+  {%- endif -%}
+  {%- if first_item.variant_name is defined and first_item.variant_name -%}
+    {%- set variant_info = first_item.variant_name -%}
+  {%- elif first_item_map and first_item_map.get('variant_name') -%}
+    {%- set variant_info = first_item_map.get('variant_name') -%}
+  {%- else -%}
+    {%- set color_value = None -%}
+    {%- if first_item.color is defined and first_item.color -%}
+      {%- set color_value = first_item.color -%}
+    {%- elif first_item_map and first_item_map.get('color') -%}
+      {%- set color_value = first_item_map.get('color') -%}
+    {%- endif -%}
+    {%- set size_value = None -%}
+    {%- if first_item.size is defined and first_item.size -%}
+      {%- set size_value = first_item.size -%}
+    {%- elif first_item_map and first_item_map.get('size') -%}
+      {%- set size_value = first_item_map.get('size') -%}
+    {%- endif -%}
+    {%- if color_value or size_value -%}
+      {%- set variant_info = (color_value or '') ~ ((' · ' + size_value) if color_value and size_value else (size_value or '')) -%}
+    {%- endif -%}
+  {%- endif -%}
+  {%- if first_item.quantity is defined and first_item.quantity -%}
+    {%- set quantity_value = first_item.quantity -%}
+  {%- elif first_item_map and first_item_map.get('quantity') -%}
+    {%- set quantity_value = first_item_map.get('quantity') -%}
+  {%- endif -%}
+{%- endif -%}
+
+{%- set amount_value = order.total_amount if order is not none and (order.total_amount is defined) else (
+  order.get('total_amount') if order is mapping else 0)
+-%}
+{%- set total_display = '₱{:,.2f}'.format((amount_value or 0)|float) -%}
+{%- set row_index = (index if index is not none else 0) + 1 -%}
+{%- set status_class = status_value.replace('_', '-') -%}
+
+<div class="order-card" data-order-id="{{ order_id }}" data-status="{{ status_value }}">
+  <div class="order-header">
+    <div class="header-checkbox">
+      <input type="checkbox" class="order-checkbox" aria-label="Select order {{ order_number }}" />
+    </div>
+    <div class="order-info">
+      <span class="customer-label">Customer</span>
+      <span class="customer-name">{{ customer_name }}</span>
+    </div>
+    <div class="order-date">
+      <span>Order Date</span>
+      <strong>{{ created_label }}</strong>
+    </div>
+    <div class="order-id">
+      <span>Order #</span>
+      <strong>{{ order_number }}</strong>
+    </div>
   </div>
-  <span class="order-status {{ status|lower }}">{{ status|capitalize }}</span>
-  <span class="order-amount">${{ amount }}</span>
+  <div class="order-content">
+    <div class="count-col">
+      <div class="order-count" title="Row number">{{ row_index }}</div>
+    </div>
+    <div class="product-col">
+      <img src="{{ product_image or placeholder_image }}" alt="{{ product_name }}" class="product-image" />
+      <div class="product-details">
+        <p class="product-name">{{ product_name }}</p>
+        {% if variant_info %}
+        <p class="product-meta">Variant: <span>{{ variant_info }}</span></p>
+        {% endif %}
+        <p class="product-quantity">
+          Qty: <span>{{ quantity_value }}</span>
+          {% if item_count > 1 %}· +{{ item_count - 1 }} more{% endif %}
+        </p>
+      </div>
+    </div>
+    <div class="price-col">
+      <span class="price">{{ total_display }}</span>
+    </div>
+    <div class="payment-col">
+      <span class="payment-method">{{ payment_label }}</span>
+    </div>
+    <div class="status-col">
+      <span class="status-badge status-{{ status_class }}">{{ status_label }}</span>
+      <select
+        class="status-dropdown status-{{ status_class }}"
+        data-order-id="{{ order_id }}"
+        data-original-value="{{ status_value }}"
+        data-current-value="{{ status_value }}"
+        aria-label="Update status for order {{ order_number }}"
+      >
+        {% for value, label in status_options %}
+        <option value="{{ value }}" {% if value == status_value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <p class="status-note">Updated {{ updated_label }}</p>
+    </div>
+    <div class="action-col">
+      <button class="btn btn-primary" type="button" data-action="openDetails" data-order-id="{{ order_id }}">
+        <i data-lucide="eye"></i>
+        View details
+      </button>
+      <button class="btn btn-secondary" type="button" data-action="contactBuyer" data-order-id="{{ order_id }}">
+        <i data-lucide="message-square"></i>
+        Message buyer
+      </button>
+    </div>
+    <div class="order-alert" role="status" aria-live="polite"></div>
+  </div>
 </div>
 {% endmacro %}

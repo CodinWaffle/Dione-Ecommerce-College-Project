@@ -32,7 +32,17 @@
             type="checkbox"
             class="cart-select"
             data-item-id="{{ item.id }}"
-            {% if item.selected is not defined or item.selected %}checked{% endif %}
+            {%
+            if
+            item.selected
+            is
+            not
+            defined
+            or
+            item.selected
+            %}checked{%
+            endif
+            %}
           />
           <span>Select</span>
         </label>
@@ -132,14 +142,6 @@
           >
             <i data-lucide="heart"></i>
             Save for later
-          </button>
-          <button
-            class="action-btn edit-btn"
-            data-cart-action="edit"
-            data-item-id="{{ item.id }}"
-          >
-            <i data-lucide="edit-2"></i>
-            Edit
           </button>
         </div>
       </div>

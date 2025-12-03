@@ -23,10 +23,11 @@ from flask import (
 )
 from flask_login import login_required, current_user
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy import desc
+from sqlalchemy import desc, func
+from sqlalchemy.orm import joinedload
 
 from project import db
-from project.models import SellerProduct, ProductVariant, VariantSize
+from project.models import SellerProduct, ProductVariant, VariantSize, Order
 
 seller_bp = Blueprint('seller', __name__, url_prefix='/seller')
 
@@ -216,6 +217,70 @@ def _sync_product_variants(product, variant_payload):
                 sku=sku_value,
             )
             db.session.add(vs)
+
+STATUS_BUCKET_MAP = {
+    'pending': 'pending_orders',
+    'confirmed': 'pending_orders',
+    'shipping': 'shipped_orders',
+    'in_transit': 'in_transit_orders',
+    'cancelled': 'cancelled_orders',
+    'delivered': 'completed_orders',
+    'completed': 'completed_orders',
+}
+
+STATUS_LABELS = {
+    'pending': 'Pending',
+    'confirmed': 'Confirmed',
+    'shipping': 'To Ship',
+    'in_transit': 'In Transit',
+    'delivered': 'Delivered',
+    'completed': 'Completed',
+    'cancelled': 'Cancelled',
+}
+
+
+def _accumulate_status(stats, status_value, increment=1):
+    key = STATUS_BUCKET_MAP.get((status_value or '').lower())
+    if key:
+        stats[key] += increment
+
+
+def _status_display_label(status_value):
+    normalized = (status_value or '').lower()
+    return STATUS_LABELS.get(normalized, (status_value or 'Unknown').replace('_', ' ').title())
+
+
+def _empty_stats():
+    return {
+        'total_orders': 0,
+        'pending_orders': 0,
+        'shipped_orders': 0,
+        'in_transit_orders': 0,
+        'cancelled_orders': 0,
+        'completed_orders': 0,
+    }
+
+
+def _get_order_stats_for_seller(seller_id, orders=None):
+    stats = _empty_stats()
+    if orders is not None:
+        for order in orders:
+            _accumulate_status(stats, getattr(order, 'status', None))
+        stats['total_orders'] = len(orders)
+        return stats
+
+    rows = (
+        db.session.query(Order.status, func.count(Order.id))
+        .filter(Order.seller_id == seller_id)
+        .group_by(Order.status)
+        .all()
+    )
+    total = 0
+    for status_value, count in rows:
+        total += count
+        _accumulate_status(stats, status_value, count)
+    stats['total_orders'] = total
+    return stats
 
 @seller_bp.context_processor
 def inject_seller_profile():
@@ -1133,19 +1198,92 @@ def dashboard():
 @seller_bp.route('/orders')
 def orders():
     """Seller orders management"""
-    # Load seller orders from DB and pass to template
-    from project.models import Order
     try:
-        db_orders = Order.query.filter_by(seller_id=current_user.id).order_by(Order.created_at.desc()).all()
-    except Exception as e:
-        print('Error loading seller orders:', e)
+        db_orders = (
+            Order.query.filter_by(seller_id=current_user.id)
+            .options(joinedload(Order.order_items))
+            .order_by(Order.created_at.desc())
+            .all()
+        )
+    except Exception as exc:
+        current_app.logger.error('Error loading seller orders: %s', exc)
         db_orders = []
+
+    stats = _get_order_stats_for_seller(current_user.id, db_orders)
 
     return render_template(
         'seller/seller_order_management.html',
         active_page='orders',
-        orders=db_orders
+        orders=db_orders,
+        stats=stats
     )
+
+
+@seller_bp.route('/orders/<int:order_id>/status', methods=['POST'])
+def update_order_status(order_id):
+    """Allow sellers to update the status of their orders via AJAX."""
+    payload = request.get_json(silent=True) or {}
+    new_status = (payload.get('status') or '').strip().lower()
+    allowed_statuses = {
+        'pending',
+        'confirmed',
+        'shipping',
+        'in_transit',
+        'delivered',
+        'completed',
+        'cancelled',
+    }
+
+    if new_status not in allowed_statuses:
+        return jsonify({'success': False, 'error': 'Invalid status selection.'}), 400
+
+    order = Order.query.filter_by(id=order_id, seller_id=current_user.id).first_or_404()
+    previous_status = (order.status or '').lower()
+
+    if previous_status == new_status:
+        stats = _get_order_stats_for_seller(current_user.id)
+        return jsonify({
+            'success': True,
+            'status': previous_status,
+            'status_label': _status_display_label(previous_status),
+            'stats': stats,
+            'unchanged': True,
+            'order_id': order.id,
+        })
+
+    now = datetime.utcnow()
+    if new_status in {'shipping', 'in_transit'} and not order.shipped_at:
+        order.shipped_at = now
+    if new_status in {'delivered', 'completed'}:
+        order.delivered_at = now
+    if new_status in {'pending', 'confirmed'}:
+        # Reset delivery milestones when moving back to earlier stages
+        order.shipped_at = None
+        order.delivered_at = None
+
+    order.status = new_status
+    order.updated_at = now
+
+    try:
+        db.session.commit()
+    except Exception as exc:
+        current_app.logger.error('Failed to update order %s status: %s', order_id, exc)
+        db.session.rollback()
+        return jsonify({'success': False, 'error': 'Unable to update order status. Please try again.'}), 500
+
+    stats = _get_order_stats_for_seller(current_user.id)
+
+    return jsonify({
+        'success': True,
+        'status': new_status,
+        'status_label': _status_display_label(new_status),
+        'order_id': order.id,
+        'order_number': order.order_number,
+        'updated_at': order.updated_at.isoformat() if order.updated_at else None,
+        'shipped_at': order.shipped_at.isoformat() if order.shipped_at else None,
+        'delivered_at': order.delivered_at.isoformat() if order.delivered_at else None,
+        'stats': stats,
+    })
 
 
 @seller_bp.route('/revenue')

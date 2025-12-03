@@ -286,6 +286,14 @@ async function completeOrder() {
     return;
   }
 
+  // Prevent duplicate submissions when multiple listeners fire
+  if (button.dataset.processing === "true") {
+    console.warn(
+      "Order submission already in progress, ignoring duplicate click"
+    );
+    return;
+  }
+
   // First check if shipping address exists
   const addressField = document.getElementById("address");
   const cityField = document.getElementById("city");
@@ -408,6 +416,7 @@ async function completeOrder() {
   const originalText = button.textContent;
   button.textContent = "PROCESSING ORDER...";
   button.disabled = true;
+  button.dataset.processing = "true";
 
   // Collect form data including payment information
   const formData = {
@@ -462,6 +471,7 @@ async function completeOrder() {
       showNotification("Failed to process order. Please try again.", "error");
       button.textContent = originalText;
       button.disabled = false;
+      button.dataset.processing = "false";
     });
 }
 

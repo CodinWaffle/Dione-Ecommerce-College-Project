@@ -399,6 +399,29 @@
   color: #8b4789;
 }
 
+.order-alert {
+  grid-column: 2 / -1;
+  font-size: 13px;
+  margin-top: 0.5rem;
+  display: none;
+}
+
+.order-alert.show {
+  display: block;
+}
+
+.order-alert.success {
+  color: #166534;
+}
+
+.order-alert.error {
+  color: #b91c1c;
+}
+
+.order-alert.info {
+  color: #2563eb;
+}
+
 .status-badge.status-cancelled {
   background-color: #ffe6e6;
   color: #d32f2f;

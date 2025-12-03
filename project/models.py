@@ -563,6 +563,7 @@ class OrderItem(db.Model):
     db.ForeignKey('seller_product_management.id', ondelete='CASCADE'),
     nullable=False
   )
+  seller_id = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
   
   # Item details
   product_name = db.Column(db.String(255), nullable=False)
@@ -581,6 +582,7 @@ class OrderItem(db.Model):
   
   # Relationships
   product = db.relationship('SellerProduct', backref='order_items')
+  seller = db.relationship('User')
   reviews = db.relationship('ProductReview', backref='order_item', cascade='all, delete-orphan')
   
   def __repr__(self):

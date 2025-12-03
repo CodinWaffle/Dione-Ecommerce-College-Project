@@ -2065,6 +2065,9 @@ def place_order():
         created_orders = []
         for seller_id, items in groups.items():
             try:
+                # Ensure clean session state
+                db.session.rollback()  # Clear any pending state
+                
                 print(f"DEBUG: Processing order for seller {seller_id} with {len(items)} items")
                 order_number = f"DIO-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}-{seller_id}"
                 subtotal = 0
@@ -2112,6 +2115,7 @@ def place_order():
                     oi = OrderItem(
                         order_id=order.id,
                         product_id=it.product_id,
+                        seller_id=it.seller_id or seller_id,
                         product_name=it.product_name,
                         product_image=it.variant_image,  # Now this field exists in the database
                         variant_name=f"{it.color} · {it.size}",
@@ -2158,12 +2162,10 @@ def place_order():
             
             except Exception as e:
                 print(f"ERROR: Failed to create order for seller {seller_id}: {str(e)}")
+                print(f"ERROR Details: {type(e).__name__}: {e}")
+                import traceback
+                print(f"ERROR Traceback: {traceback.format_exc()}")
                 db.session.rollback()  # Ensure clean rollback
-                # Wait a moment and retry once
-                try:
-                    db.session.commit()  # Clear any pending state
-                except:
-                    pass
                 continue
 
         # Clear session cart cache

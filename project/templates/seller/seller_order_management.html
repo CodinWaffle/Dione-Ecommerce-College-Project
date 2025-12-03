@@ -43,7 +43,9 @@ block page_content %}
     </div>
     <div class="order-stat-content">
       <div class="order-stat-value">
-        {{ stats.total_orders if stats else '0' }}
+        <span data-stat-key="total_orders"
+          >{{ stats.total_orders if stats else '0' }}</span
+        >
       </div>
       <div class="order-stat-label">Total Orders</div>
     </div>
@@ -54,7 +56,9 @@ block page_content %}
     </div>
     <div class="order-stat-content">
       <div class="order-stat-value">
-        {{ stats.pending_orders if stats else '0' }}
+        <span data-stat-key="pending_orders"
+          >{{ stats.pending_orders if stats else '0' }}</span
+        >
       </div>
       <div class="order-stat-label">Pending</div>
     </div>
@@ -65,7 +69,9 @@ block page_content %}
     </div>
     <div class="order-stat-content">
       <div class="order-stat-value">
-        {{ stats.shipped_orders if stats else '0' }}
+        <span data-stat-key="shipped_orders"
+          >{{ stats.shipped_orders if stats else '0' }}</span
+        >
       </div>
       <div class="order-stat-label">Shipped</div>
     </div>
@@ -76,7 +82,9 @@ block page_content %}
     </div>
     <div class="order-stat-content">
       <div class="order-stat-value">
-        {{ stats.cancelled_orders if stats else '0' }}
+        <span data-stat-key="cancelled_orders"
+          >{{ stats.cancelled_orders if stats else '0' }}</span
+        >
       </div>
       <div class="order-stat-label">Cancelled</div>
     </div>
@@ -89,36 +97,42 @@ block page_content %}
       <button class="nav-tab active" data-status="all">
         <i data-lucide="layout-list"></i>
         <span>All Orders</span>
-        <span class="count">{{ stats.total_orders if stats else '0' }}</span>
+        <span class="count" data-count-key="total_orders"
+          >{{ stats.total_orders if stats else '0' }}</span
+        >
       </button>
       <button class="nav-tab" data-status="pending">
         <i data-lucide="clock"></i>
         <span>Pending</span>
-        <span class="count">{{ stats.pending_orders if stats else '0' }}</span>
+        <span class="count" data-count-key="pending_orders"
+          >{{ stats.pending_orders if stats else '0' }}</span
+        >
       </button>
       <button class="nav-tab" data-status="shipped">
         <i data-lucide="package"></i>
         <span>Shipped</span>
-        <span class="count">{{ stats.shipped_orders if stats else '0' }}</span>
+        <span class="count" data-count-key="shipped_orders"
+          >{{ stats.shipped_orders if stats else '0' }}</span
+        >
       </button>
       <button class="nav-tab" data-status="in-transit">
         <i data-lucide="truck"></i>
         <span>In Transit</span>
-        <span class="count"
+        <span class="count" data-count-key="in_transit_orders"
           >{{ stats.in_transit_orders if stats else '0' }}</span
         >
       </button>
       <button class="nav-tab" data-status="cancelled">
         <i data-lucide="x-circle"></i>
         <span>Cancelled</span>
-        <span class="count"
+        <span class="count" data-count-key="cancelled_orders"
           >{{ stats.cancelled_orders if stats else '0' }}</span
         >
       </button>
       <button class="nav-tab" data-status="completed">
         <i data-lucide="check-circle"></i>
         <span>Completed</span>
-        <span class="count"
+        <span class="count" data-count-key="completed_orders"
           >{{ stats.completed_orders if stats else '0' }}</span
         >
       </button>
@@ -212,8 +226,12 @@ block page_content %}
         </div>
       </div>
       <!-- Render order cards below the table header -->
-      {% if orders %} {% for order in orders %} {{ render_order_card(order,
-      loop.index0) }} {% endfor %} {% else %}
+      {% if orders %}
+      <div class="orders-container">
+        {% for order in orders %} {{ render_order_card(order, loop.index0) }} {%
+        endfor %}
+      </div>
+      {% else %}
       <div style="padding: 2rem; text-align: center; color: #888">
         No orders found.
       </div>

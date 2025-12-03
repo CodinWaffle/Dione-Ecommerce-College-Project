@@ -11,11 +11,11 @@
   <!-- Page Header -->
   <div class="page-header">
     <div class="header-content">
-      <h1 class="page-title">
-        <i class="ri-shopping-bag-3-line"></i>
-        My Purchases
-      </h1>
-      <p class="page-subtitle">Track and manage all your orders</p>
+      <div class="header-icon">
+        <i class="ri-shopping-bag-line"></i>
+      </div>
+      <h1 class="page-title">My Purchases</h1>
+      <p class="page-subtitle">Track and manage all your orders with ease</p>
     </div>
   </div>
 
@@ -92,42 +92,49 @@
     <div class="tabs-container">
       <a href="{{ url_for('buyer.my_purchases', status='all') }}" 
          class="tab-item {% if status_filter == 'all' %}active{% endif %}">
+        <i class="ri-list-unordered"></i>
         <span class="tab-label">All Orders</span>
         <span class="tab-count">{{ status_counts.all }}</span>
       </a>
       
       <a href="{{ url_for('buyer.my_purchases', status='pending') }}" 
          class="tab-item {% if status_filter == 'pending' %}active{% endif %}">
+        <i class="ri-time-line"></i>
         <span class="tab-label">Pending</span>
         <span class="tab-count">{{ status_counts.pending }}</span>
       </a>
       
       <a href="{{ url_for('buyer.my_purchases', status='confirmed') }}" 
          class="tab-item {% if status_filter == 'confirmed' %}active{% endif %}">
+        <i class="ri-shield-check-line"></i>
         <span class="tab-label">Confirmed</span>
         <span class="tab-count">{{ status_counts.confirmed }}</span>
       </a>
       
       <a href="{{ url_for('buyer.my_purchases', status='shipping') }}" 
          class="tab-item {% if status_filter == 'shipping' %}active{% endif %}">
+        <i class="ri-truck-line"></i>
         <span class="tab-label">Shipping</span>
         <span class="tab-count">{{ status_counts.shipping }}</span>
       </a>
       
       <a href="{{ url_for('buyer.my_purchases', status='in_transit') }}" 
          class="tab-item {% if status_filter == 'in_transit' %}active{% endif %}">
+        <i class="ri-roadster-line"></i>
         <span class="tab-label">In Transit</span>
         <span class="tab-count">{{ status_counts.in_transit }}</span>
       </a>
       
       <a href="{{ url_for('buyer.my_purchases', status='delivered') }}" 
          class="tab-item {% if status_filter == 'delivered' %}active{% endif %}">
+        <i class="ri-home-smile-line"></i>
         <span class="tab-label">Delivered</span>
         <span class="tab-count">{{ status_counts.delivered }}</span>
       </a>
       
       <a href="{{ url_for('buyer.my_purchases', status='to_review') }}" 
          class="tab-item {% if status_filter == 'to_review' %}active{% endif %}">
+        <i class="ri-star-line"></i>
         <span class="tab-label">To Review</span>
         <span class="tab-count">{{ status_counts.to_review }}</span>
       </a>
