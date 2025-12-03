@@ -23,11 +23,20 @@ from flask import (
 )
 from flask_login import login_required, current_user
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy import desc, func
+from sqlalchemy import desc, func, or_
 from sqlalchemy.orm import joinedload
 
 from project import db
-from project.models import SellerProduct, ProductVariant, VariantSize, Order
+from project.models import (
+    SellerProduct,
+    ProductVariant,
+    VariantSize,
+    Order,
+    PickupRequest,
+    PickupRequestItem,
+    User,
+    Rider,
+)
 
 seller_bp = Blueprint('seller', __name__, url_prefix='/seller')
 
@@ -281,6 +290,272 @@ def _get_order_stats_for_seller(seller_id, orders=None):
         _accumulate_status(stats, status_value, count)
     stats['total_orders'] = total
     return stats
+
+
+PICKUP_TERMINAL_STATUSES = {'completed', 'cancelled'}
+PICKUP_ACTIVE_STATUSES = {'pending', 'assigned', 'en_route', 'picked_up'}
+RIDER_AVAILABLE_STATUSES = {'available', 'on-duty', 'on_duty'}
+
+
+def _serialize_pickup_request(pickup_request):
+    if not pickup_request:
+        return None
+    rider_user = getattr(pickup_request, 'rider_user', None)
+    rider_name = None
+    rider_phone = None
+    if rider_user:
+        rider_name = getattr(rider_user, 'username', None) or getattr(rider_user, 'email', None)
+        rider_profiles = getattr(rider_user, 'rider_profile', None)
+        rider_profile = None
+        if rider_profiles:
+            try:
+                rider_profile = rider_profiles[0]
+            except (TypeError, AttributeError, IndexError):
+                rider_profile = rider_profiles
+        if rider_profile and getattr(rider_profile, 'phone', None):
+            rider_phone = rider_profile.phone
+    return {
+        'id': pickup_request.id,
+        'request_number': pickup_request.request_number,
+        'status': pickup_request.status,
+        'priority': pickup_request.priority,
+        'bulk_order_count': pickup_request.bulk_order_count,
+        'pickup_address': pickup_request.pickup_address,
+        'pickup_notes': pickup_request.pickup_notes,
+        'pickup_contact_name': pickup_request.pickup_contact_name,
+        'pickup_contact_phone': pickup_request.pickup_contact_phone,
+        'pickup_window_start': pickup_request.pickup_window_start.isoformat() if pickup_request.pickup_window_start else None,
+        'pickup_window_end': pickup_request.pickup_window_end.isoformat() if pickup_request.pickup_window_end else None,
+        'requested_at': pickup_request.requested_at.isoformat() if pickup_request.requested_at else None,
+        'assigned_at': pickup_request.assigned_at.isoformat() if pickup_request.assigned_at else None,
+        'picked_up_at': pickup_request.picked_up_at.isoformat() if pickup_request.picked_up_at else None,
+        'completed_at': pickup_request.completed_at.isoformat() if pickup_request.completed_at else None,
+        'rider_user_id': pickup_request.rider_user_id,
+        'rider_name': rider_name,
+        'rider_phone': rider_phone,
+        'items': [item.to_dict() for item in pickup_request.items],
+    }
+
+
+def _get_active_pickup_item(order):
+    pickup_items = getattr(order, 'pickup_items', []) or []
+    for item in pickup_items:
+        req = getattr(item, 'pickup_request', None)
+        if req and (req.status or '').lower() not in PICKUP_TERMINAL_STATUSES:
+            return item
+    return None
+
+
+def _parse_iso_datetime(value):
+    if not value:
+        return None
+    try:
+        if isinstance(value, datetime):
+            return value
+        normalized = str(value).replace('Z', '+00:00')
+        return datetime.fromisoformat(normalized)
+    except Exception:
+        return None
+
+
+def _seller_pickup_defaults(seller_user):
+    profile = None
+    try:
+        profiles = getattr(seller_user, 'seller_profile', None)
+        if profiles:
+            profile = profiles[0]
+    except Exception:
+        profile = None
+
+    contact_name = getattr(profile, 'business_name', None) or getattr(seller_user, 'username', None) or seller_user.email
+    contact_phone = getattr(profile, 'bank_contact', None) if profile else None
+    if not contact_phone:
+        contact_phone = getattr(profile, 'phone', None) if profile else None
+
+    address_parts = []
+    for attr in ('business_address', 'business_city', 'business_country'):
+        if profile:
+            value = getattr(profile, attr, None)
+            if value:
+                address_parts.append(value)
+    pickup_address = ', '.join(address_parts) if address_parts else None
+
+    return {
+        'contact_name': contact_name,
+        'contact_phone': contact_phone,
+        'address': pickup_address,
+    }
+
+
+def _build_pickup_request_for_orders(seller_user, orders, payload):
+    if not orders:
+        raise ValueError('No orders provided for pickup request.')
+
+    defaults = _seller_pickup_defaults(seller_user)
+    pickup_address = payload.get('pickup_address') or defaults.get('address')
+    pickup_contact_name = payload.get('contact_name') or defaults.get('contact_name')
+    pickup_contact_phone = payload.get('contact_phone') or defaults.get('contact_phone')
+
+    pickup_request = PickupRequest(
+        seller_id=seller_user.id,
+        created_by_id=seller_user.id,
+        pickup_address=pickup_address,
+        pickup_contact_name=pickup_contact_name,
+        pickup_contact_phone=pickup_contact_phone,
+        pickup_notes=payload.get('pickup_notes') or payload.get('notes') or '',
+        priority=(payload.get('priority') or 'standard').lower(),
+        pickup_window_start=_parse_iso_datetime(payload.get('pickup_window_start')),
+        pickup_window_end=_parse_iso_datetime(payload.get('pickup_window_end')),
+    )
+
+    package_counts = payload.get('package_counts') or {}
+    default_package_count = payload.get('package_count')
+
+    for order in orders:
+        count_source = package_counts.get(str(order.id)) or package_counts.get(order.id) or default_package_count
+        try:
+            package_count = int(count_source)
+        except Exception:
+            package_count = 1
+        package_count = max(1, package_count)
+
+        pickup_request.items.append(
+            PickupRequestItem(
+                order=order,
+                seller_id=order.seller_id,
+                package_count=package_count,
+            )
+        )
+
+    pickup_request.bulk_order_count = len(orders)
+    db.session.add(pickup_request)
+    return pickup_request
+
+
+def _prepare_order_for_pickup(order):
+    now = datetime.utcnow()
+    normalized_status = (order.status or '').lower()
+    if normalized_status in {'completed', 'cancelled'}:
+        raise ValueError('Completed or cancelled orders cannot be scheduled for pickup.')
+    if normalized_status not in {'shipping', 'in_transit', 'delivered'}:
+        order.status = 'shipping'
+    order.updated_at = now
+    if not order.shipped_at:
+        order.shipped_at = now
+
+
+def _get_seller_profile_obj(user):
+    try:
+        profiles = getattr(user, 'seller_profile', None)
+        if profiles:
+            return profiles[0]
+    except Exception:
+        return None
+    return None
+
+
+def _normalize_location_value(value):
+    if not value:
+        return ''
+    return str(value).strip().lower()
+
+
+def _match_rider_location(rider, seller_profile):
+    seller_city = _normalize_location_value(getattr(seller_profile, 'business_city', None)) if seller_profile else ''
+    seller_country = _normalize_location_value(getattr(seller_profile, 'business_country', None)) if seller_profile else ''
+    seller_address = _normalize_location_value(getattr(seller_profile, 'business_address', None)) if seller_profile else ''
+
+    rider_location = _normalize_location_value(getattr(rider, 'current_location', None))
+    rider_zones = _normalize_location_value(getattr(rider, 'delivery_zones', None))
+
+    score = 0
+    reasons = []
+
+    if seller_city:
+        if seller_city and seller_city in rider_location:
+            score += 3
+            reasons.append('Same city')
+        elif seller_city and seller_city in rider_zones:
+            score += 2
+            reasons.append('Covers seller city')
+
+    if seller_country:
+        if seller_country in rider_location or seller_country in rider_zones:
+            score += 1
+            if 'Same city' not in reasons:
+                reasons.append('Same country')
+
+    if not reasons and seller_address and seller_address in rider_location:
+        score += 1
+        reasons.append('Near address')
+
+    if not reasons:
+        reasons.append('Available nearby')
+
+    return score, ', '.join(reasons)
+
+
+def _get_active_rider_ids():
+    rows = (
+        db.session.query(PickupRequest.rider_user_id)
+        .filter(
+            PickupRequest.rider_user_id.isnot(None),
+            PickupRequest.status.notin_(list(PICKUP_TERMINAL_STATUSES))
+        )
+        .distinct()
+        .all()
+    )
+    return {row[0] for row in rows if row[0] is not None}
+
+
+def _serialize_rider_candidate(rider, score, reason):
+    user = getattr(rider, 'user', None)
+    display_name = getattr(user, 'username', None) or getattr(user, 'email', None) or f'Rider #{rider.id}'
+    return {
+        'user_id': rider.user_id,
+        'name': display_name,
+        'phone': rider.phone,
+        'vehicle_type': rider.vehicle_type,
+        'current_location': rider.current_location,
+        'match_score': score,
+        'match_reason': reason,
+    }
+
+
+def _get_eligible_riders_for_seller(seller_user, limit=10):
+    seller_profile = _get_seller_profile_obj(seller_user)
+    active_rider_ids = _get_active_rider_ids()
+
+    rider_query = (
+        Rider.query.join(User, Rider.user_id == User.id)
+        .filter(
+            User.is_approved.is_(True),
+            func.lower(Rider.availability_status).in_(list(RIDER_AVAILABLE_STATUSES)),
+        )
+        .order_by(Rider.updated_at.desc())
+    )
+
+    if active_rider_ids:
+        rider_query = rider_query.filter(~Rider.user_id.in_(active_rider_ids))
+
+    riders = rider_query.limit(50).all()
+    candidates = []
+    for rider in riders:
+        score, reason = _match_rider_location(rider, seller_profile)
+        candidates.append(_serialize_rider_candidate(rider, score, reason))
+
+    candidates.sort(key=lambda item: (-item['match_score'], item['name'].lower()))
+    return candidates[:limit]
+
+def _ensure_mapping(value):
+    if isinstance(value, dict):
+        return value
+    if hasattr(value, 'items'):
+        try:
+            return dict(value)
+        except Exception:
+            return {}
+    return {}
 
 @seller_bp.context_processor
 def inject_seller_profile():
@@ -1201,7 +1476,13 @@ def orders():
     try:
         db_orders = (
             Order.query.filter_by(seller_id=current_user.id)
-            .options(joinedload(Order.order_items))
+            .options(
+                joinedload(Order.order_items),
+                joinedload(Order.pickup_items)
+                .joinedload(PickupRequestItem.pickup_request)
+                .joinedload(PickupRequest.rider_user)
+                .joinedload(User.rider_profile),
+            )
             .order_by(Order.created_at.desc())
             .all()
         )
@@ -1226,12 +1507,7 @@ def update_order_status(order_id):
     new_status = (payload.get('status') or '').strip().lower()
     allowed_statuses = {
         'pending',
-        'confirmed',
         'shipping',
-        'in_transit',
-        'delivered',
-        'completed',
-        'cancelled',
     }
 
     if new_status not in allowed_statuses:
@@ -1284,6 +1560,296 @@ def update_order_status(order_id):
         'delivered_at': order.delivered_at.isoformat() if order.delivered_at else None,
         'stats': stats,
     })
+
+
+@seller_bp.route('/orders/<int:order_id>/pickup-summary', methods=['GET'])
+@login_required
+def get_order_pickup_summary(order_id):
+    order = (
+        Order.query.filter_by(id=order_id, seller_id=current_user.id)
+        .options(
+            joinedload(Order.pickup_items)
+            .joinedload(PickupRequestItem.pickup_request)
+            .joinedload(PickupRequest.rider_user)
+            .joinedload(User.rider_profile)
+        )
+        .first_or_404()
+    )
+    pickup_item = _get_active_pickup_item(order)
+    return jsonify({
+        'success': True,
+        'pickup': _serialize_pickup_request(pickup_item.pickup_request) if pickup_item else None,
+    })
+
+
+@seller_bp.route('/orders/<int:order_id>/pickup-request', methods=['POST'])
+@login_required
+def create_pickup_request(order_id):
+    payload = request.get_json(silent=True) or {}
+    order = (
+        Order.query.filter_by(id=order_id, seller_id=current_user.id)
+        .options(
+            joinedload(Order.pickup_items)
+            .joinedload(PickupRequestItem.pickup_request)
+            .joinedload(PickupRequest.rider_user)
+            .joinedload(User.rider_profile)
+        )
+        .first_or_404()
+    )
+
+    existing_item = _get_active_pickup_item(order)
+    if existing_item:
+        return jsonify({
+            'success': True,
+            'pickup': _serialize_pickup_request(existing_item.pickup_request),
+            'already_exists': True,
+        })
+
+    try:
+        _prepare_order_for_pickup(order)
+        pickup_request = _build_pickup_request_for_orders(current_user, [order], payload)
+        db.session.commit()
+    except ValueError as exc:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(exc)}), 400
+    except Exception as exc:
+        current_app.logger.error('Failed to create pickup request for order %s: %s', order_id, exc)
+        db.session.rollback()
+        return jsonify({'success': False, 'error': 'Unable to create pickup request. Please try again.'}), 500
+
+    return jsonify({
+        'success': True,
+        'pickup': _serialize_pickup_request(pickup_request),
+    }), 201
+
+
+@seller_bp.route('/orders/pickups/bulk', methods=['POST'])
+@login_required
+def create_bulk_pickup_request():
+    payload = request.get_json(silent=True) or {}
+    order_ids = payload.get('order_ids') or []
+    if not isinstance(order_ids, (list, tuple)):
+        return jsonify({'success': False, 'error': 'order_ids must be an array of order identifiers.'}), 400
+
+    normalized_ids = []
+    for raw_id in order_ids:
+        try:
+            normalized_ids.append(int(raw_id))
+        except (ValueError, TypeError):
+            continue
+
+    if not normalized_ids:
+        return jsonify({'success': False, 'error': 'No valid orders provided for pickup.'}), 400
+
+    orders = (
+        Order.query.filter(Order.seller_id == current_user.id, Order.id.in_(normalized_ids))
+        .options(
+            joinedload(Order.pickup_items)
+            .joinedload(PickupRequestItem.pickup_request)
+            .joinedload(PickupRequest.rider_user)
+            .joinedload(User.rider_profile)
+        )
+        .all()
+    )
+
+    if not orders:
+        return jsonify({'success': False, 'error': 'Orders not found or do not belong to you.'}), 404
+
+    conflicts = [order.id for order in orders if _get_active_pickup_item(order)]
+    if conflicts:
+        return jsonify({
+            'success': False,
+            'error': 'Some orders already have an active pickup request.',
+            'conflicts': conflicts,
+        }), 400
+
+    try:
+        for order in orders:
+            _prepare_order_for_pickup(order)
+        pickup_request = _build_pickup_request_for_orders(current_user, orders, payload)
+        db.session.commit()
+    except ValueError as exc:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(exc)}), 400
+    except Exception as exc:
+        current_app.logger.error('Failed to create bulk pickup request: %s', exc)
+        db.session.rollback()
+        return jsonify({'success': False, 'error': 'Unable to create pickup request.'}), 500
+
+    return jsonify({
+        'success': True,
+        'pickup': _serialize_pickup_request(pickup_request),
+    }), 201
+
+
+@seller_bp.route('/pickups/<int:pickup_id>/eligible-riders')
+@login_required
+def get_eligible_riders_for_pickup(pickup_id):
+    PickupRequest.query.filter_by(id=pickup_id, seller_id=current_user.id).first_or_404()
+    riders = _get_eligible_riders_for_seller(current_user)
+    return jsonify({'success': True, 'riders': riders})
+
+
+@seller_bp.route('/pickups/<int:pickup_id>/assign', methods=['POST'])
+@login_required
+def assign_rider_to_pickup(pickup_id):
+    payload = request.get_json(silent=True) or {}
+    rider_user_id = payload.get('rider_user_id') or payload.get('rider_id')
+    if not rider_user_id:
+        return jsonify({'success': False, 'error': 'rider_user_id is required.'}), 400
+
+    pickup_request = (
+        PickupRequest.query.filter_by(id=pickup_id, seller_id=current_user.id)
+        .options(
+            joinedload(PickupRequest.items),
+            joinedload(PickupRequest.rider_user).joinedload(User.rider_profile),
+        )
+        .first_or_404()
+    )
+
+    try:
+        rider_user_id = int(rider_user_id)
+    except (TypeError, ValueError):
+        return jsonify({'success': False, 'error': 'Invalid rider identifier.'}), 400
+
+    rider_profile = Rider.query.filter_by(user_id=rider_user_id).first()
+    if not rider_profile or not getattr(rider_profile.user, 'is_approved', False):
+        return jsonify({'success': False, 'error': 'Selected rider is not available.'}), 400
+
+    eligible_ids = {candidate['user_id'] for candidate in _get_eligible_riders_for_seller(current_user, limit=25)}
+    if rider_user_id not in eligible_ids:
+        return jsonify({'success': False, 'error': 'Rider is not currently eligible for assignment.'}), 400
+
+    pickup_request.rider_user_id = rider_user_id
+    pickup_request.mark_status('assigned')
+    pickup_request.assigned_at = datetime.utcnow()
+
+    try:
+        db.session.commit()
+    except Exception as exc:
+        current_app.logger.error('Failed to assign rider to pickup %s: %s', pickup_id, exc)
+        db.session.rollback()
+        return jsonify({'success': False, 'error': 'Unable to assign rider.'}), 500
+
+    return jsonify({'success': True, 'pickup': _serialize_pickup_request(pickup_request)})
+
+
+@seller_bp.route('/pickups/<int:pickup_id>/status', methods=['POST'])
+@login_required
+def update_pickup_status(pickup_id):
+    payload = request.get_json(silent=True) or {}
+    new_status = (payload.get('status') or '').lower()
+    allowed_statuses = {'pending', 'assigned', 'en_route', 'picked_up', 'completed', 'cancelled'}
+    if new_status not in allowed_statuses:
+        return jsonify({'success': False, 'error': 'Invalid pickup status.'}), 400
+
+    pickup_request = (
+        PickupRequest.query.filter_by(id=pickup_id, seller_id=current_user.id)
+        .options(
+            joinedload(PickupRequest.items).joinedload(PickupRequestItem.order),
+            joinedload(PickupRequest.rider_user).joinedload(User.rider_profile),
+        )
+        .first_or_404()
+    )
+
+    pickup_request.mark_status(new_status)
+    if new_status == 'cancelled':
+        for item in pickup_request.items:
+            item.status = 'cancelled'
+            item.updated_at = datetime.utcnow()
+
+    try:
+        db.session.commit()
+    except Exception as exc:
+        current_app.logger.error('Failed to update pickup status %s: %s', pickup_id, exc)
+        db.session.rollback()
+        return jsonify({'success': False, 'error': 'Unable to update pickup status.'}), 500
+
+    return jsonify({'success': True, 'pickup': _serialize_pickup_request(pickup_request)})
+
+
+@seller_bp.route('/orders/<int:order_id>/label')
+def order_label(order_id):
+    """Render a printable shipping label for the seller's order."""
+    order = (
+        Order.query.filter_by(id=order_id, seller_id=current_user.id)
+        .options(joinedload(Order.order_items), joinedload(Order.seller))
+        .first_or_404()
+    )
+
+    seller_user = order.seller or current_user
+    seller_profile = None
+    try:
+        profiles = getattr(seller_user, 'seller_profile', None)
+        if profiles:
+            seller_profile = profiles[0]
+    except Exception:
+        seller_profile = None
+
+    seller_name = ''
+    if seller_profile and getattr(seller_profile, 'business_name', None):
+        seller_name = seller_profile.business_name
+    elif getattr(seller_user, 'username', None):
+        seller_name = seller_user.username
+
+    seller_address_parts = [
+        getattr(seller_profile, 'business_address', None) if seller_profile else None,
+        getattr(seller_profile, 'business_city', None) if seller_profile else None,
+        getattr(seller_profile, 'business_country', None) if seller_profile else None,
+    ]
+    seller_address = ', '.join([part for part in seller_address_parts if part])
+
+    shipping = _ensure_mapping(order.shipping_address or {})
+    customer_first = shipping.get('first_name') or shipping.get('firstName')
+    customer_last = shipping.get('last_name') or shipping.get('lastName')
+    fallback_name = shipping.get('name') or shipping.get('customer_name')
+    customer_name = ' '.join(filter(None, [customer_first, customer_last])).strip()
+    if not customer_name:
+        customer_name = fallback_name or shipping.get('email') or ''
+
+    customer_address_parts = [
+        shipping.get('address') or shipping.get('street'),
+        shipping.get('apartment') or shipping.get('suite'),
+        shipping.get('city'),
+        shipping.get('state') or shipping.get('province'),
+        shipping.get('zip_code') or shipping.get('zipCode') or shipping.get('zip'),
+        shipping.get('country'),
+    ]
+    customer_address = '\n'.join([part for part in customer_address_parts if part])
+
+    customer_phone = (
+        shipping.get('phone')
+        or shipping.get('mobile')
+        or shipping.get('contact_number')
+        or shipping.get('contactNumber')
+        or ''
+    )
+
+    label_context = {
+        'seller': {
+            'name': seller_name,
+            'address': seller_address,
+        },
+        'customer': {
+            'name': customer_name,
+            'address': customer_address,
+            'phone': customer_phone,
+        },
+        'shipping_notes': shipping.get('deliveryNote') or shipping.get('notes') or '',
+    }
+
+    return render_template(
+        'seller/order_label.html',
+        platform_name='DIONE APPAREL',
+        order=order,
+        seller_info=label_context['seller'],
+        customer_info=label_context['customer'],
+        shipping_notes=label_context['shipping_notes'],
+        shipping_date=order.shipped_at or order.created_at,
+        carrier_code=order.tracking_number or '',
+        customer_phone=customer_phone,
+        generated_at=datetime.utcnow(),
+    )
 
 
 @seller_bp.route('/revenue')

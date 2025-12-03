@@ -29,24 +29,52 @@
       </thead>
       <tbody id="pickupTableBody">
         {% for pickup in pickups %}
-        <tr data-pickup-id="{{ pickup.id }}">
+        <tr
+          data-pickup-id="{{ pickup.id }}"
+          data-raw-status="{{ pickup.raw_status }}"
+          data-assigned="{{ '1' if pickup.assigned_to_me else '0' }}"
+        >
           <td>{{ pickup.pickup_no }}</td>
           <td>{{ pickup.seller_name }}</td>
           <td>{{ pickup.address }}</td>
-          <td>{{ pickup.contact }}</td>
-          <td>{{ pickup.items }}</td>
+          <td>{{ pickup.contact or 'N/A' }}</td>
+          <td class="pickup-items-cell">
+            {% if pickup.item_names %}
+            <div class="pickup-item-name">{{ pickup.item_names[0] }}</div>
+            {% if pickup.item_names|length > 1 %}
+            <div class="pickup-item-extra">
+              +{{ pickup.item_names|length - 1 }} more
+            </div>
+            {% endif %} {% else %} {% set item_count = pickup['items'] or 0 %}
+            {{ item_count }} {{ 'item' if item_count == 1 else 'items' }} {%
+            endif %}
+          </td>
           <td>{{ pickup.notes }}</td>
           <td>
             <span
-              class="status-badge status-{{ pickup.status|lower|replace(' ', '-') }}"
+              class="status-badge pickup-status-badge status-{{ pickup.status|lower|replace(' ', '-') }}"
               >{{ pickup.status }}</span
             >
           </td>
           <td>
-            {% if pickup.status == 'Pending' %}
+            {% if pickup.raw_status == 'pending' and not pickup.assigned_to_me
+            %}
+            <button class="action-btn accept-pickup-btn" title="Accept pickup">
+              <span class="material-symbols-outlined"
+                >assignment_turned_in</span
+              >
+            </button>
+            {% endif %} {% if pickup.raw_status in ['pending', 'assigned'] %}
             <button
               class="action-btn mark-picked-up-btn"
               title="Mark as Picked Up"
+              {%
+              if
+              not
+              pickup.assigned_to_me
+              %}disabled{%
+              endif
+              %}
             >
               <span class="material-symbols-outlined">check_circle</span>
             </button>
@@ -63,5 +91,5 @@
   </section>
 </main>
 {% endblock %} {% block scripts %}
-<script src="{{ url_for('static', filename='js/pickup_management.js') }}"></script>
+<script src="{{ url_for('static', filename='js/rider_scripts/pickup_management.js') }}"></script>
 {% endblock %}

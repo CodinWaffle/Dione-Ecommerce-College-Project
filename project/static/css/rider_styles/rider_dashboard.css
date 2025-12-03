@@ -517,16 +517,35 @@ input:checked + .slider:before {
   background: #f3e8ff33;
 }
 .action-btn {
-  background: none;
-  border: none;
+  background: rgba(124, 58, 237, 0.08);
+  border: 1px solid transparent;
+  border-radius: 999px;
   color: #7c3aed;
   font-size: 1.3rem;
   cursor: pointer;
   margin-right: 0.3rem;
-  transition: color 0.15s;
+  padding: 0.35rem;
+  transition: color 0.15s ease, background 0.15s ease, transform 0.15s ease,
+    box-shadow 0.15s ease;
 }
 .action-btn:hover {
   color: #4b2996;
+  background: rgba(124, 58, 237, 0.18);
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.18);
+}
+.action-btn:focus-visible {
+  outline: 2px solid #c4b5fd;
+  outline-offset: 2px;
+}
+.action-btn:active {
+  transform: scale(0.94);
+  background: rgba(99, 102, 241, 0.32);
+  color: #31145c;
+}
+.action-btn[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
 }
 .action-buttons-group {
   display: flex;
@@ -561,6 +580,18 @@ input:checked + .slider:before {
 }
 .status-failed-delivery {
   background: #ef4444; /* Red */
+}
+
+.pickup-items-cell {
+  min-width: 180px;
+}
+.pickup-item-name {
+  font-weight: 600;
+  color: #1f2937;
+}
+.pickup-item-extra {
+  font-size: 0.85rem;
+  color: #6b7280;
 }
 
 /* Status Dropdown for Delivery Management */

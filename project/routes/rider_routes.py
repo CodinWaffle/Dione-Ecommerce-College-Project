@@ -1,6 +1,10 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
-from ..models import Rider, User
+from sqlalchemy.orm import joinedload
+from sqlalchemy import or_
+from datetime import datetime
+
+from ..models import Rider, User, PickupRequest, PickupRequestItem, Order
 from .. import db
 from project.services.auth_service import AuthService
 
@@ -14,12 +18,150 @@ def _ensure_rider_access():
     return True
 
 
+def _get_seller_profile(user_obj):
+    """Return the first seller profile associated with the given user."""
+    if not user_obj:
+        return None
+    profile = getattr(user_obj, 'seller_profile', None)
+    if profile is None:
+        return None
+    try:
+        return profile[0]
+    except (TypeError, AttributeError, IndexError):
+        return profile
+
+
+def _resolve_pickup_contact_number(pickup_request):
+    """Ensure riders always see a contact number even if the pickup lacks one."""
+    if not pickup_request:
+        return None
+    if pickup_request.pickup_contact_phone:
+        return pickup_request.pickup_contact_phone
+
+    seller_user = getattr(pickup_request, 'seller', None)
+    profile = _get_seller_profile(seller_user)
+    candidate_fields = (
+        'business_phone',
+        'contact_phone',
+        'phone',
+        'bank_contact',
+    )
+    for field in candidate_fields:
+        if profile:
+            value = getattr(profile, field, None)
+            if value:
+                return value
+
+    fallback_fields = ('phone', 'contact_number')
+    for field in fallback_fields:
+        value = getattr(seller_user, field, None)
+        if value:
+            return value
+    return None
+
+
+def _collect_pickup_item_names(pickup_request):
+    """Return a flat list of product names tied to the pickup request."""
+    item_names = []
+    if not pickup_request:
+        return item_names
+
+    for pickup_item in getattr(pickup_request, 'items', []) or []:
+        order = getattr(pickup_item, 'order', None)
+        if order and getattr(order, 'order_items', None):
+            for order_item in order.order_items:
+                if getattr(order_item, 'product_name', None):
+                    item_names.append(order_item.product_name)
+        elif order and getattr(order, 'order_number', None):
+            item_names.append(f"Order #{order.order_number}")
+
+    return item_names
+
+
+def _serialize_pickup_for_rider(pickup_request, active_rider_id=None):
+    if not pickup_request:
+        return None
+
+    seller_name = pickup_request.pickup_contact_name
+    if not seller_name and pickup_request.seller:
+        seller_name = getattr(pickup_request.seller, 'username', None) or pickup_request.seller.email
+
+    total_items = sum((item.package_count or 1) for item in pickup_request.items) or len(pickup_request.items)
+    assigned_to_me = bool(active_rider_id and pickup_request.rider_user_id == active_rider_id)
+    item_names = _collect_pickup_item_names(pickup_request)
+    item_summary = ', '.join(item_names)
+    if not item_summary and total_items:
+        label = 'item' if total_items == 1 else 'items'
+        item_summary = f"{total_items} {label}"
+    contact_number = _resolve_pickup_contact_number(pickup_request)
+
+    return {
+        'id': pickup_request.id,
+        'pickup_no': pickup_request.request_number,
+        'seller_name': seller_name,
+        'address': pickup_request.pickup_address,
+        'contact': contact_number,
+        'items': total_items,
+        'item_names': item_names,
+        'item_summary': item_summary,
+        'notes': pickup_request.pickup_notes,
+        'status': (pickup_request.status or '').replace('_', ' ').title(),
+        'raw_status': pickup_request.status,
+        'order_ids': [item.order_id for item in pickup_request.items],
+        'requested_at': pickup_request.requested_at,
+        'assigned_to_me': assigned_to_me,
+        'rider_user_id': pickup_request.rider_user_id,
+    }
+
+
+def _rider_pickup_queryset(scope, rider_user_id):
+    query = PickupRequest.query.options(
+        joinedload(PickupRequest.items)
+        .joinedload(PickupRequestItem.order)
+        .joinedload(Order.order_items)
+    )
+    scope = (scope or 'available').lower()
+
+    if scope == 'assigned':
+        query = query.filter(PickupRequest.rider_user_id == rider_user_id)
+    elif scope == 'history':
+        query = query.filter(
+            PickupRequest.rider_user_id == rider_user_id,
+            PickupRequest.status.in_(['picked_up', 'completed', 'cancelled'])
+        )
+    else:
+        query = query.filter(
+            PickupRequest.status.in_(['pending', 'assigned']),
+            or_(PickupRequest.rider_user_id.is_(None), PickupRequest.rider_user_id == rider_user_id)
+        )
+
+    return query.order_by(PickupRequest.requested_at.desc())
+
+
+def _rider_dashboard_counts(rider_user_id):
+    pending = PickupRequest.query.filter(
+        PickupRequest.status.in_(['pending', 'assigned']),
+        or_(PickupRequest.rider_user_id.is_(None), PickupRequest.rider_user_id == rider_user_id)
+    ).count()
+    completed = PickupRequest.query.filter(
+        PickupRequest.rider_user_id == rider_user_id,
+        PickupRequest.status == 'completed'
+    ).count()
+    return pending, completed
+
+
 @rider_bp.route('/rider/dashboard')
 @login_required
 def rider_dashboard():
     if not _ensure_rider_access():
         return redirect(url_for('main.profile'))
-    return render_template('rider/rider_dashboard.html', username=current_user.email)
+    pending_pickups, completed_pickups = _rider_dashboard_counts(current_user.id)
+    return render_template(
+        'rider/rider_dashboard.html',
+        username=current_user.email,
+        pending_pickups_count=pending_pickups,
+        completed_pickups_count=completed_pickups,
+    )
 
 
 @rider_bp.route('/rider/pickup-management')
@@ -27,7 +169,107 @@ def rider_dashboard():
 def pickup_management():
     if not _ensure_rider_access():
         return redirect(url_for('main.profile'))
-    return render_template('rider/pickup_management.html', username=current_user.email)
+    pickups = _rider_pickup_queryset('available', current_user.id).limit(25).all()
+    pickup_rows = [_serialize_pickup_for_rider(pickup, current_user.id) for pickup in pickups]
+    return render_template(
+        'rider/pickup_management.html',
+        username=current_user.email,
+        pickups=pickup_rows,
+    )
+
+
+@rider_bp.route('/rider/api/pickups')
+@login_required
+def pickup_list_api():
+    if not _ensure_rider_access():
+        return jsonify({'success': False, 'error': "You don't have access to pickups."}), 403
+
+    scope = request.args.get('scope', 'available')
+    pickups = _rider_pickup_queryset(scope, current_user.id).all()
+    return jsonify({
+        'success': True,
+        'pickups': [_serialize_pickup_for_rider(pickup, current_user.id) for pickup in pickups],
+    })
+
+
+@rider_bp.route('/rider/api/pickups/<int:pickup_id>/accept', methods=['POST'])
+@login_required
+def pickup_accept_api(pickup_id):
+    if not _ensure_rider_access():
+        return jsonify({'success': False, 'error': "You don't have access to pickups."}), 403
+
+    pickup_request = (
+        PickupRequest.query.filter_by(id=pickup_id)
+        .options(joinedload(PickupRequest.items))
+        .first_or_404()
+    )
+
+    if pickup_request.rider_user_id and pickup_request.rider_user_id != current_user.id:
+        return jsonify({'success': False, 'error': 'Pickup already assigned to another rider.'}), 400
+
+    pickup_request.rider_user_id = current_user.id
+    pickup_request.mark_status('assigned')
+    pickup_request.assigned_at = datetime.utcnow()
+
+    try:
+        db.session.commit()
+    except Exception as exc:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': 'Unable to accept pickup.'}), 500
+
+    return jsonify({'success': True, 'pickup': _serialize_pickup_for_rider(pickup_request, current_user.id)})
+
+
+@rider_bp.route('/rider/api/pickups/<int:pickup_id>/complete', methods=['POST'])
+@login_required
+def pickup_complete_api(pickup_id):
+    if not _ensure_rider_access():
+        return jsonify({'success': False, 'error': "You don't have access to pickups."}), 403
+
+    payload = request.get_json(silent=True) or {}
+    proof_photo_url = payload.get('proof_photo_url')
+    rider_notes = payload.get('rider_notes')
+    mark_complete = payload.get('mark_complete', True)
+
+    pickup_request = (
+        PickupRequest.query.filter_by(id=pickup_id)
+        .options(joinedload(PickupRequest.items).joinedload(PickupRequestItem.order))
+        .first_or_404()
+    )
+
+    if pickup_request.rider_user_id and pickup_request.rider_user_id != current_user.id:
+        return jsonify({'success': False, 'error': 'Pickup is assigned to another rider.'}), 400
+
+    pickup_request.rider_user_id = pickup_request.rider_user_id or current_user.id
+
+    now = datetime.utcnow()
+    pickup_request.mark_status('picked_up')
+    pickup_request.picked_up_at = now
+
+    for item in pickup_request.items:
+        item.status = 'picked_up'
+        if proof_photo_url:
+            item.proof_photo_url = proof_photo_url
+        if rider_notes:
+            item.rider_notes = rider_notes
+        item.updated_at = now
+        if item.order:
+            item.order.status = 'in_transit'
+            item.order.updated_at = now
+            if not item.order.shipped_at:
+                item.order.shipped_at = now
+
+    if mark_complete:
+        pickup_request.mark_status('completed')
+        pickup_request.completed_at = now
+
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': 'Unable to update pickup.'}), 500
+
+    return jsonify({'success': True, 'pickup': _serialize_pickup_for_rider(pickup_request, current_user.id)})
 
 
 @rider_bp.route('/rider/delivery-management')

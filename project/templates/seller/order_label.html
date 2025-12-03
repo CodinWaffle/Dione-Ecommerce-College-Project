@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Shipping Label - {{ order.order_number }}</title>
+    <style>
+      :root {
+        color-scheme: only light;
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Montserrat", "Poppins", -apple-system, BlinkMacSystemFont,
+          "Segoe UI", Arial, sans-serif;
+        background: #fff;
+        color: #000;
+        margin: 0;
+        padding: 24px;
+      }
+      .label-wrapper {
+        max-width: 800px;
+        margin: 0 auto;
+      }
+      .label {
+        border: 2px solid #000;
+        padding: 32px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 2px solid #000;
+        padding-bottom: 12px;
+      }
+      .brand-title {
+        font-size: 28px;
+        letter-spacing: 4px;
+        font-weight: 700;
+      }
+      .order-meta {
+        text-align: right;
+        font-size: 14px;
+      }
+      .section-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 16px;
+      }
+      .panel {
+        border: 1px solid #000;
+        padding: 16px;
+        min-height: 160px;
+      }
+      .panel h2 {
+        font-size: 16px;
+        margin: 0 0 8px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      .panel p {
+        margin: 4px 0;
+        font-size: 14px;
+        line-height: 1.4;
+      }
+      .panel .strong {
+        font-weight: 600;
+        font-size: 15px;
+      }
+      .details {
+        border: 1px solid #000;
+      }
+      .detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 16px;
+        border-bottom: 1px solid #000;
+        font-size: 14px;
+      }
+      .detail-row:last-child {
+        border-bottom: none;
+      }
+      .items-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+      }
+      .items-table th,
+      .items-table td {
+        border: 1px solid #000;
+        padding: 8px;
+        text-align: left;
+      }
+      .items-table th {
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 13px;
+      }
+      .notes {
+        border: 1px solid #000;
+        padding: 12px 16px;
+        min-height: 60px;
+        font-size: 13px;
+      }
+      .print-hint {
+        margin: 16px auto;
+        display: block;
+        padding: 10px 18px;
+        background: #000;
+        color: #fff;
+        border: none;
+        font-size: 14px;
+        cursor: pointer;
+      }
+      @media print {
+        body {
+          padding: 0;
+        }
+        .print-hint {
+          display: none;
+        }
+        .label-wrapper {
+          margin: 0;
+          max-width: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="label-wrapper">
+      <div class="label">
+        <header>
+          <div>
+            <div class="brand-title">{{ platform_name }}</div>
+            <div>Shipping Label</div>
+          </div>
+          <div class="order-meta">
+            <div>
+              <strong>Order ID:</strong> {{ order.order_number or order.id }}
+            </div>
+            <div>
+              <strong>Generated:</strong> {{ generated_at.strftime('%b %d, %Y
+              %I:%M %p') if generated_at else '' }}
+            </div>
+          </div>
+        </header>
+
+        <section class="section-grid">
+          <div class="panel">
+            <h2>From (Seller)</h2>
+            <p class="strong">{{ seller_info.name or '' }}</p>
+            <p>{{ seller_info.address or '' }}</p>
+          </div>
+          <div class="panel">
+            <h2>To (Customer)</h2>
+            <p class="strong">{{ customer_info.name or '' }}</p>
+            <p>{{ customer_info.address | replace('\n', '<br />') | safe }}</p>
+          </div>
+        </section>
+
+        <section class="details">
+          <div class="detail-row">
+            <span>Shipping Date</span>
+            <span
+              >{{ shipping_date.strftime('%b %d, %Y') if shipping_date else ''
+              }}</span
+            >
+          </div>
+          <div class="detail-row">
+            <span>CAR Code</span>
+            <span>{{ carrier_code }}</span>
+          </div>
+          <div class="detail-row">
+            <span>Buyer Contact</span>
+            <span>{{ customer_phone }}</span>
+          </div>
+        </section>
+
+        <section>
+          <table class="items-table">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Variant</th>
+                <th>Qty</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if order.order_items %} {% for item in order.order_items %}
+              <tr>
+                <td>{{ item.product_name }}</td>
+                <td>{{ item.variant_name or (item.color or '') }}</td>
+                <td>{{ item.quantity }}</td>
+              </tr>
+              {% endfor %} {% else %}
+              <tr>
+                <td colspan="3">No items recorded for this order.</td>
+              </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </section>
+
+        <section class="notes">
+          <strong>Delivery Notes:</strong>
+          <div>{{ shipping_notes or 'N/A' }}</div>
+        </section>
+      </div>
+      <button class="print-hint" onclick="window.print()">
+        Print / Save Label
+      </button>
+    </div>
+    <script>
+      window.addEventListener("load", () => {
+        window.focus();
+        setTimeout(() => {
+          try {
+            window.print();
+          } catch (err) {
+            console.error("Print dialog blocked", err);
+          }
+        }, 200);
+      });
+    </script>
+  </body>
+</html>

@@ -1,5 +1,6 @@
 import os
 import json
+import uuid
 from datetime import datetime
 from . import db
 from flask_login import UserMixin
@@ -20,6 +21,14 @@ def _normalize_image_path(path):
     if s.startswith('/') or s.startswith('http'):
         return s
     return '/static/' + s.lstrip('/')
+
+
+def _generate_pickup_reference():
+  """Return a short unique pickup reference like PKP-20231201-ABC123."""
+  return 'PKP-{:%Y%m%d}-{}'.format(
+    datetime.utcnow(),
+    uuid.uuid4().hex[:6].upper()
+  )
 
 class User(UserMixin, db.Model):
   id = db.Column(db.Integer, primary_key=True)
@@ -534,6 +543,7 @@ class Order(db.Model):
   buyer = db.relationship('User', foreign_keys=[buyer_id], backref='orders_as_buyer')
   seller = db.relationship('User', foreign_keys=[seller_id], backref='orders_as_seller')
   order_items = db.relationship('OrderItem', backref='order', cascade='all, delete-orphan')
+  pickup_items = db.relationship('PickupRequestItem', back_populates='order', cascade='all, delete-orphan')
   
   def __repr__(self):
     return f'<Order {self.order_number}>'
@@ -587,6 +597,102 @@ class OrderItem(db.Model):
   
   def __repr__(self):
     return f'<OrderItem {self.product_name} x{self.quantity}>'
+
+
+class PickupRequest(db.Model):
+  """Represents a pickup request raised by a seller for one or more orders."""
+  __tablename__ = 'pickup_requests'
+
+  id = db.Column(db.Integer, primary_key=True)
+  request_number = db.Column(db.String(40), unique=True, nullable=False, default=_generate_pickup_reference)
+  seller_id = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False, index=True)
+  created_by_id = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
+  rider_user_id = db.Column(db.Integer, db.ForeignKey(User.id))
+
+  status = db.Column(db.String(20), nullable=False, default='pending')  # pending, assigned, en_route, picked_up, completed, cancelled
+  priority = db.Column(db.String(20), default='standard')  # standard, rush
+  bulk_order_count = db.Column(db.Integer, default=1)
+
+  pickup_address = db.Column(db.Text)
+  pickup_contact_name = db.Column(db.String(120))
+  pickup_contact_phone = db.Column(db.String(40))
+  pickup_notes = db.Column(db.Text)
+  pickup_window_start = db.Column(db.DateTime)
+  pickup_window_end = db.Column(db.DateTime)
+
+  requested_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+  assigned_at = db.Column(db.DateTime)
+  accepted_at = db.Column(db.DateTime)
+  picked_up_at = db.Column(db.DateTime)
+  completed_at = db.Column(db.DateTime)
+  cancelled_at = db.Column(db.DateTime)
+  last_status_update = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+  seller = db.relationship('User', foreign_keys=[seller_id], backref=db.backref('pickup_requests_as_seller', lazy='dynamic'))
+  created_by = db.relationship('User', foreign_keys=[created_by_id], backref=db.backref('pickup_requests_created', lazy='dynamic'))
+  rider_user = db.relationship('User', foreign_keys=[rider_user_id], backref=db.backref('pickup_assignments', lazy='dynamic'))
+
+  items = db.relationship('PickupRequestItem', back_populates='pickup_request', cascade='all, delete-orphan')
+
+  __table_args__ = (
+    db.Index('idx_pickup_requests_status', 'status'),
+  )
+
+  def __repr__(self):
+    return f'<PickupRequest {self.request_number} status={self.status}>'
+
+  def mark_status(self, new_status, timestamp=None):
+    """Utility helper to update status fields consistently."""
+    ts = timestamp or datetime.utcnow()
+    self.status = new_status
+    self.last_status_update = ts
+    if new_status == 'assigned':
+      self.assigned_at = ts
+    elif new_status in {'en_route', 'accepted'}:
+      self.accepted_at = ts
+    elif new_status in {'picked_up', 'in_transit'}:
+      self.picked_up_at = ts
+    elif new_status == 'completed':
+      self.completed_at = ts
+    elif new_status == 'cancelled':
+      self.cancelled_at = ts
+
+
+class PickupRequestItem(db.Model):
+  """Mapping table between pickup requests and seller orders."""
+  __tablename__ = 'pickup_request_items'
+
+  id = db.Column(db.Integer, primary_key=True)
+  pickup_request_id = db.Column(db.Integer, db.ForeignKey('pickup_requests.id', ondelete='CASCADE'), nullable=False, index=True)
+  order_id = db.Column(db.Integer, db.ForeignKey('orders.id'), nullable=False, unique=True)
+  seller_id = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
+
+  status = db.Column(db.String(20), default='pending')  # pending, ready, picked_up, cancelled
+  package_count = db.Column(db.Integer, default=1)
+  rider_notes = db.Column(db.Text)
+  proof_photo_url = db.Column(db.String(500))
+  proof_reference = db.Column(db.String(120))
+
+  created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+  updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+  pickup_request = db.relationship('PickupRequest', back_populates='items')
+  order = db.relationship('Order', back_populates='pickup_items')
+  seller = db.relationship('User')
+
+  def __repr__(self):
+    return f'<PickupRequestItem order={self.order_id} request={self.pickup_request_id}>'
+
+  def to_dict(self):
+    return {
+      'id': self.id,
+      'pickup_request_id': self.pickup_request_id,
+      'order_id': self.order_id,
+      'status': self.status,
+      'package_count': self.package_count,
+      'proof_photo_url': self.proof_photo_url,
+      'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+    }
 
 
 class ProductReview(db.Model):

@@ -10,32 +10,34 @@
   ('completed', 'Completed'),
   ('cancelled', 'Cancelled')
 ] -%}
+{%- set editable_status_values = ['pending', 'shipping'] -%}
 {%- set status_labels = {
   'pending': 'Pending',
   'confirmed': 'Confirmed',
   'shipping': 'To Ship',
+  'to ship': 'To Ship',
+  'to_ship': 'To Ship',
   'in_transit': 'In Transit',
   'delivered': 'Delivered',
   'completed': 'Completed',
   'cancelled': 'Cancelled'
 } -%}
+{%- set shipping_status_values = ['shipping', 'to ship', 'to_ship'] -%}
 
 {%- set order_id = order.id if order is not none and (order.id is defined) else (
-  order.get('id') if order is mapping else None)
--%}
+  order.get('id') if order is mapping else None) -%}
 {%- set order_number = order.order_number if order is not none and (order.order_number is defined) else (
-  order.get('order_number') if order is mapping else order_id)
--%}
+  order.get('order_number') if order is mapping else order_id) -%}
 {%- set status_value = (order.status if order is not none and (order.status is defined) else (
   order.get('status') if order is mapping else 'pending'))|lower -%}
 {%- set status_label = status_labels.get(status_value, status_value.replace('_', ' ').title()) -%}
+{%- set status_locked = status_value not in editable_status_values -%}
+{%- set pickup_action_enabled = status_value in shipping_status_values -%}
 
 {%- set created_at = order.created_at if order is not none and (order.created_at is defined) else (
-  order.get('created_at') if order is mapping else None)
--%}
+  order.get('created_at') if order is mapping else None) -%}
 {%- set updated_at = order.updated_at if order is not none and (order.updated_at is defined) else (
-  order.get('updated_at') if order is mapping else None)
--%}
+  order.get('updated_at') if order is mapping else None) -%}
 {%- if created_at is string -%}{%- set created_label = created_at -%}{%- elif created_at -%}{%- set created_label = created_at.strftime('%b %d, %Y') -%}{%- else -%}{%- set created_label = '—' -%}{%- endif -%}
 {%- if updated_at is string -%}{%- set updated_label = updated_at -%}{%- elif updated_at -%}{%- set updated_label = updated_at.strftime('%b %d, %Y %I:%M %p') -%}{%- else -%}{%- set updated_label = created_label -%}{%- endif -%}
 
@@ -109,6 +111,45 @@
 {%- set first_item = order_items[0] if item_count > 0 else None -%}
 {%- set first_item_map = first_item if first_item is mapping else None -%}
 
+{%- set pickup_items = [] -%}
+{%- if order is not none and (order.pickup_items is defined) and order.pickup_items -%}
+  {%- set pickup_items = order.pickup_items -%}
+{%- elif order is mapping and order.get('pickup_items') -%}
+  {%- set pickup_items = order.get('pickup_items') -%}
+{%- endif -%}
+{%- set pickup_finder = namespace(item=None) -%}
+{%- for pickup_candidate in pickup_items -%}
+  {%- if pickup_finder.item is none -%}
+    {%- set candidate_request = pickup_candidate.pickup_request if pickup_candidate is not mapping else pickup_candidate.get('pickup_request') -%}
+    {%- if candidate_request and (candidate_request.status|lower not in ['completed', 'cancelled']) -%}
+      {%- set pickup_finder.item = pickup_candidate -%}
+    {%- endif -%}
+  {%- endif -%}
+{%- endfor -%}
+{%- set active_pickup_item = pickup_finder.item -%}
+{%- set active_pickup_request = None -%}
+{%- if active_pickup_item -%}
+  {%- if active_pickup_item.pickup_request is defined -%}
+    {%- set active_pickup_request = active_pickup_item.pickup_request -%}
+  {%- elif active_pickup_item.get('pickup_request') -%}
+    {%- set active_pickup_request = active_pickup_item.get('pickup_request') -%}
+  {%- endif -%}
+{%- endif -%}
+{%- set pickup_status_value = (active_pickup_request.status if active_pickup_request and (active_pickup_request.status is defined) else '')|lower -%}
+{%- set pickup_status_label = pickup_status_value.replace('_', ' ')|title if pickup_status_value else 'Not Scheduled' -%}
+{%- set pickup_request_number = '' -%}
+{%- if active_pickup_request and (active_pickup_request.request_number is defined) -%}
+  {%- set pickup_request_number = active_pickup_request.request_number -%}
+{%- elif active_pickup_request is mapping -%}
+  {%- set pickup_request_number = active_pickup_request.get('request_number', '') -%}
+{%- endif -%}
+{%- set pickup_packages = (active_pickup_item.package_count if active_pickup_item and (active_pickup_item.package_count is defined) else None) -%}
+{%- if pickup_packages is none and active_pickup_item is mapping -%}
+  {%- set pickup_packages = active_pickup_item.get('package_count') -%}
+{%- endif -%}
+{%- set pickup_packages = pickup_packages or item_count or 1 -%}
+{# pickup_action_enabled already computed above #}
+
 {%- set product_name = 'Order Items' -%}
 {%- set product_image = placeholder_image -%}
 {%- set variant_info = '' -%}
@@ -159,10 +200,22 @@
 {%- set row_index = (index if index is not none else 0) + 1 -%}
 {%- set status_class = status_value.replace('_', '-') -%}
 
-<div class="order-card" data-order-id="{{ order_id }}" data-status="{{ status_value }}">
+<div
+  class="order-card"
+  data-order-id="{{ order_id }}"
+  data-status="{{ status_value }}"
+  data-pickup-id="{{ active_pickup_request.id if active_pickup_request and (active_pickup_request.id is defined) else '' }}"
+  data-pickup-status="{{ pickup_status_value }}"
+  data-pickup-ready="{{ 'true' if pickup_action_enabled else 'false' }}"
+>
   <div class="order-header">
     <div class="header-checkbox">
-      <input type="checkbox" class="order-checkbox" aria-label="Select order {{ order_number }}" />
+      <input
+        type="checkbox"
+        class="order-checkbox"
+        value="{{ order_id }}"
+        aria-label="Select order {{ order_number }}"
+      />
     </div>
     <div class="order-info">
       <span class="customer-label">Customer</span>
@@ -209,21 +262,88 @@
         data-current-value="{{ status_value }}"
         aria-label="Update status for order {{ order_number }}"
       >
-        {% for value, label in status_options %}
+        {% if status_locked %}
+        <option value="{{ status_value }}" selected disabled>
+          {{ status_label }} (locked)
+        </option>
+        {% endif %}
+        {% for value, label in status_options if value in editable_status_values %}
         <option value="{{ value }}" {% if value == status_value %}selected{% endif %}>{{ label }}</option>
         {% endfor %}
       </select>
       <p class="status-note">Updated {{ updated_label }}</p>
     </div>
     <div class="action-col">
-      <button class="btn btn-primary" type="button" data-action="openDetails" data-order-id="{{ order_id }}">
-        <i data-lucide="eye"></i>
-        View details
+      <div
+        class="pickup-block"
+        data-pickup-summary
+        {% if not pickup_action_enabled %}hidden style="display: none"{% endif %}
+      >
+        {% if active_pickup_request %}
+        <div class="pickup-chip status-{{ pickup_status_value|replace('_', '-') }}">
+          Pickup {{ pickup_status_label }}
+        </div>
+        <p class="pickup-meta">
+          Ref: <span>{{ pickup_request_number or '—' }}</span>
+          {% if active_pickup_request.bulk_order_count and active_pickup_request.bulk_order_count > 1 %}·
+          {{ active_pickup_request.bulk_order_count }} orders{% endif %}
+        </p>
+        <p class="pickup-meta">
+          Packages: <span>{{ pickup_packages }}</span>
+          {% if active_pickup_request.rider_user_id %}
+          · Rider assigned
+          {% else %}
+          · Awaiting rider
+          {% endif %}
+        </p>
+        <div class="pickup-actions-row">
+          <button
+            class="btn btn-accent"
+            type="button"
+            data-action="viewPickup"
+            data-pickup-id="{{ active_pickup_request.id if active_pickup_request and (active_pickup_request.id is defined) else '' }}"
+            data-order-id="{{ order_id }}"
+          >
+            <i data-lucide="truck"></i>
+            View pickup
+          </button>
+          <button
+            class="btn btn-secondary"
+            type="button"
+            data-action="assignRider"
+            data-pickup-id="{{ active_pickup_request.id if active_pickup_request and (active_pickup_request.id is defined) else '' }}"
+          >
+            <i data-lucide="user-check"></i>
+            Assign rider
+          </button>
+        </div>
+        {% else %}
+        <div class="pickup-chip pickup-none">No pickup scheduled</div>
+        <button
+          class="btn btn-accent"
+          type="button"
+          data-action="requestPickup"
+          data-order-id="{{ order_id }}"
+          {% if not pickup_action_enabled %}disabled{% endif %}
+        >
+          <i data-lucide="truck"></i>
+          Request pickup
+        </button>
+        <p class="pickup-helper" {% if pickup_action_enabled %}style="display: none"{% endif %}>
+          Move the order to "To Ship" to enable pickups.
+        </p>
+        {% endif %}
+      </div>
+      {% if not pickup_action_enabled %}
+      <button class="btn btn-primary" type="button" data-action="printLabel" data-order-id="{{ order_id }}">
+        <i data-lucide="printer"></i>
+        Print label
       </button>
       <button class="btn btn-secondary" type="button" data-action="contactBuyer" data-order-id="{{ order_id }}">
         <i data-lucide="message-square"></i>
         Message buyer
       </button>
+      {% endif %}
     </div>
     <div class="order-alert" role="status" aria-live="polite"></div>
   </div>

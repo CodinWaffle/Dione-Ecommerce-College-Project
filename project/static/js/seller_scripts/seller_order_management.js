@@ -21,6 +21,10 @@ document.addEventListener("DOMContentLoaded", function () {
   const dateTo = document.getElementById("dateTo");
   const sortBy = document.getElementById("sortBy");
   const statusFilter = document.getElementById("statusFilter");
+  const selectAllCheckbox = document.getElementById("selectAllOrders");
+  const bulkBar = document.getElementById("bulkActionBar");
+  const bulkCount = document.getElementById("bulkSelectedCount");
+  const bulkPickupButton = document.getElementById("bulkPickupButton");
 
   const STATUS_BUCKETS = {
     pending: (status) => ["pending", "confirmed"].includes(status),
@@ -117,9 +121,114 @@ document.addEventListener("DOMContentLoaded", function () {
   dateTo?.addEventListener("change", filterOrders);
   statusFilter?.addEventListener("change", filterOrders);
 
+  function getOrderCheckboxes() {
+    return Array.from(document.querySelectorAll(".order-checkbox"));
+  }
+
+  function getSelectedOrderCheckboxes() {
+    return getOrderCheckboxes().filter((checkbox) => checkbox.checked);
+  }
+
+  function updateSelectAllState() {
+    if (!selectAllCheckbox) return;
+    const total = getOrderCheckboxes().length;
+    const selected = getSelectedOrderCheckboxes().length;
+    selectAllCheckbox.checked = total > 0 && selected === total;
+    selectAllCheckbox.indeterminate = selected > 0 && selected < total;
+  }
+
+  function refreshBulkSelection() {
+    const selected = getSelectedOrderCheckboxes();
+    if (bulkBar) {
+      bulkBar.hidden = selected.length === 0;
+    }
+    if (bulkCount) {
+      bulkCount.textContent = selected.length;
+    }
+    updateSelectAllState();
+    return selected;
+  }
+
+  selectAllCheckbox?.addEventListener("change", (event) => {
+    const checked = event.target.checked;
+    getOrderCheckboxes().forEach((checkbox) => {
+      checkbox.checked = checked;
+    });
+    refreshBulkSelection();
+  });
+
+  getOrderCheckboxes().forEach((checkbox) => {
+    checkbox.addEventListener("change", () => {
+      refreshBulkSelection();
+    });
+  });
+
+  bulkPickupButton?.addEventListener("click", (event) => {
+    event.preventDefault();
+    handleBulkPickupRequest();
+  });
+
+  async function handleBulkPickupRequest() {
+    if (!bulkPickupButton) return;
+    const selectedCheckboxes = refreshBulkSelection();
+    const orderIds = selectedCheckboxes
+      .map((checkbox) => checkbox.closest(".order-card")?.dataset.orderId)
+      .filter(Boolean);
+    if (!orderIds.length) {
+      window.alert("Select at least one order to request a pickup.");
+      return;
+    }
+
+    bulkPickupButton.disabled = true;
+    bulkPickupButton.dataset.loading = "true";
+
+    try {
+      const response = await fetch("/seller/orders/pickups/bulk", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Requested-With": "XMLHttpRequest",
+        },
+        body: JSON.stringify({ order_ids: orderIds }),
+      });
+      const payload = await response.json();
+
+      if (!response.ok || !payload.success) {
+        throw new Error(payload.error || "Unable to create pickup request.");
+      }
+
+      orderIds.forEach((orderId) => {
+        const card = document.querySelector(
+          `.order-card[data-order-id='${orderId}']`
+        );
+        if (card && window.updatePickupSummary) {
+          window.updatePickupSummary(card, payload.pickup, { orderId });
+          if (window.showOrderAlert) {
+            window.showOrderAlert(
+              card,
+              "Pickup scheduled via bulk action.",
+              "success"
+            );
+          }
+        }
+      });
+
+      getOrderCheckboxes().forEach((checkbox) => {
+        checkbox.checked = false;
+      });
+      refreshBulkSelection();
+    } catch (error) {
+      window.alert(error.message);
+    } finally {
+      bulkPickupButton.disabled = false;
+      delete bulkPickupButton.dataset.loading;
+    }
+  }
+
   document.addEventListener("orderStatusUpdated", () => {
     filterOrders();
   });
 
   filterOrders();
+  refreshBulkSelection();
 });

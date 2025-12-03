@@ -183,6 +183,18 @@ block page_content %}
       </div>
     </div>
     <div class="orders-section">
+      <div class="bulk-action-bar" id="bulkActionBar" hidden>
+        <div class="bulk-selected">
+          <strong id="bulkSelectedCount">0</strong>
+          <span>selected</span>
+        </div>
+        <div class="bulk-buttons">
+          <button class="btn btn-accent" type="button" id="bulkPickupButton">
+            <i data-lucide="truck"></i>
+            Request pickup
+          </button>
+        </div>
+      </div>
       <!-- Table Header -->
       <div
         class="orders-table-header"
@@ -243,7 +255,7 @@ block page_content %}
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Then load our dashboard JS -->
     <script src="{{ url_for('static', filename='js/seller_dashboard.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/seller_order_management.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/seller_scripts/seller_order_management.js') }}"></script>
     <script src="{{ url_for('static', filename='js/order_card.js') }}"></script>
     {% include 'seller/partials/_order_details_modal.html' %} {% include
     'seller/partials/_order_communication.html' %} {% endblock %}
