@@ -5,12 +5,13 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request,
 from flask_login import login_required, current_user, login_user, logout_user
 from flask_mail import Message
 from project import db, mail
-from project.models import User, SiteSetting, Seller, Rider, Warning
+from project.models import User, SiteSetting, Seller, Rider, Warning, RiderPayoutRequest
 from project.models import ChatMessage
 from project.services.auth_service import AuthService
 from werkzeug.utils import secure_filename
 import os
 from datetime import datetime
+from decimal import Decimal
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -791,6 +792,65 @@ def settings():
         'maintenance_mode': _to_bool(settings_map['maintenance_mode'])
     }
     return render_template('admin/settings.html', settings=settings_map, flags=bools)
+
+
+@admin_bp.route('/rider-payouts')
+@login_required
+def rider_payouts():
+    payouts = (
+        RiderPayoutRequest.query
+        .order_by(RiderPayoutRequest.requested_at.desc())
+        .limit(200)
+        .all()
+    )
+    pending = [p for p in payouts if p.status == 'pending']
+    now = datetime.utcnow()
+    month_start = datetime(now.year, now.month, 1)
+    processed_this_month = [
+        p for p in payouts
+        if p.status == 'paid' and p.processed_at and p.processed_at >= month_start
+    ]
+    stats = {
+        'pending_count': len(pending),
+        'pending_total': sum(((p.amount or Decimal('0')) for p in pending), Decimal('0')),
+        'processed_this_month': len(processed_this_month),
+        'processed_total': sum(((p.amount or Decimal('0')) for p in processed_this_month), Decimal('0')),
+    }
+    return render_template('admin/rider_payouts.html', payouts=payouts, stats=stats)
+
+
+@admin_bp.post('/rider-payouts/<int:payout_id>/status')
+@login_required
+def rider_payout_update(payout_id):
+    payout = RiderPayoutRequest.query.get_or_404(payout_id)
+    new_status = (request.form.get('status') or '').strip().lower()
+    valid_statuses = {'pending', 'paid', 'rejected'}
+    if new_status not in valid_statuses:
+        flash('Invalid payout status submitted.', 'danger')
+        return redirect(url_for('admin.rider_payouts'))
+
+    payout.status = new_status
+    payout.admin_notes = request.form.get('admin_notes') or payout.admin_notes
+    reference_code = request.form.get('reference_code') or request.form.get('reference')
+    if reference_code:
+        payout.reference_code = reference_code
+
+    if new_status in {'paid', 'rejected'}:
+        payout.processed_at = datetime.utcnow()
+        payout.processed_by_id = current_user.id
+    else:
+        payout.processed_at = None
+        payout.processed_by_id = None
+
+    try:
+        db.session.commit()
+        flash('Payout status updated.', 'success')
+    except Exception as exc:
+        db.session.rollback()
+        current_app.logger.error('Failed to update rider payout %s: %s', payout_id, exc)
+        flash('Unable to update payout right now.', 'danger')
+
+    return redirect(url_for('admin.rider_payouts'))
 
 
 def _ensure_settings(defaults):

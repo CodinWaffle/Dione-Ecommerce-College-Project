@@ -182,6 +182,30 @@ class Rider(db.Model):
     return f'<Rider {self.user_id}>'
 
 
+class RiderPayoutRequest(db.Model):
+  """Tracks rider payout requests for manual processing by admins."""
+  __tablename__ = 'rider_payout_requests'
+
+  id = db.Column(db.Integer, primary_key=True)
+  rider_id = db.Column(db.Integer, db.ForeignKey('rider.id'), nullable=False, index=True)
+  amount = db.Column(db.Numeric(12, 2), nullable=False)
+  status = db.Column(db.String(20), nullable=False, default='pending')  # pending, paid, rejected
+  requested_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+  processed_at = db.Column(db.DateTime)
+  processed_by_id = db.Column(db.Integer, db.ForeignKey(User.id))
+  gcash_name = db.Column(db.String(120))
+  gcash_number = db.Column(db.String(20))
+  notes = db.Column(db.Text)
+  admin_notes = db.Column(db.Text)
+  reference_code = db.Column(db.String(64))
+
+  rider = db.relationship('Rider', backref=db.backref('payout_requests', lazy='dynamic'))
+  processed_by = db.relationship('User', foreign_keys=[processed_by_id])
+
+  def __repr__(self):
+    return f'<RiderPayoutRequest rider={self.rider_id} amount={self.amount} status={self.status}>'
+
+
 class SiteSetting(db.Model):
   id = db.Column(db.Integer, primary_key=True)
   key = db.Column(db.String(64), unique=True, nullable=False)

@@ -6,6 +6,7 @@ from flask import request
 from flask_login import login_required, current_user, logout_user
 from project import db
 from project.models import Product, User, SellerProduct, ProductReport, Seller, CartItem, Order, OrderItem, Buyer
+from project.services.inventory_service import ensure_order_inventory_deducted
 
 from sqlalchemy import func
 import hashlib
@@ -90,6 +91,43 @@ def _normalize_image_path(path):
     if s.startswith('/') or s.startswith('http'):
         return s
     return '/static/' + s.lstrip('/')
+
+
+def _get_seller_product_sold_counts(product_ids):
+    """Return sold quantities for SellerProduct ids based on completed orders."""
+    if not product_ids:
+        return {}
+
+    normalized_ids = {pid for pid in product_ids if pid}
+    if not normalized_ids:
+        return {}
+
+    try:
+        rows = (
+            db.session.query(
+                OrderItem.product_id,
+                func.sum(OrderItem.quantity)
+            )
+            .join(Order, OrderItem.order_id == Order.id)
+            .filter(
+                OrderItem.product_id.in_(normalized_ids),
+                Order.status == 'completed'
+            )
+            .group_by(OrderItem.product_id)
+            .all()
+        )
+    except Exception as exc:
+        current_app.logger.error('Failed to compute sold counts: %s', exc)
+        return {}
+
+    return {pid: int(total or 0) for pid, total in rows}
+
+
+def _get_seller_product_sold_count(product_id):
+    """Helper for single product sold count lookup."""
+    if not product_id:
+        return 0
+    return _get_seller_product_sold_counts([product_id]).get(product_id, 0)
 
 
 def _extract_image_value(image_value):
@@ -525,6 +563,9 @@ def api_products():
         
         items.append(pd)
     
+    seller_product_ids = [sp.id for sp in seller_products]
+    seller_sold_counts = _get_seller_product_sold_counts(seller_product_ids)
+
     for sp in seller_products:
         # Extract colors from variants for frontend display
         colors = []
@@ -579,6 +620,7 @@ def api_products():
             'colors': colors,
             'variants': variants,
             'sellerId': sp.seller_id,
+            'soldCount': seller_sold_counts.get(sp.id, 0),
         })
     
     # Sort combined results by most recent and limit
@@ -723,6 +765,7 @@ def api_product(product_id):
                 'stock_data': stock_data,
                 'type': 'seller'
             }
+            payload['soldCount'] = _get_seller_product_sold_count(sp.id)
             return jsonify({'product': payload})
 
 
@@ -2117,7 +2160,7 @@ def place_order():
                         product_id=it.product_id,
                         seller_id=it.seller_id or seller_id,
                         product_name=it.product_name,
-                        product_image=it.variant_image,  # Now this field exists in the database
+                        product_image=it.variant_image,  # Persist the variant image for buyer history
                         variant_name=f"{it.color} · {it.size}",
                         size=it.size,
                         color=it.color,
@@ -2127,25 +2170,8 @@ def place_order():
                     )
                     db.session.add(oi)
 
-                    # Try to decrement VariantSize if it exists
-                    try:
-                        pv = ProductVariant.query.filter_by(product_id=it.product_id, variant_name=it.color).first()
-                        if pv:
-                            vs = VariantSize.query.filter_by(variant_id=pv.id, size_label=it.size).first()
-                            if vs:
-                                vs.stock_quantity = max(0, (vs.stock_quantity or 0) - int(it.quantity or 0))
-                                db.session.add(vs)
-                    except Exception:
-                        pass
-
-                    # Update seller product total_stock if present
-                    try:
-                        sp = SellerProduct.query.get(it.product_id)
-                        if sp and sp.total_stock is not None:
-                            sp.total_stock = max(0, (sp.total_stock or 0) - int(it.quantity or 0))
-                            db.session.add(sp)
-                    except Exception:
-                        pass
+                db.session.flush()
+                ensure_order_inventory_deducted(order, current_app.logger)
 
                 # Commit order and remove cart items
                 db.session.commit()
@@ -2192,7 +2218,7 @@ def my_purchases():
         {'id': 'pending', 'label': 'Pending'},
         {'id': 'shipping', 'label': 'Shipping'},
         {'id': 'in_transit', 'label': 'In Transit'},
-        {'id': 'to_receive', 'label': 'To Be Received'},
+        {'id': 'to_receive_today', 'label': 'To Receive Today'},
         {'id': 'delivered', 'label': 'Delivered'},
         {'id': 'completed', 'label': 'Completed'},
     ]
@@ -2266,7 +2292,7 @@ def my_purchases():
         {
             'id': 'ORD-2024-3278',
             'placed_at': now - timedelta(days=7),
-            'status': 'to_receive',
+            'status': 'to_receive_today',
             'status_message': 'Out for delivery',
             'total': 985.00,
             'tracking_number': 'PHL556677889',
@@ -2625,6 +2651,7 @@ def product_detail(product_id):
                 'size_guides': size_guides,
                 'certifications': certifications,
             }
+            product['soldCount'] = _get_seller_product_sold_count(sp.id)
             product_price = float(sp.price or 0)
 
         else:

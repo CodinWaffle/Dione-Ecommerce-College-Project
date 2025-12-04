@@ -1,0 +1,271 @@
+{% extends 'main/base_buyer.html' %} {% block title %}Order #{{
+order.order_number }} · My Purchases{% endblock %} {% block extra_css %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/buyer_styles/order_details.css') }}"
+/>
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css"
+/>
+{% endblock %} {% block content %} {% set status_meta = { 'pending': {'label':
+'Pending', 'icon': 'ri-time-line', 'tone': 'warning', 'desc': 'Awaiting payment
+confirmation'}, 'confirmed': {'label': 'Confirmed', 'icon':
+'ri-shield-check-line', 'tone': 'progress', 'desc': 'Seller is preparing your
+order'}, 'shipping': {'label': 'Shipping', 'icon': 'ri-truck-line', 'tone':
+'progress', 'desc': 'Parcel is on its way to the courier'}, 'in_transit':
+{'label': 'In Transit', 'icon': 'ri-roadster-line', 'tone': 'progress', 'desc':
+'Courier picked up your parcel'}, 'to_receive_today': {'label': 'To Receive
+Today', 'icon': 'ri-calendar-event-line', 'tone': 'progress', 'desc': 'Courier
+scheduled to deliver today'}, 'delivered': {'label': 'Delivered', 'icon':
+'ri-home-smile-line', 'tone': 'success', 'desc': 'Package successfully
+delivered'}, 'completed': {'label': 'Completed', 'icon':
+'ri-checkbox-circle-line', 'tone': 'success', 'desc': 'Order marked as
+completed'} } %} {% set meta = status_meta.get(order.status, {'label':
+'Processing', 'icon': 'ri-loader-4-line', 'tone': 'progress', 'desc': 'We are
+working on it'}) %} {% set shipping = order.shipping_address if
+order.shipping_address else {} %} {% set delivery_meta =
+shipping.get('_delivery_meta') if shipping and shipping.get('_delivery_meta')
+else {} %} {% set payment_method = shipping.get('payment_method') or
+shipping.get('paymentMethod') or 'Cash on Delivery' %} {% set contact_name =
+(shipping.get('name') or ((shipping.get('first_name') or
+shipping.get('firstName') or '') ~ ' ' ~ (shipping.get('last_name') or
+shipping.get('lastName') or '')) or '' %} {% set contact_name =
+contact_name.strip() %} {% set contact_number = shipping.get('phone') or
+shipping.get('mobile') or shipping.get('contact_number') %} {% set address_line
+= shipping.get('address') or shipping.get('street') %} {% set city_line =
+shipping.get('city') %} {% set region_line = shipping.get('province') or
+shipping.get('state') %} {% set postal_line = shipping.get('zip') or
+shipping.get('zip_code') or shipping.get('zipCode') or
+shipping.get('postal_code') %} {% set country_line = shipping.get('country') %}
+{% set ns = namespace(items_total=0) %} {% for item in order.order_items %} {%
+set ns.items_total = ns.items_total + (item.total_price or 0) %} {% endfor %} {%
+set shipping_fee = order.shipping_fee or 0 %} {% set grand_total =
+order.total_amount or (ns.items_total + shipping_fee) %}
+
+<div class="order-details-page">
+  <div class="page-breadcrumb">
+    <a
+      href="{{ url_for('buyer.my_purchases', status=request.args.get('status', 'all')) }}"
+    >
+      <i class="ri-arrow-left-line"></i>
+      Back to My Purchases
+    </a>
+    <span>/</span>
+    <span>Order #{{ order.order_number }}</span>
+  </div>
+
+  <section class="order-hero">
+    <div class="order-hero-top">
+      <div class="order-identifier">
+        <span>Order ID</span>
+        <h1>#{{ order.order_number }}</h1>
+        <p>{{ meta.desc }}</p>
+      </div>
+      <div class="status-chip tone-{{ meta.tone }}">
+        <i class="{{ meta.icon }}"></i>
+        <div>
+          <strong>{{ meta.label }}</strong>
+          <div class="status-desc">
+            {{ order.status.replace('_', ' ').title() }}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="order-info-grid">
+      <div class="info-block">
+        <span>Placed on</span>
+        <strong>{{ order.created_at.strftime('%B %d, %Y') }}</strong>
+      </div>
+      <div class="info-block">
+        <span>Payment Status</span>
+        <strong
+          >{{ (order.payment_status or 'pending').replace('_', ' ').title()
+          }}</strong
+        >
+      </div>
+      {% if order.tracking_number %}
+      <div class="info-block">
+        <span>Tracking #</span>
+        <strong>{{ order.tracking_number }}</strong>
+      </div>
+      {% endif %}
+      <div class="info-block">
+        <span>Latest Update</span>
+        <strong
+          >{{ (order.updated_at or order.created_at).strftime('%B %d, %Y %I:%M
+          %p') }}</strong
+        >
+      </div>
+    </div>
+  </section>
+
+  <section class="detail-grid">
+    <article class="detail-card">
+      <h2>Shipping Information</h2>
+      <ul class="detail-list">
+        <li>
+          <span>Recipient</span>
+          <strong
+            >{{ contact_name or order.buyer.username or order.buyer.email
+            }}</strong
+          >
+        </li>
+        <li>
+          <span>Contact Number</span>
+          <strong>{{ contact_number or 'Not provided' }}</strong>
+        </li>
+        <li>
+          <span>Delivery Address</span>
+          <strong>
+            {{ address_line or 'No street provided' }}<br />
+            {{ city_line or '' }} {{ postal_line or '' }}<br />
+            {{ region_line or '' }} {{ country_line or '' }}
+          </strong>
+        </li>
+      </ul>
+    </article>
+
+    <article class="detail-card">
+      <h2>Payment Summary</h2>
+      <div class="summary-line">
+        <span>Payment Method</span>
+        <strong>{{ payment_method }}</strong>
+      </div>
+      <div class="summary-line">
+        <span>Items Subtotal</span>
+        <strong>₱{{ '%.2f'|format(ns.items_total) }}</strong>
+      </div>
+      <div class="summary-line">
+        <span>Shipping Fee</span>
+        <strong>₱{{ '%.2f'|format(shipping_fee) }}</strong>
+      </div>
+      <div class="summary-line total">
+        <span>Total Paid</span>
+        <strong>₱{{ '%.2f'|format(grand_total) }}</strong>
+      </div>
+    </article>
+
+    {% if delivery_meta %}
+    <article class="detail-card">
+      <h2>Delivery Timeline</h2>
+      <div class="delivery-meta-grid">
+        {% if delivery_meta.get('delivery_rider_id') %}
+        <div class="delivery-pill">
+          <span>Assigned Rider</span>
+          <strong>#{{ delivery_meta.get('delivery_rider_id') }}</strong>
+        </div>
+        {% endif %} {% if delivery_meta.get('delivery_assigned_at') %}
+        <div class="delivery-pill">
+          <span>Assigned</span>
+          <strong
+            >{{ delivery_meta.get('delivery_assigned_at')|replace('T', ' ')
+            }}</strong
+          >
+        </div>
+        {% endif %} {% if delivery_meta.get('to_receive_today_at') %}
+        <div class="delivery-pill">
+          <span>Scheduled</span>
+          <strong
+            >{{ delivery_meta.get('to_receive_today_at')|replace('T', ' ')
+            }}</strong
+          >
+        </div>
+        {% endif %} {% if delivery_meta.get('delivery_completed_at') %}
+        <div class="delivery-pill">
+          <span>Delivered</span>
+          <strong
+            >{{ delivery_meta.get('delivery_completed_at')|replace('T', ' ')
+            }}</strong
+          >
+        </div>
+        {% endif %} {% if delivery_meta.get('payment_received_at') %}
+        <div class="delivery-pill">
+          <span>Payment Received</span>
+          <strong
+            >{{ delivery_meta.get('payment_received_at')|replace('T', ' ')
+            }}</strong
+          >
+        </div>
+        {% endif %} {% if delivery_meta.get('commission_amount') %}
+        <div class="delivery-pill">
+          <span>Rider Commission</span>
+          <strong>₱{{ delivery_meta.get('commission_amount') }}</strong>
+        </div>
+        {% endif %}
+      </div>
+      {% if delivery_meta.get('delivery_proof_url') %}
+      <div
+        class="order-actions"
+        style="justify-content: flex-start; margin-top: 1.25rem"
+      >
+        <a
+          class="btn-ghost"
+          href="{{ delivery_meta.get('delivery_proof_url') }}"
+          target="_blank"
+          rel="noopener"
+        >
+          <i class="ri-image-line"></i>
+          View Delivery Proof
+        </a>
+      </div>
+      {% endif %}
+    </article>
+    {% endif %}
+  </section>
+
+  <section class="order-items-card">
+    <div class="section-heading">
+      <h2>Items in this Order</h2>
+      <p>
+        {{ order.order_items|length }} item{{ 's' if order.order_items|length !=
+        1 else '' }} • {{ meta.label }}
+      </p>
+    </div>
+    {% for item in order.order_items %}
+    <div class="order-item">
+      <div class="item-image">
+        <img
+          src="{{ item.product_image or '/static/image/banner.png' }}"
+          alt="{{ item.product_name }}"
+        />
+      </div>
+      <div class="item-details">
+        <h3>{{ item.product_name }}</h3>
+        <div class="item-meta">
+          {% if item.variant_name %}
+          <span>{{ item.variant_name }}</span>
+          {% else %} {% if item.color %}<span>Color: {{ item.color }}</span>{%
+          endif %} {% if item.size %}<span>Size: {{ item.size }}</span>{% endif
+          %} {% endif %}
+          <span>Qty: {{ item.quantity }}</span>
+        </div>
+      </div>
+      <div class="item-price">
+        <span>₱{{ '%.2f'|format(item.total_price or 0) }}</span>
+        <small>₱{{ '%.2f'|format(item.unit_price or 0) }} each</small>
+      </div>
+    </div>
+    {% endfor %}
+  </section>
+
+  <div class="order-actions">
+    <a
+      class="btn-secondary"
+      href="{{ url_for('buyer.my_purchases', status=request.args.get('status', 'all')) }}"
+    >
+      <i class="ri-arrow-go-back-line"></i>
+      Back to My Purchases
+    </a>
+    {% if order.tracking_number %}
+    <a
+      class="btn-primary"
+      href="{{ url_for('buyer.track_order', order_id=order.id) }}"
+    >
+      <i class="ri-map-pin-line"></i>
+      Track Package
+    </a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

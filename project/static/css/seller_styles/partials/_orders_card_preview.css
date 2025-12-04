@@ -68,13 +68,18 @@
   padding: 20px;
   border-bottom: 1px solid #e0e0e0;
   display: grid;
-  grid-template-columns: 40px 2fr 1fr 1fr 1fr 1fr;
-  gap: 20px;
+  grid-template-columns: 40px 90px 2.6fr 1fr 1fr 1fr 1.4fr;
+  gap: 16px;
   align-items: center;
 }
 
+.header-thumb-spacer {
+  width: 90px;
+  height: 48px;
+}
+
 .order-info {
-  grid-column: 2;
+  grid-column: 3;
 }
 
 .customer-label {
@@ -103,7 +108,7 @@
 .order-id {
   color: #666;
   font-size: 14px;
-  grid-column: -2/-1;
+  grid-column: 7;
   justify-self: end;
 }
 
@@ -123,9 +128,9 @@
 .order-content {
   padding: 20px 24px;
   display: grid;
-  grid-template-columns: 40px 80px 2fr 0.9fr 1.2fr 1.1fr 1.4fr;
+  grid-template-columns: 40px 90px 2.6fr 1fr 1.1fr 1fr 1.4fr;
   gap: 0 1rem;
-  align-items: start;
+  align-items: flex-start;
 }
 
 .count-col {
@@ -133,6 +138,7 @@
   align-items: center;
   justify-content: center;
   grid-column: 1;
+  align-self: flex-start;
 }
 
 .order-count {
@@ -191,6 +197,12 @@
   margin: 0;
 }
 
+.product-variant {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+}
+
 .product-meta {
   font-size: 14px;
   color: #666;
@@ -213,11 +225,33 @@
   font-weight: 500;
 }
 
+.single-item-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 14px;
+  color: #374151;
+}
+
+.single-item-qty {
+  margin: 0;
+}
+
+.single-item-unit {
+  color: #4b5563;
+}
+
+.single-item-total {
+  color: #111827;
+  font-weight: 600;
+}
+
 .price-col {
   display: flex;
   align-items: center;
   grid-column: 4;
   justify-content: flex-start;
+  align-self: flex-start;
 }
 
 .price {

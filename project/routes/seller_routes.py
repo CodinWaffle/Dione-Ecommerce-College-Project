@@ -37,6 +37,7 @@ from project.models import (
     User,
     Rider,
 )
+from project.services.inventory_service import ensure_order_inventory_deducted
 
 seller_bp = Blueprint('seller', __name__, url_prefix='/seller')
 
@@ -232,6 +233,7 @@ STATUS_BUCKET_MAP = {
     'confirmed': 'pending_orders',
     'shipping': 'shipped_orders',
     'in_transit': 'in_transit_orders',
+    'to_receive_today': 'in_transit_orders',
     'cancelled': 'cancelled_orders',
     'delivered': 'completed_orders',
     'completed': 'completed_orders',
@@ -242,6 +244,7 @@ STATUS_LABELS = {
     'confirmed': 'Confirmed',
     'shipping': 'To Ship',
     'in_transit': 'In Transit',
+    'to_receive_today': 'To Receive Today',
     'delivered': 'Delivered',
     'completed': 'Completed',
     'cancelled': 'Cancelled',
@@ -1513,7 +1516,11 @@ def update_order_status(order_id):
     if new_status not in allowed_statuses:
         return jsonify({'success': False, 'error': 'Invalid status selection.'}), 400
 
-    order = Order.query.filter_by(id=order_id, seller_id=current_user.id).first_or_404()
+    order = (
+        Order.query.filter_by(id=order_id, seller_id=current_user.id)
+        .options(joinedload(Order.order_items))
+        .first_or_404()
+    )
     previous_status = (order.status or '').lower()
 
     if previous_status == new_status:
@@ -1528,8 +1535,11 @@ def update_order_status(order_id):
         })
 
     now = datetime.utcnow()
-    if new_status in {'shipping', 'in_transit'} and not order.shipped_at:
-        order.shipped_at = now
+    inventory_adjusted = False
+    if new_status in {'shipping', 'in_transit'}:
+        if not order.shipped_at:
+            order.shipped_at = now
+        inventory_adjusted = ensure_order_inventory_deducted(order, current_app.logger)
     if new_status in {'delivered', 'completed'}:
         order.delivered_at = now
     if new_status in {'pending', 'confirmed'}:
@@ -1559,6 +1569,7 @@ def update_order_status(order_id):
         'shipped_at': order.shipped_at.isoformat() if order.shipped_at else None,
         'delivered_at': order.delivered_at.isoformat() if order.delivered_at else None,
         'stats': stats,
+        'inventory_updated': inventory_adjusted,
     })
 
 
@@ -1693,45 +1704,10 @@ def get_eligible_riders_for_pickup(pickup_id):
 @seller_bp.route('/pickups/<int:pickup_id>/assign', methods=['POST'])
 @login_required
 def assign_rider_to_pickup(pickup_id):
-    payload = request.get_json(silent=True) or {}
-    rider_user_id = payload.get('rider_user_id') or payload.get('rider_id')
-    if not rider_user_id:
-        return jsonify({'success': False, 'error': 'rider_user_id is required.'}), 400
-
-    pickup_request = (
-        PickupRequest.query.filter_by(id=pickup_id, seller_id=current_user.id)
-        .options(
-            joinedload(PickupRequest.items),
-            joinedload(PickupRequest.rider_user).joinedload(User.rider_profile),
-        )
-        .first_or_404()
-    )
-
-    try:
-        rider_user_id = int(rider_user_id)
-    except (TypeError, ValueError):
-        return jsonify({'success': False, 'error': 'Invalid rider identifier.'}), 400
-
-    rider_profile = Rider.query.filter_by(user_id=rider_user_id).first()
-    if not rider_profile or not getattr(rider_profile.user, 'is_approved', False):
-        return jsonify({'success': False, 'error': 'Selected rider is not available.'}), 400
-
-    eligible_ids = {candidate['user_id'] for candidate in _get_eligible_riders_for_seller(current_user, limit=25)}
-    if rider_user_id not in eligible_ids:
-        return jsonify({'success': False, 'error': 'Rider is not currently eligible for assignment.'}), 400
-
-    pickup_request.rider_user_id = rider_user_id
-    pickup_request.mark_status('assigned')
-    pickup_request.assigned_at = datetime.utcnow()
-
-    try:
-        db.session.commit()
-    except Exception as exc:
-        current_app.logger.error('Failed to assign rider to pickup %s: %s', pickup_id, exc)
-        db.session.rollback()
-        return jsonify({'success': False, 'error': 'Unable to assign rider.'}), 500
-
-    return jsonify({'success': True, 'pickup': _serialize_pickup_request(pickup_request)})
+    return jsonify({
+        'success': False,
+        'error': 'Manual rider assignment has been disabled. Nearby riders are notified automatically.'
+    }), 410
 
 
 @seller_bp.route('/pickups/<int:pickup_id>/status', methods=['POST'])
@@ -1753,6 +1729,11 @@ def update_pickup_status(pickup_id):
     )
 
     pickup_request.mark_status(new_status)
+    inventory_updates = []
+    if new_status in {'picked_up', 'completed'}:
+        for item in pickup_request.items:
+            if item.order and ensure_order_inventory_deducted(item.order, current_app.logger):
+                inventory_updates.append(item.order_id)
     if new_status == 'cancelled':
         for item in pickup_request.items:
             item.status = 'cancelled'
@@ -1765,7 +1746,11 @@ def update_pickup_status(pickup_id):
         db.session.rollback()
         return jsonify({'success': False, 'error': 'Unable to update pickup status.'}), 500
 
-    return jsonify({'success': True, 'pickup': _serialize_pickup_request(pickup_request)})
+    return jsonify({
+        'success': True,
+        'pickup': _serialize_pickup_request(pickup_request),
+        'inventory_updates': inventory_updates,
+    })
 
 
 @seller_bp.route('/orders/<int:order_id>/label')

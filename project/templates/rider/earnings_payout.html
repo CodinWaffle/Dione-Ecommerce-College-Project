@@ -1,9 +1,16 @@
 <!-- Earnings & Payout Page -->
 {% extends 'rider/_base.html' %} {% block title %}Earnings & Payout{% endblock
-%} {% block content %}
+%} {% macro peso(amount) -%} {{ '{:,.2f}'.format(amount or 0) }} {%- endmacro %}
+{% block content %}
 <main class="dashboard-main">
   <section class="dashboard-header">
-    <h1>Earnings & Payout</h1>
+    <div>
+      <h1>Earnings & Payout</h1>
+      <p class="dashboard-subtitle">
+        Earn PHP {{ peso(pickup_rate) }} per completed pickup and PHP {{
+        peso(delivery_rate) }} per delivered order.
+      </p>
+    </div>
   </section>
   <section class="dashboard-content">
     <div class="dashboard-summary-cards">
@@ -12,62 +19,193 @@
           >account_balance_wallet</span
         >
         <h3>Total Earned</h3>
-        <p class="card-value">PHP {{ total_earned }}</p>
+        <p class="card-value">PHP {{ peso(total_earned) }}</p>
+        <p class="card-subtext">
+          {{ breakdown[0].count }} pickups • {{ breakdown[1].count }} deliveries
+        </p>
+      </div>
+      <div class="summary-card">
+        <span class="material-symbols-outlined card-icon">savings</span>
+        <h3>Available Balance</h3>
+        <p class="card-value">PHP {{ peso(available_balance) }}</p>
+        <p class="card-subtext">Ready to request now</p>
       </div>
       <div class="summary-card">
         <span class="material-symbols-outlined card-icon">hourglass_empty</span>
-        <h3>Pending Balance</h3>
-        <p class="card-value">PHP {{ pending_balance }}</p>
+        <h3>Pending Payouts</h3>
+        <p class="card-value">PHP {{ peso(pending_payout_amount) }}</p>
+        <p class="card-subtext">Awaiting admin release</p>
       </div>
       <div class="summary-card">
-        <span class="material-symbols-outlined card-icon">calendar_month</span>
+        <span class="material-symbols-outlined card-icon">history</span>
         <h3>Last Payout</h3>
-        <p class="card-value">PHP 500.00 (Oct 25)</p>
-      </div>
-      <div class="summary-card action-card">
-        <span class="material-symbols-outlined card-icon">request_quote</span>
-        <h3>Request Payout</h3>
-        <button class="btn primary-btn">Request Now</button>
+        {% if last_payout %} {% set last_dt = last_payout.processed_at or
+        last_payout.requested_at %}
+        <p class="card-value">PHP {{ peso(last_payout.amount) }}</p>
+        <p class="card-subtext">
+          {{ last_dt.strftime('%b %d, %Y %I:%M %p') if last_dt else 'Awaiting
+          processing' }}
+        </p>
+        {% else %}
+        <p class="card-value">No payouts yet</p>
+        <p class="card-subtext">Request a payout to start</p>
+        {% endif %}
       </div>
     </div>
 
-    <h2 class="section-title">Transaction History</h2>
+    <div class="two-column-grid">
+      <div>
+        <h2 class="section-title">Request a Payout</h2>
+        <div class="card payout-form-card">
+          <form
+            method="post"
+            action="{{ url_for('rider.rider_request_payout') }}"
+            class="payout-form"
+          >
+            <div class="form-group">
+              <label for="payoutAmount">Amount (PHP)</label>
+              <input
+                type="number"
+                id="payoutAmount"
+                name="amount"
+                step="0.01"
+                min="0"
+                max="{{ available_balance }}"
+                placeholder="0.00"
+                required
+              />
+              <small class="form-hint"
+                >Available: PHP {{ peso(available_balance) }}</small
+              >
+            </div>
+            <div class="form-group">
+              <label for="gcashName">GCash Account Name</label>
+              <input
+                type="text"
+                id="gcashName"
+                name="gcash_name"
+                value="{{ rider.user.username if rider and rider.user else current_user.username }}"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="gcashNumber">GCash Mobile Number</label>
+              <input
+                type="text"
+                id="gcashNumber"
+                name="gcash_number"
+                placeholder="09XXXXXXXXX"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="payoutNotes">Notes for Admin (optional)</label>
+              <textarea
+                id="payoutNotes"
+                name="notes"
+                rows="3"
+                placeholder="Add delivery reference or reminders here"
+              ></textarea>
+            </div>
+            <button
+              type="submit"
+              class="btn primary-btn"
+              {%
+              if
+              available_balance
+              <="0"
+              %}disabled{%
+              endif
+              %}
+            >
+              Submit Request
+            </button>
+            <p class="form-hint">
+              The admin will send the amount to your GCash wallet and mark the
+              payout as paid.
+            </p>
+          </form>
+        </div>
+      </div>
+      <div>
+        <h2 class="section-title">Earnings Breakdown</h2>
+        <div class="dashboard-table-section">
+          <table class="dashboard-table">
+            <thead>
+              <tr>
+                <th>Source</th>
+                <th>Qty</th>
+                <th>Rate</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in breakdown %}
+              <tr>
+                <td>{{ row.label }}</td>
+                <td>{{ row.count }}</td>
+                <td>PHP {{ peso(row.rate) }}</td>
+                <td>PHP {{ peso(row.amount) }}</td>
+              </tr>
+              {% endfor %}
+              <tr class="table-total-row">
+                <td colspan="3"><strong>Total Earned</strong></td>
+                <td><strong>PHP {{ peso(total_earned) }}</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <h2 class="section-title">Payout History</h2>
     <div class="dashboard-table-section">
       <table class="dashboard-table">
         <thead>
           <tr>
-            <th>Date</th>
-            <th>Delivery ID</th>
-            <th>Amount Earned</th>
-            <th>Platform Commission</th>
-            <th>Net Amount</th>
+            <th>Requested On</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>GCash</th>
+            <th>Reference</th>
+            <th>Notes</th>
           </tr>
         </thead>
         <tbody>
-          {% for earning in earnings_history %}
+          {% if payout_history %} {% for payout in payout_history %}
           <tr>
-            <td>{{ earning.date }}</td>
-            <td>{{ earning.delivery_id }}</td>
-            <td>PHP {{ "%.2f"|format(earning.amount) }}</td>
-            <td>PHP {{ "%.2f"|format(earning.commission) }}</td>
-            <td>PHP {{ "%.2f"|format(earning.net_amount) }}</td>
+            <td>
+              {{ payout.requested_at.strftime('%b %d, %Y %I:%M %p') if
+              payout.requested_at else '—' }}
+            </td>
+            <td>PHP {{ peso(payout.amount) }}</td>
+            <td>
+              <span class="status-badge status-{{ payout.status }}"
+                >{{ payout.status|replace('_', ' ')|title }}</span
+              >
+              {% if payout.status == 'paid' and payout.processed_at %}
+              <small class="muted"
+                >Paid {{ payout.processed_at.strftime('%b %d, %Y') }}</small
+              >
+              {% endif %}
+            </td>
+            <td>
+              <div>{{ payout.gcash_name or '—' }}</div>
+              <div class="muted">{{ payout.gcash_number or '' }}</div>
+            </td>
+            <td>{{ payout.reference_code or '—' }}</td>
+            <td>{{ payout.admin_notes or payout.notes or '—' }}</td>
           </tr>
-          {% endfor %}
+          {% endfor %} {% else %}
+          <tr>
+            <td colspan="6" class="text-center muted">
+              No payout requests yet.
+            </td>
+          </tr>
+          {% endif %}
         </tbody>
       </table>
     </div>
-
-    <h2 class="section-title">Payout Schedule</h2>
-    <div class="dashboard-content">
-      <p>Your payouts are processed automatically every Wednesday.</p>
-      <p>Next payout: November 1, 2023</p>
-      <button class="btn secondary-btn">Change Payout Settings</button>
-    </div>
   </section>
 </main>
-{% endblock %} {% block scripts %}
-<script>
-  // Add any specific JS for earnings/payout here if needed
-  // e.g., for "Request Now" button functionality
-</script>
-{% endblock %}
+{% endblock %} {% block scripts %}{% endblock %}

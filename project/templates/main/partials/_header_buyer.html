@@ -1,6 +1,6 @@
-{# nav_items should be passed from the Flask view #} {% if
-current_user.is_authenticated and (current_user.role|default('buyer') ==
-'buyer') %}
+{# nav_items should be passed from the Flask view #} {% set _role =
+(current_user.role|default('buyer'))|lower %} {% if
+current_user.is_authenticated and _role == 'buyer' %}
 <!-- FULL HEADER FOR LOGGED-IN BUYERS -->
 <!--Top Banner-->
 <div class="top-banner">

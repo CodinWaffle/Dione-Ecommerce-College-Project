@@ -6,6 +6,20 @@
     <h1>Profile & Settings</h1>
   </section>
   <section class="dashboard-content">
+    <div class="shift-status-info">
+      <p>
+        <strong>Current Shift:</strong>
+        <span class="shift-label">{{ shift_label }}</span>
+        {% if on_shift %}
+        <span class="shift-pill on">On Shift</span>
+        {% else %}
+        <span class="shift-pill off">Off Shift</span>
+        {% endif %}
+      </p>
+      <p class="shift-hint">
+        Update your shift to control which pickups and deliveries appear on your dashboard.
+      </p>
+    </div>
     <h2 class="section-title">Personal Information</h2>
     <form
       class="profile-form"
@@ -60,6 +74,17 @@
           name="license_number"
           value="{{ rider.license_number if rider else '' }}"
         />
+      </div>
+      <div class="form-group">
+        <label for="riderShift">Shift Preference:</label>
+        <select id="riderShift" name="availability_status">
+          {% for value, label in shift_options %}
+          <option value="{{ value }}" {% if shift_value == value %}selected{% endif %}>
+            {{ label }}
+          </option>
+          {% endfor %}
+        </select>
+        <small class="form-hint">Pick "Off Shift" when you are not available for pickups or deliveries.</small>
       </div>
       <button type="submit" class="btn primary-btn">Save Changes</button>
     </form>

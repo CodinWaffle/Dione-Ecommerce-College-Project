@@ -196,46 +196,16 @@ block page_content %}
         </div>
       </div>
       <!-- Table Header -->
-      <div
-        class="orders-table-header"
-        style="
-          display: flex;
-          font-weight: 600;
-          color: #6b7280;
-          background: #f8fafc;
-          border-radius: 0.5rem 0.5rem 0 0;
-          padding: 1rem 1.5rem;
-          gap: 1rem;
-        "
-      >
-        <div
-          style="display: flex; align-items: center; flex: 2; min-width: 180px"
-        >
-          <input
-            type="checkbox"
-            id="selectAllOrders"
-            style="margin-right: 0.5rem"
-          />
-          Product
+      <div class="orders-table-header">
+        <div class="header-checkbox">
+          <input type="checkbox" id="selectAllOrders" aria-label="Select all" />
         </div>
-        <!-- Removed inline styles with negative margins - now using CSS Grid layout -->
-        <div
-          style="
-            flex: 0.9;
-            min-width: 110px;
-            text-align: right;
-            margin-left: 9.5rem;
-          "
-        >
-          Price
-        </div>
-        <div style="flex: 1.2; min-width: 160px; text-align: right">
-          Payment
-        </div>
-        <div style="flex: 1.1; min-width: 140px; text-align: right">Status</div>
-        <div style="flex: 1.4; min-width: 180px; text-align: right">
-          Actions
-        </div>
+        <div class="header-thumb" aria-hidden="true"></div>
+        <div class="header-product">Product</div>
+        <div class="header-price">Price</div>
+        <div class="header-payment">Payment</div>
+        <div class="header-status">Status</div>
+        <div class="header-actions">Actions</div>
       </div>
       <!-- Render order cards below the table header -->
       {% if orders %}

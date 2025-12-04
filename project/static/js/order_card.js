@@ -46,14 +46,6 @@ document.addEventListener("DOMContentLoaded", () => {
       handleViewPickup(viewPickupButton);
       return;
     }
-
-    const assignRiderButton = event.target.closest(
-      '[data-action="assignRider"]'
-    );
-    if (assignRiderButton) {
-      event.preventDefault();
-      handleAssignRider(assignRiderButton);
-    }
   });
 
   document.querySelectorAll(".order-card").forEach((card) => {
@@ -133,90 +125,6 @@ async function handleViewPickup(button) {
     showOrderAlert(card, details, "info");
   } catch (error) {
     showOrderAlert(card, error.message, "error");
-  }
-}
-
-async function handleAssignRider(button) {
-  const card = button.closest(".order-card");
-  const pickupId = button.dataset.pickupId;
-  const orderId = card?.dataset.orderId;
-  if (!card || !pickupId || !orderId) return;
-
-  let pickupDetails;
-  try {
-    pickupDetails = await fetchPickupSummary(orderId);
-  } catch (error) {
-    showOrderAlert(card, error.message, "error");
-    return;
-  }
-
-  if (!pickupDetails) {
-    showOrderAlert(card, "No pickup found for this order.", "error");
-    return;
-  }
-
-  updatePickupSummary(card, pickupDetails, { orderId });
-
-  if (pickupDetails.rider_user_id) {
-    const infoMessage = formatAssignedRiderAlert(pickupDetails);
-    showOrderAlert(card, infoMessage, "info");
-    const shouldContinue = window.confirm(
-      `${infoMessage}\nAssign a different rider?`
-    );
-    if (!shouldContinue) {
-      return;
-    }
-  } else {
-    showOrderAlert(
-      card,
-      "No rider has accepted this pickup yet. You can assign one now.",
-      "info"
-    );
-  }
-
-  showOrderAlert(card, "Finding available riders...", "info");
-  let riders;
-  try {
-    riders = await fetchEligibleRiders(pickupId);
-  } catch (error) {
-    showOrderAlert(card, error.message, "error");
-    return;
-  }
-
-  if (!riders.length) {
-    showOrderAlert(card, "No nearby riders are available right now.", "error");
-    return;
-  }
-
-  const riderUserId = selectRiderCandidate(riders);
-  if (!riderUserId) {
-    showOrderAlert(card, "Rider assignment cancelled.", "info");
-    return;
-  }
-  button.disabled = true;
-  showOrderAlert(card, "Assigning rider...", "info");
-
-  try {
-    const response = await fetch(`/seller/pickups/${pickupId}/assign`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Requested-With": "XMLHttpRequest",
-      },
-      body: JSON.stringify({ rider_user_id: riderUserId }),
-    });
-    const payload = await response.json();
-    if (!response.ok || !payload.success) {
-      throw new Error(payload.error || "Unable to assign rider.");
-    }
-    updatePickupSummary(card, payload.pickup, {
-      orderId: card.dataset.orderId,
-    });
-    showOrderAlert(card, "Rider assigned successfully.", "success");
-  } catch (error) {
-    showOrderAlert(card, error.message, "error");
-  } finally {
-    button.disabled = false;
   }
 }
 
@@ -451,12 +359,9 @@ function updatePickupSummary(card, pickup, options = {}) {
           <i data-lucide="truck"></i>
           View pickup
         </button>
-        <button class="btn btn-secondary" type="button" data-action="assignRider" data-pickup-id="${
-          pickup.id
-        }">
-          <i data-lucide="user-check"></i>
-          Assign rider
-        </button>
+        <span class="pickup-auto-note">
+          Nearby riders are notified automatically.
+        </span>
       </div>
     `;
   } else {
@@ -490,19 +395,6 @@ function formatPickupStatus(value) {
 window.updatePickupSummary = updatePickupSummary;
 window.showOrderAlert = showOrderAlert;
 
-async function fetchEligibleRiders(pickupId) {
-  const response = await fetch(`/seller/pickups/${pickupId}/eligible-riders`, {
-    headers: {
-      "X-Requested-With": "XMLHttpRequest",
-    },
-  });
-  const payload = await response.json();
-  if (!response.ok || !payload.success) {
-    throw new Error(payload.error || "Unable to load riders.");
-  }
-  return payload.riders || [];
-}
-
 async function fetchPickupSummary(orderId) {
   const response = await fetch(`/seller/orders/${orderId}/pickup-summary`, {
     headers: {
@@ -514,41 +406,6 @@ async function fetchPickupSummary(orderId) {
     throw new Error(payload.error || "Unable to load pickup details.");
   }
   return payload.pickup || null;
-}
-
-function selectRiderCandidate(riders) {
-  if (!Array.isArray(riders) || riders.length === 0) {
-    return null;
-  }
-
-  if (riders.length === 1) {
-    const [candidate] = riders;
-    const confirmSingle = window.confirm(
-      `Assign ${candidate.name} (${
-        candidate.match_reason || "Available"
-      }) to this pickup?`
-    );
-    return confirmSingle ? candidate.user_id : null;
-  }
-
-  const menu = riders
-    .map(
-      (candidate, index) =>
-        `${index + 1}. ${candidate.name} — ${
-          candidate.match_reason || "Available"
-        }`
-    )
-    .join("\n");
-
-  const input = window.prompt(`Select a rider by number:\n${menu}`, "1");
-  if (!input) return null;
-
-  const selection = Number.parseInt(input, 10);
-  if (Number.isNaN(selection) || selection < 1 || selection > riders.length) {
-    window.alert("Invalid selection.");
-    return null;
-  }
-  return riders[selection - 1].user_id;
 }
 
 function togglePickupVisibility(card, isShipping) {
@@ -579,14 +436,6 @@ function formatRiderLabel(pickup) {
   }
   const label = pickup.rider_name || "Assigned rider";
   return pickup.rider_phone ? `${label} (${pickup.rider_phone})` : label;
-}
-
-function formatAssignedRiderAlert(pickup) {
-  const label = formatRiderLabel(pickup);
-  if (!label) {
-    return "No rider is assigned to this pickup yet.";
-  }
-  return `Pickup already assigned to ${label}.`;
 }
 
 function isShippingStatus(value) {

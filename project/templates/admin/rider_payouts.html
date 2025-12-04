@@ -1,0 +1,130 @@
+{% extends "admin/base_admin.html" %}
+{% block page_title %}Rider Payout Requests{% endblock %}
+{% macro peso(amount) -%}
+  {{ '{:,.2f}'.format(amount or 0) }}
+{%- endmacro %}
+{% block admin_content %}
+<body>
+  <div class="dashboard-container">
+    {% include 'admin/partials/_sidebar_admin.html' %}
+    <div class="main-content" id="main-content">
+      <div class="dashboard-content">
+        <div class="page-header">
+          <div>
+            <h1>Rider Payout Requests</h1>
+            <p>Review rider withdrawals, send the funds via GCash, then mark the request as paid.</p>
+          </div>
+          <a class="btn btn-outline" href="{{ url_for('admin.overview') }}">Back to Overview</a>
+        </div>
+
+        <div class="payout-overview">
+          <div class="payout-card">
+            <div class="payout-icon"><i class="bx bx-time"></i></div>
+            <div>
+              <h3>Pending Requests</h3>
+              <div class="payout-amount">PHP {{ peso(stats.pending_total) }}</div>
+              <div class="payout-meta">{{ stats.pending_count }} awaiting payment</div>
+            </div>
+          </div>
+          <div class="payout-card">
+            <div class="payout-icon"><i class="bx bx-check-circle"></i></div>
+            <div>
+              <h3>Paid This Month</h3>
+              <div class="payout-amount">PHP {{ peso(stats.processed_total) }}</div>
+              <div class="payout-meta">{{ stats.processed_this_month }} completed</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Rider</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Requested</th>
+                <th>GCash</th>
+                <th>Reference</th>
+                <th>Admin Notes</th>
+                <th>Update</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if payouts %}
+              {% for payout in payouts %}
+              <tr>
+                <td>
+                  <div class="rider-info">
+                    <p class="rider-name">{{ payout.rider.user.username if payout.rider and payout.rider.user else 'Rider #' ~ payout.rider_id }}</p>
+                    <p class="muted">{{ payout.rider.user.email if payout.rider and payout.rider.user else '' }}</p>
+                  </div>
+                </td>
+                <td>PHP {{ peso(payout.amount) }}</td>
+                <td>
+                  <span class="status-badge status-{{ payout.status }}">{{ payout.status|replace('_', ' ')|title }}</span>
+                  {% if payout.processed_at %}
+                  <small class="muted">{{ payout.processed_at.strftime('%b %d, %Y %I:%M %p') }}</small>
+                  {% endif %}
+                </td>
+                <td>
+                  {{ payout.requested_at.strftime('%b %d, %Y %I:%M %p') if payout.requested_at else '—' }}
+                </td>
+                <td>
+                  <div>{{ payout.gcash_name or '—' }}</div>
+                  <div class="muted">{{ payout.gcash_number or '' }}</div>
+                </td>
+                <td>{{ payout.reference_code or '—' }}</td>
+                <td>{{ payout.admin_notes or payout.notes or '—' }}</td>
+                <td>
+                  <form
+                    method="post"
+                    action="{{ url_for('admin.rider_payout_update', payout_id=payout.id) }}"
+                    class="inline-form"
+                  >
+                    <select name="status" class="input-small">
+                      <option value="pending" {% if payout.status == 'pending' %}selected{% endif %}>Pending</option>
+                      <option value="paid" {% if payout.status == 'paid' %}selected{% endif %}>Paid</option>
+                      <option value="rejected" {% if payout.status == 'rejected' %}selected{% endif %}>Rejected</option>
+                    </select>
+                    <input
+                      type="text"
+                      name="reference_code"
+                      class="input-small"
+                      placeholder="GCash Ref"
+                      value="{{ payout.reference_code or '' }}"
+                    />
+                    <input
+                      type="text"
+                      name="admin_notes"
+                      class="input-small"
+                      placeholder="Notes"
+                    />
+                    <button type="submit" class="btn btn-primary btn-small">Save</button>
+                  </form>
+                </td>
+              </tr>
+              {% endfor %}
+              {% else %}
+              <tr>
+                <td colspan="8" class="text-center muted">No payout requests yet.</td>
+              </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="helper-card">
+          <h3>How to settle payouts</h3>
+          <ol>
+            <li>Review the rider's requested amount and verify recent pickups/deliveries.</li>
+            <li>Send the funds to the rider's GCash account outside the platform.</li>
+            <li>Enter the GCash reference number, add notes if needed, and mark the request as Paid.</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+{% endblock %}
+{% block extra_js %}{% endblock %}

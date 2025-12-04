@@ -13,6 +13,21 @@
       />
     </div>
   </section>
+  <section
+    class="shift-status-card {{ 'on-shift' if on_shift else 'off-shift' }}"
+  >
+    <strong>Shift:</strong>
+    <span>{{ shift_label }}</span>
+    {% if on_shift %}
+    <span class="badge success">Active</span>
+    <p>You will see nearby pickup requests while you remain on this shift.</p>
+    {% else %}
+    <span class="badge warning">Off Shift</span>
+    <p>
+      Switch to an active shift on your profile to view new pickup requests.
+    </p>
+    {% endif %}
+  </section>
   <section class="dashboard-table-section">
     <table class="dashboard-table">
       <thead>

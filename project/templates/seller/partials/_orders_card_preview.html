@@ -110,6 +110,9 @@
 {%- set item_count = order_items|length -%}
 {%- set first_item = order_items[0] if item_count > 0 else None -%}
 {%- set first_item_map = first_item if first_item is mapping else None -%}
+{%- set show_item_detail_list = item_count > 1 -%}
+{%- set single_unit_price = None -%}
+{%- set single_total_price = None -%}
 
 {%- set pickup_items = [] -%}
 {%- if order is not none and (order.pickup_items is defined) and order.pickup_items -%}
@@ -191,7 +194,23 @@
   {%- elif first_item_map and first_item_map.get('quantity') -%}
     {%- set quantity_value = first_item_map.get('quantity') -%}
   {%- endif -%}
+  {%- if first_item.unit_price is defined and first_item.unit_price is not none -%}
+    {%- set single_unit_price = (first_item.unit_price or 0)|float -%}
+  {%- elif first_item_map and first_item_map.get('unit_price') is not none -%}
+    {%- set single_unit_price = (first_item_map.get('unit_price') or 0)|float -%}
+  {%- endif -%}
+  {%- if first_item.total_price is defined and first_item.total_price is not none -%}
+    {%- set single_total_price = (first_item.total_price or 0)|float -%}
+  {%- elif first_item_map and first_item_map.get('total_price') is not none -%}
+    {%- set single_total_price = (first_item_map.get('total_price') or 0)|float -%}
+  {%- endif -%}
 {%- endif -%}
+{%- set quantity_number = (quantity_value or 0)|float -%}
+{%- if single_total_price is none and single_unit_price is not none -%}
+  {%- set single_total_price = single_unit_price * quantity_number -%}
+{%- endif -%}
+{%- set single_unit_display = '₱{:,.2f}'.format(single_unit_price) if single_unit_price is not none else '' -%}
+{%- set single_total_display = '₱{:,.2f}'.format(single_total_price) if single_total_price is not none else '' -%}
 
 {%- set amount_value = order.total_amount if order is not none and (order.total_amount is defined) else (
   order.get('total_amount') if order is mapping else 0)
@@ -217,6 +236,7 @@
         aria-label="Select order {{ order_number }}"
       />
     </div>
+    <div class="header-thumb-spacer" aria-hidden="true"></div>
     <div class="order-info">
       <span class="customer-label">Customer</span>
       <span class="customer-name">{{ customer_name }}</span>
@@ -238,13 +258,74 @@
       <img src="{{ product_image or placeholder_image }}" alt="{{ product_name }}" class="product-image" />
       <div class="product-details">
         <p class="product-name">{{ product_name }}</p>
+        {% if order_items and show_item_detail_list %}
+        <div class="order-items-list" aria-label="Items in this order">
+          {% for line_item in order_items %}
+          {% set line_map = line_item if line_item is mapping else None %}
+          {% set line_name = line_item.product_name if line_item is not none and (line_item.product_name is defined) and line_item.product_name else (line_map.get('product_name') if line_map and line_map.get('product_name') else product_name) %}
+          {% set line_variant = '' %}
+          {% if line_item.variant_name is defined and line_item.variant_name %}
+            {% set line_variant = line_item.variant_name %}
+          {% elif line_map and line_map.get('variant_name') %}
+            {% set line_variant = line_map.get('variant_name') %}
+          {% else %}
+            {% set line_color = None %}
+            {% if line_item.color is defined and line_item.color %}
+              {% set line_color = line_item.color %}
+            {% elif line_map and line_map.get('color') %}
+              {% set line_color = line_map.get('color') %}
+            {% endif %}
+            {% set line_size = None %}
+            {% if line_item.size is defined and line_item.size %}
+              {% set line_size = line_item.size %}
+            {% elif line_map and line_map.get('size') %}
+              {% set line_size = line_map.get('size') %}
+            {% endif %}
+            {% if line_color or line_size %}
+              {% set line_variant = (line_color or '') ~ ((' · ' + line_size) if line_color and line_size else (line_size or '')) %}
+            {% endif %}
+          {% endif %}
+          {% set line_qty = line_item.quantity if line_item.quantity is defined and line_item.quantity else (line_map.get('quantity') if line_map and line_map.get('quantity') else 0) %}
+          {% set line_unit = line_item.unit_price if line_item.unit_price is defined else (line_map.get('unit_price') if line_map else None) %}
+          {% set line_total = line_item.total_price if line_item.total_price is defined else (line_map.get('total_price') if line_map else None) %}
+          {% set qty_number = (line_qty or 0)|float %}
+          {% set unit_number = (line_unit or 0)|float %}
+          {% if line_total is not none %}
+            {% set total_number = (line_total or 0)|float %}
+          {% else %}
+            {% set total_number = unit_number * qty_number %}
+          {% endif %}
+          {% set unit_display_value = '₱{:,.2f}'.format(unit_number) %}
+          {% set total_display_value = '₱{:,.2f}'.format(total_number) %}
+          <div class="item-row">
+            <div class="item-main">
+              <span class="item-name">{{ line_name }}</span>
+              {% if line_variant %}
+              <span class="item-variant">{{ line_variant }}</span>
+              {% endif %}
+            </div>
+            <div class="item-stats">
+              <span class="item-qty">Qty: {{ line_qty }}</span>
+              <span class="item-unit">Unit: {{ unit_display_value }}</span>
+              <span class="item-total">Total: {{ total_display_value }}</span>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
         {% if variant_info %}
-        <p class="product-meta">Variant: <span>{{ variant_info }}</span></p>
+        <p class="product-variant">{{ variant_info }}</p>
         {% endif %}
-        <p class="product-quantity">
-          Qty: <span>{{ quantity_value }}</span>
-          {% if item_count > 1 %}· +{{ item_count - 1 }} more{% endif %}
-        </p>
+        <div class="single-item-stats">
+          <p class="product-quantity single-item-qty">Qty: <span>{{ quantity_value }}</span></p>
+          {% if single_unit_display %}
+          <span class="single-item-unit">Unit: {{ single_unit_display }}</span>
+          {% endif %}
+          {% if single_total_display %}
+          <span class="single-item-total">Total: {{ single_total_display }}</span>
+          {% endif %}
+        </div>
+        {% endif %}
       </div>
     </div>
     <div class="price-col">
@@ -293,7 +374,7 @@
           {% if active_pickup_request.rider_user_id %}
           · Rider assigned
           {% else %}
-          · Awaiting rider
+          · Broadcasting to nearby riders
           {% endif %}
         </p>
         <div class="pickup-actions-row">
@@ -307,15 +388,9 @@
             <i data-lucide="truck"></i>
             View pickup
           </button>
-          <button
-            class="btn btn-secondary"
-            type="button"
-            data-action="assignRider"
-            data-pickup-id="{{ active_pickup_request.id if active_pickup_request and (active_pickup_request.id is defined) else '' }}"
-          >
-            <i data-lucide="user-check"></i>
-            Assign rider
-          </button>
+          <p class="pickup-auto-note">
+            Nearby riders are notified automatically.
+          </p>
         </div>
         {% else %}
         <div class="pickup-chip pickup-none">No pickup scheduled</div>

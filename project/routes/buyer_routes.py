@@ -2,14 +2,16 @@
 Buyer Routes - My Purchases and Order Management
 """
 
-from flask import Blueprint, render_template, request, jsonify, flash, redirect, url_for
+from flask import Blueprint, render_template, request, jsonify, flash, redirect, url_for, current_app
 from flask_login import login_required, current_user
 from sqlalchemy import desc, and_
+from sqlalchemy.orm import joinedload
 from datetime import datetime, timedelta
 import uuid
 
 from project import db
 from project.models import Order, OrderItem, ProductReview, SellerProduct, User
+from project.services.inventory_service import ensure_order_inventory_deducted
 
 buyer_bp = Blueprint('buyer', __name__, url_prefix='/buyer')
 
@@ -28,12 +30,47 @@ def my_purchases():
     status_filter = request.args.get('status', 'all')
     page = request.args.get('page', 1, type=int)
     per_page = 10
+    review_window_days = 7
+    now = datetime.utcnow()
     
-    # Base query for user's orders
-    orders_query = Order.query.filter_by(buyer_id=current_user.id)
+    # Automatically mark delivered orders as completed when review window lapses
+    delivered_orders = (
+        Order.query.options(joinedload(Order.order_items))
+        .filter_by(buyer_id=current_user.id, status='delivered')
+        .all()
+    )
+    orders_updated = False
+    review_window = timedelta(days=review_window_days)
+    for order in delivered_orders:
+        delivered_at = order.delivered_at or order.updated_at or order.created_at
+        if not delivered_at:
+            continue
+        review_deadline = delivered_at + review_window
+        all_reviewed = all(item.is_reviewed for item in order.order_items)
+        if all_reviewed or now >= review_deadline:
+            order.status = 'completed'
+            order.updated_at = now
+            ensure_order_inventory_deducted(order, current_app.logger)
+            orders_updated = True
+    if orders_updated:
+        db.session.commit()
+
+    # Base query for user's orders with eager-loaded items/reviews
+    orders_query = Order.query.options(
+        joinedload(Order.order_items).joinedload(OrderItem.reviews)
+    ).filter_by(buyer_id=current_user.id)
     
     # Apply status filter
-    if status_filter != 'all':
+    if status_filter == 'to_review':
+        orders_query = orders_query.filter(
+            Order.status == 'delivered',
+            Order.order_items.any(OrderItem.is_reviewed == False)
+        )
+    elif status_filter == 'to_receive':
+        orders_query = orders_query.filter(Order.status.in_(['shipping', 'in_transit']))
+    elif status_filter == 'to_receive_today':
+        orders_query = orders_query.filter_by(status='to_receive_today')
+    elif status_filter != 'all':
         orders_query = orders_query.filter_by(status=status_filter)
     
     # Order by most recent first
@@ -43,6 +80,34 @@ def my_purchases():
     pagination = orders_query.paginate(page=page, per_page=per_page, error_out=False)
     orders = pagination.items
     
+    # Annotate orders with review window metadata for display
+    for order in orders:
+        delivered_at = order.delivered_at or order.updated_at or order.created_at
+        pending_reviews = any(not item.is_reviewed for item in order.order_items)
+        order.review_deadline = None
+        order.review_days_left = None
+        order.auto_complete_on = None
+        order.can_review = False
+        order.auto_completed = False
+
+        if order.status == 'delivered' and delivered_at:
+            review_deadline = delivered_at + review_window
+            order.review_deadline = review_deadline
+            order.review_days_left = max((review_deadline - now).days, 0)
+            if review_deadline:
+                order.auto_complete_on = review_deadline.strftime('%b %d, %Y')
+            order.can_review = pending_reviews
+        elif order.status == 'completed' and delivered_at:
+            review_deadline = delivered_at + review_window
+            order.review_deadline = review_deadline
+            if review_deadline:
+                order.auto_complete_on = review_deadline.strftime('%b %d, %Y')
+            order.auto_completed = pending_reviews and review_deadline and review_deadline <= now
+
+        for item in order.order_items:
+            item.can_review = order.can_review and not item.is_reviewed
+            item.auto_completed = order.status == 'completed' and not item.is_reviewed
+
     # Get order counts for each status
     status_counts = {
         'all': Order.query.filter_by(buyer_id=current_user.id).count(),
@@ -50,11 +115,13 @@ def my_purchases():
         'confirmed': Order.query.filter_by(buyer_id=current_user.id, status='confirmed').count(),
         'shipping': Order.query.filter_by(buyer_id=current_user.id, status='shipping').count(),
         'in_transit': Order.query.filter_by(buyer_id=current_user.id, status='in_transit').count(),
+        'to_receive_today': Order.query.filter_by(buyer_id=current_user.id, status='to_receive_today').count(),
         'delivered': Order.query.filter_by(buyer_id=current_user.id, status='delivered').count(),
-        'to_review': Order.query.join(OrderItem).filter(
+        'completed': Order.query.filter_by(buyer_id=current_user.id, status='completed').count(),
+        'to_review': Order.query.filter(
             Order.buyer_id == current_user.id,
             Order.status == 'delivered',
-            OrderItem.is_reviewed == False
+            Order.order_items.any(OrderItem.is_reviewed == False)
         ).count()
     }
     
@@ -63,7 +130,8 @@ def my_purchases():
         orders=orders,
         pagination=pagination,
         status_filter=status_filter,
-        status_counts=status_counts
+        status_counts=status_counts,
+        review_window_days=review_window_days
     )
 
 
@@ -162,6 +230,11 @@ def write_review(order_item_id):
             
             # Mark order item as reviewed
             order_item.is_reviewed = True
+            parent_order = order_item.order
+            if parent_order and all(item.is_reviewed for item in parent_order.order_items):
+                parent_order.status = 'completed'
+                parent_order.updated_at = datetime.utcnow()
+                ensure_order_inventory_deducted(parent_order, current_app.logger)
             
             db.session.add(review)
             db.session.commit()

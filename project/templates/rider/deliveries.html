@@ -1,28 +1,141 @@
 {% extends 'rider/_base.html' %} {% block title %}Deliveries{% endblock %} {%
 block content %}
-<div class="container mt-4">
-  <div class="row">
-    <div class="col-md-12">
-      <h4>Your Deliveries</h4>
-      <p>
-        Welcome, {{ username }}. This is a placeholder page for managing and
-        viewing deliveries.
+<main class="dashboard-main">
+  <section class="dashboard-header">
+    <div>
+      <h1>Delivery Queue</h1>
+      <p class="dashboard-subtitle">
+        Accept ready parcels, keep buyers updated, and secure proof of delivery.
       </p>
-      <div class="card mt-3">
-        <div class="card-body">
-          <ul>
-            <li>Upcoming pickups and drop-offs</li>
-            <li>Completed deliveries</li>
-            <li>Route overview and status</li>
-          </ul>
-        </div>
-      </div>
-      <a
-        class="btn btn-outline-secondary mt-3"
-        href="{{ url_for('rider.rider_dashboard') }}"
-        >Back to Rider Dashboard</a
-      >
     </div>
+    <div class="dashboard-search">
+      <input
+        type="text"
+        id="deliverySearchInput"
+        class="search-bar"
+        placeholder="Search deliveries..."
+      />
+    </div>
+  </section>
+  <section
+    id="deliveryShiftStatus"
+    class="shift-status-card {{ 'on-shift' if on_shift else 'off-shift' }}"
+  >
+    <strong>Shift:</strong>
+    <span class="shift-label">{{ shift_label }}</span>
+    {% if on_shift %}
+    <span class="badge success shift-badge">Active</span>
+    <p class="shift-message">Deliveries near your assigned zones will appear below.</p>
+    {% else %}
+    <span class="badge warning shift-badge">Off Shift</span>
+    <p class="shift-message">Switch to an active shift on your profile to receive new delivery offers.</p>
+    {% endif %}
+  </section>
+  <section class="dashboard-table-section">
+    <table class="dashboard-table">
+      <thead>
+        <tr>
+          <th>Order #</th>
+          <th>Customer</th>
+          <th>Address</th>
+          <th>Contact</th>
+          <th>Payment</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="deliveryTableBody">
+        {% for delivery in deliveries %}
+        <tr
+          data-delivery-id="{{ delivery.id }}"
+          data-raw-status="{{ delivery.raw_status }}"
+          data-order-status="{{ delivery.order_status }}"
+          data-assigned="{{ '1' if delivery.assigned_to_me else '0' }}"
+        >
+          <td>{{ delivery.order_number }}</td>
+          <td>{{ delivery.customer_name }}</td>
+          <td>{{ delivery.address }}</td>
+          <td>{{ delivery.contact }}</td>
+          <td>{{ delivery.payment_method }}</td>
+          <td>
+            <span
+              class="status-badge delivery-status-badge status-{{ delivery.raw_status|replace(' ', '-') }}"
+              >{{ delivery.status }}</span
+            >
+            {% if delivery.order_status %}
+            <small class="order-status-label"
+              >{{ delivery.order_status.replace('_', ' ')|title }}</small
+            >
+            {% endif %}
+          </td>
+          <td>
+            <div class="action-buttons-group">
+              <button
+                class="action-btn accept-delivery-btn"
+                title="Accept delivery"
+                {% if delivery.assigned_to_me or delivery.raw_status not in ['ready_for_delivery','delivery_rejected','picked_up'] %}style="display: none;"{% endif %}
+              >
+                <span class="material-symbols-outlined">task_alt</span>
+              </button>
+              <button
+                class="action-btn reject-delivery-btn"
+                title="Reject delivery"
+                {% if not delivery.assigned_to_me %}style="display: none;"{% endif %}
+              >
+                <span class="material-symbols-outlined">close</span>
+              </button>
+              <button
+                class="action-btn mark-today-btn"
+                title="Mark as To Receive Today"
+                {% if not delivery.assigned_to_me %}style="display: none;"{% endif %}
+              >
+                <span class="material-symbols-outlined">event_available</span>
+              </button>
+              <button
+                class="action-btn complete-delivery-btn"
+                title="Complete delivery"
+                {% if not delivery.assigned_to_me %}style="display: none;"{% endif %}
+              >
+                <span class="material-symbols-outlined">camera_alt</span>
+              </button>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="7" class="text-center muted">No deliveries assigned yet.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+</main>
+
+<!-- Proof of Delivery Modal -->
+<div id="proofOfDeliveryModal" class="modal">
+  <div class="modal-content">
+    <span class="close-button" data-close-modal>&times;</span>
+    <h2>Submit Proof of Delivery</h2>
+    <form id="proofOfDeliveryForm">
+      <input type="hidden" id="modalDeliveryId" />
+      <div class="form-group">
+        <label for="photoUpload">Upload Photo</label>
+        <input type="file" id="photoUpload" accept="image/*" required />
+      </div>
+      <div class="form-group">
+        <label class="checkbox" for="paymentReceivedToggle">
+          <input type="checkbox" id="paymentReceivedToggle" />
+          <span>Payment received in full</span>
+        </label>
+      </div>
+      <div class="form-group">
+        <label for="deliveryNotes">Notes (optional)</label>
+        <textarea id="deliveryNotes" rows="3"></textarea>
+      </div>
+      <button type="submit" class="btn primary-btn">Submit Proof</button>
+    </form>
   </div>
 </div>
+{% endblock %} {% block scripts %}
+<script src="{{ url_for('static', filename='js/rider_scripts/delivery_management.js') }}"></script>
 {% endblock %}

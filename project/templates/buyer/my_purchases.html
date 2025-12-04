@@ -1,12 +1,14 @@
-{% extends 'main/base.html' %}
-{% block title %}My Purchases - Dione Ecommerce{% endblock %}
-
-{% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/buyer_styles/my_purchases.css') }}">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css">
-{% endblock %}
-
-{% block content %}
+{% extends 'main/base_buyer.html' %} {% block title %}My Purchases - Dione
+Ecommerce{% endblock %} {% block extra_css %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/buyer_styles/my_purchases.css') }}"
+/>
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css"
+/>
+{% endblock %} {% block content %}
 <div class="my-purchases-container">
   <!-- Page Header -->
   <div class="page-header">
@@ -14,356 +16,385 @@
       <div class="header-icon">
         <i class="ri-shopping-bag-line"></i>
       </div>
-      <h1 class="page-title">My Purchases</h1>
-      <p class="page-subtitle">Track and manage all your orders with ease</p>
+      <div class="header-text">
+        <h1 class="page-title">My Purchases</h1>
+        <p class="page-subtitle">Track and manage all your orders with ease</p>
+      </div>
     </div>
   </div>
 
-  {% set status_meta = {
-    'pending': {
-      'label': 'Pending',
-      'icon': 'ri-time-line',
-      'tone': 'warning',
-      'desc': 'Awaiting payment confirmation',
-      'progress': 18
-    },
-    'confirmed': {
-      'label': 'Confirmed',
-      'icon': 'ri-shield-check-line',
-      'tone': 'info',
-      'desc': 'Seller is preparing your order',
-      'progress': 32
-    },
-    'shipping': {
-      'label': 'Shipping',
-      'icon': 'ri-truck-line',
-      'tone': 'progress',
-      'desc': 'Parcel is on its way to the courier',
-      'progress': 55
-    },
-    'in_transit': {
-      'label': 'In Transit',
-      'icon': 'ri-roadster-line',
-      'tone': 'progress',
-      'desc': 'Courier picked up your parcel',
-      'progress': 78
-    },
-    'delivered': {
-      'label': 'Delivered',
-      'icon': 'ri-home-smile-line',
-      'tone': 'success',
-      'desc': 'Package successfully delivered',
-      'progress': 100
-    },
-    'to_review': {
-      'label': 'To Review',
-      'icon': 'ri-star-line',
-      'tone': 'muted',
-      'desc': 'Share feedback for delivered items',
-      'progress': 100
-    }
-  } %}
-
-  <div class="summary-grid">
-    <div class="summary-card">
-      <div class="summary-label">Total Orders</div>
-      <div class="summary-value">{{ status_counts.all }}</div>
-      <p>All-time purchases on Dione</p>
-    </div>
-    <div class="summary-card">
-      <div class="summary-label">In Progress</div>
-      <div class="summary-value">{{ status_counts.pending + status_counts.confirmed + status_counts.shipping + status_counts.in_transit }}</div>
-      <p>Orders currently moving</p>
-    </div>
-    <div class="summary-card">
-      <div class="summary-label">Delivered</div>
-      <div class="summary-value">{{ status_counts.delivered }}</div>
-      <p>Completed orders this account</p>
-    </div>
-    <div class="summary-card highlight">
-      <div class="summary-label">Need Reviews</div>
-      <div class="summary-value">{{ status_counts.to_review }}</div>
-      <p>Share feedback & earn trust</p>
-    </div>
-  </div>
+  {% set status_meta = { 'pending': { 'label': 'Pending', 'icon':
+  'ri-time-line', 'tone': 'warning', 'desc': 'Awaiting payment confirmation',
+  'progress': 18 }, 'confirmed': { 'label': 'Confirmed', 'icon':
+  'ri-shield-check-line', 'tone': 'info', 'desc': 'Seller is preparing your
+  order', 'progress': 32 }, 'shipping': { 'label': 'Shipping', 'icon':
+  'ri-truck-line', 'tone': 'progress', 'desc': 'Parcel is on its way to the
+  courier', 'progress': 55 }, 'in_transit': { 'label': 'In Transit', 'icon':
+  'ri-roadster-line', 'tone': 'progress', 'desc': 'Courier picked up your
+  parcel', 'progress': 78 }, 'to_receive_today': { 'label': 'To Receive Today',
+  'icon': 'ri-calendar-event-line', 'tone': 'info', 'desc': 'Courier scheduled
+  to deliver today', 'progress': 90 }, 'delivered': { 'label': 'Delivered',
+  'icon': 'ri-home-smile-line', 'tone': 'success', 'desc': 'Package successfully
+  delivered', 'progress': 100 }, 'to_review': { 'label': 'To Review', 'icon':
+  'ri-star-line', 'tone': 'muted', 'desc': 'Share feedback for delivered items',
+  'progress': 100 }, 'completed': { 'label': 'Completed', 'icon':
+  'ri-checkbox-circle-line', 'tone': 'success', 'desc': 'Order marked as
+  completed', 'progress': 100 } } %}
 
   <!-- Order Status Tabs -->
   <div class="order-tabs">
     <div class="tabs-container">
-      <a href="{{ url_for('buyer.my_purchases', status='all') }}" 
-         class="tab-item {% if status_filter == 'all' %}active{% endif %}">
+      <a
+        href="{{ url_for('buyer.my_purchases', status='all') }}"
+        class="tab-item {% if status_filter == 'all' %}active{% endif %}"
+      >
         <i class="ri-list-unordered"></i>
         <span class="tab-label">All Orders</span>
         <span class="tab-count">{{ status_counts.all }}</span>
       </a>
-      
-      <a href="{{ url_for('buyer.my_purchases', status='pending') }}" 
-         class="tab-item {% if status_filter == 'pending' %}active{% endif %}">
+
+      <a
+        href="{{ url_for('buyer.my_purchases', status='pending') }}"
+        class="tab-item {% if status_filter == 'pending' %}active{% endif %}"
+      >
         <i class="ri-time-line"></i>
         <span class="tab-label">Pending</span>
         <span class="tab-count">{{ status_counts.pending }}</span>
       </a>
-      
-      <a href="{{ url_for('buyer.my_purchases', status='confirmed') }}" 
-         class="tab-item {% if status_filter == 'confirmed' %}active{% endif %}">
+
+      <a
+        href="{{ url_for('buyer.my_purchases', status='confirmed') }}"
+        class="tab-item {% if status_filter == 'confirmed' %}active{% endif %}"
+      >
         <i class="ri-shield-check-line"></i>
         <span class="tab-label">Confirmed</span>
         <span class="tab-count">{{ status_counts.confirmed }}</span>
       </a>
-      
-      <a href="{{ url_for('buyer.my_purchases', status='shipping') }}" 
-         class="tab-item {% if status_filter == 'shipping' %}active{% endif %}">
+
+      <a
+        href="{{ url_for('buyer.my_purchases', status='shipping') }}"
+        class="tab-item {% if status_filter == 'shipping' %}active{% endif %}"
+      >
         <i class="ri-truck-line"></i>
         <span class="tab-label">Shipping</span>
         <span class="tab-count">{{ status_counts.shipping }}</span>
       </a>
-      
-      <a href="{{ url_for('buyer.my_purchases', status='in_transit') }}" 
-         class="tab-item {% if status_filter == 'in_transit' %}active{% endif %}">
+
+      <a
+        href="{{ url_for('buyer.my_purchases', status='in_transit') }}"
+        class="tab-item {% if status_filter == 'in_transit' %}active{% endif %}"
+      >
         <i class="ri-roadster-line"></i>
         <span class="tab-label">In Transit</span>
         <span class="tab-count">{{ status_counts.in_transit }}</span>
       </a>
-      
-      <a href="{{ url_for('buyer.my_purchases', status='delivered') }}" 
-         class="tab-item {% if status_filter == 'delivered' %}active{% endif %}">
+
+      <a
+        href="{{ url_for('buyer.my_purchases', status='to_receive_today') }}"
+        class="tab-item {% if status_filter == 'to_receive_today' %}active{% endif %}"
+      >
+        <i class="ri-calendar-event-line"></i>
+        <span class="tab-label">To Receive Today</span>
+        <span class="tab-count">{{ status_counts.to_receive_today }}</span>
+      </a>
+
+      <a
+        href="{{ url_for('buyer.my_purchases', status='delivered') }}"
+        class="tab-item {% if status_filter == 'delivered' %}active{% endif %}"
+      >
         <i class="ri-home-smile-line"></i>
         <span class="tab-label">Delivered</span>
         <span class="tab-count">{{ status_counts.delivered }}</span>
       </a>
-      
-      <a href="{{ url_for('buyer.my_purchases', status='to_review') }}" 
-         class="tab-item {% if status_filter == 'to_review' %}active{% endif %}">
+
+      <a
+        href="{{ url_for('buyer.my_purchases', status='to_review') }}"
+        class="tab-item {% if status_filter == 'to_review' %}active{% endif %}"
+      >
         <i class="ri-star-line"></i>
         <span class="tab-label">To Review</span>
         <span class="tab-count">{{ status_counts.to_review }}</span>
+      </a>
+
+      <a
+        href="{{ url_for('buyer.my_purchases', status='completed') }}"
+        class="tab-item {% if status_filter == 'completed' %}active{% endif %}"
+      >
+        <i class="ri-checkbox-circle-line"></i>
+        <span class="tab-label">Completed</span>
+        <span class="tab-count">{{ status_counts.completed }}</span>
       </a>
     </div>
   </div>
 
   <!-- Orders List -->
   <div class="orders-list">
-    {% if orders %}
-      {% for order in orders %}
-      {% set meta = status_meta.get(order.status, {'label': 'Processing', 'icon': 'ri-loader-4-line', 'tone': 'progress', 'desc': 'We are working on it', 'progress': 40}) %}
-      <div class="order-card" data-status="{{ order.status }}" data-order="{{ order.id }}">
-        <div class="order-header">
-          <div class="order-id">
-            <div class="order-number">
-              <span class="label">Order ID</span>
-              <strong>#{{ order.order_number }}</strong>
-            </div>
-            <div class="order-date">
-              <span class="label">Placed on</span>
-              <span>{{ order.created_at.strftime('%B %d, %Y') }}</span>
-            </div>
-          </div>
-
-          <div class="order-status-chip tone-{{ meta.tone }}">
-            <i class="{{ meta.icon }}"></i>
-            <div>
-              <strong>{{ meta.label }}</strong>
-              <span>{{ meta.desc }}</span>
-            </div>
+    {% if orders %} {% for order in orders %} {% set meta =
+    status_meta.get(order.status, {'label': 'Processing', 'icon':
+    'ri-loader-4-line', 'tone': 'progress', 'desc': 'We are working on it',
+    'progress': 40}) %}
+    <div
+      class="order-card"
+      data-status="{{ order.status }}"
+      data-order="{{ order.id }}"
+    >
+      <div class="order-header">
+        <div class="order-id">
+          <div class="order-number">
+            <span class="label">Order ID</span>
+            <strong>#{{ order.order_number }}</strong>
           </div>
         </div>
 
-        <div class="order-progress">
-          <div class="progress-labels">
-            <span>Order Progress</span>
-            <span>{{ meta.progress }}%</span>
-          </div>
-          <div class="progress-track">
-            <div class="progress-fill status-{{ order.status }}" style="width: {{ meta.progress }}%"></div>
+        <div class="order-status-chip tone-{{ meta.tone }}">
+          <i class="{{ meta.icon }}"></i>
+          <div>
+            <strong>{{ meta.label }}</strong>
+            <span>{{ meta.desc }}</span>
           </div>
         </div>
+      </div>
 
-        <!-- Order Items -->
-        <div class="order-items">
-          {% for item in order.order_items %}
-          <div class="order-item">
-            <div class="item-image">
-              <img src="{{ item.product_image or '/static/image/banner.png' }}" 
-                   alt="{{ item.product_name }}" 
-                   loading="lazy">
-            </div>
-            
-            <div class="item-details">
-              <h3 class="item-name">{{ item.product_name }}</h3>
-              <div class="item-variant">
-                {% if item.variant_name %}
-                  <span class="variant-info">{{ item.variant_name }}</span>
-                {% else %}
-                  {% if item.color %}<span class="color">{{ item.color }}</span>{% endif %}
-                  {% if item.size %}<span class="size">Size: {{ item.size }}</span>{% endif %}
-                {% endif %}
-              </div>
-              <div class="item-quantity">Qty: {{ item.quantity }}</div>
-            </div>
-            
-            <div class="item-price">
-              <span class="price">₱{{ "%.2f"|format(item.total_price) }}</span>
-            </div>
-            
-            <div class="item-actions">
-              {% if order.status == 'delivered' and not item.is_reviewed %}
-                <button class="btn-review" onclick="openReviewModal({{ item.id }})">
-                  <i class="ri-star-line"></i>
-                  Write Review
-                </button>
-              {% elif item.is_reviewed %}
-                <span class="reviewed-badge">
-                  <i class="ri-star-fill"></i>
-                  Reviewed
-                </span>
-              {% endif %}
-            </div>
-          </div>
-          {% endfor %}
+      <div class="order-progress">
+        <div class="progress-labels">
+          <span>Order Progress</span>
+          <span>{{ meta.progress }}%</span>
         </div>
+        <div class="progress-track">
+          <div
+            class="progress-fill status-{{ order.status }}"
+            style="width: {{ meta.progress }}%"
+          ></div>
+        </div>
+      </div>
 
-        <div class="order-footer">
-          <div class="order-meta">
-            {% if order.tracking_number %}
-            <div class="meta-block">
-              <span class="label">Tracking #</span>
-              <strong>{{ order.tracking_number }}</strong>
+      {% if order.can_review and order.review_deadline %}
+      <div class="review-deadline-banner warning">
+        <i class="ri-time-line"></i>
+        <div>
+          <strong>Waiting for your review</strong>
+          <span>
+            Auto-completes on {{ order.auto_complete_on }} · {{
+            order.review_days_left or 0 }} day{{ 's' if (order.review_days_left
+            or 0) != 1 else '' }} left
+          </span>
+        </div>
+      </div>
+      {% elif order.status == 'completed' and order.auto_completed and
+      order.auto_complete_on %}
+      <div class="review-deadline-banner success">
+        <i class="ri-checkbox-circle-line"></i>
+        <div>
+          <strong>Completed automatically</strong>
+          <span>Review window lapsed on {{ order.auto_complete_on }}</span>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Order Items -->
+      <div class="order-items">
+        {% for item in order.order_items %}
+        <div class="order-item">
+          <div class="item-image">
+            <img
+              src="{{ item.product_image or '/static/image/banner.png' }}"
+              alt="{{ item.product_name }}"
+              loading="lazy"
+            />
+          </div>
+
+          <div class="item-details">
+            <h3 class="item-name">{{ item.product_name }}</h3>
+            <div class="item-variant">
+              {% if item.variant_name %}
+              <span class="variant-info">{{ item.variant_name }}</span>
+              {% else %} {% if item.color %}<span class="color"
+                >{{ item.color }}</span
+              >{% endif %} {% if item.size %}<span class="size"
+                >Size: {{ item.size }}</span
+              >{% endif %} {% endif %}
             </div>
+            <div class="item-quantity">Qty: {{ item.quantity }}</div>
+          </div>
+
+          <div class="item-price">
+            <span class="price">₱{{ "%.2f"|format(item.total_price) }}</span>
+          </div>
+
+          <div class="item-actions">
+            {% if item.can_review %}
+            <button class="btn-review" onclick="openReviewModal({{ item.id }})">
+              <i class="ri-star-line"></i>
+              Write Review
+            </button>
+            {% elif item.is_reviewed %}
+            <span class="reviewed-badge">
+              <i class="ri-star-fill"></i>
+              Reviewed
+            </span>
+            {% elif item.auto_completed %}
+            <span class="reviewed-badge completed">
+              <i class="ri-check-line"></i>
+              Completed
+            </span>
             {% endif %}
-            <div class="meta-block">
-              <span class="label">Total Paid</span>
-              <strong>₱{{ "%.2f"|format(order.total_amount) }}</strong>
-            </div>
-          </div>
-          <div class="order-actions">
-            <button class="btn-secondary" onclick="viewOrderDetails({{ order.id }})">
-              <i class="ri-eye-line"></i>
-              View Details
-            </button>
-            {% if order.tracking_number %}
-            <button class="btn-primary" onclick="trackOrder({{ order.id }})">
-              <i class="ri-map-pin-line"></i>
-              Track Order
-            </button>
-            {% endif %}
-            {% if order.status == 'pending' %}
-            <button class="btn-danger" onclick="cancelOrder({{ order.id }})">
-              <i class="ri-close-line"></i>
-              Cancel
-            </button>
-            {% endif %}
-            <button class="btn-ghost reviews-toggle" onclick="toggleReviews({{ order.id }})">
-              <i class="ri-chat-3-line"></i>
-              <span id="reviews-count-{{ order.id }}">
-                {% set review_count = order.order_items|selectattr('is_reviewed')|list|length %}
-                {% if review_count > 0 %}
-                  {{ review_count }} Review{{ 's' if review_count != 1 else '' }}
-                {% else %}
-                  Reviews
-                {% endif %}
-              </span>
-              <i class="ri-arrow-down-s-line toggle-icon"></i>
-            </button>
           </div>
         </div>
+        {% endfor %}
+      </div>
 
-        <!-- Reviews Dropdown -->
-        <div class="reviews-dropdown" id="reviews-{{ order.id }}">
-          {% set has_reviews = order.order_items|selectattr('is_reviewed')|list|length > 0 %}
-          {% if has_reviews %}
-            <div class="reviews-content">
-              <div class="reviews-header">
-                <h4>Your Reviews</h4>
-                <div class="review-filters">
-                  <button class="filter-btn active" data-rating="all">All</button>
-                  <button class="filter-btn" data-rating="5">5★</button>
-                  <button class="filter-btn" data-rating="4">4★</button>
-                  <button class="filter-btn" data-rating="3">3★</button>
-                  <button class="filter-btn" data-rating="2">2★</button>
-                  <button class="filter-btn" data-rating="1">1★</button>
+      <div class="order-footer">
+        <div class="order-meta">
+          {% if order.tracking_number %}
+          <div class="meta-block">
+            <span class="label">Tracking #</span>
+            <strong>{{ order.tracking_number }}</strong>
+          </div>
+          {% endif %}
+          <div class="meta-block">
+            <span class="label">Total Paid</span>
+            <strong>₱{{ "%.2f"|format(order.total_amount) }}</strong>
+          </div>
+          <div class="meta-block">
+            <span class="label">Order Date</span>
+            <strong>{{ order.created_at.strftime('%B %d, %Y') }}</strong>
+          </div>
+        </div>
+        <div class="order-actions">
+          <button
+            class="btn-secondary"
+            onclick="viewOrderDetails({{ order.id }})"
+          >
+            <i class="ri-eye-line"></i>
+            View Details
+          </button>
+          {% if order.tracking_number %}
+          <button class="btn-primary" onclick="trackOrder({{ order.id }})">
+            <i class="ri-map-pin-line"></i>
+            Track Order
+          </button>
+          {% endif %} {% if order.status == 'pending' %}
+          <button class="btn-danger" onclick="cancelOrder({{ order.id }})">
+            <i class="ri-close-line"></i>
+            Cancel
+          </button>
+          {% endif %}
+          <button
+            class="btn-ghost reviews-toggle"
+            onclick="toggleReviews({{ order.id }})"
+          >
+            <i class="ri-chat-3-line"></i>
+            <span id="reviews-count-{{ order.id }}">
+              {% set review_count =
+              order.order_items|selectattr('is_reviewed')|list|length %} {% if
+              review_count > 0 %} {{ review_count }} Review{{ 's' if
+              review_count != 1 else '' }} {% else %} Reviews {% endif %}
+            </span>
+            <i class="ri-arrow-down-s-line toggle-icon"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Reviews Dropdown -->
+      <div class="reviews-dropdown" id="reviews-{{ order.id }}">
+        {% set has_reviews =
+        order.order_items|selectattr('is_reviewed')|list|length > 0 %} {% if
+        has_reviews %}
+        <div class="reviews-content">
+          <div class="reviews-header">
+            <h4>Your Reviews</h4>
+            <div class="review-filters">
+              <button class="filter-btn active" data-rating="all">All</button>
+              <button class="filter-btn" data-rating="5">5★</button>
+              <button class="filter-btn" data-rating="4">4★</button>
+              <button class="filter-btn" data-rating="3">3★</button>
+              <button class="filter-btn" data-rating="2">2★</button>
+              <button class="filter-btn" data-rating="1">1★</button>
+            </div>
+          </div>
+
+          <div class="reviews-list">
+            {% for item in order.order_items %} {% if item.is_reviewed %} {% for
+            review in item.reviews %}
+            <div class="review-item" data-rating="{{ review.rating }}">
+              <div class="review-product">
+                <img
+                  src="{{ item.product_image or '/static/image/banner.png' }}"
+                  alt="{{ item.product_name }}"
+                />
+                <div class="product-info">
+                  <h5>{{ item.product_name }}</h5>
+                  <span class="variant"
+                    >{{ item.variant_name or (item.color + ' - ' + item.size if
+                    item.color and item.size else '') }}</span
+                  >
                 </div>
               </div>
-              
-              <div class="reviews-list">
-                {% for item in order.order_items %}
-                  {% if item.is_reviewed %}
-                    {% for review in item.reviews %}
-                    <div class="review-item" data-rating="{{ review.rating }}">
-                      <div class="review-product">
-                        <img src="{{ item.product_image or '/static/image/banner.png' }}" 
-                             alt="{{ item.product_name }}">
-                        <div class="product-info">
-                          <h5>{{ item.product_name }}</h5>
-                          <span class="variant">{{ item.variant_name or (item.color + ' - ' + item.size if item.color and item.size else '') }}</span>
-                        </div>
-                      </div>
-                      
-                      <div class="review-content">
-                        <div class="review-rating">
-                          {% for i in range(5) %}
-                            <i class="ri-star-{{ 'fill' if i < review.rating else 'line' }}"></i>
-                          {% endfor %}
-                          <span class="rating-text">{{ review.rating }}/5</span>
-                        </div>
-                        
-                        {% if review.title %}
-                        <h6 class="review-title">{{ review.title }}</h6>
-                        {% endif %}
-                        
-                        {% if review.comment %}
-                        <p class="review-comment">{{ review.comment }}</p>
-                        {% endif %}
-                        
-                        {% if review.images %}
-                        <div class="review-images">
-                          {% for image in review.images %}
-                          <img src="{{ image }}" alt="Review image" class="review-image" onclick="showImageModal('{{ image }}')">
-                          {% endfor %}
-                        </div>
-                        {% endif %}
-                        
-                        <div class="review-date">
-                          <i class="ri-calendar-line"></i>
-                          {{ review.created_at.strftime('%B %d, %Y') }}
-                        </div>
-                      </div>
-                    </div>
-                    {% endfor %}
-                  {% endif %}
-                {% endfor %}
+
+              <div class="review-content">
+                <div class="review-rating">
+                  {% for i in range(5) %}
+                  <i
+                    class="ri-star-{{ 'fill' if i < review.rating else 'line' }}"
+                  ></i>
+                  {% endfor %}
+                  <span class="rating-text">{{ review.rating }}/5</span>
+                </div>
+
+                {% if review.title %}
+                <h6 class="review-title">{{ review.title }}</h6>
+                {% endif %} {% if review.comment %}
+                <p class="review-comment">{{ review.comment }}</p>
+                {% endif %} {% if review.images %}
+                <div class="review-images">
+                  {% for image in review.images %}
+                  <img
+                    src="{{ image }}"
+                    alt="Review image"
+                    class="review-image"
+                    onclick="showImageModal('{{ image }}')"
+                  />
+                  {% endfor %}
+                </div>
+                {% endif %}
+
+                <div class="review-date">
+                  <i class="ri-calendar-line"></i>
+                  {{ review.created_at.strftime('%B %d, %Y') }}
+                </div>
               </div>
             </div>
-          {% else %}
-            <div class="no-reviews-message">
-              <i class="ri-chat-3-line"></i>
-              <p>No reviews yet for this order</p>
-              {% if order.status == 'delivered' %}
-              <p class="hint">You can write reviews for delivered items</p>
-              {% endif %}
-            </div>
+            {% endfor %} {% endif %} {% endfor %}
+          </div>
+        </div>
+        {% else %}
+        <div class="no-reviews-message">
+          <i class="ri-chat-3-line"></i>
+          <p>No reviews yet for this order</p>
+          {% if order.status == 'delivered' %}
+          <p class="hint">You can write reviews for delivered items</p>
           {% endif %}
         </div>
+        {% endif %}
       </div>
-      {% endfor %}
-    {% else %}
-      <!-- Empty State -->
-      <div class="empty-state">
-        <div class="empty-icon">
-          <i class="ri-shopping-bag-3-line"></i>
-        </div>
-        <h3>No orders found</h3>
-        <p>
-          {% if status_filter == 'all' %}
-            You haven't made any purchases yet.
-          {% else %}
-            No orders with "{{ status_filter.replace('_', ' ').title() }}" status.
-          {% endif %}
-        </p>
-        <a href="/" class="btn-primary">
-          <i class="ri-shopping-cart-line"></i>
-          Start Shopping
-        </a>
+    </div>
+    {% endfor %} {% else %}
+    <!-- Empty State -->
+    <div class="empty-state">
+      <div class="empty-icon">
+        <i class="ri-shopping-bag-3-line"></i>
       </div>
+      <h3>No orders found</h3>
+      <p>
+        {% if status_filter == 'all' %} You haven't made any purchases yet. {%
+        else %} No orders with "{{ status_filter.replace('_', ' ').title() }}"
+        status. {% endif %}
+      </p>
+      <a href="/" class="btn-primary">
+        <i class="ri-shopping-cart-line"></i>
+        Start Shopping
+      </a>
+    </div>
     {% endif %}
   </div>
 
@@ -372,27 +403,30 @@
   <div class="pagination-container">
     <div class="pagination">
       {% if pagination.has_prev %}
-        <a href="{{ url_for('buyer.my_purchases', status=status_filter, page=pagination.prev_num) }}" class="page-btn">
-          <i class="ri-arrow-left-line"></i>
-        </a>
-      {% endif %}
-      
-      {% for page_num in pagination.iter_pages() %}
-        {% if page_num %}
-          {% if page_num != pagination.page %}
-            <a href="{{ url_for('buyer.my_purchases', status=status_filter, page=page_num) }}" class="page-btn">{{ page_num }}</a>
-          {% else %}
-            <span class="page-btn active">{{ page_num }}</span>
-          {% endif %}
-        {% else %}
-          <span class="page-btn disabled">…</span>
-        {% endif %}
-      {% endfor %}
-      
-      {% if pagination.has_next %}
-        <a href="{{ url_for('buyer.my_purchases', status=status_filter, page=pagination.next_num) }}" class="page-btn">
-          <i class="ri-arrow-right-line"></i>
-        </a>
+      <a
+        href="{{ url_for('buyer.my_purchases', status=status_filter, page=pagination.prev_num) }}"
+        class="page-btn"
+      >
+        <i class="ri-arrow-left-line"></i>
+      </a>
+      {% endif %} {% for page_num in pagination.iter_pages() %} {% if page_num
+      %} {% if page_num != pagination.page %}
+      <a
+        href="{{ url_for('buyer.my_purchases', status=status_filter, page=page_num) }}"
+        class="page-btn"
+        >{{ page_num }}</a
+      >
+      {% else %}
+      <span class="page-btn active">{{ page_num }}</span>
+      {% endif %} {% else %}
+      <span class="page-btn disabled">…</span>
+      {% endif %} {% endfor %} {% if pagination.has_next %}
+      <a
+        href="{{ url_for('buyer.my_purchases', status=status_filter, page=pagination.next_num) }}"
+        class="page-btn"
+      >
+        <i class="ri-arrow-right-line"></i>
+      </a>
       {% endif %}
     </div>
   </div>
@@ -408,7 +442,7 @@
         <i class="ri-close-line"></i>
       </button>
     </div>
-    
+
     <div class="modal-body">
       <div id="reviewForm">
         <!-- Review form will be loaded here -->
@@ -423,11 +457,9 @@
     <button class="close-btn" onclick="closeImageModal()">
       <i class="ri-close-line"></i>
     </button>
-    <img id="modalImage" src="" alt="Review image">
+    <img id="modalImage" src="" alt="Review image" />
   </div>
 </div>
-{% endblock %}
-
-{% block extra_js %}
+{% endblock %} {% block extra_js %}
 <script src="{{ url_for('static', filename='js/buyer_scripts/my_purchases.js') }}"></script>
 {% endblock %}
