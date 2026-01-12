@@ -335,11 +335,4 @@ git commit -m "I did something cool"
 # Updates the main branch on GitHub with your latest changes.
 git push origin main
 ```
-If push fails → it’s your fault 😅 Run this:
 
-```bash
-# get latest + reapply your commits cleanly
-git pull --rebase origin main
-# publish your work
-git push origin main
-```
