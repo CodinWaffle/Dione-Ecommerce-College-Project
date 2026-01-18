@@ -1,7 +1,6 @@
 <div align="center">
 
 # 🛒 **Dione Ecommerce (College Project)**
-### *Setup Guide — not written by AI because AI kept acting dumb 😤*
 
 ![Banner](https://github.com/user-attachments/assets/e7fef06d-ac46-4180-8d19-b797afaea016) <!-- Optional: Replace with your own banner -->
 
@@ -16,43 +15,40 @@
 </div>
 
 ---
-
-## 🧠 Prerequisites (aka “Don’t be Dumb”)
-
 Before you start, make sure you have the following:
 
-- 🐍 **Python 3.8+**
-- 🧰 **MySQL (XAMPP recommended)**
-- 💾 **Git**
+-  **Python 3.8+**
+-  **MySQL (XAMPP recommended)**
+-  **Git**
 
 ---
 
-## 🚀 Setup in 5 Kinda-Simple Steps
+##  Setup in 5 Kinda-Simple Steps
 
-### **1️⃣ Clone this masterpiece**
+### ** Clone this masterpiece**
 ```bash
 git clone https://github.com/CodinWaffle/Dione-Ecommerce-College-Project.git
 cd "Dione Ecommerce (College Project)"
 ```
-2️⃣ Create & Activate Virtual Environment
+ Create & Activate Virtual Environment
 ```bash
 python -m venv env
 ```
 ```bash
 env\Scripts\activate.ps1
 ```
-🐧 Git Bash
+ Git Bash
 ```bash
 source env/bin/activate
 ```
-💡 If you don’t see (env) — activate your brain, too.
+ If you don’t see (env) — activate your brain, too.
 
-3️⃣ Install Dependencies
+ Install Dependencies
 ```bash
 pip install --upgrade pip
 pip install -r requirements.txt
 ```
-4️⃣ Database (Updated)
+ Database (Updated)
 We now have storefront, catalog, cart, and review tables. You can either run the Alembic migrations (`flask db upgrade`) or paste the SQL below into MySQL / phpMyAdmin:
 
 ```sql
@@ -287,7 +283,7 @@ CREATE INDEX `idx_review_store` ON `review`(`store_id`);
 
 SELECT 'Database setup completed successfully!' AS status;
 ```
-5️ Create Admin User
+ Create Admin User
 ```sql
 USE dione_data;
 
@@ -310,15 +306,15 @@ SELECT * FROM `user` WHERE `email` = 'admin@dione.local';
 • Password - admin_123
 ```
 
-6️⃣ Run It!
+ Run It!
 ```bash
 flask run
 ```
-🧪Test command
+Test command
 ```bash
 pytest project/tests.py -v --tb=no
 ```
-🧪 Git Cheat Sheet
+ Git Cheat Sheet
 ```bash
 # this command is to update you current codebase so use this before ypu start working because this can Get the latest changes from GitHub
 git pull origin main
