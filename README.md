@@ -2,7 +2,7 @@
 
 # 🛒 **Dione Ecommerce (College Project)**
 
-![Banner](https://github.com/user-attachments/assets/e7fef06d-ac46-4180-8d19-b797afaea016) <!-- Optional: Replace with your own banner -->
+<img width="1828" height="878" alt="Image" src="https://github.com/user-attachments/assets/e15f3bc2-5740-42a4-bd54-429601f50b4f" />
 
 ---
 
@@ -314,21 +314,4 @@ Test command
 ```bash
 pytest project/tests.py -v --tb=no
 ```
- Git Cheat Sheet
-```bash
-# this command is to update you current codebase so use this before ypu start working because this can Get the latest changes from GitHub
-git pull origin main
-```
-```bash
-# Stages all modified, deleted, or new files in your project for commit.
-git add .
-```
-```bash
-# This saves your work with a message describing what you did.
-git commit -m "I did something cool"
-```
-```bash
-# Updates the main branch on GitHub with your latest changes.
-git push origin main
-```
-
+ 
