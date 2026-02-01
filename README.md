@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🛒 **Dione Ecommerce (College Project)**
+# **Dione Ecommerce (College Project)**
 
 <img width="1828" height="878" alt="Image" src="https://github.com/user-attachments/assets/e15f3bc2-5740-42a4-bd54-429601f50b4f" />
 
